@@ -90,11 +90,22 @@ YAML by hand. Run **Fileclass: edit a fileClass schema** (or right-click a
 fileClass note → **Manage this fileClass's fields**) to open the schema editor:
 
 - **Fields** — add, edit, remove, and reorder field definitions. A field has a
-  **name** and a **type**; its stable id is generated automatically.
+  **name**, a **type**, and type-specific settings; its stable id is generated
+  automatically.
 - **Options…** — edit the fileClass options: `icon` (a Lucide name), `extends`
   (parent fileClass), `limit`, `mapWithTag`, `tagNames`, `filesPaths`,
   `bookmarksGroups`, and `excludes`.
 
+### Type-specific field settings
+
+When adding or editing a field, its type reveals the relevant settings:
+
+- **Number** — min, max, step.
+- **Date / DateTime / Time** — format and insert-as-link.
+- **Select / Cycle / Multi** — the values source: an **inline list** (edit values
+  in place) or **from a note** (its non-empty lines).
+
 Every change is a single `processFrontMatter` write on the fileClass note,
-preserving unknown keys. Per-type field settings (a Number's min/max, a Select's
-values source, a File's Base view…) are configured in a later step.
+preserving unknown keys. Settings for **File/Media** fields, **Object/ObjectList**
+children, and **Base-view** value sources are configured in a later step; a field
+already using one of those keeps it untouched when you edit its name or type.

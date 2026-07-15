@@ -40,13 +40,17 @@ export interface ListOptions {
 }
 
 export function listOptions(field: Field): ListOptions {
+	return listOptionsFromOptions(field.options);
+}
+
+export function listOptionsFromOptions(options: FieldOptions): ListOptions {
 	// A bare array of options is treated as an inline values list.
-	if (Array.isArray(field.options)) {
+	if (Array.isArray(options)) {
 		const valuesList: Record<string, string> = {};
-		field.options.forEach((v, i) => (valuesList[i + 1] = String(v)));
+		options.forEach((v, i) => (valuesList[i + 1] = String(v)));
 		return { sourceType: "ValuesList", valuesList };
 	}
-	const o = field.options;
+	const o = options;
 	// Legacy shape: the options object *is* the values list (index → value),
 	// with no `valuesList`/`sourceType` wrapper (e.g. `{ "1": "🟢", "2": "🟡" }`).
 	if (!("sourceType" in o) && !("valuesList" in o)) {

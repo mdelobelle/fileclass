@@ -101,7 +101,11 @@ export class FileClassSchemaModal extends Modal {
 			title: "Add field",
 			onSubmit: (r) =>
 				void mutateFields(this.app, this.file, (fields) =>
-					addFieldDef(fields, { name: r.name, type: r.type }, collectFieldIds(fields))
+					addFieldDef(
+						fields,
+						{ name: r.name, type: r.type, options: r.options },
+						collectFieldIds(fields)
+					)
 				),
 		}).open();
 	}
@@ -109,10 +113,14 @@ export class FileClassSchemaModal extends Modal {
 	private editField(field: Field): void {
 		new FieldDefModal(this.app, {
 			title: "Edit field",
-			initial: { name: field.name, type: field.type },
+			initial: { name: field.name, type: field.type, options: field.options },
 			onSubmit: (r) =>
 				void mutateFields(this.app, this.file, (fields) =>
-					updateFieldDef(fields, field.id, { name: r.name, type: r.type })
+					updateFieldDef(fields, field.id, {
+						name: r.name,
+						type: r.type,
+						options: r.options,
+					})
 				),
 		}).open();
 	}

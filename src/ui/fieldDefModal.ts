@@ -1,10 +1,13 @@
 /*
- * Add/edit a single field definition (ARCHITECTURE.md §20.2). Name + type only
- * in this slice; per-type option settings (§20.3) arrive in P2-ter.2/.3.
+ * Add/edit a single field definition (ARCHITECTURE.md §20.2/§20.3). Name, type,
+ * and the per-type option settings (Number/Date/List for now — §20.3). Types we
+ * don't yet have settings for keep their existing options untouched.
  */
 import { App, Modal, Notice, Setting } from "obsidian";
 
-import { FIELD_TYPES, FieldType } from "../schema/field";
+import { renderFieldOptionsSettings } from "../fields/input/fieldOptionsSettings";
+import { buildFieldOptions, optionsToDraft, OptionsDraft } from "../fields/optionsDraft";
+import { FIELD_TYPES, FieldOptions, FieldType } from "../schema/field";
 
 /** Types offered in the schema editor (Canvas/JSON/YAML are deferred, §7). */
 const DEFERRED = new Set<FieldType>(["Canvas", "CanvasGroup", "CanvasGroupLink", "JSON", "YAML"]);
@@ -13,23 +16,27 @@ export const EDITABLE_FIELD_TYPES: FieldType[] = FIELD_TYPES.filter((t) => !DEFE
 export interface FieldDefResult {
 	name: string;
 	type: FieldType;
+	/** Undefined when this editor doesn't manage the type's options (preserve). */
+	options?: FieldOptions;
 }
 
 export class FieldDefModal extends Modal {
 	private name: string;
 	private type: FieldType;
+	private draft: OptionsDraft;
 
 	constructor(
 		app: App,
 		private readonly opts: {
 			title: string;
-			initial?: FieldDefResult;
+			initial?: { name: string; type: FieldType; options: FieldOptions };
 			onSubmit: (result: FieldDefResult) => void;
 		}
 	) {
 		super(app);
 		this.name = opts.initial?.name ?? "";
 		this.type = opts.initial?.type ?? "Input";
+		this.draft = optionsToDraft(this.type, opts.initial?.options ?? []);
 	}
 
 	onOpen(): void {
@@ -39,10 +46,19 @@ export class FieldDefModal extends Modal {
 		new Setting(contentEl).setName("Name").addText((t) =>
 			t.setValue(this.name).onChange((v) => (this.name = v))
 		);
+
+		const optionsEl = contentEl.createDiv();
+		const renderOptions = () => renderFieldOptionsSettings(optionsEl, this.type, this.draft);
+
 		new Setting(contentEl).setName("Type").addDropdown((d) => {
 			EDITABLE_FIELD_TYPES.forEach((t) => d.addOption(t, t));
-			d.setValue(this.type).onChange((v) => (this.type = v as FieldType));
+			d.setValue(this.type).onChange((v) => {
+				this.type = v as FieldType;
+				renderOptions();
+			});
 		});
+
+		renderOptions();
 
 		new Setting(contentEl).addButton((b) =>
 			b
@@ -54,7 +70,11 @@ export class FieldDefModal extends Modal {
 						new Notice("Fileclass: a field name is required.");
 						return;
 					}
-					this.opts.onSubmit({ name, type: this.type });
+					this.opts.onSubmit({
+						name,
+						type: this.type,
+						options: buildFieldOptions(this.type, this.draft),
+					});
 					this.close();
 				})
 		);

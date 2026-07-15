@@ -36,30 +36,35 @@ export function collectFieldIds(fields: RawFieldEntry[]): Set<string> {
 /** Appends a new field definition; returns the created entry. */
 export function addFieldDef(
 	fields: RawFieldEntry[],
-	def: { name: string; type: string; path?: string },
+	def: { name: string; type: string; options?: unknown; path?: string },
 	existingIds: Set<string> = collectFieldIds(fields)
 ): RawFieldEntry {
 	const entry: RawFieldEntry = {
 		name: def.name,
 		id: generateFieldId(existingIds),
 		type: def.type,
-		options: [],
+		options: def.options ?? [],
 		path: def.path ?? "",
 	};
 	fields.push(entry);
 	return entry;
 }
 
-/** Mutates the matching entry's name/type in place (keeps its other keys). */
+/**
+ * Mutates the matching entry's name/type/options in place (keeps its other
+ * keys). `options` is applied only when provided, so callers that don't manage
+ * a type's options leave the existing ones untouched.
+ */
 export function updateFieldDef(
 	fields: RawFieldEntry[],
 	id: string,
-	changes: { name?: string; type?: string }
+	changes: { name?: string; type?: string; options?: unknown }
 ): void {
 	const field = fields.find((f) => f.id === id);
 	if (!field) return;
 	if (changes.name !== undefined) field.name = changes.name;
 	if (changes.type !== undefined) field.type = changes.type;
+	if (changes.options !== undefined) field.options = changes.options;
 }
 
 export function removeFieldDef(fields: RawFieldEntry[], id: string): void {

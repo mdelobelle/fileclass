@@ -27,30 +27,71 @@ interface LeafInternals {
 interface ViewWithFile {
 	file?: TFile;
 }
+/** Bookmarks internals: file items carry a path; the view maps item → DOM. */
+interface BookmarkItem {
+	type?: string;
+	path?: string;
+	items?: BookmarkItem[];
+}
+interface BookmarksView {
+	itemDoms?: WeakMap<BookmarkItem, { selfEl?: HTMLElement }>;
+}
+interface BookmarksInstance {
+	items?: BookmarkItem[];
+}
 
 export class FieldIndicator extends Component {
+	/** Observers on the nav panes (file explorer, bookmarks), which render rows
+	 * lazily on expand/scroll without firing a workspace event. */
+	private watched: { observer: MutationObserver; container: HTMLElement }[] = [];
+	private scheduleInject: () => void = () => undefined;
+
 	constructor(private readonly plugin: FileclassPlugin) {
 		super();
 	}
 
 	onload(): void {
-		const refresh = debounce(() => this.refresh(), 150, true);
+		this.scheduleInject = debounce(() => this.injectAll(), 100, true);
 		const ws = this.plugin.app.workspace;
-		this.registerEvent(ws.on("layout-change", refresh));
-		this.registerEvent(ws.on("active-leaf-change", refresh));
-		this.registerEvent(ws.on("file-open", refresh));
-		// Re-inject when bindings change (a file may gain/lose a fileClass).
-		this.registerEvent(this.plugin.index.on(INDEXED_EVENT, refresh));
-		ws.onLayoutReady(refresh);
+		// Panes can open/close on layout change — (re)attach observers then inject.
+		this.registerEvent(ws.on("layout-change", () => this.reattachAndInject()));
+		this.registerEvent(ws.on("active-leaf-change", this.scheduleInject));
+		this.registerEvent(ws.on("file-open", this.scheduleInject));
+		// A file may gain/lose a fileClass — full refresh drops now-stale icons.
+		this.registerEvent(this.plugin.index.on(INDEXED_EVENT, () => this.fullRefresh()));
+		ws.onLayoutReady(() => this.reattachAndInject());
 	}
 
 	onunload(): void {
+		this.detachObservers();
 		this.removeAll();
 	}
 
 	/** Re-injects immediately (e.g. after a settings toggle). */
 	refreshNow(): void {
-		this.refresh();
+		this.fullRefresh();
+	}
+
+	private reattachAndInject(): void {
+		this.reattachObservers();
+		this.injectAll();
+	}
+
+	private reattachObservers(): void {
+		this.detachObservers();
+		for (const type of ["file-explorer", "bookmarks"]) {
+			for (const leaf of this.plugin.app.workspace.getLeavesOfType(type)) {
+				const container = leaf.view.containerEl;
+				const observer = new MutationObserver(() => this.scheduleInject());
+				observer.observe(container, { subtree: true, childList: true });
+				this.watched.push({ observer, container });
+			}
+		}
+	}
+
+	private detachObservers(): void {
+		this.watched.forEach((w) => w.observer.disconnect());
+		this.watched = [];
 	}
 
 	/** Returns the file if Fileclass applies to it (has resolved fields). */
@@ -63,14 +104,18 @@ export class FieldIndicator extends Component {
 		target.appendChild(makeIndicatorIcon(this.plugin, file, NAV_SCOPE));
 	}
 
-	private refresh(): void {
-		// Rebuild from scratch — cheap, and avoids stale icons on files that no
-		// longer apply. Each surface is independent and self-guarded.
-		this.removeAll();
+	/** Additive injection (dedup-guarded); safe to run on every mutation. */
+	private injectAll(): void {
 		const s = this.plugin.settings;
 		if (s.enableFileExplorerIndicator) this.guard(() => this.injectByDataPath(".nav-file-title"));
 		if (s.enableBookmarksIndicator) this.guard(() => this.injectBookmarks());
 		if (s.enableTabHeaderIndicator) this.guard(() => this.injectTabs());
+	}
+
+	/** Clears every icon then re-injects (for stale removal on binding change). */
+	private fullRefresh(): void {
+		this.removeAll();
+		this.injectAll();
 	}
 
 	private guard(fn: () => void): void {
@@ -90,13 +135,30 @@ export class FieldIndicator extends Component {
 	}
 
 	private injectBookmarks(): void {
+		// Bookmark rows carry no data-path; resolve through the plugin's own
+		// item tree and the view's item→DOM map (WeakMap) instead.
+		const internal = this.plugin.app as unknown as {
+			internalPlugins?: {
+				getPluginById(id: string): { instance?: BookmarksInstance } | null;
+			};
+		};
+		const items = internal.internalPlugins?.getPluginById("bookmarks")?.instance?.items;
+		if (!items) return;
+
 		for (const leaf of this.plugin.app.workspace.getLeavesOfType("bookmarks")) {
-			leaf.view.containerEl
-				.querySelectorAll<HTMLElement>(".tree-item-self[data-path]")
-				.forEach((el) => {
-					const file = this.applies(el.getAttribute("data-path"));
-					if (file) this.inject(el, file);
-				});
+			const itemDoms = (leaf.view as unknown as BookmarksView).itemDoms;
+			if (!itemDoms) continue;
+			const walk = (list: BookmarkItem[]) => {
+				for (const item of list) {
+					if (item.type === "file" && item.path) {
+						const file = this.applies(item.path);
+						const el = itemDoms.get(item)?.selfEl;
+						if (file && el) this.inject(el, file);
+					}
+					if (item.items) walk(item.items);
+				}
+			};
+			walk(items);
 		}
 	}
 

@@ -15,6 +15,12 @@ export interface FileclassSettings {
 	fileClassIcon: string;
 	/** Add Fileclass entries to the file/editor context menus. */
 	enableContextMenu: boolean;
+	/** Show the field indicator icon in the tab header. */
+	enableTabHeaderIndicator: boolean;
+	/** Show the field indicator icon in the file explorer. */
+	enableFileExplorerIndicator: boolean;
+	/** Show the field indicator icon in the bookmarks pane. */
+	enableBookmarksIndicator: boolean;
 }
 
 export const DEFAULT_SETTINGS: FileclassSettings = {
@@ -23,6 +29,9 @@ export const DEFAULT_SETTINGS: FileclassSettings = {
 	globalFileClass: "",
 	fileClassIcon: "file-spreadsheet",
 	enableContextMenu: true,
+	enableTabHeaderIndicator: true,
+	enableFileExplorerIndicator: true,
+	enableBookmarksIndicator: true,
 };
 
 /** Normalizes a folder path to `""` or a trailing-slashed, non-leading form. */

@@ -36,9 +36,18 @@ Markdown file — in the file explorer, on a tab, or in the editor — adds:
 
 All actions write to frontmatter only, one `processFrontMatter` write each.
 
+## Field indicator
+
+A small clickable **icon** appears next to a note's name — in the **tab header**,
+**file explorer**, and **bookmarks** — whenever a fileClass applies to it.
+Clicking it opens the note-fields modal above. It is **icon-only**, and each
+surface has its own toggle under **Settings → Fileclass → Indicators**.
+
+The indicator is a best-effort UI decoration layered on Obsidian's DOM: if a
+surface changes in a future Obsidian version, the icon simply stops appearing
+there — the modal, menus, and commands keep working.
+
 ## Coming next
 
-Small clickable **indicators** next to a note's name — in the tab header, file
-explorer, bookmarks, internal links, and the first column of Bases tables — will
-open this same modal. They are icon-only by default, and each surface can be
-toggled independently.
+The same indicator on **internal links** (reading view, Live Preview, backlinks)
+and in the **first column of Bases** tables.

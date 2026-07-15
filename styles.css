@@ -1,0 +1,24 @@
+/* Field indicator (ARCHITECTURE.md §19.4). Icon-only, unobtrusive. */
+.fileclass-indicator {
+	display: inline-flex;
+	align-items: center;
+	margin-left: 4px;
+	cursor: pointer;
+	opacity: 0.55;
+	vertical-align: middle;
+}
+
+.fileclass-indicator:hover {
+	opacity: 1;
+}
+
+.fileclass-indicator svg {
+	width: 14px;
+	height: 14px;
+}
+
+/* Field value shown in the note-fields modal. */
+.fileclass-field-value {
+	color: var(--text-muted);
+	margin-right: 8px;
+}

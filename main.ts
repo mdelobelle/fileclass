@@ -22,6 +22,7 @@ import {
 import { FileclassSettingTab } from "./src/settings/settingsTab";
 import { AddFileClassModal } from "./src/ui/addFileClassModal";
 import { FileclassContextMenu } from "./src/ui/contextMenu";
+import { FieldIndicator } from "./src/ui/indicator/fieldIndicator";
 import { NoteFieldsModal } from "./src/ui/noteFieldsModal";
 
 export default class FileclassPlugin extends Plugin {
@@ -30,6 +31,9 @@ export default class FileclassPlugin extends Plugin {
 
 	/** Schema registry + file→fileClass binding (ARCHITECTURE.md §10). */
 	index!: FileclassIndex;
+
+	/** In-UI field indicator (tab header, file explorer, bookmarks — §19.4). */
+	indicator!: FieldIndicator;
 
 	/** Long-lived cache of parsed .base queries, invalidated on vault modify. */
 	queryCache!: QueryCache;
@@ -52,6 +56,7 @@ export default class FileclassPlugin extends Plugin {
 
 		this.addSettingTab(new FileclassSettingTab(this.app, this));
 		this.addChild(new FileclassContextMenu(this));
+		this.indicator = this.addChild(new FieldIndicator(this));
 		this.registerCommands();
 		this.registerVaultListeners();
 

@@ -70,5 +70,27 @@ export class FileclassSettingTab extends PluginSettingTab {
 					await this.plugin.saveSettings();
 				})
 			);
+
+		new Setting(containerEl).setName("Indicators").setHeading();
+		containerEl.createEl("p", {
+			text: "A clickable icon next to a note's name opens its fields.",
+			cls: "setting-item-description",
+		});
+
+		const indicatorToggle = (
+			name: string,
+			key: "enableTabHeaderIndicator" | "enableFileExplorerIndicator" | "enableBookmarksIndicator"
+		) =>
+			new Setting(containerEl).setName(name).addToggle((toggle) =>
+				toggle.setValue(this.plugin.settings[key]).onChange(async (value) => {
+					this.plugin.settings[key] = value;
+					await this.plugin.saveSettings();
+					this.plugin.indicator.refreshNow();
+				})
+			);
+
+		indicatorToggle("Tab header", "enableTabHeaderIndicator");
+		indicatorToggle("File explorer", "enableFileExplorerIndicator");
+		indicatorToggle("Bookmarks", "enableBookmarksIndicator");
 	}
 }

@@ -7,6 +7,7 @@
  */
 import { App, Setting } from "obsidian";
 
+import { isSummarizing, LOOKUP_OUTPUT_TYPES, LookupOutputType } from "../../computed/lookup";
 import { FieldType } from "../../schema/field";
 import { BaseFileSuggest, BaseViewSuggest } from "../../ui/baseSuggest";
 import { OptionsDraft } from "../optionsDraft";
@@ -52,8 +53,57 @@ export function renderFieldOptionsSettings(
 		case "MultiMedia":
 			renderLinkSettings(container, type, draft, ctx);
 			return;
+		case "Lookup":
+			renderLookupSettings(container, draft, ctx);
+			return;
 		default:
 			return; // Input/Boolean: no options; Object/ObjectList: children editor
+	}
+}
+
+function renderLookupSettings(
+	container: HTMLElement,
+	draft: OptionsDraft,
+	ctx: FieldOptionsCtx
+): void {
+	container.empty();
+
+	new Setting(container)
+		.setName("Base file")
+		.setDesc("The source notes to look up.")
+		.addText((t) => {
+			t.setValue(draft.baseFile ?? "").onChange((v) => (draft.baseFile = v));
+			new BaseFileSuggest(ctx.app, t.inputEl);
+		});
+	new Setting(container)
+		.setName("View")
+		.setDesc("View within the base (blank = first).")
+		.addText((t) => {
+			t.setValue(draft.viewName ?? "").onChange((v) => (draft.viewName = v));
+			new BaseViewSuggest(ctx.app, t.inputEl, () => draft.baseFile ?? "");
+		});
+	new Setting(container)
+		.setName("Target field")
+		.setDesc("Field on the source notes that links back to this note.")
+		.addText((t) =>
+			t.setValue(draft.targetFieldName ?? "").onChange((v) => (draft.targetFieldName = v))
+		);
+
+	new Setting(container).setName("Output").addDropdown((d) => {
+		LOOKUP_OUTPUT_TYPES.forEach((o) => d.addOption(o, o));
+		d.setValue(draft.outputType ?? "LinksList").onChange((v) => {
+			draft.outputType = v as LookupOutputType;
+			renderLookupSettings(container, draft, ctx);
+		});
+	});
+
+	if (isSummarizing((draft.outputType ?? "LinksList") as LookupOutputType)) {
+		new Setting(container)
+			.setName("Summarized field")
+			.setDesc("Numeric field on the source notes to summarize.")
+			.addText((t) =>
+				t.setValue(draft.summarizedFieldName ?? "").onChange((v) => (draft.summarizedFieldName = v))
+			);
 	}
 }
 

@@ -2,6 +2,7 @@
  * Typed accessors over the loosely-typed `Field.options` (ARCHITECTURE.md §7).
  * Pure — no Obsidian. The option shapes are Metadata Menu's (D3).
  */
+import { LOOKUP_OUTPUT_TYPES, LookupOutputType } from "../computed/lookup";
 import { Field, FieldOptions } from "../schema/field";
 
 function asRecord(options: FieldOptions): Record<string, unknown> {
@@ -113,6 +114,36 @@ export function baseBindingOptionsFromOptions(options: FieldOptions): BaseBindin
 		displayColumn:
 			typeof o.displayColumn === "string" && o.displayColumn ? o.displayColumn : undefined,
 		embed: o.embed === true || o.embed === "true",
+	};
+}
+
+/** Options for a Lookup field (ARCHITECTURE.md §9). */
+export interface LookupOptions {
+	baseFile?: string;
+	viewName?: string;
+	/** Field on the source notes that links back to the host. */
+	targetFieldName?: string;
+	outputType: LookupOutputType;
+	/** Numeric field summarized by Sum/Average/Max/Min/Count. */
+	summarizedFieldName?: string;
+}
+
+export function lookupOptions(field: Field): LookupOptions {
+	return lookupOptionsFromOptions(field.options);
+}
+
+export function lookupOptionsFromOptions(options: FieldOptions): LookupOptions {
+	const o = asRecord(options);
+	const outputType = LOOKUP_OUTPUT_TYPES.includes(o.outputType as LookupOutputType)
+		? (o.outputType as LookupOutputType)
+		: "LinksList";
+	const str = (v: unknown) => (typeof v === "string" && v ? v : undefined);
+	return {
+		baseFile: str(o.baseFile),
+		viewName: str(o.viewName),
+		targetFieldName: str(o.targetFieldName),
+		outputType,
+		summarizedFieldName: str(o.summarizedFieldName),
 	};
 }
 

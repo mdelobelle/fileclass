@@ -13,6 +13,7 @@ import { setPlugin, clearPlugin } from "./src/globals";
 import { isBasesAvailable } from "./src/engine/basesAdapter";
 import { QueryCache } from "./src/engine/queryCache";
 import { insertMissingFields } from "./src/commands/insertMissingFields";
+import { recalcLookupsForFile } from "./src/computed/lookupRecalc";
 import { pickAndUpdateField } from "./src/fields/fieldActions";
 import { FileclassIndex } from "./src/schema/fileclassIndex";
 import {
@@ -131,6 +132,25 @@ export default class FileclassPlugin extends Plugin {
 				const file = this.app.workspace.getActiveFile();
 				if (!file || file.extension !== "md") return false;
 				if (!checking) void insertMissingFields(this.app, file, this.index.getFields(file));
+				return true;
+			},
+		});
+
+		this.addCommand({
+			id: "recalculate-lookups-in-current-file",
+			name: "Recalculate lookups in current file",
+			checkCallback: (checking) => {
+				const file = this.app.workspace.getActiveFile();
+				if (!file || file.extension !== "md") return false;
+				if (!checking) {
+					void recalcLookupsForFile(this, file).then((n) =>
+						new Notice(
+							n
+								? `Fileclass: recalculated ${n} lookup${n > 1 ? "s" : ""}.`
+								: "Fileclass: no lookups to recalculate."
+						)
+					);
+				}
 				return true;
 			},
 		});

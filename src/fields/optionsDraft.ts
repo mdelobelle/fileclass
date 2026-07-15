@@ -5,8 +5,13 @@
  * return `undefined` from `buildFieldOptions`, so the caller leaves the existing
  * options untouched (no clobbering — D5-style safety).
  */
+import { LookupOutputType } from "../computed/lookup";
 import { FieldOptions, FieldType } from "../schema/field";
-import { baseBindingOptionsFromOptions, listOptionsFromOptions } from "./options";
+import {
+	baseBindingOptionsFromOptions,
+	listOptionsFromOptions,
+	lookupOptionsFromOptions,
+} from "./options";
 
 export interface OptionsDraft {
 	// Number
@@ -21,11 +26,15 @@ export interface OptionsDraft {
 	sourceType?: "ValuesList" | "ValuesListNotePath" | "ValuesFromBase";
 	values?: string[];
 	valuesListNotePath?: string;
-	// File / MultiFile / Media / MultiMedia
+	// File / MultiFile / Media / MultiMedia (and base sources / Lookup)
 	baseFile?: string;
 	viewName?: string;
 	displayColumn?: string;
 	embed?: boolean;
+	// Lookup
+	targetFieldName?: string;
+	outputType?: LookupOutputType;
+	summarizedFieldName?: string;
 }
 
 const LINK_TYPES: ReadonlySet<FieldType> = new Set<FieldType>([
@@ -83,6 +92,16 @@ export function optionsToDraft(type: FieldType, options: FieldOptions): OptionsD
 				return { sourceType: "ValuesList", values: Object.values(lo.valuesList) };
 			}
 			return {}; // legacy dataview source — unsupported here, sourceType undefined
+		}
+		case "Lookup": {
+			const l = lookupOptionsFromOptions(options);
+			return {
+				baseFile: l.baseFile ?? "",
+				viewName: l.viewName ?? "",
+				targetFieldName: l.targetFieldName ?? "",
+				outputType: l.outputType,
+				summarizedFieldName: l.summarizedFieldName ?? "",
+			};
 		}
 		default:
 			if (LINK_TYPES.has(type)) {
@@ -142,6 +161,14 @@ export function buildFieldOptions(type: FieldType, draft: OptionsDraft): FieldOp
 				return { sourceType: "ValuesList", valuesList: valuesToRecord(draft.values ?? []) };
 			}
 			return undefined; // unsupported source → preserve existing
+		}
+		case "Lookup": {
+			const o: Record<string, unknown> = { outputType: draft.outputType ?? "LinksList" };
+			if (draft.baseFile?.trim()) o.baseFile = draft.baseFile.trim();
+			if (draft.viewName?.trim()) o.viewName = draft.viewName.trim();
+			if (draft.targetFieldName?.trim()) o.targetFieldName = draft.targetFieldName.trim();
+			if (draft.summarizedFieldName?.trim()) o.summarizedFieldName = draft.summarizedFieldName.trim();
+			return o;
 		}
 		default: {
 			if (!LINK_TYPES.has(type)) return undefined; // Object/Boolean/Input → preserve

@@ -10,6 +10,7 @@
 import { TFile, setIcon } from "obsidian";
 
 import type FileclassPlugin from "../../../main";
+import { openFileClassSchema } from "../fileClassSchemaModal";
 import { NoteFieldsModal } from "../noteFieldsModal";
 
 export const INDICATOR_MARKER = "fileclass-indicator";
@@ -26,20 +27,36 @@ export function fileWithFields(plugin: FileclassPlugin, path: string | null): TF
 	return plugin.index.getFields(file).length ? file : null;
 }
 
-/** Builds the clickable indicator icon that opens the note-fields modal. */
+/**
+ * The file for a nav-surface indicator: a fileClass note (→ opens the schema
+ * editor) or a note with resolved fields (→ opens the note-fields modal).
+ */
+export function navIndicatorFile(plugin: FileclassPlugin, path: string | null): TFile | null {
+	if (path && plugin.index.fileClassNameOfNote(path)) {
+		const file = plugin.app.vault.getFileByPath(path);
+		if (file instanceof TFile) return file;
+	}
+	return fileWithFields(plugin, path);
+}
+
+/**
+ * Builds the clickable indicator icon. On a fileClass note it opens the schema
+ * editor (with the fileClass's own icon); otherwise the note-fields modal.
+ */
 export function makeIndicatorIcon(
 	plugin: FileclassPlugin,
 	file: TFile,
 	scopeClass: string
 ): HTMLElement {
+	const fileClassName = plugin.index.fileClassNameOfNote(file.path);
 	const el = createSpan({ cls: `${INDICATOR_MARKER} ${scopeClass}` });
-	el.setAttribute("aria-label", "Fileclass fields");
-	// The fileClass's own Lucide icon (with inheritance + configured fallback).
-	setIcon(el, plugin.index.iconForFile(file));
+	el.setAttribute("aria-label", fileClassName ? "Edit fileClass" : "Fileclass fields");
+	setIcon(el, fileClassName ? plugin.index.resolveIcon(fileClassName) : plugin.index.iconForFile(file));
 	el.addEventListener("click", (e) => {
 		e.preventDefault();
 		e.stopPropagation();
-		new NoteFieldsModal(plugin, file).open();
+		if (fileClassName) openFileClassSchema(plugin, fileClassName);
+		else new NoteFieldsModal(plugin, file).open();
 	});
 	return el;
 }

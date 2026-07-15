@@ -14,9 +14,9 @@ import { Component, TFile, debounce } from "obsidian";
 import type FileclassPlugin from "../../../main";
 import { INDEXED_EVENT } from "../../schema/fileclassIndex";
 import {
-	fileWithFields,
 	makeIndicatorIcon,
 	NAV_SCOPE,
+	navIndicatorFile,
 	removeIndicators,
 } from "./indicatorDom";
 
@@ -94,9 +94,9 @@ export class FieldIndicator extends Component {
 		this.watched = [];
 	}
 
-	/** Returns the file if Fileclass applies to it (has resolved fields). */
+	/** File eligible for a nav indicator: fileClass note or fields-bound note. */
 	private applies(path: string | null): TFile | null {
-		return fileWithFields(this.plugin, path);
+		return navIndicatorFile(this.plugin, path);
 	}
 
 	private inject(target: HTMLElement, file: TFile): void {

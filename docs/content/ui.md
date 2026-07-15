@@ -39,10 +39,12 @@ All actions write to frontmatter only, one `processFrontMatter` write each.
 ## Field indicator
 
 A small clickable **icon** appears next to a note's name whenever a fileClass
-applies to it; clicking it opens the note-fields modal above. The icon is the
-fileClass's own `icon` (a Lucide icon name, inherited from a parent fileClass if
-unset, falling back to the configured default). Each surface has its own toggle
-under **Settings → Fileclass → Indicators**:
+applies to it; clicking it opens the note-fields modal above. On a **fileClass
+note** itself (in the tab header or file explorer), the icon instead opens the
+**schema editor** (manage its options and fields). The icon is the fileClass's
+own `icon` (a Lucide icon name, inherited from a parent fileClass if unset,
+falling back to the configured default). Each surface has its own toggle under
+**Settings → Fileclass → Indicators**:
 
 - **Tab header**, **file explorer**, **bookmarks** — next to the file name.
 - **Backlinks pane** and the **first column of Bases** tables — next to each link.

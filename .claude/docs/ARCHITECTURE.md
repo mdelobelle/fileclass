@@ -441,9 +441,10 @@ write the index rebuilds and fires `fileclass:indexed`.
   completing the §7 "each field module ships …" contract.
 
 ### 20.4 Entry points & slices
-- Reached from the context menu's **Manage fields schema** (§19.3, currently a
-  stub) and a command; the fileClass note itself gets a "Edit this fileClass"
-  affordance.
+- Reached from the context menu's **Manage fields schema** (§19.3), a command,
+  and — on a **fileClass note** — the field indicator itself (§19.4): in the tab
+  header / file explorer its icon opens the schema editor instead of the
+  note-fields modal.
 - Slices: **P2-ter.1** options editor + add/remove/reorder (type+name only);
   **P2-ter.2** per-type settings for Wave A + list sources (base-picker);
   **P2-ter.3** File/Media + Object/ObjectList. Each = code + unit tests (pure

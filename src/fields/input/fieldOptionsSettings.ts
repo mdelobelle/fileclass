@@ -5,15 +5,21 @@
  * or note-path source). Base-view sources and File/Media/Object settings arrive
  * in P2-ter.3; unsupported list sources show a note and are left untouched.
  */
-import { Setting } from "obsidian";
+import { App, Setting } from "obsidian";
 
 import { FieldType } from "../../schema/field";
+import { BaseFileSuggest, BaseViewSuggest } from "../../ui/baseSuggest";
 import { OptionsDraft } from "../optionsDraft";
+
+export interface FieldOptionsCtx {
+	app: App;
+}
 
 export function renderFieldOptionsSettings(
 	container: HTMLElement,
 	type: FieldType,
-	draft: OptionsDraft
+	draft: OptionsDraft,
+	ctx: FieldOptionsCtx
 ): void {
 	container.empty();
 	switch (type) {
@@ -40,8 +46,51 @@ export function renderFieldOptionsSettings(
 		case "Multi":
 			renderListSettings(container, draft);
 			return;
+		case "File":
+		case "MultiFile":
+		case "Media":
+		case "MultiMedia":
+			renderLinkSettings(container, type, draft, ctx);
+			return;
 		default:
-			return; // Input/Boolean: no options; File/Media/Object: later slice
+			return; // Input/Boolean: no options; Object/ObjectList: children editor
+	}
+}
+
+function renderLinkSettings(
+	container: HTMLElement,
+	type: FieldType,
+	draft: OptionsDraft,
+	ctx: FieldOptionsCtx
+): void {
+	new Setting(container)
+		.setName("Base file")
+		.setDesc("A .base file whose view provides the candidates.")
+		.addText((t) => {
+			t.setValue(draft.baseFile ?? "").onChange((v) => (draft.baseFile = v));
+			new BaseFileSuggest(ctx.app, t.inputEl);
+		});
+
+	new Setting(container)
+		.setName("View")
+		.setDesc("View within the base (blank = first).")
+		.addText((t) => {
+			t.setValue(draft.viewName ?? "").onChange((v) => (draft.viewName = v));
+			new BaseViewSuggest(ctx.app, t.inputEl, () => draft.baseFile ?? "");
+		});
+
+	new Setting(container)
+		.setName("Display column")
+		.setDesc("Base column id shown as the alias, e.g. note.title (optional).")
+		.addText((t) =>
+			t.setValue(draft.displayColumn ?? "").onChange((v) => (draft.displayColumn = v))
+		);
+
+	if (type === "Media" || type === "MultiMedia") {
+		new Setting(container)
+			.setName("Embed")
+			.setDesc("Store the value as an embed (![[…]]).")
+			.addToggle((t) => t.setValue(!!draft.embed).onChange((v) => (draft.embed = v)));
 	}
 }
 

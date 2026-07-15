@@ -26,7 +26,6 @@ export class FileClassOptionsModal extends Modal {
 		this.opts = {
 			icon: o.icon,
 			extends: o.extends,
-			limit: o.limit,
 			mapWithTag: o.mapWithTag,
 			tagNames: o.tagNames,
 			filesPaths: o.filesPaths,
@@ -48,13 +47,6 @@ export class FileClassOptionsModal extends Modal {
 			.setName("Extends")
 			.setDesc("Parent fileClass name.")
 			.addText((t) => t.setValue(this.opts.extends ?? "").onChange((v) => (this.opts.extends = v)));
-
-		new Setting(contentEl).setName("Limit").addText((t) =>
-			t.setValue(this.opts.limit != null ? String(this.opts.limit) : "").onChange((v) => {
-				const n = Number(v.trim());
-				this.opts.limit = v.trim() && Number.isFinite(n) ? n : undefined;
-			})
-		);
 
 		new Setting(contentEl)
 			.setName("Map with tag")

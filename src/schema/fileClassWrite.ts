@@ -85,7 +85,6 @@ export function moveFieldDef(fields: RawFieldEntry[], id: string, dir: -1 | 1): 
 export interface EditableOptions {
 	icon?: string;
 	extends?: string;
-	limit?: number;
 	mapWithTag?: boolean;
 	tagNames?: string[];
 	filesPaths?: string[];
@@ -103,7 +102,6 @@ export function buildOptionUpdates(o: EditableOptions): Record<string, unknown> 
 	return {
 		icon: o.icon?.trim() ? o.icon.trim() : null,
 		extends: o.extends?.trim() ? o.extends.trim() : null,
-		limit: typeof o.limit === "number" && Number.isFinite(o.limit) ? o.limit : null,
 		mapWithTag: !!o.mapWithTag,
 		tagNames: list(o.tagNames),
 		filesPaths: list(o.filesPaths),

@@ -56,7 +56,6 @@ describe("parseFileClass", () => {
 		expect(fc.fields).toHaveLength(1);
 		expect(fc.fields[0].type).toBe("Select");
 		expect(fc.options).toMatchObject({
-			limit: 20,
 			icon: "user-round-cog",
 			extends: "Base",
 			excludes: ["old"],

@@ -89,7 +89,11 @@ export interface BaseBindingOptions {
 }
 
 export function baseBindingOptions(field: Field): BaseBindingOptions {
-	const o = asRecord(field.options);
+	return baseBindingOptionsFromOptions(field.options);
+}
+
+export function baseBindingOptionsFromOptions(options: FieldOptions): BaseBindingOptions {
+	const o = asRecord(options);
 	return {
 		baseFile: typeof o.baseFile === "string" && o.baseFile ? o.baseFile : undefined,
 		viewName: typeof o.viewName === "string" && o.viewName ? o.viewName : undefined,

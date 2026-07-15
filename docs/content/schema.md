@@ -93,8 +93,8 @@ fileClass note → **Manage this fileClass's fields**) to open the schema editor
   **name**, a **type**, and type-specific settings; its stable id is generated
   automatically.
 - **Options…** — edit the fileClass options: `icon` (a Lucide name), `extends`
-  (parent fileClass), `limit`, `mapWithTag`, `tagNames`, `filesPaths`,
-  `bookmarksGroups`, and `excludes`.
+  (parent fileClass), `mapWithTag`, `tagNames`, `filesPaths`, `bookmarksGroups`,
+  and `excludes`.
 
 ### Type-specific field settings
 
@@ -104,8 +104,12 @@ When adding or editing a field, its type reveals the relevant settings:
 - **Date / DateTime / Time** — format and insert-as-link.
 - **Select / Cycle / Multi** — the values source: an **inline list** (edit values
   in place) or **from a note** (its non-empty lines).
+- **File / MultiFile / Media / MultiMedia** — a **Base file** and **view**
+  (candidate source), an optional **display column** (the alias), and **embed**
+  (Media).
+- **Object / ObjectList** — a **Children** button opens the same editor scoped to
+  the object's nested fields; nesting can go several levels deep.
 
 Every change is a single `processFrontMatter` write on the fileClass note,
-preserving unknown keys. Settings for **File/Media** fields, **Object/ObjectList**
-children, and **Base-view** value sources are configured in a later step; a field
-already using one of those keeps it untouched when you edit its name or type.
+preserving unknown keys. A **Base-view value source** for Select/Cycle/Multi is
+configured in a later step; a field already using one keeps it untouched.

@@ -8,7 +8,6 @@
 import { Field, parseRawField, RawField } from "./field";
 
 export interface FileClassOptions {
-	limit?: number;
 	icon?: string;
 	/** Parent fileClass name (frontmatter key `extends`), if any. */
 	extends?: string;
@@ -78,7 +77,6 @@ export function parseFileClass(name: string, frontmatter: Frontmatter): ParsedFi
 		typeof fm.extends === "string" && fm.extends.trim() ? fm.extends.trim() : undefined;
 
 	const options: FileClassOptions = {
-		limit: typeof fm.limit === "number" ? fm.limit : undefined,
 		icon: typeof fm.icon === "string" && fm.icon ? fm.icon : undefined,
 		extends: extendsName,
 		excludes: toStringArray(fm.excludes),

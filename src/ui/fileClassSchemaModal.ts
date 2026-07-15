@@ -8,7 +8,7 @@
 import { EventRef, Modal, Notice, Setting, TFile } from "obsidian";
 
 import type FileclassPlugin from "../../main";
-import { Field } from "../schema/field";
+import { childPathOf, Field } from "../schema/field";
 import { parseFileClass } from "../schema/fileClass";
 import { mutateFields } from "../schema/fileClassIo";
 import {
@@ -28,7 +28,9 @@ export class FileClassSchemaModal extends Modal {
 	constructor(
 		private readonly plugin: FileclassPlugin,
 		private readonly name: string,
-		private readonly file: TFile
+		private readonly file: TFile,
+		/** "" for the root; a field id-path when editing an object's children. */
+		private readonly parentPath = ""
 	) {
 		super(plugin.app);
 	}
@@ -45,30 +47,33 @@ export class FileClassSchemaModal extends Modal {
 		this.contentEl.empty();
 	}
 
-	/** Own fields, read fresh from the note's frontmatter (not the debounced index). */
-	private ownFields() {
+	/** Fields at the current level (root or an object's children), read fresh. */
+	private ownFields(): Field[] {
 		const fm = this.app.metadataCache.getFileCache(this.file)?.frontmatter;
-		return parseFileClass(this.name, fm).fields;
+		return parseFileClass(this.name, fm).fields.filter((f) => f.path === this.parentPath);
 	}
 
 	private render(): void {
 		const { contentEl } = this;
 		contentEl.empty();
-		contentEl.createEl("h3", { text: `Schema — ${this.name}` });
+		const heading = this.parentPath ? `${this.name} › children` : `Schema — ${this.name}`;
+		contentEl.createEl("h3", { text: heading });
 
-		new Setting(contentEl)
-			.setName("fileClass options")
-			.addButton((b) =>
-				b
-					.setButtonText("Options…")
-					.onClick(() => new FileClassOptionsModal(this.plugin, this.name, this.file).open())
-			);
+		if (!this.parentPath) {
+			new Setting(contentEl)
+				.setName("fileClass options")
+				.addButton((b) =>
+					b
+						.setButtonText("Options…")
+						.onClick(() => new FileClassOptionsModal(this.plugin, this.name, this.file).open())
+				);
+		}
 
 		const fields = this.ownFields();
 		if (!fields.length) contentEl.createEl("p", { text: "No fields yet." });
 
 		fields.forEach((field, i) => {
-			new Setting(contentEl)
+			const setting = new Setting(contentEl)
 				.setName(field.name)
 				.setDesc(field.type)
 				.addExtraButton((b) =>
@@ -84,7 +89,22 @@ export class FileClassSchemaModal extends Modal {
 						.setTooltip("Move down")
 						.setDisabled(i === fields.length - 1)
 						.onClick(() => this.move(field.id, 1))
-				)
+				);
+
+			if (field.type === "Object" || field.type === "ObjectList") {
+				setting.addButton((b) =>
+					b.setButtonText("Children").onClick(() =>
+						new FileClassSchemaModal(
+							this.plugin,
+							this.name,
+							this.file,
+							childPathOf(field)
+						).open()
+					)
+				);
+			}
+
+			setting
 				.addButton((b) => b.setButtonText("Edit").onClick(() => this.editField(field)))
 				.addExtraButton((b) =>
 					b.setIcon("trash").setTooltip("Remove").onClick(() => this.remove(field.id))
@@ -103,7 +123,7 @@ export class FileClassSchemaModal extends Modal {
 				void mutateFields(this.app, this.file, (fields) =>
 					addFieldDef(
 						fields,
-						{ name: r.name, type: r.type, options: r.options },
+						{ name: r.name, type: r.type, options: r.options, path: this.parentPath },
 						collectFieldIds(fields)
 					)
 				),

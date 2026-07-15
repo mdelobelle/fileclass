@@ -61,9 +61,36 @@ describe("Select/Cycle/Multi list source", () => {
 	});
 });
 
+describe("File / Media base binding", () => {
+	it("round-trips base file, view, display column", () => {
+		const draft = optionsToDraft("File", {
+			baseFile: "People.base",
+			viewName: "All",
+			displayColumn: "note.title",
+		});
+		expect(draft).toEqual({
+			baseFile: "People.base",
+			viewName: "All",
+			displayColumn: "note.title",
+			embed: false,
+		});
+		expect(buildFieldOptions("MultiFile", draft)).toEqual({
+			baseFile: "People.base",
+			viewName: "All",
+			displayColumn: "note.title",
+		});
+	});
+
+	it("writes embed only for Media types", () => {
+		const draft = { baseFile: "M.base", embed: true };
+		expect(buildFieldOptions("Media", draft)).toEqual({ baseFile: "M.base", embed: true });
+		expect(buildFieldOptions("File", draft)).toEqual({ baseFile: "M.base" });
+	});
+});
+
 describe("unmanaged types preserve options", () => {
-	it("returns undefined for File/Object/Boolean/Input", () => {
-		for (const t of ["File", "Object", "Boolean", "Input"] as const) {
+	it("returns undefined for Object/ObjectList/Boolean/Input", () => {
+		for (const t of ["Object", "ObjectList", "Boolean", "Input"] as const) {
 			expect(buildFieldOptions(t, {})).toBeUndefined();
 		}
 	});

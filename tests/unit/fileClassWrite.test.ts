@@ -68,7 +68,6 @@ describe("buildOptionUpdates", () => {
 			buildOptionUpdates({
 				icon: " book ",
 				extends: "",
-				limit: 20,
 				mapWithTag: true,
 				tagNames: ["x"],
 				filesPaths: [],
@@ -76,7 +75,6 @@ describe("buildOptionUpdates", () => {
 		).toEqual({
 			icon: "book",
 			extends: null,
-			limit: 20,
 			mapWithTag: true,
 			tagNames: ["x"],
 			filesPaths: null,

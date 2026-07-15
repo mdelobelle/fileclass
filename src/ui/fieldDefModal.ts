@@ -48,7 +48,8 @@ export class FieldDefModal extends Modal {
 		);
 
 		const optionsEl = contentEl.createDiv();
-		const renderOptions = () => renderFieldOptionsSettings(optionsEl, this.type, this.draft);
+		const renderOptions = () =>
+			renderFieldOptionsSettings(optionsEl, this.type, this.draft, { app: this.app });
 
 		new Setting(contentEl).setName("Type").addDropdown((d) => {
 			EDITABLE_FIELD_TYPES.forEach((t) => d.addOption(t, t));

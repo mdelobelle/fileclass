@@ -6,7 +6,7 @@
  * options untouched (no clobbering — D5-style safety).
  */
 import { FieldOptions, FieldType } from "../schema/field";
-import { listOptionsFromOptions } from "./options";
+import { baseBindingOptionsFromOptions, listOptionsFromOptions } from "./options";
 
 export interface OptionsDraft {
 	// Number
@@ -21,7 +21,20 @@ export interface OptionsDraft {
 	sourceType?: "ValuesList" | "ValuesListNotePath";
 	values?: string[];
 	valuesListNotePath?: string;
+	// File / MultiFile / Media / MultiMedia
+	baseFile?: string;
+	viewName?: string;
+	displayColumn?: string;
+	embed?: boolean;
 }
+
+const LINK_TYPES: ReadonlySet<FieldType> = new Set<FieldType>([
+	"File",
+	"MultiFile",
+	"Media",
+	"MultiMedia",
+]);
+const MEDIA_TYPES: ReadonlySet<FieldType> = new Set<FieldType>(["Media", "MultiMedia"]);
 
 const numStr = (v: unknown): string =>
 	typeof v === "number" || (typeof v === "string" && v.trim() !== "") ? String(v) : "";
@@ -65,6 +78,15 @@ export function optionsToDraft(type: FieldType, options: FieldOptions): OptionsD
 			return {}; // base/dv source — unsupported here, leave sourceType undefined
 		}
 		default:
+			if (LINK_TYPES.has(type)) {
+				const b = baseBindingOptionsFromOptions(options);
+				return {
+					baseFile: b.baseFile ?? "",
+					viewName: b.viewName ?? "",
+					displayColumn: b.displayColumn ?? "",
+					embed: b.embed,
+				};
+			}
 			return {};
 	}
 }
@@ -107,7 +129,14 @@ export function buildFieldOptions(type: FieldType, draft: OptionsDraft): FieldOp
 			}
 			return undefined; // unsupported source → preserve existing
 		}
-		default:
-			return undefined; // File/Media/Object/… configured elsewhere → preserve
+		default: {
+			if (!LINK_TYPES.has(type)) return undefined; // Object/Boolean/Input → preserve
+			const o: Record<string, unknown> = {};
+			if (draft.baseFile?.trim()) o.baseFile = draft.baseFile.trim();
+			if (draft.viewName?.trim()) o.viewName = draft.viewName.trim();
+			if (draft.displayColumn?.trim()) o.displayColumn = draft.displayColumn.trim();
+			if (MEDIA_TYPES.has(type) && draft.embed) o.embed = true;
+			return o;
+		}
 	}
 }

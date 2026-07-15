@@ -287,6 +287,12 @@ fields/user docs (first-write warning), not in a migration guide.
   "fileclass:indexed" event, fileClass chooser UI.
 - **P2 Fields & input**: waves A→C, `io/write`, insert-missing-fields command,
   field options menus, draft editor.
+- **P2-bis Field UI surfaces** (§19): reach editing from the UI, not just
+  commands. Three slices — (1) note-fields modal + file/editor context menus;
+  (2) field indicator in tab header, file explorer, bookmarks; (3) indicator on
+  internal links (reading + live preview + backlinks) and the Bases first
+  column. All editing reuses the P2 dispatcher; the DOM-injection layer is
+  isolated and feature-flagged per surface.
 - **P3 Computed**: lookups (single-scan), formulas (Bases expressions),
   statuses, recalc triggers.
 - **P4 Views**: fileclass-table custom Bases view with editable cells, base
@@ -311,8 +317,9 @@ fields/user docs (first-write warning), not in a migration guide.
 |------|------------|
 | Bases internals drift on Obsidian update | D4 isolation + canary tests; only basesAdapter changes; graceful degradation path |
 | O(vault) per query run on huge vaults | queryCache, single-scan lookups, debounced recalc; benchmark fixture in e2e |
-| Users with YAML comments / custom formatting | documented normalization (§3.2), first-write warning in migration doc |
+| Users with YAML comments / custom formatting | documented normalization (§3.2), first-write warning in user docs |
 | Legacy fileClasses with dv options | options ignored silently (never crash on them, §13) |
+| DOM-injected indicators drift on Obsidian update (§19) | isolate the injection layer; per-surface settings flags; defensive selectors that no-op on a miss; core features (modal, menus, commands) never depend on it |
 
 ## 18. Reference material
 
@@ -324,3 +331,67 @@ fields/user docs (first-write warning), not in a migration guide.
 - Dev vault with real fileClasses and `.base` files for manual testing:
   `/Users/mdelobel/Obsidian-Dev` (bases under `Settings/bases/`, fileClasses
   under `Settings/fileClasses/`)
+
+## 19. Field UI surfaces (P2-bis)
+
+Ports Metadata Menu's in-UI editing entry points (`src/components/ExtraButton.ts`,
+`ContextMenu.ts`, `src/options/OptionsList.ts`, `linkAttributes.ts`) onto the P2
+frontmatter engine. **No new write paths**: every edit routes through the P2
+dispatcher (`promptFieldValue`/`updateField`, one `processFrontMatter` write, D5).
+
+### 19.1 Note-fields modal (`src/ui/noteFieldsModal.ts`)
+- The single hub for a file's fields: lists the note's resolved **root** fields
+  (`index.getFields`), each row = name + current value (`displayValue`) + **Edit**
+  (→ `updateField`) + **Clear** (→ `clearField`). Header actions: **Add
+  fileClass**, **Insert missing fields**. Nested fields are reached via their
+  parent's Object/ObjectList editor (already built in P2 Wave C).
+- Opened from every surface below and from a command
+  (`fileclass:manage-note-fields`).
+
+### 19.2 Single-property modifier
+- "The button to modify a property" = the per-row **Edit** in 19.1, plus a
+  direct path: a `fileclass:update-field` already exists (P2). Injecting a button
+  into Obsidian's **core Properties widget** is a stretch goal (fragile, §19.5);
+  the modal + menus cover the need without it.
+
+### 19.3 Context menus (`src/ui/contextMenu.ts`)
+- Register `file-menu` and `editor-menu` (MDM parity). Items: **Manage note
+  fields** (→ 19.1), **Add fileClass**, **Insert missing fields**, **Update a
+  field** (→ `pickAndUpdateField`). For a fileClass note: a **Manage fields
+  schema** entry (wired when the schema editor lands).
+- Covers file-explorer right-click, tab right-click, and the editor. Internal-
+  link right-click support depends on Obsidian firing `file-menu` for links —
+  verify at build time; otherwise the link indicator (19.4) is the entry point.
+
+### 19.4 Field indicator (`src/ui/indicator/`) — the fragile boundary
+- A small clickable icon injected next to a file's name that opens 19.1 for that
+  file. **Default: icon only** (no values shown) — the lightest, most robust
+  option; showing configured field values beside it (MDM's "extra attributes")
+  is a later opt-in. Surfaces requested: **tab header, file explorer, bookmark
+  explorer, internal links** (reading view + Live Preview + backlinks), and the
+  **Bases first column** (`.internal-link` cells, as MDM already does for
+  `bases`).
+- Implementation mirrors MDM `ExtraButton`: per-view-type **MutationObservers**
+  (`.nav-file-title-content` for explorer/bookmarks, `.internal-link` for
+  markdown/bases/backlinks), a **markdown post-processor** for reading view, and
+  an **editor extension** for Live Preview links. Updates are debounced and keyed
+  off `fileclass:indexed` + `metadataCache.on('changed')`.
+- **Isolation like the adapter (D4-style)**: all DOM injection lives under
+  `src/ui/indicator/`; observers are registered via `register*` and torn down on
+  unload; a missed selector no-ops (never throws). Each surface has a settings
+  flag (`enableTabHeader`, `enableFileExplorer`, `enableBookmarks`,
+  `enableInlineLinks`, `enableBacklinks`, `enableBases`), all default-off-safe.
+- The future `fileclass-table` custom view (P4) renders the indicator natively —
+  no observer needed there; the `.internal-link` observer covers **native** Bases
+  tables.
+
+### 19.5 Slices & DoD
+- **P2-bis.1** — note-fields modal + context menus + settings flags. Low-risk,
+  high-value; unit tests for the pure "which fields / how displayed" logic.
+- **P2-bis.2** — indicator in tab header, file explorer, bookmarks.
+- **P2-bis.3** — indicator on internal links (reading + Live Preview +
+  backlinks) and the Bases first column.
+- Each slice = code + tests (pure logic units; DOM injection verified via the
+  e2e/CDP harness or manual on the dev vault) + a doc page. The indicator layer
+  is a known-fragile boundary (§17): if a surface breaks on a new Obsidian, only
+  its module changes and the core (modal, menus, commands) keeps working.

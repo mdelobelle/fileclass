@@ -19,6 +19,10 @@ enableGitInfo = true
     name = "Fields & input"
     pageRef = "/fields"
     weight = 30
+  [[menu.main]]
+    name = "UI surfaces"
+    pageRef = "/ui"
+    weight = 40
 
 [markup.goldmark.renderer]
   unsafe = true

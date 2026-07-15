@@ -25,7 +25,8 @@ has **no Dataview dependency**.
 - [Positioning](positioning/) — how Fileclass relates to core Properties, core
   Bases, and Metadata Menu, and who should use it.
 - [Schema layer](schema/) — fileClass notes, fields, inheritance, and binding.
-- [Fields & input](fields/) — typed, validated value input for wave A field types.
+- [Fields & input](fields/) — typed, validated value input for all field types.
+- [UI surfaces](ui/) — the note-fields modal and context-menu entries.
 
 ## Requirements
 

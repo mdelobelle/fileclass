@@ -6,7 +6,7 @@
  */
 import { App, Notice, TFile } from "obsidian";
 
-import { defaultValueFor } from "../fields/fieldActions";
+import { defaultValueFor } from "../fields/support";
 import { hasFieldKey } from "../io/read";
 import { ValueWrite, writeValues } from "../io/write";
 import { Field, isRootField } from "../schema/field";

@@ -21,6 +21,8 @@ import {
 } from "./src/settings/settings";
 import { FileclassSettingTab } from "./src/settings/settingsTab";
 import { AddFileClassModal } from "./src/ui/addFileClassModal";
+import { FileclassContextMenu } from "./src/ui/contextMenu";
+import { NoteFieldsModal } from "./src/ui/noteFieldsModal";
 
 export default class FileclassPlugin extends Plugin {
 	// Narrows the base `Plugin.settings?: unknown` (declare = no re-emit).
@@ -49,6 +51,7 @@ export default class FileclassPlugin extends Plugin {
 		this.index = new FileclassIndex(this);
 
 		this.addSettingTab(new FileclassSettingTab(this.app, this));
+		this.addChild(new FileclassContextMenu(this));
 		this.registerCommands();
 		this.registerVaultListeners();
 
@@ -84,6 +87,17 @@ export default class FileclassPlugin extends Plugin {
 				const file = this.app.workspace.getActiveFile();
 				if (!file || file.extension !== "md") return false;
 				if (!checking) new AddFileClassModal(this, file).open();
+				return true;
+			},
+		});
+
+		this.addCommand({
+			id: "manage-note-fields",
+			name: "Manage note fields",
+			checkCallback: (checking) => {
+				const file = this.app.workspace.getActiveFile();
+				if (!file || file.extension !== "md") return false;
+				if (!checking) new NoteFieldsModal(this, file).open();
 				return true;
 			},
 		});

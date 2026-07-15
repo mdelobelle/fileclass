@@ -60,5 +60,15 @@ export class FileclassSettingTab extends PluginSettingTab {
 						this.plugin.index.rebuild();
 					})
 			);
+
+		new Setting(containerEl)
+			.setName("Context menu entries")
+			.setDesc("Add Fileclass actions to the file and editor right-click menus.")
+			.addToggle((toggle) =>
+				toggle.setValue(this.plugin.settings.enableContextMenu).onChange(async (value) => {
+					this.plugin.settings.enableContextMenu = value;
+					await this.plugin.saveSettings();
+				})
+			);
 	}
 }

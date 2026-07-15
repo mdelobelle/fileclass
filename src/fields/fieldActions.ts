@@ -10,7 +10,7 @@ import { App, Notice, TFile } from "obsidian";
 
 import { readFieldValue } from "../io/read";
 import { writeFieldValue } from "../io/write";
-import { childFieldsOf, Field, FieldType, isRootField } from "../schema/field";
+import { childFieldsOf, Field } from "../schema/field";
 import { AdapterHost, Candidate, isMediaType, resolveCandidates } from "./candidates";
 import { displayValue } from "./display";
 import {
@@ -22,36 +22,9 @@ import { ChoiceSuggestModal, MultiSelectModal, PromptModal } from "./input/value
 import { formatLink, linkTargetPath } from "./links";
 import { asListValue, asObjectValue } from "./objectDraft";
 import { baseBindingOptions } from "./options";
+import { editableRootFields, TEXT_INPUT_TYPES } from "./support";
 import { resolveFieldValues } from "./valuesIo";
 import { validateField } from "./validate";
-
-/** Types edited through a single-line text prompt. */
-const TEXT_INPUT_TYPES: ReadonlySet<FieldType> = new Set<FieldType>([
-	"Input",
-	"Number",
-	"Date",
-	"DateTime",
-	"Time",
-]);
-
-/** All field types with input support so far (waves A + B + C). */
-export const SUPPORTED_INPUT_TYPES: ReadonlySet<FieldType> = new Set<FieldType>([
-	...TEXT_INPUT_TYPES,
-	"Boolean",
-	"Select",
-	"Cycle",
-	"Multi",
-	"File",
-	"MultiFile",
-	"Media",
-	"MultiMedia",
-	"Object",
-	"ObjectList",
-]);
-
-export function isInputSupported(type: FieldType): boolean {
-	return SUPPORTED_INPUT_TYPES.has(type);
-}
 
 /** Everything an edit needs: the host, the target note, and its resolved fields. */
 export interface EditContext {
@@ -59,21 +32,6 @@ export interface EditContext {
 	file: TFile;
 	/** All resolved fields of the note (including nested), for child lookup. */
 	allFields: Field[];
-}
-
-/** Value written when a field is inserted empty (insert-missing-fields). */
-export function defaultValueFor(field: Field): unknown {
-	switch (field.type) {
-		case "Object":
-			return {};
-		case "Multi":
-		case "MultiFile":
-		case "MultiMedia":
-		case "ObjectList":
-			return [];
-		default:
-			return "";
-	}
 }
 
 function placeholderFor(field: Field): string {
@@ -286,7 +244,7 @@ export function pickAndUpdateField(host: AdapterHost, file: TFile, fields: Field
 	const ctx: EditContext = { host, file, allFields: fields };
 	// Only root fields are edited directly; nested fields are reached via their
 	// parent Object/ObjectList editor.
-	const editable = fields.filter((f) => isRootField(f) && isInputSupported(f.type));
+	const editable = editableRootFields(fields);
 	if (!editable.length) {
 		new Notice("Fileclass: no editable fields apply to this note.");
 		return;

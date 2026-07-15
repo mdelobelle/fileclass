@@ -13,6 +13,8 @@ export interface FileclassSettings {
 	globalFileClass: string;
 	/** Default icon for a fileClass without an explicit `icon`. */
 	fileClassIcon: string;
+	/** Add Fileclass entries to the file/editor context menus. */
+	enableContextMenu: boolean;
 }
 
 export const DEFAULT_SETTINGS: FileclassSettings = {
@@ -20,6 +22,7 @@ export const DEFAULT_SETTINGS: FileclassSettings = {
 	fileClassAlias: "fileClass",
 	globalFileClass: "",
 	fileClassIcon: "file-spreadsheet",
+	enableContextMenu: true,
 };
 
 /** Normalizes a folder path to `""` or a trailing-slashed, non-leading form. */

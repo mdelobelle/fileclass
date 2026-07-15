@@ -120,7 +120,7 @@ fileclass/
 ├── tests/
 │   ├── unit/                       # vitest, pure logic (objectPath, schema resolver, validators, draft editor)
 │   └── e2e/                        # CDP harness against a fixture vault (§14)
-└── docs/                           # mkdocs (user documentation)
+└── docs/                           # Hugo site (user documentation)
 ```
 
 ## 5. Schema layer
@@ -283,7 +283,7 @@ Document differences in `docs/api.md`.
   history). Deviations from the template: full `strict` tsconfig, vitest,
   code under `src/` with a thin root `main.ts`. Then: globals,
   objectPath, queryCache, adapter wired with feature detection, e2e harness
-  skeleton + canary tests, mkdocs skeleton with positioning page.
+  skeleton + canary tests, Hugo docs skeleton with positioning page.
 - **P1 Schema (read-only)**: fileClass parsing, inheritance, resolver/index,
   "fileclass:indexed" event, fileClass chooser UI.
 - **P2 Fields & input**: waves A→C, `io/write`, insert-missing-fields command,

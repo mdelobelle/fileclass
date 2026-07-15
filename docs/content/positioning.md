@@ -1,4 +1,7 @@
-# Positioning
+---
+title: "Positioning"
+weight: 10
+---
 
 Fileclass sits deliberately between three things Obsidian users already know.
 Understanding the boundaries is the fastest way to know whether it is for you.
@@ -46,10 +49,11 @@ Bases engine, persisted computed values, and no Dataview dependency.
 Dataview virtual properties (e.g. `file.tasks`). Fileclass is frontmatter-only by
 design and will not read or write inline fields.
 
-!!! note "What changes on migration"
-    - Field options that referenced a Dataview query (`dvQueryString`) now
-      reference a `.base` file + view. The **Audit fileClasses** command (a later
-      phase) reports every occurrence and generates skeleton `.base` files.
-    - `processFrontMatter` normalizes some formatting on first write (YAML
-      comments are dropped, flow lists become bullet lists, superfluous quotes
-      are removed). Top-level and nested key **order is preserved**.
+> **What changes on migration**
+>
+> - Field options that referenced a Dataview query (`dvQueryString`) now
+>   reference a `.base` file + view. The **Audit fileClasses** command (a later
+>   phase) reports every occurrence and generates skeleton `.base` files.
+> - `processFrontMatter` normalizes some formatting on first write (YAML
+>   comments are dropped, flow lists become bullet lists, superfluous quotes are
+>   removed). Top-level and nested key **order is preserved**.

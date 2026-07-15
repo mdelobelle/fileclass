@@ -1,0 +1,24 @@
+baseURL = "https://mdelobelle.github.io/fileclass/"
+languageCode = "en-us"
+title = "Fileclass"
+enableGitInfo = true
+
+# Self-contained skeleton: minimal layouts live in ./layouts, so `hugo` builds
+# offline with no external theme. Swap in a theme later if desired.
+
+[menu]
+  [[menu.main]]
+    name = "Positioning"
+    pageRef = "/positioning"
+    weight = 10
+  [[menu.main]]
+    name = "Schema layer"
+    pageRef = "/schema"
+    weight = 20
+
+[markup.goldmark.renderer]
+  unsafe = true
+
+[markup.highlight]
+  noClasses = true
+  style = "github"

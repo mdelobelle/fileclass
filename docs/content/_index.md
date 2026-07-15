@@ -1,3 +1,7 @@
+---
+title: "Fileclass"
+---
+
 # Fileclass
 
 **Fileclass** is the schema and data-quality layer for Obsidian vaults: typed,
@@ -10,16 +14,17 @@ It is the successor of [Metadata Menu](https://github.com/mdelobelle/metadatamen
 inline fields (`key:: value`), stay there. Fileclass is **frontmatter-only** and
 has **no Dataview dependency**.
 
-!!! warning "Under construction"
-    Fileclass is being built in phases. This is the P0 (foundations) skeleton:
-    the build toolchain, the Bases adapter, and the query/path engines are in
-    place; schema parsing, fields, computed values, views, and migration land in
-    later phases.
+> **Under construction.** Fileclass is being built in phases. Foundations (P0)
+> and the read-only schema layer (P1) are in place: the build toolchain, the
+> Bases adapter, the query/path engines, fileClass parsing, inheritance, the
+> binding resolver, and the fileClass chooser. Typed fields, editing, computed
+> values, views, and migration land in later phases.
 
 ## Documentation
 
-- [Positioning](positioning.md) — how Fileclass relates to core Properties, core
+- [Positioning](positioning/) — how Fileclass relates to core Properties, core
   Bases, and Metadata Menu, and who should use it.
+- [Schema layer](schema/) — fileClass notes, fields, inheritance, and binding.
 
 ## Requirements
 

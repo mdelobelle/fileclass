@@ -17,8 +17,8 @@ export interface OptionsDraft {
 	dateFormat?: string;
 	defaultInsertAsLink?: boolean;
 	// Select / Cycle / Multi — undefined sourceType means an unsupported source
-	// (base/dv), left untouched by this editor.
-	sourceType?: "ValuesList" | "ValuesListNotePath";
+	// (legacy dataview), left untouched by this editor.
+	sourceType?: "ValuesList" | "ValuesListNotePath" | "ValuesFromBase";
 	values?: string[];
 	valuesListNotePath?: string;
 	// File / MultiFile / Media / MultiMedia
@@ -72,10 +72,17 @@ export function optionsToDraft(type: FieldType, options: FieldOptions): OptionsD
 			if (lo.sourceType === "ValuesListNotePath") {
 				return { sourceType: "ValuesListNotePath", valuesListNotePath: lo.valuesListNotePath ?? "" };
 			}
+			if (lo.sourceType === "ValuesFromBase") {
+				return {
+					sourceType: "ValuesFromBase",
+					baseFile: lo.baseFile ?? "",
+					viewName: lo.viewName ?? "",
+				};
+			}
 			if (lo.sourceType === "ValuesList") {
 				return { sourceType: "ValuesList", values: Object.values(lo.valuesList) };
 			}
-			return {}; // base/dv source — unsupported here, leave sourceType undefined
+			return {}; // legacy dataview source — unsupported here, sourceType undefined
 		}
 		default:
 			if (LINK_TYPES.has(type)) {
@@ -122,6 +129,13 @@ export function buildFieldOptions(type: FieldType, draft: OptionsDraft): FieldOp
 				return {
 					sourceType: "ValuesListNotePath",
 					valuesListNotePath: draft.valuesListNotePath?.trim() ?? "",
+				};
+			}
+			if (draft.sourceType === "ValuesFromBase") {
+				return {
+					sourceType: "ValuesFromBase",
+					baseFile: draft.baseFile?.trim() ?? "",
+					viewName: draft.viewName?.trim() ?? "",
 				};
 			}
 			if (draft.sourceType === "ValuesList") {

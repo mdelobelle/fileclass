@@ -54,7 +54,25 @@ describe("Select/Cycle/Multi list source", () => {
 		});
 	});
 
-	it("leaves an unsupported (base/dv) source untouched", () => {
+	it("round-trips a Base-view source", () => {
+		const draft = optionsToDraft("Select", {
+			sourceType: "ValuesFromBase",
+			baseFile: "Activities.base",
+			viewName: "All",
+		});
+		expect(draft).toEqual({
+			sourceType: "ValuesFromBase",
+			baseFile: "Activities.base",
+			viewName: "All",
+		});
+		expect(buildFieldOptions("Select", draft)).toEqual({
+			sourceType: "ValuesFromBase",
+			baseFile: "Activities.base",
+			viewName: "All",
+		});
+	});
+
+	it("leaves a legacy Dataview source untouched", () => {
 		const draft = optionsToDraft("Select", { sourceType: "ValuesFromDVQuery" });
 		expect(draft.sourceType).toBeUndefined();
 		expect(buildFieldOptions("Select", draft)).toBeUndefined();

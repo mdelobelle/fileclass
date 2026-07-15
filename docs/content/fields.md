@@ -51,8 +51,9 @@ source:
 
 - **Inline list** — values listed directly in the field definition.
 - **From a note** — the non-empty lines of a note (`valuesListNotePath`).
-- **From a Base view** — replaces Metadata Menu's Dataview source; wired in a
-  later wave. Until then such a field accepts free entry.
+- **From a Base view** — the names of the files a `.base` view matches (replaces
+  Metadata Menu's Dataview source). Requires the core Bases plugin; if it is
+  unavailable the field falls back to free entry.
 
 When no list is defined, the field accepts free text (and `Multi` accepts a
 comma-separated entry).

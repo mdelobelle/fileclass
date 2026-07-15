@@ -28,8 +28,16 @@ export function numberOptions(field: Field): NumberOptions {
 	return { step: num(o.step), min: num(o.min), max: num(o.max) };
 }
 
-/** Source of a list field's allowed values (Metadata Menu's SourceType). */
-export type ValuesSourceType = "ValuesList" | "ValuesListNotePath" | "ValuesFromDVQuery";
+/**
+ * Source of a list field's allowed values. `ValuesFromBase` (a `.base` view)
+ * replaces Metadata Menu's dataview source (`ValuesFromDVQuery`, kept only to
+ * recognize legacy fileClasses).
+ */
+export type ValuesSourceType =
+	| "ValuesList"
+	| "ValuesListNotePath"
+	| "ValuesFromBase"
+	| "ValuesFromDVQuery";
 
 export interface ListOptions {
 	sourceType: ValuesSourceType;
@@ -37,6 +45,9 @@ export interface ListOptions {
 	valuesList: Record<string, string>;
 	/** Note whose non-empty lines are the values. */
 	valuesListNotePath?: string;
+	/** Base view providing the values (sourceType `ValuesFromBase`). */
+	baseFile?: string;
+	viewName?: string;
 }
 
 export function listOptions(field: Field): ListOptions {
@@ -61,15 +72,17 @@ export function listOptionsFromOptions(options: FieldOptions): ListOptions {
 	const rawList = (o.valuesList ?? {}) as Record<string, unknown>;
 	const valuesList: Record<string, string> = {};
 	for (const [k, v] of Object.entries(rawList)) valuesList[k] = String(v);
-	const sourceType =
-		o.sourceType === "ValuesListNotePath" || o.sourceType === "ValuesFromDVQuery"
-			? (o.sourceType as ValuesSourceType)
-			: "ValuesList";
+	const known: ValuesSourceType[] = ["ValuesListNotePath", "ValuesFromBase", "ValuesFromDVQuery"];
+	const sourceType = known.includes(o.sourceType as ValuesSourceType)
+		? (o.sourceType as ValuesSourceType)
+		: "ValuesList";
 	return {
 		sourceType,
 		valuesList,
 		valuesListNotePath:
 			typeof o.valuesListNotePath === "string" ? o.valuesListNotePath : undefined,
+		baseFile: typeof o.baseFile === "string" && o.baseFile ? o.baseFile : undefined,
+		viewName: typeof o.viewName === "string" && o.viewName ? o.viewName : undefined,
 	};
 }
 

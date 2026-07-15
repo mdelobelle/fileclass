@@ -114,7 +114,7 @@ export async function promptFieldValue(
 
 		case "Select":
 		case "Cycle": {
-			const allowed = await resolveFieldValues(app, field);
+			const allowed = await resolveFieldValues(ctx.host, field, file);
 			if (allowed.length === 0) return openTextPrompt(app, field, current, onValue);
 			new ChoiceSuggestModal<string>(
 				app,
@@ -127,7 +127,7 @@ export async function promptFieldValue(
 		}
 
 		case "Multi": {
-			const allowed = await resolveFieldValues(app, field);
+			const allowed = await resolveFieldValues(ctx.host, field, file);
 			const selected = toSelectedList(current);
 			if (allowed.length === 0) {
 				new PromptModal(app, {

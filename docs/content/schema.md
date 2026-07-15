@@ -103,7 +103,8 @@ When adding or editing a field, its type reveals the relevant settings:
 - **Number** — min, max, step.
 - **Date / DateTime / Time** — format and insert-as-link.
 - **Select / Cycle / Multi** — the values source: an **inline list** (edit values
-  in place) or **from a note** (its non-empty lines).
+  in place), **from a note** (its non-empty lines), or **from a Base view** (the
+  names of the files the view matches).
 - **File / MultiFile / Media / MultiMedia** — a **Base file** and **view**
   (candidate source), an optional **display column** (the alias), and **embed**
   (Media).
@@ -111,5 +112,4 @@ When adding or editing a field, its type reveals the relevant settings:
   the object's nested fields; nesting can go several levels deep.
 
 Every change is a single `processFrontMatter` write on the fileClass note,
-preserving unknown keys. A **Base-view value source** for Select/Cycle/Multi is
-configured in a later step; a field already using one keeps it untouched.
+preserving unknown keys.

@@ -44,7 +44,7 @@ export function renderFieldOptionsSettings(
 		case "Select":
 		case "Cycle":
 		case "Multi":
-			renderListSettings(container, draft);
+			renderListSettings(container, draft, ctx);
 			return;
 		case "File":
 		case "MultiFile":
@@ -105,24 +105,30 @@ function numberField(
 	);
 }
 
-function renderListSettings(container: HTMLElement, draft: OptionsDraft): void {
+function renderListSettings(
+	container: HTMLElement,
+	draft: OptionsDraft,
+	ctx: FieldOptionsCtx
+): void {
 	container.empty();
 
 	if (draft.sourceType === undefined) {
 		container.createEl("p", {
 			text:
-				"This field's values come from a Base/query source. Editing that source is coming soon; other settings are preserved.",
+				"This field's values come from a legacy Dataview source. Switch it to an inline list, a note, or a Base view below.",
 			cls: "setting-item-description",
 		});
-		return;
+		// Offer a source picker so the legacy source can be replaced.
+		draft.sourceType = "ValuesList";
 	}
 
 	new Setting(container).setName("Values source").addDropdown((d) => {
 		d.addOption("ValuesList", "Inline list");
 		d.addOption("ValuesListNotePath", "From a note");
+		d.addOption("ValuesFromBase", "From a Base view");
 		d.setValue(draft.sourceType ?? "ValuesList").onChange((v) => {
-			draft.sourceType = v as "ValuesList" | "ValuesListNotePath";
-			renderListSettings(container, draft);
+			draft.sourceType = v as OptionsDraft["sourceType"];
+			renderListSettings(container, draft, ctx);
 		});
 	});
 
@@ -133,6 +139,24 @@ function renderListSettings(container: HTMLElement, draft: OptionsDraft): void {
 			.addText((t) =>
 				t.setValue(draft.valuesListNotePath ?? "").onChange((v) => (draft.valuesListNotePath = v))
 			);
+		return;
+	}
+
+	if (draft.sourceType === "ValuesFromBase") {
+		new Setting(container)
+			.setName("Base file")
+			.setDesc("Values are the matching files' names.")
+			.addText((t) => {
+				t.setValue(draft.baseFile ?? "").onChange((v) => (draft.baseFile = v));
+				new BaseFileSuggest(ctx.app, t.inputEl);
+			});
+		new Setting(container)
+			.setName("View")
+			.setDesc("View within the base (blank = first).")
+			.addText((t) => {
+				t.setValue(draft.viewName ?? "").onChange((v) => (draft.viewName = v));
+				new BaseViewSuggest(ctx.app, t.inputEl, () => draft.baseFile ?? "");
+			});
 		return;
 	}
 

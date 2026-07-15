@@ -25,9 +25,11 @@ field types and the commands that set values. Everything is written to
 | **MultiFile** | list of links | toggle list | a list of links |
 | **Media** | link/embed | file picker | a link string |
 | **MultiMedia** | list | toggle list | a list of links |
+| **Object** | nested object | draft editor | each known child validates |
+| **ObjectList** | list of objects | draft editor | each item's children validate |
 
 Empty values are always valid — a field is optional unless a constraint says
-otherwise. `Object`, `ObjectList`, `Lookup`, and `Formula` arrive in later waves.
+otherwise. `Lookup` and `Formula` (computed fields) arrive in a later phase.
 
 ## Link fields (File / Media)
 
@@ -63,6 +65,25 @@ comma-separated entry).
 - **Fileclass: insert missing fields in current file** — adds every root field
   of the note's fileClass(es) that isn't already in the frontmatter, each with an
   empty default, in a single write.
+
+## Nested fields (Object / ObjectList)
+
+An **Object** field groups typed sub-fields into a nested structure; an
+**ObjectList** is an array of such objects. Sub-fields are declared in the same
+fileClass with a `path` pointing at their parent — nesting can go several levels
+deep.
+
+Editing opens a **draft editor**:
+
+- You edit a working copy in memory. **Cancel writes nothing.**
+- **Save** validates the whole draft, then writes the entire subtree in a
+  **single** `processFrontMatter` call.
+- The editor mutates a clone of your existing value, so **unknown keys are
+  preserved** — Fileclass never regenerates an object from the schema.
+- ObjectList items can be added, edited, reordered, and removed.
+
+Only **root** fields appear in the field picker; nested fields are reached by
+editing their parent object.
 
 ## Writing model
 

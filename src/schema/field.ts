@@ -90,6 +90,17 @@ export function parentFieldId(path: string): string | undefined {
 	return segments[segments.length - 1];
 }
 
+/** The `path` value a direct child of `parent` must carry. */
+export function childPathOf(parent: Pick<Field, "id" | "path">): string {
+	return parent.path ? `${parent.path}${PATH_SEPARATOR}${parent.id}` : parent.id;
+}
+
+/** Direct child fields of an Object/ObjectList field, in declaration order. */
+export function childFieldsOf(allFields: Field[], parent: Field): Field[] {
+	const childPath = childPathOf(parent);
+	return allFields.filter((f) => f.path === childPath);
+}
+
 /**
  * Normalizes a values-list option to a `{ "0": v0, "1": v1 }` record (as
  * Metadata Menu does for Select/Cycle/Multi sources). Records pass through.

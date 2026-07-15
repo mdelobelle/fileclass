@@ -83,7 +83,7 @@ block scalars (`|`), value types and necessary quotes. Normalizes: **YAML
 comments are deleted**, integer-like keys reordered numerically ("2","1" →
 "1","2"), flow lists (`[a, b]`) rewritten as bullet lists, superfluous single
 quotes removed. New keys are appended at the end. These normalizations go in
-the migration doc; the order-preservation claim gets a canary test.
+the user docs; the order-preservation claim gets a canary test.
 
 ## 4. Repository layout
 
@@ -115,8 +115,7 @@ fileclass/
 │   │   └── baseFileGenerator.ts    # generate <fileClass>.base files (§11)
 │   ├── ui/                         # modals, suggesters, field options menu, status icons
 │   ├── settings/                   # settings tab + per-fileClass settings
-│   ├── api.ts                      # public API (§12)
-│   └── migration/audit.ts          # legacy option scanner (§13)
+│   └── api.ts                      # public API (§12)
 ├── tests/
 │   ├── unit/                       # vitest, pure logic (objectPath, schema resolver, validators, draft editor)
 │   └── e2e/                        # CDP harness against a fixture vault (§14)
@@ -184,7 +183,7 @@ tests for the validator.
   Output types and rendering ported from MDM (`LinksList`, `BuiltinSummarizing`
   (count/sum/average...), `CustomList`, `CustomSummarizing`) — custom functions
   receive `(rows, { file, app })` where `rows` come from `getBaseRows` (NOT
-  dataview `pages`; document the migration).
+  dataview `pages`; document the difference).
 - **Single-scan rule**: one `getBaseRows` run per lookup *definition* per
   recalc cycle; group results by `targetFieldName` value (link path) to fan out
   to host files — same pattern as MDM `resolveLookups`, different engine.
@@ -245,23 +244,23 @@ Keep MDM-compatible names and signatures where semantics survive:
 `postNamedFieldsValues`. NOT ported: `fieldModifier` (dataview-only).
 Document differences in `docs/api.md`.
 
-## 13. Migration from Metadata Menu
+## 13. Legacy fileClass options
 
-- Command "Audit fileClasses": scans fileClasses + preset fields for
-  `dvQueryString` / `customRendering` / `customSorting` / `customListFunction`
-  / `customSummarizingFunction` / fileClassQueries; produces a report note
-  listing each occurrence with the target replacement (`baseFile`+`viewName`,
-  formula column, `(rows)` function) and generates skeleton `.base` files with
-  TODO filters (JS → Bases filters is not auto-translatable).
-- Migration doc page: who should migrate (frontmatter users) vs stay on MDM
-  (inline fields, dataview virtual props like `file.tasks`), plus the
-  processFrontMatter normalizations (§3.2).
+No migration tooling ships: users migrated their fileClass **format** to Metadata
+Menu's current schema long ago. The only remnant is dataview-era *option* keys
+(`dvQueryString` / `customRendering` / `customSorting` / `customListFunction` /
+`customSummarizingFunction` / fileClassQueries). Per D1 these are **ignored
+silently** and never crash the index (§17); new link/computed fields use
+`{ baseFile, viewName }` + base formula columns instead.
+
+The processFrontMatter normalizations (§3.2) are documented for users in the
+fields/user docs (first-write warning), not in a migration guide.
 
 ## 14. Testing
 
 - **Unit (vitest, no Obsidian)**: objectPath, schema resolver (inheritance,
   excludes, binding priorities), field validators, draft editor logic, lookup
-  grouping, audit scanner. Run in CI on every push.
+  grouping. Run in CI on every push.
 - **E2E (CDP)**: harness from `~/obsidian-bases-probe/cdp.js` pattern — a Node
   script connects to a dev Obsidian (`--remote-debugging-port=9222`) opened on
   `tests/e2e/fixture-vault/`, drives the plugin via `Runtime.evaluate`, asserts
@@ -292,8 +291,8 @@ Document differences in `docs/api.md`.
   statuses, recalc triggers.
 - **P4 Views**: fileclass-table custom Bases view with editable cells, base
   file generator command.
-- **P5 Migration & API**: public API, audit command, migration docs, MDM
-  deprecation banner PR (separate repo).
+- **P5 API**: public API (§12), keeping MDM-compatible names where semantics
+  survive; `docs/api.md`. (No migration tooling — see §13.)
 
 ## 16. Coding conventions
 
@@ -313,7 +312,7 @@ Document differences in `docs/api.md`.
 | Bases internals drift on Obsidian update | D4 isolation + canary tests; only basesAdapter changes; graceful degradation path |
 | O(vault) per query run on huge vaults | queryCache, single-scan lookups, debounced recalc; benchmark fixture in e2e |
 | Users with YAML comments / custom formatting | documented normalization (§3.2), first-write warning in migration doc |
-| Legacy fileClasses with dv options | audit command + report, options ignored (never crash on them) |
+| Legacy fileClasses with dv options | options ignored silently (never crash on them, §13) |
 
 ## 18. Reference material
 

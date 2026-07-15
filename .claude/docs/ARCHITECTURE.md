@@ -275,7 +275,13 @@ Document differences in `docs/api.md`.
 
 ## 15. Delivery phases (each = code + unit tests + doc page)
 
-- **P0 Foundations**: scaffold (esbuild, tsconfig strict, vitest, CI), globals,
+- **P0 Foundations**: scaffold following the official
+  [obsidian-sample-plugin](https://github.com/obsidianmd/obsidian-sample-plugin)
+  conventions — replicate its files (manifest.json, versions.json,
+  version-bump.mjs, esbuild.config.mjs, release workflow, .gitignore for
+  build artifacts), do NOT clone the repo (this repo already has its own
+  history). Deviations from the template: full `strict` tsconfig, vitest,
+  code under `src/` with a thin root `main.ts`. Then: globals,
   objectPath, queryCache, adapter wired with feature detection, e2e harness
   skeleton + canary tests, mkdocs skeleton with positioning page.
 - **P1 Schema (read-only)**: fileClass parsing, inheritance, resolver/index,

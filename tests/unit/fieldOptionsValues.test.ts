@@ -43,6 +43,19 @@ describe("listOptions", () => {
 	it("defaults an unknown source to ValuesList", () => {
 		expect(listOptions(make({ sourceType: "Weird" })).sourceType).toBe("ValuesList");
 	});
+
+	it("reads the legacy shape where options is the values list itself", () => {
+		// e.g. mood: { "1": "🟢", "2": "🟡" } — no valuesList/sourceType wrapper.
+		const o = listOptions(make({ "1": "🟢", "2": "🟡", "3": "🟠" }));
+		expect(o.sourceType).toBe("ValuesList");
+		expect(o.valuesList).toEqual({ "1": "🟢", "2": "🟡", "3": "🟠" });
+	});
+});
+
+describe("resolveValues (legacy inline shape)", () => {
+	it("returns the values of a bare index→value options object", () => {
+		expect(resolveValues(make({ "1": "🟢", "2": "🟡" }))).toEqual(["🟢", "🟡"]);
+	});
 });
 
 describe("resolveValues", () => {

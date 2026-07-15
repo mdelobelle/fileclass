@@ -47,6 +47,13 @@ export function listOptions(field: Field): ListOptions {
 		return { sourceType: "ValuesList", valuesList };
 	}
 	const o = field.options;
+	// Legacy shape: the options object *is* the values list (index → value),
+	// with no `valuesList`/`sourceType` wrapper (e.g. `{ "1": "🟢", "2": "🟡" }`).
+	if (!("sourceType" in o) && !("valuesList" in o)) {
+		const valuesList: Record<string, string> = {};
+		for (const [k, v] of Object.entries(o)) valuesList[k] = String(v);
+		return { sourceType: "ValuesList", valuesList };
+	}
 	const rawList = (o.valuesList ?? {}) as Record<string, unknown>;
 	const valuesList: Record<string, string> = {};
 	for (const [k, v] of Object.entries(rawList)) valuesList[k] = String(v);

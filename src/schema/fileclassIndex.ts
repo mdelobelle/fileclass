@@ -189,4 +189,17 @@ export class FileclassIndex extends Events {
 	isFileClassNote(path: string): boolean {
 		return this.nameByPath.has(path);
 	}
+
+	/** fileClass name for a note path, if it is a fileClass note. */
+	fileClassNameOfNote(path: string): string | undefined {
+		return this.nameByPath.get(path);
+	}
+
+	/** The Markdown note backing a fileClass (`<classFilesPath><name>.md`). */
+	getFileClassFile(name: string): TFile | null {
+		const folder = this.host.settings.classFilesPath;
+		if (!folder) return null;
+		const file = this.app.vault.getFileByPath(`${folder}${name}.md`);
+		return file instanceof TFile ? file : null;
+	}
 }

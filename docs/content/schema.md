@@ -82,3 +82,19 @@ a fileClass note changes, and emits a `fileclass:indexed` event.
 Run the command **Fileclass: add fileClass to current file** and pick a
 fileClass. It writes the binding into the note's frontmatter (frontmatter-only,
 via a single `processFrontMatter` write).
+
+## Editing a fileClass
+
+You can author a fileClass's own definition from the UI — no need to edit its
+YAML by hand. Run **Fileclass: edit a fileClass schema** (or right-click a
+fileClass note → **Manage this fileClass's fields**) to open the schema editor:
+
+- **Fields** — add, edit, remove, and reorder field definitions. A field has a
+  **name** and a **type**; its stable id is generated automatically.
+- **Options…** — edit the fileClass options: `icon` (a Lucide name), `extends`
+  (parent fileClass), `limit`, `mapWithTag`, `tagNames`, `filesPaths`,
+  `bookmarksGroups`, and `excludes`.
+
+Every change is a single `processFrontMatter` write on the fileClass note,
+preserving unknown keys. Per-type field settings (a Number's min/max, a Select's
+values source, a File's Base view…) are configured in a later step.

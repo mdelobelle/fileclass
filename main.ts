@@ -22,6 +22,7 @@ import {
 import { FileclassSettingTab } from "./src/settings/settingsTab";
 import { AddFileClassModal } from "./src/ui/addFileClassModal";
 import { FileclassContextMenu } from "./src/ui/contextMenu";
+import { openFileClassSchema } from "./src/ui/fileClassSchemaModal";
 import { FieldIndicator } from "./src/ui/indicator/fieldIndicator";
 import { LinkIndicator } from "./src/ui/indicator/linkIndicator";
 import { NoteFieldsModal } from "./src/ui/noteFieldsModal";
@@ -130,6 +131,20 @@ export default class FileclassPlugin extends Plugin {
 				const file = this.app.workspace.getActiveFile();
 				if (!file || file.extension !== "md") return false;
 				if (!checking) void insertMissingFields(this.app, file, this.index.getFields(file));
+				return true;
+			},
+		});
+
+		this.addCommand({
+			id: "edit-fileclass-schema",
+			name: "Edit a fileClass schema",
+			checkCallback: (checking) => {
+				if (!this.index.fileClassNames.length) return false;
+				if (!checking) {
+					const active = this.app.workspace.getActiveFile();
+					const name = active ? this.index.fileClassNameOfNote(active.path) : undefined;
+					openFileClassSchema(this, name);
+				}
 				return true;
 			},
 		});

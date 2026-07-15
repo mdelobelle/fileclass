@@ -77,20 +77,36 @@ export class FileclassSettingTab extends PluginSettingTab {
 			cls: "setting-item-description",
 		});
 
-		const indicatorToggle = (
-			name: string,
-			key: "enableTabHeaderIndicator" | "enableFileExplorerIndicator" | "enableBookmarksIndicator"
-		) =>
-			new Setting(containerEl).setName(name).addToggle((toggle) =>
+		type IndicatorKey =
+			| "enableTabHeaderIndicator"
+			| "enableFileExplorerIndicator"
+			| "enableBookmarksIndicator"
+			| "enableInlineLinkIndicator"
+			| "enableBacklinkIndicator"
+			| "enableBasesIndicator";
+
+		const indicatorToggle = (name: string, key: IndicatorKey, desc?: string) => {
+			const setting = new Setting(containerEl).setName(name);
+			if (desc) setting.setDesc(desc);
+			setting.addToggle((toggle) =>
 				toggle.setValue(this.plugin.settings[key]).onChange(async (value) => {
 					this.plugin.settings[key] = value;
 					await this.plugin.saveSettings();
 					this.plugin.indicator.refreshNow();
+					this.plugin.linkIndicator.refreshNow();
 				})
 			);
+		};
 
 		indicatorToggle("Tab header", "enableTabHeaderIndicator");
 		indicatorToggle("File explorer", "enableFileExplorerIndicator");
 		indicatorToggle("Bookmarks", "enableBookmarksIndicator");
+		indicatorToggle(
+			"Internal links",
+			"enableInlineLinkIndicator",
+			"After every internal link in reading view — off by default."
+		);
+		indicatorToggle("Backlinks pane", "enableBacklinkIndicator");
+		indicatorToggle("Bases first column", "enableBasesIndicator");
 	}
 }

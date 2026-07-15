@@ -21,6 +21,12 @@ export interface FileclassSettings {
 	enableFileExplorerIndicator: boolean;
 	/** Show the field indicator icon in the bookmarks pane. */
 	enableBookmarksIndicator: boolean;
+	/** Show the indicator after internal links (reading view). */
+	enableInlineLinkIndicator: boolean;
+	/** Show the indicator on links in the backlinks pane. */
+	enableBacklinkIndicator: boolean;
+	/** Show the indicator on links in Bases table views. */
+	enableBasesIndicator: boolean;
 }
 
 export const DEFAULT_SETTINGS: FileclassSettings = {
@@ -32,6 +38,10 @@ export const DEFAULT_SETTINGS: FileclassSettings = {
 	enableTabHeaderIndicator: true,
 	enableFileExplorerIndicator: true,
 	enableBookmarksIndicator: true,
+	// Off by default: an icon after every inline link is a lot of decoration.
+	enableInlineLinkIndicator: false,
+	enableBacklinkIndicator: true,
+	enableBasesIndicator: true,
 };
 
 /** Normalizes a folder path to `""` or a trailing-slashed, non-leading form. */

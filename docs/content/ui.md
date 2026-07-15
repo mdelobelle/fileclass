@@ -38,10 +38,16 @@ All actions write to frontmatter only, one `processFrontMatter` write each.
 
 ## Field indicator
 
-A small clickable **icon** appears next to a note's name — in the **tab header**,
-**file explorer**, and **bookmarks** — whenever a fileClass applies to it.
-Clicking it opens the note-fields modal above. It is **icon-only**, and each
-surface has its own toggle under **Settings → Fileclass → Indicators**.
+A small clickable **icon** appears next to a note's name whenever a fileClass
+applies to it; clicking it opens the note-fields modal above. The icon is the
+fileClass's own `icon` (a Lucide icon name, inherited from a parent fileClass if
+unset, falling back to the configured default). Each surface has its own toggle
+under **Settings → Fileclass → Indicators**:
+
+- **Tab header**, **file explorer**, **bookmarks** — next to the file name.
+- **Backlinks pane** and the **first column of Bases** tables — next to each link.
+- **Internal links** in reading view — after each link (**off by default**, since
+  it decorates every link; enable it if you want it).
 
 The indicator is a best-effort UI decoration layered on Obsidian's DOM: if a
 surface changes in a future Obsidian version, the icon simply stops appearing
@@ -49,5 +55,4 @@ there — the modal, menus, and commands keep working.
 
 ## Coming next
 
-The same indicator on **internal links** (reading view, Live Preview, backlinks)
-and in the **first column of Bases** tables.
+The internal-link indicator in **Live Preview** (a CodeMirror editor extension).

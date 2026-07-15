@@ -9,13 +9,16 @@
  * features (modal, menus, commands) never depend on it. Internals are reached
  * through minimal structural casts (no `any`, mirroring the adapter's style).
  */
-import { Component, TFile, debounce, setIcon } from "obsidian";
+import { Component, TFile, debounce } from "obsidian";
 
 import type FileclassPlugin from "../../../main";
 import { INDEXED_EVENT } from "../../schema/fileclassIndex";
-import { NoteFieldsModal } from "../noteFieldsModal";
-
-const MARKER = "fileclass-indicator";
+import {
+	fileWithFields,
+	makeIndicatorIcon,
+	NAV_SCOPE,
+	removeIndicators,
+} from "./indicatorDom";
 
 /** Workspace-leaf internals we rely on (undocumented, feature-detected). */
 interface LeafInternals {
@@ -52,27 +55,12 @@ export class FieldIndicator extends Component {
 
 	/** Returns the file if Fileclass applies to it (has resolved fields). */
 	private applies(path: string | null): TFile | null {
-		if (!path) return null;
-		const file = this.plugin.app.vault.getFileByPath(path);
-		if (!(file instanceof TFile) || file.extension !== "md") return null;
-		return this.plugin.index.getFields(file).length ? file : null;
-	}
-
-	private makeIcon(file: TFile): HTMLElement {
-		const el = createSpan({ cls: MARKER });
-		el.setAttribute("aria-label", "Fileclass fields");
-		setIcon(el, "settings-2");
-		el.addEventListener("click", (e) => {
-			e.preventDefault();
-			e.stopPropagation();
-			new NoteFieldsModal(this.plugin, file).open();
-		});
-		return el;
+		return fileWithFields(this.plugin, path);
 	}
 
 	private inject(target: HTMLElement, file: TFile): void {
-		if (target.querySelector(`:scope > .${MARKER}`)) return; // already present
-		target.appendChild(this.makeIcon(file));
+		if (target.querySelector(`:scope > .${NAV_SCOPE}`)) return; // already present
+		target.appendChild(makeIndicatorIcon(this.plugin, file, NAV_SCOPE));
 	}
 
 	private refresh(): void {
@@ -124,6 +112,6 @@ export class FieldIndicator extends Component {
 	}
 
 	private removeAll(): void {
-		document.querySelectorAll(`.${MARKER}`).forEach((el) => el.remove());
+		removeIndicators(NAV_SCOPE);
 	}
 }

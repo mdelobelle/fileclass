@@ -165,6 +165,22 @@ export class FileclassIndex extends Events {
 		return this.ancestorsByName.get(name) ?? [];
 	}
 
+	/** Resolved Lucide icon name for a fileClass: its own `icon`, else an
+	 * ancestor's, else the configured default. */
+	resolveIcon(name: string): string {
+		for (const cls of [name, ...this.getAncestors(name)]) {
+			const icon = this.byName.get(cls)?.options.icon;
+			if (icon) return icon;
+		}
+		return this.host.settings.fileClassIcon;
+	}
+
+	/** Icon for a note, from its primary (first-bound) fileClass. */
+	iconForFile(file: TFile): string {
+		const names = this.getFileClasses(file);
+		return names.length ? this.resolveIcon(names[0]) : this.host.settings.fileClassIcon;
+	}
+
 	getResolvedFields(name: string): Field[] {
 		return this.fieldsByName.get(name) ?? [];
 	}

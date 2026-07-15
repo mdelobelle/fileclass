@@ -15,6 +15,10 @@ enableGitInfo = true
     name = "Schema layer"
     pageRef = "/schema"
     weight = 20
+  [[menu.main]]
+    name = "Fields & input"
+    pageRef = "/fields"
+    weight = 30
 
 [markup.goldmark.renderer]
   unsafe = true

@@ -12,6 +12,8 @@ import { Notice, Plugin, TAbstractFile, TFile, debounce } from "obsidian";
 import { setPlugin, clearPlugin } from "./src/globals";
 import { isBasesAvailable } from "./src/engine/basesAdapter";
 import { QueryCache } from "./src/engine/queryCache";
+import { insertMissingFields } from "./src/commands/insertMissingFields";
+import { pickAndUpdateField } from "./src/fields/fieldActions";
 import { FileclassIndex } from "./src/schema/fileclassIndex";
 import {
 	coerceSettings,
@@ -82,6 +84,28 @@ export default class FileclassPlugin extends Plugin {
 				const file = this.app.workspace.getActiveFile();
 				if (!file || file.extension !== "md") return false;
 				if (!checking) new AddFileClassModal(this, file).open();
+				return true;
+			},
+		});
+
+		this.addCommand({
+			id: "update-field-in-current-file",
+			name: "Update a field in current file",
+			checkCallback: (checking) => {
+				const file = this.app.workspace.getActiveFile();
+				if (!file || file.extension !== "md") return false;
+				if (!checking) pickAndUpdateField(this.app, file, this.index.getFields(file));
+				return true;
+			},
+		});
+
+		this.addCommand({
+			id: "insert-missing-fields-in-current-file",
+			name: "Insert missing fields in current file",
+			checkCallback: (checking) => {
+				const file = this.app.workspace.getActiveFile();
+				if (!file || file.extension !== "md") return false;
+				if (!checking) void insertMissingFields(this.app, file, this.index.getFields(file));
 				return true;
 			},
 		});

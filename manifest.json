@@ -1,0 +1,11 @@
+{
+	"id": "fileclass",
+	"name": "Fileclass",
+	"version": "0.0.1",
+	"minAppVersion": "1.13.2",
+	"description": "Schemas, typed fields & data quality for your Obsidian vault — powered by Bases.",
+	"author": "mdelobelle",
+	"authorUrl": "https://github.com/mdelobelle",
+	"fundingUrl": "https://github.com/sponsors/mdelobelle/",
+	"isDesktopOnly": false
+}

@@ -1,0 +1,18 @@
+filters:
+  and:
+    - fileClass == "Book"
+views:
+  - type: table
+    name: Books by status
+    order:
+      - file.name
+      - rating
+      - status
+    sort:
+      - property: rating
+        direction: DESC
+      - property: file.name
+        direction: ASC
+    groupBy:
+      property: status
+      direction: ASC

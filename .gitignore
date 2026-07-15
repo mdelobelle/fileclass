@@ -1,0 +1,17 @@
+# build artifacts
+main.js
+*.js.map
+styles.css.map
+
+# dependencies
+node_modules/
+
+# vitest / coverage
+coverage/
+
+# editor / os
+.DS_Store
+*.log
+
+# mkdocs build output
+site/

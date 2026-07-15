@@ -9,10 +9,12 @@
  * observers, full teardown on unload, and it never throws into the app.
  */
 import { Component, TFile, debounce, getLinkpath } from "obsidian";
+import { Prec } from "@codemirror/state";
 
 import type FileclassPlugin from "../../../main";
 import { INDEXED_EVENT } from "../../schema/fileclassIndex";
 import { fileWithFields, LINK_SCOPE, makeIndicatorIcon, removeIndicators } from "./indicatorDom";
+import { buildLivePreviewExtension } from "./livePreview";
 
 interface ViewWithFile {
 	file?: TFile;
@@ -31,6 +33,9 @@ export class LinkIndicator extends Component {
 			if (!this.plugin.settings.enableInlineLinkIndicator) return;
 			this.guard(() => this.decorateLinks(el, ctx.sourcePath));
 		});
+
+		// Live Preview: a CodeMirror extension (gated on the same setting).
+		this.plugin.registerEditorExtension(Prec.lowest(buildLivePreviewExtension(this.plugin)));
 
 		const refresh = debounce(() => this.refreshAll(), 200, true);
 		this.registerEvent(this.plugin.app.workspace.on("layout-change", refresh));

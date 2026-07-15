@@ -15,3 +15,11 @@ declare module "obsidian" {
 		isUserIgnored(path: string): boolean;
 	}
 }
+
+// Obsidian injects `tokenClassNodeProp` into its shimmed @codemirror/language at
+// runtime; it is absent from the published package types. Declaring it lets the
+// Live Preview extension read a node's token classes (§19.4).
+declare module "@codemirror/language" {
+	import { NodeProp } from "@lezer/common";
+	export const tokenClassNodeProp: NodeProp<string>;
+}

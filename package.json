@@ -23,6 +23,7 @@
 	"author": "mdelobelle",
 	"license": "MIT",
 	"devDependencies": {
+		"@codemirror/language": "^6.0.0",
 		"@types/node": "^22.0.0",
 		"builtin-modules": "^3.3.0",
 		"esbuild": "^0.20.0",

@@ -104,7 +104,7 @@ export class FileclassSettingTab extends PluginSettingTab {
 		indicatorToggle(
 			"Internal links",
 			"enableInlineLinkIndicator",
-			"After every internal link in reading view — off by default."
+			"After every internal link, in reading view and Live Preview — off by default."
 		);
 		indicatorToggle("Backlinks pane", "enableBacklinkIndicator");
 		indicatorToggle("Bases first column", "enableBasesIndicator");

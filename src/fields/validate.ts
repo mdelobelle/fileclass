@@ -19,8 +19,19 @@ export function invalid(message: string): ValidationResult {
 	return { ok: false, message };
 }
 
-/** Types that store a list of values (Wave A subset). */
+/** List types whose allowed values come from a values source (Wave A). */
 export const MULTI_TYPES: ReadonlySet<FieldType> = new Set<FieldType>(["Multi"]);
+
+/** All types that store a list value (for display/iteration). */
+export const LIST_TYPES: ReadonlySet<FieldType> = new Set<FieldType>([
+	"Multi",
+	"MultiFile",
+	"MultiMedia",
+]);
+
+export function isListType(type: FieldType): boolean {
+	return LIST_TYPES.has(type);
+}
 
 export function isEmpty(value: unknown): boolean {
 	return value == null || value === "";
@@ -93,6 +104,16 @@ export function validateField(
 			}
 			return VALID;
 		}
+		case "File":
+		case "Media":
+			return typeof value === "string"
+				? VALID
+				: invalid(`"${field.name}" must be a link`);
+		case "MultiFile":
+		case "MultiMedia":
+			return Array.isArray(value)
+				? VALID
+				: invalid(`"${field.name}" must be a list of links`);
 		case "Date":
 			return validateDatePattern(value, field, DATE_RE);
 		case "DateTime":

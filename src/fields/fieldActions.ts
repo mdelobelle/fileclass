@@ -1,34 +1,46 @@
 /*
  * Wires field types to their input UI and the write path (ARCHITECTURE.md §7,
  * D5). `updateField` opens the right modal, validates, and performs a single
- * frontmatter write. This is the Wave A dispatcher; Object/ObjectList editing
- * (Wave C) and File/Media suggesters (Wave B) plug in here later.
+ * frontmatter write. Covers Wave A (scalars/lists) and Wave B (File/Media links
+ * with Base-view candidates). Object/ObjectList editing (Wave C) plugs in here.
  */
 import { App, Notice, TFile } from "obsidian";
 
 import { readFieldValue } from "../io/read";
 import { writeFieldValue } from "../io/write";
 import { Field, FieldType } from "../schema/field";
+import { AdapterHost, Candidate, isMediaType, resolveCandidates } from "./candidates";
 import { displayValue } from "./display";
 import { ChoiceSuggestModal, MultiSelectModal, PromptModal } from "./input/valueModals";
+import { formatLink, linkTargetPath } from "./links";
+import { baseBindingOptions } from "./options";
 import { resolveFieldValues } from "./valuesIo";
 import { validateField } from "./validate";
 
-/** Field types with input support in this wave. */
-export const WAVE_A_TYPES: ReadonlySet<FieldType> = new Set<FieldType>([
+/** Types edited through a single-line text prompt. */
+const TEXT_INPUT_TYPES: ReadonlySet<FieldType> = new Set<FieldType>([
 	"Input",
 	"Number",
-	"Boolean",
-	"Select",
-	"Cycle",
-	"Multi",
 	"Date",
 	"DateTime",
 	"Time",
 ]);
 
+/** All field types with input support so far (waves A + B). */
+export const SUPPORTED_INPUT_TYPES: ReadonlySet<FieldType> = new Set<FieldType>([
+	...TEXT_INPUT_TYPES,
+	"Boolean",
+	"Select",
+	"Cycle",
+	"Multi",
+	"File",
+	"MultiFile",
+	"Media",
+	"MultiMedia",
+]);
+
 export function isInputSupported(type: FieldType): boolean {
-	return WAVE_A_TYPES.has(type);
+	return SUPPORTED_INPUT_TYPES.has(type);
 }
 
 /** Value written when a field is inserted empty (insert-missing-fields). */
@@ -95,8 +107,61 @@ function openTextPrompt(app: App, file: TFile, field: Field, current: unknown): 
 	}).open();
 }
 
+function aliasFor(candidate: Candidate): string | undefined {
+	return candidate.display && candidate.display !== candidate.file.basename
+		? candidate.display
+		: undefined;
+}
+
+/** File/Media: pick one candidate; store its link. */
+async function openLinkInput(host: AdapterHost, file: TFile, field: Field): Promise<void> {
+	const app = host.app;
+	const embed = isMediaType(field.type) && baseBindingOptions(field).embed;
+	const candidates = await resolveCandidates(host, field, file);
+	new ChoiceSuggestModal<Candidate>(
+		app,
+		candidates,
+		(c) => c.display,
+		(c) => void commit(app, file, field, formatLink(app, c.file, file.path, aliasFor(c), embed)),
+		`Set ${field.name}`
+	).open();
+}
+
+/** MultiFile/MultiMedia: toggle candidates; store the selected links. */
+async function openMultiLinkInput(host: AdapterHost, file: TFile, field: Field): Promise<void> {
+	const app = host.app;
+	const embed = isMediaType(field.type) && baseBindingOptions(field).embed;
+	const candidates = await resolveCandidates(host, field, file);
+	const byDisplay = new Map(candidates.map((c) => [c.display, c] as const));
+
+	const currentRaw = readFieldValue(app, file, field);
+	const currentArr = Array.isArray(currentRaw)
+		? currentRaw
+		: currentRaw != null && currentRaw !== ""
+			? [currentRaw]
+			: [];
+	const currentPaths = new Set(
+		currentArr.map((v) => linkTargetPath(app, v, file.path)).filter((p): p is string => !!p)
+	);
+	const selected = candidates.filter((c) => currentPaths.has(c.file.path)).map((c) => c.display);
+
+	new MultiSelectModal(app, {
+		title: `Set ${field.name}`,
+		allowed: candidates.map((c) => c.display),
+		selected,
+		onSubmit: (displays) => {
+			const values = displays
+				.map((d) => byDisplay.get(d))
+				.filter((c): c is Candidate => !!c)
+				.map((c) => formatLink(app, c.file, file.path, aliasFor(c), embed));
+			void commit(app, file, field, values);
+		},
+	}).open();
+}
+
 /** Opens the appropriate input UI for a field and writes the chosen value. */
-export async function updateField(app: App, file: TFile, field: Field): Promise<void> {
+export async function updateField(host: AdapterHost, file: TFile, field: Field): Promise<void> {
+	const app = host.app;
 	const current = readFieldValue(app, file, field);
 
 	switch (field.type) {
@@ -155,8 +220,17 @@ export async function updateField(app: App, file: TFile, field: Field): Promise<
 			return;
 		}
 
+		case "File":
+		case "Media":
+			return openLinkInput(host, file, field);
+
+		case "MultiFile":
+		case "MultiMedia":
+			return openMultiLinkInput(host, file, field);
+
 		default:
-			openTextPrompt(app, file, field, current);
+			if (TEXT_INPUT_TYPES.has(field.type)) openTextPrompt(app, file, field, current);
+			else new Notice(`Fileclass: "${field.type}" fields aren't editable yet.`);
 	}
 }
 
@@ -165,20 +239,21 @@ export function clearField(app: App, file: TFile, field: Field): Promise<void> {
 	return writeFieldValue(app, file, field, undefined);
 }
 
-/** Lets the user pick one of a note's fields, then edits it. */
-export function pickAndUpdateField(app: App, file: TFile, fields: Field[]): void {
-	if (!fields.length) {
-		new Notice("Fileclass: no fields apply to this note.");
+/** Lets the user pick one of a note's editable fields, then edits it. */
+export function pickAndUpdateField(host: AdapterHost, file: TFile, fields: Field[]): void {
+	const editable = fields.filter((f) => isInputSupported(f.type));
+	if (!editable.length) {
+		new Notice("Fileclass: no editable fields apply to this note.");
 		return;
 	}
 	new ChoiceSuggestModal<Field>(
-		app,
-		fields,
+		host.app,
+		editable,
 		(f) => {
-			const value = displayValue(f, readFieldValue(app, file, f));
+			const value = displayValue(f, readFieldValue(host.app, file, f));
 			return value ? `${f.name}: ${value}` : f.name;
 		},
-		(f) => void updateField(app, file, f),
+		(f) => void updateField(host, file, f),
 		"Select a field to update"
 	).open();
 }

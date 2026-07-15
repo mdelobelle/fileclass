@@ -8,7 +8,7 @@ you typed, validated input for its fields. This page covers the first wave of
 field types and the commands that set values. Everything is written to
 **frontmatter only**, one `processFrontMatter` write per action.
 
-## Available field types (wave A)
+## Available field types
 
 | Type | Stores | Input | Validation |
 |------|--------|-------|------------|
@@ -21,10 +21,26 @@ field types and the commands that set values. Everything is written to
 | **Date** | date | text prompt | `YYYY-MM-DD` (unless a custom format is set) |
 | **DateTime** | date+time | text prompt | `YYYY-MM-DDTHH:mm` |
 | **Time** | time | text prompt | `HH:mm` |
+| **File** | link | note picker | a link string |
+| **MultiFile** | list of links | toggle list | a list of links |
+| **Media** | link/embed | file picker | a link string |
+| **MultiMedia** | list | toggle list | a list of links |
 
 Empty values are always valid — a field is optional unless a constraint says
-otherwise. `File`, `Media`, `Object`, `ObjectList`, `Lookup`, and `Formula`
-arrive in later waves.
+otherwise. `Object`, `ObjectList`, `Lookup`, and `Formula` arrive in later waves.
+
+## Link fields (File / Media)
+
+`File`, `MultiFile`, `Media`, and `MultiMedia` store wikilinks. Their **candidate
+list comes from a Base view** — configure the field with a `.base` file and view
+(`baseFile` + `viewName`); this replaces Metadata Menu's Dataview query and Media
+folders. An optional `displayColumn` (a base column id such as `note.title`) sets
+the alias shown in the picker and written into the link.
+
+- When no base is configured, or the core Bases plugin is unavailable, the picker
+  gracefully falls back to **all notes** (File) or **all media files** (Media).
+- `Media`/`MultiMedia` with the `embed` option store an embed (`![[…]]`).
+- Links honor your vault's link settings (`generateMarkdownLink`).
 
 ## Where allowed values come from
 

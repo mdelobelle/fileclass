@@ -94,7 +94,7 @@ export default class FileclassPlugin extends Plugin {
 			checkCallback: (checking) => {
 				const file = this.app.workspace.getActiveFile();
 				if (!file || file.extension !== "md") return false;
-				if (!checking) pickAndUpdateField(this.app, file, this.index.getFields(file));
+				if (!checking) pickAndUpdateField(this, file, this.index.getFields(file));
 				return true;
 			},
 		});

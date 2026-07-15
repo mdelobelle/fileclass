@@ -62,6 +62,32 @@ export function listOptions(field: Field): ListOptions {
 	};
 }
 
+/**
+ * Options for link-type fields (File/MultiFile/Media/MultiMedia). Candidates
+ * come from a Base view (`baseFile` + `viewName`), replacing Metadata Menu's
+ * `dvQueryString` and Media `folders` (ARCHITECTURE.md §5, §7). `displayColumn`
+ * (a base column identifier) replaces MDM's `customRendering` alias function.
+ */
+export interface BaseBindingOptions {
+	baseFile?: string;
+	viewName?: string;
+	/** Base column id used as the suggestion's display/alias (e.g. "note.title"). */
+	displayColumn?: string;
+	/** Media only: store the value as an embed (`![[…]]`) rather than a link. */
+	embed: boolean;
+}
+
+export function baseBindingOptions(field: Field): BaseBindingOptions {
+	const o = asRecord(field.options);
+	return {
+		baseFile: typeof o.baseFile === "string" && o.baseFile ? o.baseFile : undefined,
+		viewName: typeof o.viewName === "string" && o.viewName ? o.viewName : undefined,
+		displayColumn:
+			typeof o.displayColumn === "string" && o.displayColumn ? o.displayColumn : undefined,
+		embed: o.embed === true || o.embed === "true",
+	};
+}
+
 export interface DateOptions {
 	/** moment.js format; defaults per type when absent. */
 	dateFormat?: string;

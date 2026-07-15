@@ -293,6 +293,12 @@ fields/user docs (first-write warning), not in a migration guide.
   internal links (reading + live preview + backlinks) and the Bases first
   column. All editing reuses the P2 dispatcher; the DOM-injection layer is
   isolated and feature-flagged per surface.
+- **P2-ter fileClass schema editor** (§20): author a fileClass's own definition
+  (options + field definitions), the write-side counterpart of P1's read-only
+  schema and the home of the deferred per-type "options settings UI" (§7).
+  Modal-based (no dedicated view). Three slices — (1) options editor + add/
+  remove/reorder fields; (2) per-type option settings (Number/Date/Boolean,
+  Select/Cycle/Multi with base-picker); (3) File/Media + Object/ObjectList.
 - **P3 Computed**: lookups (single-scan), formulas (Bases expressions),
   statuses, recalc triggers.
 - **P4 Views**: fileclass-table custom Bases view with editable cells, base
@@ -395,3 +401,50 @@ dispatcher (`promptFieldValue`/`updateField`, one `processFrontMatter` write, D5
   e2e/CDP harness or manual on the dev vault) + a doc page. The indicator layer
   is a known-fragile boundary (§17): if a surface breaks on a new Obsidian, only
   its module changes and the core (modal, menus, commands) keeps working.
+
+## 20. fileClass schema editor (P2-ter)
+
+Authoring the fileClass itself — the write-side counterpart of P1's read-only
+parsing (§5) — ported from Metadata Menu's `fileClassSettingsView` and
+`fileClassFieldsView`. **Modal-based** (no dedicated leaf view): lighter, and it
+reuses the P2 modal/suggester infra. Every change is written to the fileClass
+note's frontmatter through a single `processFrontMatter` (D2/D5); after each
+write the index rebuilds and fires `fileclass:indexed`.
+
+### 20.1 fileClass options editor (`src/settings/fileClassEditor.ts`)
+- A modal editing a fileClass's options: `limit`, `icon` (Lucide picker),
+  `extends` (parent — a fileClass suggester with cycle guard), `excludes`,
+  `mapWithTag`, `tagNames`, `filesPaths`, `bookmarksGroups`, `fieldsOrder`.
+  Mirrors MDM `updateOptions`; writes only the option keys, preserving `fields`.
+
+### 20.2 fileClass fields manager
+- Lists the fileClass's **own** fields (inherited ones shown read-only, from the
+  parent). Add / edit / remove / reorder field **definitions** (name, id, type,
+  options, path). Reorder maintains a clean hierarchy for nested fields
+  (`buildSortedAttributes`/`moveField` semantics). Ids are generated for new
+  fields; edits mutate the matching `fields[]` entry via processFrontMatter
+  (never regenerate the array — preserve unknown keys, like D5).
+
+### 20.3 Per-type option settings (`src/fields/<type>` settings modals)
+- The "options settings UI" §7 defers to here. One settings component per field
+  type, opened from the fields manager when adding/editing a field:
+  - **Number** min/max/step; **Date/DateTime/Time** format + default-as-link;
+    **Boolean** none.
+  - **Select/Cycle/Multi** values source: inline list editor, a note path, or a
+    **base view** (`{ baseFile, viewName }`) chosen with a base-picker
+    (`listBaseViews` from the adapter) — replacing MDM's `dvQueryString`.
+  - **File/MultiFile/Media/MultiMedia** base-picker + view + `displayColumn` +
+    `embed` (Media).
+  - **Object/ObjectList** manage child fields (recurse into 20.2 with the child
+    `path`).
+- Each type's settings component ships next to its value logic in `src/fields/`,
+  completing the §7 "each field module ships …" contract.
+
+### 20.4 Entry points & slices
+- Reached from the context menu's **Manage fields schema** (§19.3, currently a
+  stub) and a command; the fileClass note itself gets a "Edit this fileClass"
+  affordance.
+- Slices: **P2-ter.1** options editor + add/remove/reorder (type+name only);
+  **P2-ter.2** per-type settings for Wave A + list sources (base-picker);
+  **P2-ter.3** File/Media + Object/ObjectList. Each = code + unit tests (pure
+  option (de)serialization, id generation, reorder/hierarchy) + a doc page.

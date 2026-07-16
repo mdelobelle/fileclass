@@ -238,13 +238,15 @@ canvas file tracking (deferred with Canvas fields).
   confirmation.
 - Embeds: users embed bases natively (```` ```base ````); no custom code block.
 
-## 12. Public API (`plugin.api`)
+## 12. Public API — deferred to a future sprint
 
-Keep MDM-compatible names and signatures where semantics survive:
-`getValues`, `getValuesForIndexedPath` (path = objectPath string now),
-`fileFields`, `namedFileFields`, `insertMissingFields`, `postValues`,
-`postNamedFieldsValues`. NOT ported: `fieldModifier` (dataview-only).
-Document differences in `docs/api.md`.
+**Decision (July 2026):** don't re-implement Metadata Menu's `plugin.api`
+one-to-one. Instead, defer the public surface to a dedicated later sprint with a
+broader goal: a **complete API** plus a **CLI (and possibly a TUI)** to read and
+edit notes from the terminal — reusing Obsidian's indexing engine and Fileclass's
+metadata schema/validation engine. To be scoped then; revisit this section at
+that point. (The internals it would build on — `index`, `io/read`, `io/write`,
+the field validators/dispatcher — already exist.)
 
 ## 13. Legacy fileClass options
 
@@ -301,11 +303,11 @@ fields/user docs (first-write warning), not in a migration guide.
   Modal-based (no dedicated view). Three slices — (1) options editor + add/
   remove/reorder fields; (2) per-type option settings (Number/Date/Boolean,
   Select/Cycle/Multi with base-picker); (3) File/Media + Object/ObjectList.
-- **P3 Views**: fileclass-table custom Bases view with editable cells, base
-  file generator command. *(Computed fields — Lookup/Formula — are out of scope;
-  see §9.)*
-- **P4 API**: public API (§12), keeping MDM-compatible names where semantics
-  survive; `docs/api.md`. (No migration tooling — see §13.)
+- **P3 Views**: base file generator + explicit base sync (done, §11); then the
+  fileclass-table custom Bases view with editable cells. *(Computed fields —
+  Lookup/Formula — are out of scope; see §9.)*
+- **Deferred — future sprint**: public API + CLI/TUI (§12). No migration
+  tooling (§13).
 
 ## 16. Coding conventions
 

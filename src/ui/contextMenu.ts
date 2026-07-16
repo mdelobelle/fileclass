@@ -9,6 +9,7 @@ import { Component, Menu, TFile } from "obsidian";
 import type FileclassPlugin from "../../main";
 import { insertMissingFields } from "../commands/insertMissingFields";
 import { pickAndUpdateField } from "../fields/fieldActions";
+import { pickAndCreateBase } from "../views/baseFileGenerator";
 import { AddFileClassModal } from "./addFileClassModal";
 import { openFileClassSchema } from "./fileClassSchemaModal";
 import { NoteFieldsModal } from "./noteFieldsModal";
@@ -40,6 +41,32 @@ export class FileclassContextMenu extends Component {
 
 	private build(menu: Menu, file: TFile): void {
 		if (!this.plugin.settings.enableContextMenu) return;
+
+		// On a fileClass note: only schema actions. Elsewhere: only note actions.
+		const fcName = this.plugin.index.fileClassNameOfNote(file.path);
+		if (fcName) {
+			this.buildFileClassMenu(menu, fcName);
+		} else {
+			this.buildNoteMenu(menu, file);
+		}
+	}
+
+	private buildFileClassMenu(menu: Menu, fcName: string): void {
+		menu.addItem((item) =>
+			item
+				.setTitle("Manage this fileClass")
+				.setIcon("wrench")
+				.onClick(() => openFileClassSchema(this.plugin, fcName))
+		);
+		menu.addItem((item) =>
+			item
+				.setTitle("Create a base for this fileClass")
+				.setIcon("layout-grid")
+				.onClick(() => pickAndCreateBase(this.plugin, fcName))
+		);
+	}
+
+	private buildNoteMenu(menu: Menu, file: TFile): void {
 		menu.addItem((item) =>
 			item
 				.setTitle("Manage note fields")
@@ -67,14 +94,6 @@ export class FileclassContextMenu extends Component {
 				.setTitle("Add fileClass")
 				.setIcon("tag")
 				.onClick(() => new AddFileClassModal(this.plugin, file).open())
-		);
-
-		const fcName = this.plugin.index.fileClassNameOfNote(file.path);
-		menu.addItem((item) =>
-			item
-				.setTitle(fcName ? "Manage this fileClass's fields" : "Edit a fileClass schema")
-				.setIcon("wrench")
-				.onClick(() => openFileClassSchema(this.plugin, fcName))
 		);
 	}
 }

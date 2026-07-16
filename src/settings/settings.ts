@@ -11,6 +11,8 @@ export interface FileclassSettings {
 	fileClassAlias: string;
 	/** fileClass applied to every note that has no other binding (optional). */
 	globalFileClass: string;
+	/** Folder where generated `<fileClass>.base` files are written (trailing /). */
+	basesFolder: string;
 	/** Default icon for a fileClass without an explicit `icon`. */
 	fileClassIcon: string;
 	/** Add Fileclass entries to the file/editor context menus. */
@@ -33,6 +35,7 @@ export const DEFAULT_SETTINGS: FileclassSettings = {
 	classFilesPath: "",
 	fileClassAlias: "fileClass",
 	globalFileClass: "",
+	basesFolder: "",
 	fileClassIcon: "file-spreadsheet",
 	enableContextMenu: true,
 	enableTabHeaderIndicator: true,
@@ -53,5 +56,9 @@ export function normalizeFolderPath(path: string): string {
 /** Merges persisted data over defaults and normalizes derived values. */
 export function coerceSettings(data: unknown): FileclassSettings {
 	const merged = { ...DEFAULT_SETTINGS, ...(data as Partial<FileclassSettings> | null) };
-	return { ...merged, classFilesPath: normalizeFolderPath(merged.classFilesPath) };
+	return {
+		...merged,
+		classFilesPath: normalizeFolderPath(merged.classFilesPath),
+		basesFolder: normalizeFolderPath(merged.basesFolder),
+	};
 }

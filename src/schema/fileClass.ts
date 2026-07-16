@@ -11,6 +11,10 @@ export interface FileClassOptions {
 	icon?: string;
 	/** Parent fileClass name (frontmatter key `extends`), if any. */
 	extends?: string;
+	/** When set, mirror this fileClass's fields into this `.base` (§11). */
+	baseFile?: string;
+	/** Name of the managed view in `baseFile` (defaults to the fileClass name). */
+	baseView?: string;
 	/** Field names to remove from inherited fields. */
 	excludes: string[];
 	mapWithTag: boolean;
@@ -79,6 +83,8 @@ export function parseFileClass(name: string, frontmatter: Frontmatter): ParsedFi
 	const options: FileClassOptions = {
 		icon: typeof fm.icon === "string" && fm.icon ? fm.icon : undefined,
 		extends: extendsName,
+		baseFile: typeof fm.baseFile === "string" && fm.baseFile ? fm.baseFile : undefined,
+		baseView: typeof fm.baseView === "string" && fm.baseView ? fm.baseView : undefined,
 		excludes: toStringArray(fm.excludes),
 		mapWithTag: stringToBoolean(fm.mapWithTag),
 		tagNames: toStringArray(fm.tagNames),

@@ -75,6 +75,8 @@ describe("buildOptionUpdates", () => {
 		).toEqual({
 			icon: "book",
 			extends: null,
+			baseFile: null,
+			baseView: null,
 			mapWithTag: true,
 			tagNames: ["x"],
 			filesPaths: null,

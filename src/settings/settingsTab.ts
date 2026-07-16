@@ -62,6 +62,20 @@ export class FileclassSettingTab extends PluginSettingTab {
 			);
 
 		new Setting(containerEl)
+			.setName("Bases folder")
+			.setDesc("Where generated <fileClass>.base files are written.")
+			.addText((text) => {
+				text
+					.setPlaceholder("(vault root)")
+					.setValue(this.plugin.settings.basesFolder)
+					.onChange(async (value) => {
+						this.plugin.settings.basesFolder = normalizeFolderPath(value);
+						await this.plugin.saveSettings();
+					});
+				new FolderSuggest(this.app, text.inputEl);
+			});
+
+		new Setting(containerEl)
 			.setName("Context menu entries")
 			.setDesc("Add Fileclass actions to the file and editor right-click menus.")
 			.addToggle((toggle) =>

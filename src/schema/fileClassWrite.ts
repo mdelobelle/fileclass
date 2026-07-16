@@ -85,6 +85,8 @@ export function moveFieldDef(fields: RawFieldEntry[], id: string, dir: -1 | 1): 
 export interface EditableOptions {
 	icon?: string;
 	extends?: string;
+	baseFile?: string;
+	baseView?: string;
 	mapWithTag?: boolean;
 	tagNames?: string[];
 	filesPaths?: string[];
@@ -102,6 +104,8 @@ export function buildOptionUpdates(o: EditableOptions): Record<string, unknown> 
 	return {
 		icon: o.icon?.trim() ? o.icon.trim() : null,
 		extends: o.extends?.trim() ? o.extends.trim() : null,
+		baseFile: o.baseFile?.trim() ? o.baseFile.trim() : null,
+		baseView: o.baseView?.trim() ? o.baseView.trim() : null,
 		mapWithTag: !!o.mapWithTag,
 		tagNames: list(o.tagNames),
 		filesPaths: list(o.filesPaths),

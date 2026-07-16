@@ -3,20 +3,26 @@
  * and writes them in one processFrontMatter on Save, leaving `fields` and other
  * keys untouched. Reads current values from the live frontmatter (fresh).
  */
-import { Modal, Setting, TFile } from "obsidian";
+import { ButtonComponent, Modal, Setting, TFile, debounce, normalizePath, parseYaml } from "obsidian";
 
 import type FileclassPlugin from "../../main";
+import { isRootField } from "../schema/field";
 import { parseFileClass } from "../schema/fileClass";
 import { writeOptions } from "../schema/fileClassIo";
 import { buildOptionUpdates, EditableOptions } from "../schema/fileClassWrite";
+import { applyBaseSync } from "../views/baseSync";
+import { isBaseViewSynced } from "../views/baseYaml";
+import { BaseFileSuggest } from "./baseSuggest";
 
 const csv = (v: string): string[] => v.split(",").map((s) => s.trim()).filter(Boolean);
 
 export class FileClassOptionsModal extends Modal {
 	private readonly opts: EditableOptions;
+	private statusBtn?: ButtonComponent;
+	private readonly refreshStatus = debounce(() => void this.updateStatus(), 250, true);
 
 	constructor(
-		plugin: FileclassPlugin,
+		private readonly plugin: FileclassPlugin,
 		private readonly name: string,
 		private readonly file: TFile
 	) {
@@ -26,6 +32,8 @@ export class FileClassOptionsModal extends Modal {
 		this.opts = {
 			icon: o.icon,
 			extends: o.extends,
+			baseFile: o.baseFile,
+			baseView: o.baseView,
 			mapWithTag: o.mapWithTag,
 			tagNames: o.tagNames,
 			filesPaths: o.filesPaths,
@@ -48,6 +56,34 @@ export class FileClassOptionsModal extends Modal {
 			.setDesc("Parent fileClass name.")
 			.addText((t) => t.setValue(this.opts.extends ?? "").onChange((v) => (this.opts.extends = v)));
 
+		new Setting(contentEl).setName("Sync to base").setHeading();
+		new Setting(contentEl)
+			.setName("Base file")
+			.setDesc("A .base whose managed view mirrors this fileClass's fields. Blank to disable.")
+			.addText((t) => {
+				t.setValue(this.opts.baseFile ?? "").onChange((v) => {
+					this.opts.baseFile = v;
+					this.refreshStatus();
+				});
+				new BaseFileSuggest(this.app, t.inputEl);
+			});
+		new Setting(contentEl)
+			.setName("View name")
+			.setDesc(`Managed view in the base (default: ${this.name}).`)
+			.addText((t) =>
+				t.setValue(this.opts.baseView ?? "").onChange((v) => {
+					this.opts.baseView = v;
+					this.refreshStatus();
+				})
+			);
+		new Setting(contentEl)
+			.setName("Base structure")
+			.setDesc("Whether the managed view matches the fileClass fields.")
+			.addButton((b) => {
+				this.statusBtn = b;
+				b.onClick(() => void this.doSync());
+			});
+
 		new Setting(contentEl)
 			.setName("Map with tag")
 			.setDesc("Bind notes tagged with this fileClass's name.")
@@ -69,6 +105,50 @@ export class FileClassOptionsModal extends Modal {
 					this.close();
 				})
 		);
+
+		void this.updateStatus();
+	}
+
+	/** Sync status of the managed view against the form's current base/view. */
+	private async computeStatus(): Promise<"none" | "synced" | "diverged"> {
+		const baseFile = this.opts.baseFile?.trim();
+		if (!baseFile) return "none";
+		const file = this.app.vault.getFileByPath(normalizePath(baseFile));
+		if (!(file instanceof TFile)) return "diverged"; // missing → Sync creates it
+		try {
+			const base = parseYaml(await this.app.vault.read(file));
+			const view = this.opts.baseView?.trim() || this.name;
+			const fields = this.plugin.index
+				.getResolvedFields(this.name)
+				.filter((f) => isRootField(f))
+				.map((f) => f.name);
+			return isBaseViewSynced(base, view, fields) ? "synced" : "diverged";
+		} catch {
+			return "diverged";
+		}
+	}
+
+	private async updateStatus(): Promise<void> {
+		if (!this.statusBtn) return;
+		const status = await this.computeStatus();
+		const b = this.statusBtn;
+		if (status === "none") b.setButtonText("No base set").setDisabled(true).removeCta();
+		else if (status === "synced") b.setButtonText("Synced").setDisabled(true).removeCta();
+		else b.setButtonText("Sync").setDisabled(false).setCta();
+	}
+
+	private async doSync(): Promise<void> {
+		const path = this.opts.baseFile?.trim();
+		if (!path) return;
+		// Persist config, then apply with explicit path/view (cache may lag).
+		await writeOptions(this.app, this.file, buildOptionUpdates(this.opts));
+		await applyBaseSync(
+			this.plugin,
+			this.name,
+			normalizePath(path),
+			this.opts.baseView?.trim() || this.name
+		);
+		await this.updateStatus();
 	}
 
 	private csvSetting(

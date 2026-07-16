@@ -23,6 +23,10 @@ enableGitInfo = true
     name = "UI surfaces"
     pageRef = "/ui"
     weight = 40
+  [[menu.main]]
+    name = "Views"
+    pageRef = "/views"
+    weight = 50
 
 [markup.goldmark.renderer]
   unsafe = true

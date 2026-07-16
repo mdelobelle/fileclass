@@ -88,13 +88,14 @@ via a single `processFrontMatter` write).
 
 You can author a fileClass's own definition from the UI — no need to edit its
 YAML by hand. Run **Fileclass: edit a fileClass schema** (or right-click a
-fileClass note → **Manage this fileClass's fields**) to open the schema editor:
+fileClass note → **Manage this fileClass**) to open the schema editor:
 
 - **Fields** — add, edit, remove, and reorder field definitions. A field has a
   **name**, a **type**, and type-specific settings; its stable id is generated
   automatically.
 - **Options…** — edit the fileClass options: `icon` (a Lucide name), `extends`
-  (parent fileClass), `mapWithTag`, `tagNames`, `filesPaths`, `bookmarksGroups`,
+  (parent fileClass), **Sync to base** (mirror the fields into a `.base`, see
+  [Views](../views/)), `mapWithTag`, `tagNames`, `filesPaths`, `bookmarksGroups`,
   and `excludes`.
 
 ### Type-specific field settings

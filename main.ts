@@ -23,6 +23,8 @@ import { FileclassSettingTab } from "./src/settings/settingsTab";
 import { AddFileClassModal } from "./src/ui/addFileClassModal";
 import { FileclassContextMenu } from "./src/ui/contextMenu";
 import { openFileClassSchema } from "./src/ui/fileClassSchemaModal";
+import { pickAndCreateBase } from "./src/views/baseFileGenerator";
+import { syncFileClassToBase } from "./src/views/baseSync";
 import { FieldIndicator } from "./src/ui/indicator/fieldIndicator";
 import { LinkIndicator } from "./src/ui/indicator/linkIndicator";
 import { NoteFieldsModal } from "./src/ui/noteFieldsModal";
@@ -145,6 +147,32 @@ export default class FileclassPlugin extends Plugin {
 					const name = active ? this.index.fileClassNameOfNote(active.path) : undefined;
 					openFileClassSchema(this, name);
 				}
+				return true;
+			},
+		});
+
+		this.addCommand({
+			id: "create-base-for-fileclass",
+			name: "Create a base for a fileClass",
+			checkCallback: (checking) => {
+				if (!this.index.fileClassNames.length) return false;
+				if (!checking) {
+					const active = this.app.workspace.getActiveFile();
+					const name = active ? this.index.fileClassNameOfNote(active.path) : undefined;
+					pickAndCreateBase(this, name);
+				}
+				return true;
+			},
+		});
+
+		this.addCommand({
+			id: "sync-fileclass-to-base",
+			name: "Sync this fileClass to its base",
+			checkCallback: (checking) => {
+				const active = this.app.workspace.getActiveFile();
+				const name = active ? this.index.fileClassNameOfNote(active.path) : undefined;
+				if (!name || !this.index.getFileClass(name)?.options.baseFile) return false;
+				if (!checking) void syncFileClassToBase(this, name);
 				return true;
 			},
 		});

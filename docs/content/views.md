@@ -17,10 +17,11 @@ note** → **Create a base for this fileClass**. A small dialog lets you choose:
   Bases folder**), and
 - the **view name** — the managed view (defaults to the fileClass name).
 
-It creates the base (filtered on the fileClass, with a table view listing
-`file.name` and the fields) and records the choices on the fileClass
-(`baseFile`/`baseView`). Pointing at an **existing** base is safe: only the
-managed view is added or updated — your other views are left untouched.
+It creates the base — filtered on the fileClass, with an **editable
+`fileclass-table` view** (see below) listing `file.name` and the fields — and
+records the choices on the fileClass (`baseFile`/`baseView`). Pointing at an
+**existing** base is safe: only the managed view is added or updated — your other
+views are left untouched.
 
 ## Keeping a base in sync
 
@@ -47,6 +48,21 @@ fileClass to its base**.
 
 > An editable **fileclass-table** view (in-cell editing through Fileclass's typed
 > inputs) is being built next; generated bases will be able to use it.
+
+## Editable table view
+
+Fileclass registers a Bases view type, **`fileclass-table`**, that renders like a
+table but lets you **edit cells in place**: clicking a `note.<field>` cell opens
+the field's typed input (the same one used everywhere) and writes the value —
+`file.*` and `formula.*` cells stay read-only.
+
+Generated bases use it by default. In any other base, set a view's `type` to
+`fileclass-table` to get the same editing (the managed view keeps working with
+the sync — its type is preserved). It requires the core Bases plugin; with Bases
+disabled the view type is simply unavailable (switch the view back to `table`).
+
+> It renders all rows (no virtualization yet), so very large bases are better
+> viewed with a native `table` view.
 
 ## Embedding
 

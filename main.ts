@@ -25,6 +25,7 @@ import { FileclassContextMenu } from "./src/ui/contextMenu";
 import { openFileClassSchema } from "./src/ui/fileClassSchemaModal";
 import { pickAndCreateBase } from "./src/views/baseFileGenerator";
 import { syncFileClassToBase } from "./src/views/baseSync";
+import { registerFileclassTableView } from "./src/views/fileclassTableView";
 import { FieldIndicator } from "./src/ui/indicator/fieldIndicator";
 import { LinkIndicator } from "./src/ui/indicator/linkIndicator";
 import { NoteFieldsModal } from "./src/ui/noteFieldsModal";
@@ -72,8 +73,19 @@ export default class FileclassPlugin extends Plugin {
 		// heavy work during onload (Obsidian performance guideline).
 		this.app.workspace.onLayoutReady(() => {
 			this.refreshBasesAvailability();
+			this.registerFileclassTableView();
 			this.index.rebuild();
 		});
+	}
+
+	/** Registers the editable fileclass-table Bases view when Bases is available. */
+	private registerFileclassTableView(): void {
+		if (!this.basesAvailable) return;
+		try {
+			this.register(registerFileclassTableView(this));
+		} catch {
+			/* Bases internals drifted — the view is optional, degrade silently. */
+		}
 	}
 
 	onunload(): void {

@@ -48,8 +48,7 @@ falling back to the configured default). Each surface has its own toggle under
 
 - **Tab header**, **file explorer**, **bookmarks** — next to the file name.
 - **Backlinks pane** and the **first column of Bases** tables — next to each link.
-- **Internal links** in reading view **and Live Preview** — after each link
-  (**off by default**, since it decorates every link; enable it if you want it).
+- **Internal links** in reading view **and Live Preview** — after each link.
 
 The indicator is a best-effort UI decoration layered on Obsidian's DOM (and, for
 Live Preview, its CodeMirror editor): if a surface changes in a future Obsidian

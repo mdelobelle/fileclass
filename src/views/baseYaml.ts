@@ -1,9 +1,10 @@
 /*
  * Generates the YAML of a `<fileClass>.base` file (ARCHITECTURE.md §11). Pure —
- * no Obsidian. A base filtered to the fileClass, with a table view listing the
- * class's fields. Keeps it minimal and deterministic (testable); users refine
- * the base afterwards in Obsidian.
+ * no Obsidian. A base filtered to the fileClass, with an editable
+ * `fileclass-table` view listing the class's fields. Keeps it minimal and
+ * deterministic (testable); users refine the base afterwards in Obsidian.
  */
+import { FILECLASS_TABLE_VIEW } from "./columns";
 
 /** Quotes a value/property for the `order:` list only when it isn't a bare identifier. */
 export function orderEntry(name: string): string {
@@ -19,6 +20,14 @@ interface BaseObject {
 	views?: unknown;
 }
 
+/** A managed (Fileclass) table view — native `table` or editable `fileclass-table`. */
+function isManagedTable(view: BaseView, viewName: string): boolean {
+	return (
+		view?.name === viewName &&
+		(view?.type === "table" || view?.type === FILECLASS_TABLE_VIEW)
+	);
+}
+
 /** The `order` a managed view mirrors: `file.name` then the fileClass fields. */
 export function mirrorOrder(fieldNames: string[]): string[] {
 	return ["file.name", ...fieldNames.map(orderEntry)];
@@ -32,7 +41,7 @@ export function mirrorOrder(fieldNames: string[]): string[] {
 export function isBaseViewSynced(base: unknown, viewName: string, fieldNames: string[]): boolean {
 	const views = (base as BaseObject)?.views;
 	if (!Array.isArray(views)) return false;
-	const view = (views as BaseView[]).find((v) => v?.type === "table" && v?.name === viewName);
+	const view = (views as BaseView[]).find((v) => isManagedTable(v, viewName));
 	if (!view || !Array.isArray(view.order)) return false;
 	const desired = mirrorOrder(fieldNames);
 	return view.order.length === desired.length && view.order.every((v, i) => v === desired[i]);
@@ -52,9 +61,9 @@ export function mirrorBaseView(base: unknown, viewName: string, fieldNames: stri
 	const views = b.views as BaseView[];
 	const desired = mirrorOrder(fieldNames);
 
-	const view = views.find((v) => v?.type === "table" && v?.name === viewName);
+	const view = views.find((v) => isManagedTable(v, viewName));
 	if (!view) {
-		views.push({ type: "table", name: viewName, order: desired });
+		views.push({ type: FILECLASS_TABLE_VIEW, name: viewName, order: desired });
 		return true;
 	}
 	const current = Array.isArray(view.order) ? view.order : [];
@@ -80,7 +89,7 @@ export function buildBaseYaml(
 		"  and:",
 		`    - ${alias} == ${JSON.stringify(fileClassName)}`,
 		"views:",
-		"  - type: table",
+		`  - type: ${FILECLASS_TABLE_VIEW}`,
 		`    name: ${JSON.stringify(viewName)}`,
 		"    order:",
 		...order.map((o) => `      - ${o}`),

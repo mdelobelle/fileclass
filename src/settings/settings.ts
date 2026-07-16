@@ -41,8 +41,7 @@ export const DEFAULT_SETTINGS: FileclassSettings = {
 	enableTabHeaderIndicator: true,
 	enableFileExplorerIndicator: true,
 	enableBookmarksIndicator: true,
-	// Off by default: an icon after every inline link is a lot of decoration.
-	enableInlineLinkIndicator: false,
+	enableInlineLinkIndicator: true,
 	enableBacklinkIndicator: true,
 	enableBasesIndicator: true,
 };

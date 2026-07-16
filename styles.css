@@ -22,3 +22,51 @@
 	color: var(--text-muted);
 	margin-right: 8px;
 }
+
+/* Editable fileclass-table Bases view. */
+.fileclass-table {
+	border-collapse: collapse;
+	width: 100%;
+	font-size: var(--font-ui-small);
+}
+.fileclass-table th,
+.fileclass-table td {
+	border: 1px solid var(--background-modifier-border);
+	padding: 4px 8px;
+	text-align: left;
+	vertical-align: top;
+	white-space: nowrap; /* no line breaks in cells */
+}
+.fileclass-table th {
+	background: var(--background-secondary);
+	font-weight: var(--font-semibold);
+	max-width: 20em;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+/*
+ * A flex wrapper per cell: text/links shrink and truncate with an ellipsis,
+ * while a trailing indicator stays pinned and visible (full value on hover).
+ */
+.fileclass-table .fc-cell {
+	display: flex;
+	align-items: center;
+	gap: 3px;
+	max-width: 20em;
+}
+.fileclass-table .fc-cell > .fc-seg,
+.fileclass-table .fc-cell > a.internal-link {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.fileclass-table .fc-cell > .fileclass-indicator {
+	flex-shrink: 0;
+}
+.fileclass-table td.fileclass-editable {
+	cursor: pointer;
+}
+.fileclass-table td.fileclass-editable:hover {
+	background: var(--background-modifier-hover);
+}

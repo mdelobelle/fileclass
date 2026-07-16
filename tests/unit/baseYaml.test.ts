@@ -11,7 +11,7 @@ describe("buildBaseYaml", () => {
 				"  and:",
 				'    - fileClass == "Book"',
 				"views:",
-				"  - type: table",
+				"  - type: fileclass-table",
 				'    name: "Book"',
 				"    order:",
 				"      - file.name",
@@ -59,11 +59,21 @@ describe("mirrorBaseView", () => {
 		expect(mirrorBaseView(base, "Book", ["author"])).toBe(false);
 	});
 
-	it("creates the managed view when missing", () => {
+	it("creates the managed view (editable type) when missing", () => {
 		const base = { views: [{ type: "table", name: "Other", order: ["file.name"] }] };
 		expect(mirrorBaseView(base, "Book", ["a"])).toBe(true);
 		expect(base.views).toHaveLength(2);
-		expect(base.views[1]).toEqual({ type: "table", name: "Book", order: ["file.name", "a"] });
+		expect(base.views[1]).toEqual({
+			type: "fileclass-table",
+			name: "Book",
+			order: ["file.name", "a"],
+		});
+	});
+
+	it("recognizes an editable fileclass-table view (keeps its type)", () => {
+		const base = { views: [{ type: "fileclass-table", name: "Book", order: ["file.name"] }] };
+		expect(mirrorBaseView(base, "Book", ["a"])).toBe(true);
+		expect(base.views[0]).toEqual({ type: "fileclass-table", name: "Book", order: ["file.name", "a"] });
 	});
 
 	it("quotes non-identifier field names", () => {

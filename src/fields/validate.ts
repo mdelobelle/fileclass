@@ -65,12 +65,17 @@ function validateInList(value: unknown, field: Field, allowed: string[]): Valida
 		: invalid(`"${String(value)}" is not an allowed value for "${field.name}"`);
 }
 
+const WIKILINK_RE = /^!?\[\[.+\]\]$/;
+
 function validateDatePattern(value: unknown, field: Field, re: RegExp): ValidationResult {
+	const s = String(value);
+	// Insert-as-link stores the date as a wikilink; accept it as-is.
+	if (WIKILINK_RE.test(s.trim())) return VALID;
 	// A custom format can't be checked without a date library; accept non-empty.
 	const hasCustomFormat =
 		!Array.isArray(field.options) && typeof field.options.dateFormat === "string";
 	if (hasCustomFormat) return VALID;
-	return re.test(String(value)) ? VALID : invalid(`"${field.name}" has an invalid format`);
+	return re.test(s) ? VALID : invalid(`"${field.name}" has an invalid format`);
 }
 
 /**

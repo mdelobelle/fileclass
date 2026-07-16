@@ -13,14 +13,14 @@ field types and the commands that set values. Everything is written to
 | Type | Stores | Input | Validation |
 |------|--------|-------|------------|
 | **Input** | text | text prompt | must be scalar text |
-| **Number** | number | text prompt | numeric; optional `min`/`max` |
+| **Number** | number | number input (spinner, `min`/`max`/`step`) | numeric; optional `min`/`max` |
 | **Boolean** | true/false | true/false picker | boolean |
 | **Select** | one value | value picker | must be an allowed value (if a list is defined) |
 | **Cycle** | one value | value picker | must be an allowed value |
 | **Multi** | list | toggle list | each item must be allowed |
-| **Date** | date | text prompt | `YYYY-MM-DD` (unless a custom format is set) |
-| **DateTime** | date+time | text prompt | `YYYY-MM-DDTHH:mm` |
-| **Time** | time | text prompt | `HH:mm` |
+| **Date** | date | date picker | `YYYY-MM-DD` (unless a custom format is set) |
+| **DateTime** | date+time | date-time picker | `YYYY-MM-DDTHH:mm` |
+| **Time** | time | time picker | `HH:mm` |
 | **File** | link | note picker | a link string |
 | **MultiFile** | list of links | toggle list | a list of links |
 | **Media** | link/embed | file picker | a link string |
@@ -44,6 +44,20 @@ the alias shown in the picker and written into the link.
   gracefully falls back to **all notes** (File) or **all media files** (Media).
 - `Media`/`MultiMedia` with the `embed` option store an embed (`![[…]]`).
 - Links honor your vault's link settings (`generateMarkdownLink`).
+
+## Date fields (Date / DateTime / Time)
+
+Editing a date opens a **native picker** (calendar / clock) with **Today** and
+**Clear** buttons, plus a **link toggle**:
+
+- **Raw text** (default) — stores the formatted date, e.g. `2026-07-16`.
+- **As link** — stores a wikilink, e.g. `[[2026-07-16]]` or, with a **Link path**
+  set, `[[Journal/2026-07-16]]`. Configure the default state (**Insert as link**)
+  and the **Link path** in the schema editor.
+
+Set a custom **`dateFormat`** (moment.js tokens) to store any format; otherwise
+the ISO default above is used. If the **Natural Language Dates** plugin is
+installed, an extra field parses phrases like *"next friday"* into the picker.
 
 ## Where allowed values come from
 

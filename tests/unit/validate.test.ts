@@ -80,6 +80,11 @@ describe("Date / DateTime / Time patterns", () => {
 		const f = make("Date", { dateFormat: "DD/MM/YYYY" });
 		expect(validateField(f, "15/07/2026").ok).toBe(true);
 	});
+	it("accepts the insert-as-link wikilink form", () => {
+		expect(validateField(make("Date"), "[[2026-07-15]]").ok).toBe(true);
+		expect(validateField(make("Date"), "[[Journal/2026-07-15]]").ok).toBe(true);
+		expect(validateField(make("DateTime"), "[[2026-07-15T09:30|note]]").ok).toBe(true);
+	});
 });
 
 describe("Input", () => {

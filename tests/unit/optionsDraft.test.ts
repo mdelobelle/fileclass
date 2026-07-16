@@ -14,13 +14,28 @@ describe("Number options", () => {
 });
 
 describe("Date options", () => {
-	it("reads and writes format + insert-as-link", () => {
-		const draft = optionsToDraft("Date", { dateFormat: "YYYY", defaultInsertAsLink: "true" });
-		expect(draft).toEqual({ dateFormat: "YYYY", defaultInsertAsLink: true });
+	it("reads and writes format + insert-as-link + link path", () => {
+		const draft = optionsToDraft("Date", {
+			dateFormat: "YYYY",
+			defaultInsertAsLink: "true",
+			dateLinkPath: "Journal/",
+		});
+		expect(draft).toEqual({
+			dateFormat: "YYYY",
+			defaultInsertAsLink: true,
+			dateLinkPath: "Journal/",
+		});
 		expect(buildFieldOptions("DateTime", draft)).toEqual({
 			dateFormat: "YYYY",
 			defaultInsertAsLink: true,
+			dateLinkPath: "Journal/",
 		});
+	});
+
+	it("defaults link path to empty and omits it when blank", () => {
+		const draft = optionsToDraft("Date", { dateFormat: "YYYY" });
+		expect(draft).toEqual({ dateFormat: "YYYY", defaultInsertAsLink: false, dateLinkPath: "" });
+		expect(buildFieldOptions("Date", draft)).toEqual({ dateFormat: "YYYY" });
 	});
 });
 

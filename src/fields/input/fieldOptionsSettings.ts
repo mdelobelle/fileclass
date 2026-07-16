@@ -37,8 +37,18 @@ export function renderFieldOptionsSettings(
 				.addText((t) => t.setValue(draft.dateFormat ?? "").onChange((v) => (draft.dateFormat = v)));
 			new Setting(container)
 				.setName("Insert as link")
+				.setDesc("Store the date as a [[wikilink]] instead of raw text.")
 				.addToggle((t) =>
 					t.setValue(!!draft.defaultInsertAsLink).onChange((v) => (draft.defaultInsertAsLink = v))
+				);
+			new Setting(container)
+				.setName("Link path")
+				.setDesc("Optional folder prefix for the date link, e.g. Journal/.")
+				.addText((t) =>
+					t
+						.setPlaceholder("(vault root)")
+						.setValue(draft.dateLinkPath ?? "")
+						.onChange((v) => (draft.dateLinkPath = v))
 				);
 			return;
 		case "Select":

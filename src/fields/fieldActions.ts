@@ -18,10 +18,11 @@ import {
 	ObjectFieldsEditorModal,
 	ObjectListEditorModal,
 } from "./input/objectEditor";
+import { DateInputModal } from "./input/dateInputModal";
 import { ChoiceSuggestModal, MultiSelectModal, PromptModal } from "./input/valueModals";
 import { formatLink, linkTargetPath } from "./links";
 import { asListValue, asObjectValue } from "./objectDraft";
-import { baseBindingOptions } from "./options";
+import { baseBindingOptions, numberOptions } from "./options";
 import { editableRootFields, TEXT_INPUT_TYPES } from "./support";
 import { resolveFieldValues } from "./valuesIo";
 import { validateField } from "./validate";
@@ -81,6 +82,29 @@ function openTextPrompt(
 		title: `Set ${field.name}`,
 		initial: current == null ? "" : String(current),
 		placeholder: placeholderFor(field),
+		validate: (v) => validateField(field, coerceInput(field, v)),
+		onSubmit: (v) => onValue(coerceInput(field, v)),
+	}).open();
+}
+
+/** A number input with spinner and the field's min/max/step constraints. */
+function openNumberPrompt(
+	app: App,
+	field: Field,
+	current: unknown,
+	onValue: (value: unknown) => void
+): void {
+	const { min, max, step } = numberOptions(field);
+	new PromptModal(app, {
+		title: `Set ${field.name}`,
+		initial: current == null ? "" : String(current),
+		placeholder: placeholderFor(field),
+		configureInput: (el) => {
+			el.type = "number";
+			if (min != null) el.min = String(min);
+			if (max != null) el.max = String(max);
+			if (step != null) el.step = String(step);
+		},
 		validate: (v) => validateField(field, coerceInput(field, v)),
 		onSubmit: (v) => onValue(coerceInput(field, v)),
 	}).open();
@@ -205,6 +229,20 @@ export async function promptFieldValue(
 				initial: asListValue(current),
 				onSave: (arr) => onValue(arr),
 			}).open();
+			return;
+
+		case "Date":
+		case "DateTime":
+		case "Time":
+			new DateInputModal(app, {
+				field,
+				initial: current == null ? "" : String(current),
+				onSubmit: (v) => onValue(v),
+			}).open();
+			return;
+
+		case "Number":
+			openNumberPrompt(app, field, current, onValue);
 			return;
 
 		default:

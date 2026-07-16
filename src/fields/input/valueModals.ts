@@ -13,6 +13,8 @@ export interface PromptOptions {
 	placeholder?: string;
 	validate?: (value: string) => ValidationResult;
 	onSubmit: (value: string) => void;
+	/** Tweak the raw input element (e.g. type="number" with min/max/step). */
+	configureInput?: (el: HTMLInputElement) => void;
 }
 
 /** Single-line text prompt with inline validation (Input/Number/Date/…). */
@@ -31,6 +33,7 @@ export class PromptModal extends Modal {
 		const input = new TextComponent(contentEl);
 		input.setValue(this.opts.initial ?? "").setPlaceholder(this.opts.placeholder ?? "");
 		input.inputEl.style.width = "100%";
+		this.opts.configureInput?.(input.inputEl);
 		window.setTimeout(() => input.inputEl.focus(), 0);
 
 		const submit = () => {

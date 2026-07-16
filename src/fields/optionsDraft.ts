@@ -16,6 +16,7 @@ export interface OptionsDraft {
 	// Date / DateTime / Time
 	dateFormat?: string;
 	defaultInsertAsLink?: boolean;
+	dateLinkPath?: string;
 	// Select / Cycle / Multi — undefined sourceType means an unsupported source
 	// (legacy dataview), left untouched by this editor.
 	sourceType?: "ValuesList" | "ValuesListNotePath" | "ValuesFromBase";
@@ -64,6 +65,7 @@ export function optionsToDraft(type: FieldType, options: FieldOptions): OptionsD
 			return {
 				dateFormat: typeof o.dateFormat === "string" ? o.dateFormat : "",
 				defaultInsertAsLink: o.defaultInsertAsLink === true || o.defaultInsertAsLink === "true",
+				dateLinkPath: typeof o.dateLinkPath === "string" ? o.dateLinkPath : "",
 			};
 		case "Select":
 		case "Cycle":
@@ -120,6 +122,7 @@ export function buildFieldOptions(type: FieldType, draft: OptionsDraft): FieldOp
 			const o: Record<string, unknown> = {};
 			if (draft.dateFormat?.trim()) o.dateFormat = draft.dateFormat.trim();
 			if (draft.defaultInsertAsLink) o.defaultInsertAsLink = true;
+			if (draft.dateLinkPath?.trim()) o.dateLinkPath = draft.dateLinkPath.trim();
 			return o;
 		}
 		case "Select":

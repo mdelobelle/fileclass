@@ -14,7 +14,7 @@ field types and the commands that set values. Everything is written to
 |------|--------|-------|------------|
 | **Input** | text | text prompt | must be scalar text |
 | **Number** | number | number input (spinner, `min`/`max`/`step`) | numeric; optional `min`/`max` |
-| **Boolean** | true/false | true/false picker | boolean |
+| **Boolean** | true/false | toggle | boolean |
 | **Select** | one value | value picker | must be an allowed value (if a list is defined) |
 | **Cycle** | one value | value picker | must be an allowed value |
 | **Multi** | list | toggle list | each item must be allowed |

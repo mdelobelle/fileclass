@@ -19,7 +19,12 @@ import {
 	ObjectListEditorModal,
 } from "./input/objectEditor";
 import { DateInputModal } from "./input/dateInputModal";
-import { ChoiceSuggestModal, MultiSelectModal, PromptModal } from "./input/valueModals";
+import {
+	BooleanInputModal,
+	ChoiceSuggestModal,
+	MultiSelectModal,
+	PromptModal,
+} from "./input/valueModals";
 import { formatLink, linkTargetPath } from "./links";
 import { asListValue, asObjectValue } from "./objectDraft";
 import { baseBindingOptions, numberOptions } from "./options";
@@ -127,13 +132,11 @@ export async function promptFieldValue(
 
 	switch (field.type) {
 		case "Boolean":
-			new ChoiceSuggestModal<boolean>(
-				app,
-				[true, false],
-				(b) => (b ? "true" : "false"),
-				(b) => onValue(b),
-				"Set true or false"
-			).open();
+			new BooleanInputModal(app, {
+				title: `Set ${field.name}`,
+				initial: current === true || current === "true",
+				onSubmit: (v) => onValue(v),
+			}).open();
 			return;
 
 		case "Select":

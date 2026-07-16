@@ -63,6 +63,41 @@ export class PromptModal extends Modal {
 	}
 }
 
+/** Boolean input: a real toggle (like MDM) plus Save; Enter confirms. */
+export class BooleanInputModal extends Modal {
+	constructor(
+		app: App,
+		private readonly opts: { title: string; initial: boolean; onSubmit: (value: boolean) => void }
+	) {
+		super(app);
+	}
+
+	onOpen(): void {
+		const { contentEl } = this;
+		contentEl.createEl("h3", { text: this.opts.title });
+
+		let value = this.opts.initial;
+		const submit = () => {
+			this.opts.onSubmit(value);
+			this.close();
+		};
+		new Setting(contentEl)
+			.setName("Value")
+			.addToggle((t) => t.setValue(value).onChange((v) => (value = v)));
+		new Setting(contentEl).addButton((b) =>
+			b.setButtonText("Save").setCta().onClick(submit)
+		);
+		this.scope.register([], "Enter", (e) => {
+			e.preventDefault();
+			submit();
+		});
+	}
+
+	onClose(): void {
+		this.contentEl.empty();
+	}
+}
+
 /** Generic single-choice suggester (Select/Cycle/Boolean). */
 export class ChoiceSuggestModal<T> extends SuggestModal<T> {
 	constructor(

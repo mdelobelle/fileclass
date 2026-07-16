@@ -9,9 +9,21 @@ import { renderFieldOptionsSettings } from "../fields/input/fieldOptionsSettings
 import { buildFieldOptions, optionsToDraft, OptionsDraft } from "../fields/optionsDraft";
 import { FIELD_TYPES, FieldOptions, FieldType } from "../schema/field";
 
-/** Types offered in the schema editor (Canvas/JSON/YAML are deferred, §7). */
-const DEFERRED = new Set<FieldType>(["Canvas", "CanvasGroup", "CanvasGroupLink", "JSON", "YAML"]);
-export const EDITABLE_FIELD_TYPES: FieldType[] = FIELD_TYPES.filter((t) => !DEFERRED.has(t));
+/**
+ * Types offered in the schema editor. Excludes Canvas/JSON/YAML (deferred) and
+ * Lookup/Formula (computed — out of scope, §9); legacy fields of those types
+ * still load and display but can't be authored here.
+ */
+const EXCLUDED = new Set<FieldType>([
+	"Canvas",
+	"CanvasGroup",
+	"CanvasGroupLink",
+	"JSON",
+	"YAML",
+	"Lookup",
+	"Formula",
+]);
+export const EDITABLE_FIELD_TYPES: FieldType[] = FIELD_TYPES.filter((t) => !EXCLUDED.has(t));
 
 export interface FieldDefResult {
 	name: string;

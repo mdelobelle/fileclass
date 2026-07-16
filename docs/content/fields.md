@@ -29,7 +29,8 @@ field types and the commands that set values. Everything is written to
 | **ObjectList** | list of objects | draft editor | each item's children validate |
 
 Empty values are always valid — a field is optional unless a constraint says
-otherwise. `Lookup` and `Formula` are computed — see [Computed fields](../computed/).
+otherwise. `Lookup` and `Formula` (computed fields) are **out of scope** for
+Fileclass — use Bases views for reverse relations and computed columns.
 
 ## Link fields (File / Media)
 

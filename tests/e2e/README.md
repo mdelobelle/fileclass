@@ -36,7 +36,6 @@ the harness could not reach Obsidian (see the printed instructions).
 
 ## Adding scenarios (later phases)
 
-`canary.mjs` is the skeleton. Field-write, draft-editor-atomicity, and
-lookup/formula-recalc scenarios (§14) are added here as the corresponding
-phases land, each asserting on `fixture-vault` file contents through the same
-`evaluate(...)` bridge.
+`canary.mjs` is the skeleton. Field-write and draft-editor-atomicity scenarios
+(§14) are added here as the corresponding phases land, each asserting on
+`fixture-vault` file contents through the same `evaluate(...)` bridge.

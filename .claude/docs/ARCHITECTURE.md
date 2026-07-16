@@ -8,11 +8,18 @@
 ## 1. What this plugin is
 
 **Fileclass** is the schema and data-quality layer for Obsidian vaults: typed,
-validated, per-note-type property schemas ("fileClasses") with guided input,
-nested objects, computed fields — using the **core Bases plugin as query/view
-engine**. It is the successor of [Metadata Menu](https://github.com/mdelobelle/metadatamenu)
+validated, per-note-type property schemas ("fileClasses") with guided input and
+nested objects — using the **core Bases plugin as query/view engine**. It is the
+successor of [Metadata Menu](https://github.com/mdelobelle/metadatamenu)
 (same author). Metadata Menu goes into maintenance mode; users relying on
 dataview inline fields stay there.
+
+**Out of scope (deliberate):** *computed* fields — **Lookup** (reverse relations)
+and **Formula** (computed columns). They don't validate user input; they derive
+and write values from *other* notes/fields, which is a different concern and is
+better served by Bases views (and, for persistence, other tooling). Fileclass is
+the schema + guided-input + nested-editing layer, not a computation engine. See
+§9.
 
 Positioning vs core Obsidian:
 - core **Properties** types are flat and vault-global; no per-class schema, no
@@ -20,9 +27,9 @@ Positioning vs core Obsidian:
 - core **Bases** queries/views properties (including nested ones) but cannot
   edit nested values and has no schema.
 - **Fileclass** = fileClass schemas (≈ table schema), File/MultiFile fields
-  constrained by a Base view (≈ foreign key), Select (≈ enum), Lookup
-  (≈ reverse relation), Formula (≈ computed column, persisted), Object/ObjectList
-  (nested typed structures with a real editor).
+  constrained by a Base view (≈ foreign key), Select (≈ enum), Object/ObjectList
+  (nested typed structures with a real editor). Reverse relations and computed
+  columns are **out of scope** (§9).
 
 ## 2. Non-negotiable design decisions
 
@@ -107,9 +114,6 @@ fileclass/
 │   ├── io/
 │   │   ├── read.ts                 # frontmatter reads (getFileCache + objectPath)
 │   │   └── write.ts                # processFrontMatter writes; single write per user action (D5)
-│   ├── computed/
-│   │   ├── lookups.ts              # §9
-│   │   └── formulas.ts             # §9
 │   ├── views/
 │   │   ├── fileclassBasesView.ts   # registered custom Bases view with editable cells (§11)
 │   │   └── baseFileGenerator.ts    # generate <fileClass>.base files (§11)
@@ -138,13 +142,13 @@ fileclass/
 
 ## 6. Query engine rules
 
-- Only `computed/`, `fields/` (File/MultiFile/Media candidates, List value
-  sources) and `views/` may call the adapter — always through its public
-  functions: `isBasesAvailable`, `listBaseViews`, `getBaseFiles`, `getBaseRows`.
+- Only `fields/` (File/MultiFile/Media candidates, List value sources) and
+  `views/` may call the adapter — always through its public functions:
+  `isBasesAvailable`, `listBaseViews`, `getBaseFiles`, `getBaseRows`.
 - Every call goes through `queryCache` for the parsed Query when repeated
   (invalidate on `vault.on('modify')` of the `.base` file).
 - Each adapter run is O(vault) (entry per file, like native Bases). Never call
-  it per-target-file in loops — see the Lookup single-scan rule (§9).
+  it per-target-file in loops.
 - If `isBasesAvailable()` is false (Bases disabled or internals drifted):
   disable query-dependent features with a persistent Notice + settings banner;
   everything else (schema, typed input on scalar fields) keeps working.
@@ -157,7 +161,9 @@ Wave B (phase 2): `File`, `MultiFile`, `Media`, `MultiMedia` — candidates =
 `getBaseFiles(baseFile, viewName, currentFile.path)`; alias/display of
 suggestions may use a base formula column via `getBaseRows` values.
 Wave C (phase 2): `Object`, `ObjectList` (§8).
-Wave D (phase 3): `Lookup`, `Formula` (§9).
+Out of scope: `Lookup`, `Formula` — computed types, not validated input (§9).
+Legacy fileClasses may still declare them: they parse and display read-only, but
+have no input, no settings UI, and are not offered when authoring a fileClass.
 Deferred (evaluate later, not in v1): `Canvas`, `CanvasGroup`, `CanvasGroupLink`,
 `JSON`, `YAML` (frontmatter-only makes JSON/YAML largely redundant with Object).
 
@@ -176,32 +182,28 @@ tests for the validator.
 - Reading nested values for display/index: `get(frontmatter, path)` — no file
   parsing.
 
-## 9. Computed fields
+## 9. Computed fields — out of scope
 
-**Lookup** (persisted reverse relations):
-- Definition: `{ baseFile, viewName, targetFieldName, outputType, ... }`.
-  Output types and rendering ported from MDM (`LinksList`, `BuiltinSummarizing`
-  (count/sum/average...), `CustomList`, `CustomSummarizing`) — custom functions
-  receive `(rows, { file, app })` where `rows` come from `getBaseRows` (NOT
-  dataview `pages`; document the difference).
-- **Single-scan rule**: one `getBaseRows` run per lookup *definition* per
-  recalc cycle; group results by `targetFieldName` value (link path) to fan out
-  to host files — same pattern as MDM `resolveLookups`, different engine.
-- Values written into frontmatter via `io/write` (that's the point: persisted,
-  ecosystem-readable).
+**Decision (July 2026):** `Lookup` (reverse relations) and `Formula` (computed
+columns) are **not** part of Fileclass. Rationale:
 
-**Formula** (persisted computed columns):
-- The formula is a **Bases formula expression** (same language the user writes
-  in `.base` files). Evaluation: build a context with the formula via the
-  adapter (`getBaseRows` on a synthetic query, or a dedicated
-  `evaluateFormula(app, expression, file)` helper added to the adapter if
-  needed — if added, verify + canary-test it like the rest).
-- No `dv` access inside formulas; cross-file aggregation is Lookup's job.
+- They are not field **validation/input** — Fileclass's job is a typed schema
+  with guided input and nested editing. Lookup/Formula instead *derive* a value
+  from *other* notes/fields and write it back; that is a distinct concern (a
+  computation/automation engine), with its own recalc, status, and dependency
+  problems.
+- The reading side is already well served by **Bases views** (aggregations,
+  reverse links, formula columns) without persisting anything. Persisting derived
+  values, when needed, is better handled by dedicated tooling than bolted onto a
+  schema layer.
+- Evaluating a Bases *formula expression* headless requires fragile, unstable
+  private internals (formula compilation / query-cache side effects observed
+  during prototyping) — a poor cost/benefit for this plugin.
 
-**Recalc & status**: recompute on debounced `metadataCache.on('resolved')`;
-statuses limited to `upToDate | changed | error` shown on the field action
-icon; `autoUpdate` per field, `isAutoCalculationEnabled` global — port the UX,
-drop MDM's `mayHaveChanged` heuristics and all dataview-event plumbing.
+**Consequences:** no `computed/` module, no Lookup/Formula input, settings, recalc,
+commands, or status. Legacy fileClasses declaring such fields still load: the
+field parses and its value displays read-only (never coerced, never crashed), but
+it is inert and not offered when authoring a fileClass (§7).
 
 ## 10. Index
 
@@ -250,8 +252,8 @@ No migration tooling ships: users migrated their fileClass **format** to Metadat
 Menu's current schema long ago. The only remnant is dataview-era *option* keys
 (`dvQueryString` / `customRendering` / `customSorting` / `customListFunction` /
 `customSummarizingFunction` / fileClassQueries). Per D1 these are **ignored
-silently** and never crash the index (§17); new link/computed fields use
-`{ baseFile, viewName }` + base formula columns instead.
+silently** and never crash the index (§17); new link fields use
+`{ baseFile, viewName }` instead.
 
 The processFrontMatter normalizations (§3.2) are documented for users in the
 fields/user docs (first-write warning), not in a migration guide.
@@ -259,13 +261,13 @@ fields/user docs (first-write warning), not in a migration guide.
 ## 14. Testing
 
 - **Unit (vitest, no Obsidian)**: objectPath, schema resolver (inheritance,
-  excludes, binding priorities), field validators, draft editor logic, lookup
-  grouping. Run in CI on every push.
+  excludes, binding priorities), field validators, draft editor logic. Run in CI
+  on every push.
 - **E2E (CDP)**: harness from `~/obsidian-bases-probe/cdp.js` pattern — a Node
   script connects to a dev Obsidian (`--remote-debugging-port=9222`) opened on
   `tests/e2e/fixture-vault/`, drives the plugin via `Runtime.evaluate`, asserts
   on vault file contents. Scenarios: each field type write, draft editor
-  atomicity, lookup/formula recalc, base generation.
+  atomicity, base generation.
 - **Canary tests** (run at every Obsidian upgrade, part of e2e): (1) the
   basesAdapter verification protocol — a known fixture `.base` returns the
   expected file set and sorted/grouped rows; (2) processFrontMatter
@@ -299,11 +301,10 @@ fields/user docs (first-write warning), not in a migration guide.
   Modal-based (no dedicated view). Three slices — (1) options editor + add/
   remove/reorder fields; (2) per-type option settings (Number/Date/Boolean,
   Select/Cycle/Multi with base-picker); (3) File/Media + Object/ObjectList.
-- **P3 Computed**: lookups (single-scan), formulas (Bases expressions),
-  statuses, recalc triggers.
-- **P4 Views**: fileclass-table custom Bases view with editable cells, base
-  file generator command.
-- **P5 API**: public API (§12), keeping MDM-compatible names where semantics
+- **P3 Views**: fileclass-table custom Bases view with editable cells, base
+  file generator command. *(Computed fields — Lookup/Formula — are out of scope;
+  see §9.)*
+- **P4 API**: public API (§12), keeping MDM-compatible names where semantics
   survive; `docs/api.md`. (No migration tooling — see §13.)
 
 ## 16. Coding conventions
@@ -322,7 +323,7 @@ fields/user docs (first-write warning), not in a migration guide.
 | Risk | Mitigation |
 |------|------------|
 | Bases internals drift on Obsidian update | D4 isolation + canary tests; only basesAdapter changes; graceful degradation path |
-| O(vault) per query run on huge vaults | queryCache, single-scan lookups, debounced recalc; benchmark fixture in e2e |
+| O(vault) per query run on huge vaults | queryCache, debounced reads; benchmark fixture in e2e |
 | Users with YAML comments / custom formatting | documented normalization (§3.2), first-write warning in user docs |
 | Legacy fileClasses with dv options | options ignored silently (never crash on them, §13) |
 | DOM-injected indicators drift on Obsidian update (§19) | isolate the injection layer; per-surface settings flags; defensive selectors that no-op on a miss; core features (modal, menus, commands) never depend on it |

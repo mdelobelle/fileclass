@@ -13,9 +13,8 @@ Understanding the boundaries is the fastest way to know whether it is for you.
 | Property types | flat, vault-global | reads (incl. nested) | **per-class schema** |
 | Constrained / enum values | ✗ | ✗ | ✓ (Select, Cycle) |
 | Relations (foreign-key-like) | ✗ | ✗ | ✓ (File/MultiFile constrained by a Base view) |
-| Reverse relations | ✗ | ✗ | ✓ (Lookup) |
-| Computed columns | ✗ | view-only formulas | ✓ (Formula, **persisted** to frontmatter) |
 | Nested typed editing | ✗ | reads only | ✓ (Object / ObjectList editor) |
+| Reverse relations / computed columns | ✗ | ✓ (views) | ✗ (use Bases) |
 | Query & views | ✗ | ✓ | **delegated to Bases** |
 
 - Core **Properties** types are flat and vault-global: no per-class schema, no
@@ -33,9 +32,10 @@ If you think in terms of databases:
 - a **fileClass** ≈ a table schema,
 - a **File / MultiFile** field constrained by a Base view ≈ a foreign key,
 - a **Select** ≈ an enum,
-- a **Lookup** ≈ a reverse relation,
-- a **Formula** ≈ a computed column (here, persisted back into frontmatter so the
-  whole ecosystem can read it).
+- an **Object / ObjectList** ≈ a nested/embedded record.
+
+Reverse relations and computed columns (the equivalent of Metadata Menu's Lookup
+and Formula) are **out of scope** — Bases views already provide them.
 
 ## Fileclass vs Metadata Menu
 

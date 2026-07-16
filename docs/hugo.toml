@@ -20,10 +20,6 @@ enableGitInfo = true
     pageRef = "/fields"
     weight = 30
   [[menu.main]]
-    name = "Computed fields"
-    pageRef = "/computed"
-    weight = 35
-  [[menu.main]]
     name = "UI surfaces"
     pageRef = "/ui"
     weight = 40

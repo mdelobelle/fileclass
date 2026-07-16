@@ -32,4 +32,4 @@ has **no Dataview dependency**.
 
 - Obsidian **1.13.2+** with the core **Bases** plugin enabled.
 - Schema and typed input work without Bases; query-dependent features
-  (File/Lookup/Formula fields, generated views) require it.
+  (File/Media fields, generated views) require it.

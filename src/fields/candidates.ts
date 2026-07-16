@@ -3,7 +3,7 @@
  * candidate set comes from a Base view via the adapter's public functions
  * (D4/§6): getBaseFiles for the files, getBaseRows for an optional display
  * column. Interactive (one scan per picker), so it calls the adapter directly
- * rather than through queryCache (which is for the P3 recalc loops, §9).
+ * rather than through queryCache (which memoizes repeated reads of a base).
  *
  * Graceful degradation (§6): when no base is configured, Bases is unavailable,
  * or a scan fails, it falls back to all markdown (or media) files.

@@ -43,8 +43,9 @@ Each entry in `fields` is `{ name, id, type, options, path }`:
 
 - **id** — stable identifier (used for ordering and nesting).
 - **type** — one of the recognized field types (Input, Number, Select, Multi,
-  Date, File, Object, ObjectList, Lookup, Formula, …). Unknown types load as
-  `Input` and are reported as a non-fatal error rather than crashing the index.
+  Date, File, Object, ObjectList, …). Unknown types load as `Input` and are
+  reported as a non-fatal error rather than crashing the index. (`Lookup` and
+  `Formula` are out of scope — see [Fields & input](../fields/).)
 - **path** — `""` for a root field; otherwise the parent field ids joined by
   `____`, so `fields[0].name`-style nesting is preserved.
 

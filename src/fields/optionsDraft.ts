@@ -17,6 +17,10 @@ export interface OptionsDraft {
 	dateFormat?: string;
 	defaultInsertAsLink?: boolean;
 	dateLinkPath?: string;
+	// Object / ObjectList
+	displayTemplate?: string;
+	/** Original options, so unknown keys survive a template edit. */
+	objectRawOptions?: Record<string, unknown>;
 	// Select / Cycle / Multi — undefined sourceType means an unsupported source
 	// (legacy dataview), left untouched by this editor.
 	sourceType?: "ValuesList" | "ValuesListNotePath" | "ValuesFromBase";
@@ -66,6 +70,12 @@ export function optionsToDraft(type: FieldType, options: FieldOptions): OptionsD
 				dateFormat: typeof o.dateFormat === "string" ? o.dateFormat : "",
 				defaultInsertAsLink: o.defaultInsertAsLink === true || o.defaultInsertAsLink === "true",
 				dateLinkPath: typeof o.dateLinkPath === "string" ? o.dateLinkPath : "",
+			};
+		case "Object":
+		case "ObjectList":
+			return {
+				displayTemplate: typeof o.displayTemplate === "string" ? o.displayTemplate : "",
+				objectRawOptions: Array.isArray(options) ? {} : { ...o },
 			};
 		case "Select":
 		case "Cycle":
@@ -123,6 +133,15 @@ export function buildFieldOptions(type: FieldType, draft: OptionsDraft): FieldOp
 			if (draft.dateFormat?.trim()) o.dateFormat = draft.dateFormat.trim();
 			if (draft.defaultInsertAsLink) o.defaultInsertAsLink = true;
 			if (draft.dateLinkPath?.trim()) o.dateLinkPath = draft.dateLinkPath.trim();
+			return o;
+		}
+		case "Object":
+		case "ObjectList": {
+			// Preserve any unknown option keys; only manage displayTemplate.
+			const o = { ...(draft.objectRawOptions ?? {}) };
+			delete o.displayTemplate;
+			const tpl = draft.displayTemplate?.trim();
+			if (tpl) o.displayTemplate = tpl;
 			return o;
 		}
 		case "Select":

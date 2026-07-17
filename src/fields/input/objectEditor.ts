@@ -10,8 +10,8 @@
 import { App, Modal, Notice, Setting } from "obsidian";
 
 import { Field } from "../../schema/field";
-import { displayValue } from "../display";
-import { childSummary, cloneDraft, validateObjectDraft } from "../objectDraft";
+import { describeField, DisplayDeps, renderObjectItem } from "../objectDisplay";
+import { cloneDraft, validateObjectDraft } from "../objectDraft";
 
 /** Opens the input for a child field, calling back with its new value. */
 export type ChildPrompt = (
@@ -22,8 +22,11 @@ export type ChildPrompt = (
 
 interface ObjectEditorOptions {
 	title: string;
+	/** The Object/ObjectList field being edited (for its display template). */
+	field: Field;
 	childFields: Field[];
 	promptChild: ChildPrompt;
+	deps: DisplayDeps;
 }
 
 /** Edits a single object's fields. */
@@ -59,7 +62,7 @@ export class ObjectFieldsEditorModal extends Modal {
 			new Setting(contentEl)
 				.setName(child.name)
 				.setDesc(child.type)
-				.then((s) => s.controlEl.createSpan({ text: displayValue(child, value) }))
+				.then((s) => s.controlEl.createSpan({ text: describeField(child, value, this.opts.deps) }))
 				.addButton((b) =>
 					b.setButtonText("Edit").onClick(() =>
 						this.opts.promptChild(child, value, (v) => {
@@ -123,8 +126,10 @@ export class ObjectListEditorModal extends Modal {
 	private editItem(index: number): void {
 		new ObjectFieldsEditorModal(this.app, {
 			title: `${this.opts.title} — item ${index + 1}`,
+			field: this.opts.field,
 			childFields: this.opts.childFields,
 			promptChild: this.opts.promptChild,
+			deps: this.opts.deps,
 			initial: this.draft[index] ?? {},
 			onSave: (object) => {
 				this.draft[index] = object;
@@ -148,7 +153,7 @@ export class ObjectListEditorModal extends Modal {
 		this.draft.forEach((item, index) => {
 			new Setting(contentEl)
 				.setName(`Item ${index + 1}`)
-				.setDesc(childSummary(this.opts.childFields, item))
+				.setDesc(renderObjectItem(this.opts.field, item, this.opts.deps) || "(empty)")
 				.addExtraButton((b) =>
 					b.setIcon("chevron-up").setTooltip("Move up").onClick(() => this.move(index, -1))
 				)

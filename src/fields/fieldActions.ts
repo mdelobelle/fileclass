@@ -12,7 +12,8 @@ import { readFieldValue } from "../io/read";
 import { writeFieldValue } from "../io/write";
 import { childFieldsOf, Field } from "../schema/field";
 import { AdapterHost, Candidate, isMediaType, resolveCandidates } from "./candidates";
-import { displayValue } from "./display";
+import { makeDisplayDeps } from "./displayDeps";
+import { describeField } from "./objectDisplay";
 import {
 	ChildPrompt,
 	ObjectFieldsEditorModal,
@@ -249,8 +250,10 @@ export async function promptFieldValue(
 		case "Object":
 			new ObjectFieldsEditorModal(app, {
 				title: `Edit ${field.name}`,
+				field,
 				childFields: childFieldsOf(ctx.allFields, field),
 				promptChild,
+				deps: makeDisplayDeps(ctx.host, ctx.allFields),
 				initial: asObjectValue(current),
 				onSave: (obj) => onValue(obj),
 			}).open();
@@ -259,8 +262,10 @@ export async function promptFieldValue(
 		case "ObjectList":
 			new ObjectListEditorModal(app, {
 				title: `Edit ${field.name}`,
+				field,
 				childFields: childFieldsOf(ctx.allFields, field),
 				promptChild,
+				deps: makeDisplayDeps(ctx.host, ctx.allFields),
 				initial: asListValue(current),
 				onSave: (arr) => onValue(arr),
 			}).open();
@@ -327,11 +332,12 @@ export function pickAndUpdateField(host: AdapterHost, file: TFile, fields: Field
 		new Notice("Fileclass: no editable fields apply to this note.");
 		return;
 	}
+	const deps = makeDisplayDeps(host, fields);
 	new ChoiceSuggestModal<Field>(
 		host.app,
 		editable,
 		(f) => {
-			const value = displayValue(f, readFieldValue(host.app, file, f));
+			const value = describeField(f, readFieldValue(host.app, file, f), deps);
 			return value ? `${f.name}: ${value}` : f.name;
 		},
 		(f) => void updateField(ctx, f),

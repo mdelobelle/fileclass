@@ -15,6 +15,8 @@ export interface FileclassSettings {
 	basesFolder: string;
 	/** Default icon for a fileClass without an explicit `icon`. */
 	fileClassIcon: string;
+	/** Default moment.js format for displaying dates ("" = show stored value). */
+	defaultDateDisplayFormat: string;
 	/** Add Fileclass entries to the file/editor context menus. */
 	enableContextMenu: boolean;
 	/** Show the field indicator icon in the tab header. */
@@ -37,6 +39,7 @@ export const DEFAULT_SETTINGS: FileclassSettings = {
 	globalFileClass: "",
 	basesFolder: "",
 	fileClassIcon: "file-spreadsheet",
+	defaultDateDisplayFormat: "",
 	enableContextMenu: true,
 	enableTabHeaderIndicator: true,
 	enableFileExplorerIndicator: true,

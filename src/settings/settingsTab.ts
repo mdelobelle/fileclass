@@ -76,6 +76,21 @@ export class FileclassSettingTab extends PluginSettingTab {
 			});
 
 		new Setting(containerEl)
+			.setName("Default date display format")
+			.setDesc(
+				"moment.js format for showing Date values (e.g. LL, DD/MM/YYYY). Blank shows the stored value. Per-field object templates can override it with {{field|FORMAT}}."
+			)
+			.addText((text) =>
+				text
+					.setPlaceholder("(stored value)")
+					.setValue(this.plugin.settings.defaultDateDisplayFormat)
+					.onChange(async (value) => {
+						this.plugin.settings.defaultDateDisplayFormat = value.trim();
+						await this.plugin.saveSettings();
+					})
+			);
+
+		new Setting(containerEl)
 			.setName("Context menu entries")
 			.setDesc("Add Fileclass actions to the file and editor right-click menus.")
 			.addToggle((toggle) =>

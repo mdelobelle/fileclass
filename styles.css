@@ -23,6 +23,33 @@
 	margin-right: 8px;
 }
 
+/* Note-fields modal footer: applied fileClass(es) as inheritance breadcrumbs. */
+.fileclass-modal-footer {
+	margin-top: 12px;
+	padding-top: 8px;
+	border-top: 1px solid var(--background-modifier-border);
+}
+.fileclass-breadcrumb {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 4px;
+	font-size: var(--font-ui-smaller);
+	color: var(--text-muted);
+	line-height: 1.6;
+}
+.fileclass-breadcrumb-item {
+	cursor: pointer;
+	color: var(--text-accent);
+	text-decoration: none;
+}
+.fileclass-breadcrumb-item:hover {
+	text-decoration: underline;
+}
+.fileclass-breadcrumb-sep {
+	color: var(--text-faint);
+}
+
 /* Editable fileclass-table Bases view. */
 .fileclass-table {
 	border-collapse: collapse;

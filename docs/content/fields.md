@@ -105,6 +105,21 @@ Editing opens a **draft editor**:
 Only **root** fields appear in the field picker; nested fields are reached by
 editing their parent object.
 
+### Display template
+
+Object/ObjectList fields have a **Display template** (in the schema editor)
+controlling how an item is summarized in the modal and the list editor:
+
+- `{{fieldName}}` — inserts a child field's display, e.g.
+  `{{designation}} - {{ville}} - {{pays}}`.
+- `{{dateField|FORMAT}}` — a **Date** child with a moment.js format override
+  (e.g. `{{start|DD/MM/YYYY}}`); without an override, dates use the plugin's
+  **Default date display format** (Settings → Fileclass), or the stored value if
+  that is blank.
+- A child that is itself an **Object** uses *its own* template (recursion).
+- **No template** → the first non-empty child value.
+- For **ObjectList**, each item's display is prefixed by its **rank** (`1.`, `2.`…).
+
 ## Structured fields (JSON / YAML)
 
 **JSON** and **YAML** hold a **free-form nested value** with no declared schema —

@@ -122,9 +122,27 @@ describe("File / Media base binding", () => {
 });
 
 describe("unmanaged types preserve options", () => {
-	it("returns undefined for Object/ObjectList/Boolean/Input", () => {
-		for (const t of ["Object", "ObjectList", "Boolean", "Input"] as const) {
+	it("returns undefined for Boolean/Input", () => {
+		for (const t of ["Boolean", "Input"] as const) {
 			expect(buildFieldOptions(t, {})).toBeUndefined();
 		}
+	});
+});
+
+describe("Object/ObjectList display template", () => {
+	it("reads the template and keeps the original options", () => {
+		const draft = optionsToDraft("Object", { displayTemplate: "{{ville}}", foo: "bar" });
+		expect(draft.displayTemplate).toBe("{{ville}}");
+		expect(draft.objectRawOptions).toEqual({ displayTemplate: "{{ville}}", foo: "bar" });
+	});
+	it("writes the template while preserving unknown keys", () => {
+		const draft = optionsToDraft("ObjectList", { foo: "bar" });
+		draft.displayTemplate = "{{name}}";
+		expect(buildFieldOptions("ObjectList", draft)).toEqual({ foo: "bar", displayTemplate: "{{name}}" });
+	});
+	it("removes the template when cleared, keeping other keys", () => {
+		const draft = optionsToDraft("Object", { displayTemplate: "{{x}}", foo: "bar" });
+		draft.displayTemplate = "";
+		expect(buildFieldOptions("Object", draft)).toEqual({ foo: "bar" });
 	});
 });

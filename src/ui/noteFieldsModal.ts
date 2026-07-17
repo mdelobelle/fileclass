@@ -9,12 +9,14 @@ import { EventRef, Modal, Setting, TFile } from "obsidian";
 
 import type FileclassPlugin from "../../main";
 import { insertMissingFields } from "../commands/insertMissingFields";
-import { displayValue } from "../fields/display";
+import { makeDisplayDeps } from "../fields/displayDeps";
 import { clearField, EditContext, updateField } from "../fields/fieldActions";
+import { describeField, DisplayDeps } from "../fields/objectDisplay";
 import { isInputSupported } from "../fields/support";
 import { readFieldValue } from "../io/read";
 import { Field, isRootField } from "../schema/field";
 import { AddFileClassModal } from "./addFileClassModal";
+import { openFileClassSchema } from "./fileClassSchemaModal";
 
 export class NoteFieldsModal extends Modal {
 	private changeRef?: EventRef;
@@ -43,6 +45,7 @@ export class NoteFieldsModal extends Modal {
 
 		const fields = this.plugin.index.getFields(this.file);
 		const ctx: EditContext = { host: this.plugin, file: this.file, allFields: fields };
+		const deps = makeDisplayDeps(this.plugin, fields);
 		const rootFields = fields.filter((f) => isRootField(f));
 
 		if (!rootFields.length) {
@@ -50,7 +53,7 @@ export class NoteFieldsModal extends Modal {
 		}
 
 		for (const field of rootFields) {
-			this.renderFieldRow(ctx, field);
+			this.renderFieldRow(ctx, deps, field);
 		}
 
 		new Setting(contentEl)
@@ -64,10 +67,38 @@ export class NoteFieldsModal extends Modal {
 					.setButtonText("Add fileClass")
 					.onClick(() => new AddFileClassModal(this.plugin, this.file).open())
 			);
+
+		this.renderFileClassFooter();
 	}
 
-	private renderFieldRow(ctx: EditContext, field: Field): void {
-		const value = displayValue(field, readFieldValue(this.app, this.file, field));
+	/** Footer: each applied fileClass as an inheritance breadcrumb (clickable). */
+	private renderFileClassFooter(): void {
+		const names = this.plugin.index.getFileClasses(this.file);
+		if (!names.length) return;
+
+		const footer = this.contentEl.createDiv({ cls: "fileclass-modal-footer" });
+		for (const name of names) {
+			const crumb = footer.createDiv({ cls: "fileclass-breadcrumb" });
+			// Root → leaf: ancestors are nearest-first, so reverse then add self.
+			const chain = [...this.plugin.index.getAncestors(name)].reverse();
+			chain.push(name);
+			chain.forEach((cls, i) => {
+				if (i > 0) crumb.createSpan({ cls: "fileclass-breadcrumb-sep", text: "›" });
+				const link = crumb.createEl("a", {
+					cls: "fileclass-breadcrumb-item",
+					text: cls,
+					href: "#",
+				});
+				link.addEventListener("click", (e) => {
+					e.preventDefault();
+					openFileClassSchema(this.plugin, cls);
+				});
+			});
+		}
+	}
+
+	private renderFieldRow(ctx: EditContext, deps: DisplayDeps, field: Field): void {
+		const value = describeField(field, readFieldValue(this.app, this.file, field), deps);
 		const setting = new Setting(this.contentEl).setName(field.name).setDesc(field.type);
 		setting.controlEl.createSpan({ text: value, cls: "fileclass-field-value" });
 

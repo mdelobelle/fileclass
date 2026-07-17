@@ -62,8 +62,23 @@ export function renderFieldOptionsSettings(
 		case "MultiMedia":
 			renderLinkSettings(container, type, draft, ctx);
 			return;
+		case "Object":
+		case "ObjectList":
+			new Setting(container)
+				.setName("Display template")
+				.setDesc(
+					"How an item is summarized. Use {{fieldName}} placeholders, e.g. {{designation}} - {{ville}}. A date field takes an optional moment.js format: {{start|DD/MM/YYYY}}. Blank shows the first non-empty field." +
+						(type === "ObjectList" ? " Each item is prefixed by its rank." : "")
+				)
+				.addText((t) =>
+					t
+						.setPlaceholder("{{firstField}}")
+						.setValue(draft.displayTemplate ?? "")
+						.onChange((v) => (draft.displayTemplate = v))
+				);
+			return;
 		default:
-			return; // Input/Boolean: no options; Object/ObjectList: children editor
+			return; // Input/Boolean: no options
 	}
 }
 

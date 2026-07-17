@@ -21,6 +21,10 @@ field of the note's fileClass(es) with its current value and:
 The modal refreshes automatically as values are written, so edits made through a
 sub-modal appear immediately.
 
+Its **footer** shows the fileClass(es) applying to the note as an **inheritance
+breadcrumb** (`ancestor › parent › fileClass`). Each name is **clickable** and
+opens that fileClass's schema editor.
+
 Open it with the command **Fileclass: manage note fields** or from a context
 menu.
 

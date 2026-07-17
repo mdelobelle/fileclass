@@ -100,8 +100,17 @@ export class FieldIndicator extends Component {
 	}
 
 	private inject(target: HTMLElement, file: TFile): void {
-		if (target.querySelector(`:scope > .${NAV_SCOPE}`)) return; // already present
+		const existing = target.querySelector<HTMLElement>(`:scope > .${NAV_SCOPE}`);
+		if (existing) {
+			if (existing.dataset.fcPath === file.path) return; // up-to-date icon present
+			existing.remove(); // stale: this target now shows a different file
+		}
 		target.appendChild(makeIndicatorIcon(this.plugin, file, NAV_SCOPE));
+	}
+
+	/** Removes a scope's icon under `target`, if any (target no longer applies). */
+	private clearIndicator(target: HTMLElement): void {
+		target.querySelector(`:scope > .${NAV_SCOPE}`)?.remove();
 	}
 
 	/** Additive injection (dedup-guarded); safe to run on every mutation. */
@@ -163,13 +172,17 @@ export class FieldIndicator extends Component {
 	}
 
 	private injectTabs(): void {
+		// A tab keeps its header element across file changes, so reconcile each
+		// leaf: inject/replace when the current file applies, clear otherwise —
+		// additive injection alone would leave the previous file's icon behind.
 		for (const leaf of this.plugin.app.workspace.getLeavesOfType("markdown")) {
-			const file = (leaf.view as unknown as ViewWithFile).file;
-			if (!file || !this.applies(file.path)) continue;
 			const header = (leaf as unknown as LeafInternals).tabHeaderEl;
 			if (!(header instanceof HTMLElement)) continue;
 			const inner = header.querySelector<HTMLElement>(".workspace-tab-header-inner") ?? header;
-			this.inject(inner, file);
+			const file = (leaf.view as unknown as ViewWithFile).file;
+			const applicable = file && this.applies(file.path) ? file : null;
+			if (applicable) this.inject(inner, applicable);
+			else this.clearIndicator(inner);
 		}
 	}
 

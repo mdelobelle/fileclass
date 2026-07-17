@@ -50,6 +50,9 @@ export function makeIndicatorIcon(
 ): HTMLElement {
 	const fileClassName = plugin.index.fileClassNameOfNote(file.path);
 	const el = createSpan({ cls: `${INDICATOR_MARKER} ${scopeClass}` });
+	// Stamp the source file so a reused target (a tab that changed file) can tell
+	// a stale icon from an up-to-date one instead of keeping the old one.
+	el.dataset.fcPath = file.path;
 	el.setAttribute("aria-label", fileClassName ? "Edit fileClass" : "Fileclass fields");
 	setIcon(el, fileClassName ? plugin.index.resolveIcon(fileClassName) : plugin.index.iconForFile(file));
 	el.addEventListener("click", (e) => {

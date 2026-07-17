@@ -114,7 +114,9 @@ YAML) or the modal shows the parser error. The parsed value is written to
 frontmatter as-is; clearing the text removes the field.
 
 Use Object/ObjectList when the shape is known and you want typed, guided input;
-use JSON/YAML for arbitrary or externally-defined blobs.
+use JSON/YAML for arbitrary or externally-defined blobs. For the fuller decision
+— including when the data deserves a fileClass of its own instead — see the
+[Modeling guide](../modeling/).
 
 ## Canvas fields (planned)
 

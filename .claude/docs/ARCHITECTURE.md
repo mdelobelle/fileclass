@@ -161,11 +161,14 @@ Wave B (phase 2): `File`, `MultiFile`, `Media`, `MultiMedia` — candidates =
 `getBaseFiles(baseFile, viewName, currentFile.path)`; alias/display of
 suggestions may use a base formula column via `getBaseRows` values.
 Wave C (phase 2): `Object`, `ObjectList` (§8).
+Wave D (post-P3): `JSON`, `YAML` — free-form nested value edited as monospace
+text, validated by the parser (`JSON.parse` / Obsidian `parseYaml`). Pure
+serialize/parse in `src/fields/structuredText.ts` with an injected YAML codec;
+the escape hatch for structures Object/ObjectList don't model.
 Out of scope: `Lookup`, `Formula` — computed types, not validated input (§9).
 Legacy fileClasses may still declare them: they parse and display read-only, but
 have no input, no settings UI, and are not offered when authoring a fileClass.
-Deferred (evaluate later, not in v1): `Canvas`, `CanvasGroup`, `CanvasGroupLink`,
-`JSON`, `YAML` (frontmatter-only makes JSON/YAML largely redundant with Object).
+Planned (dedicated feature, §9.1): `Canvas`, `CanvasGroup`, `CanvasGroupLink`.
 
 Each field module ships: options settings UI, value input modal/suggester,
 `validate(value, options)`, cell renderer for the custom view, doc page, unit
@@ -205,6 +208,37 @@ commands, or status. Legacy fileClasses declaring such fields still load: the
 field parses and its value displays read-only (never coerced, never crashed), but
 it is inert and not offered when authoring a fileClass (§7).
 
+### 9.1 Canvas fields — planned, NOT the same as computed fields
+
+`Canvas`, `CanvasGroup`, `CanvasGroupLink` were initially lumped with
+Lookup/Formula; a code analysis of MDM showed they are a **different mechanism**
+and the two exclusion reasons above do **not** apply:
+
+| Axis | Lookup / Formula | Canvas* |
+|------|------------------|---------|
+| Source | user DataviewJS query / JS expression | native `.canvas` file (JSON graph) |
+| External dependency | **Dataview (hard)** | **none** (`obsidian/canvas` + `vault.read`) |
+| Logic | open-ended, user-authored | **fixed**: `canvasPath` + direction / group |
+| Trigger | `dataview:metadata-change` (any metadata) | `vault.on("modify")` on a `.canvas` (narrow) |
+| Bases equivalent | **yes** (reverse links, formula columns) | **no** — Bases doesn't index canvas adjacency |
+
+So excluding Lookup/Formula loses nothing (Bases covers it, and they need the
+rejected Dataview dep, D1). Excluding Canvas* loses a capability **with no
+substitute**. Decision: **implement** as a dedicated feature (chosen over
+out-of-scope), scheduled **after JSON/YAML**.
+
+**Shape of the engine (to build):** a small canvas→frontmatter sync, no Dataview:
+- watch `.canvas` via `vault.on("modify"|"create"|"delete"|"rename")`, debounced;
+- parse canvas JSON → traverse nodes/edges (incoming/outgoing/bothsides) or group
+  membership per the field's `canvasPath` + direction options;
+- diff against last-known links (an index map like MDM's `canvasLastFiles`) to
+  avoid write churn; write derived links back with the single-write path (D5).
+- It **auto-writes** frontmatter (unlike the rest of Fileclass's explicit writes)
+  — deterministic and bounded, but call it out in user docs.
+
+Until built, the three types parse and their values display read-only (like any
+unsupported type); no engine, no auto-maintenance.
+
 ## 10. Index
 
 Slim rewrite of MDM's `FieldIndex` keeping ONLY:
@@ -218,7 +252,7 @@ Slim rewrite of MDM's `FieldIndex` keeping ONLY:
 
 Dropped entirely: dataview listeners, `dVRelatedFieldsToUpdate`, IndexedDB
 (`src/db`), ExistingField location index (frontmatter reads are direct),
-canvas file tracking (deferred with Canvas fields).
+canvas file tracking (comes with the planned Canvas engine, §9.1).
 
 ## 11. Views
 

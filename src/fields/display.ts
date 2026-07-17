@@ -11,8 +11,10 @@ export function displayValue(field: Field, value: unknown): string {
 		const n = Array.isArray(value) ? value.length : 0;
 		return n ? `${n} item${n > 1 ? "s" : ""}` : "";
 	}
-	if (field.type === "Object") {
-		return value && typeof value === "object" ? "{…}" : "";
+	if (field.type === "Object" || field.type === "JSON" || field.type === "YAML") {
+		if (Array.isArray(value)) return `[…] (${value.length})`;
+		if (value && typeof value === "object") return "{…}";
+		return String(value);
 	}
 	if (isListType(field.type) || Array.isArray(value)) {
 		return (Array.isArray(value) ? value : [value]).map((v) => String(v)).join(", ");

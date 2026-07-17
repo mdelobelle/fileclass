@@ -27,6 +27,8 @@ export const SUPPORTED_INPUT_TYPES: ReadonlySet<FieldType> = new Set<FieldType>(
 	"MultiMedia",
 	"Object",
 	"ObjectList",
+	"JSON",
+	"YAML",
 ]);
 
 export function isInputSupported(type: FieldType): boolean {
@@ -42,6 +44,8 @@ export function editableRootFields(fields: Field[]): Field[] {
 export function defaultValueFor(field: Field): unknown {
 	switch (field.type) {
 		case "Object":
+		case "JSON":
+		case "YAML":
 			return {};
 		case "Multi":
 		case "MultiFile":

@@ -6,7 +6,7 @@
  * wraps it to perform the single frontmatter write. Values flow up to the
  * top-level (root) field, so a nested object subtree is written in one call.
  */
-import { App, Notice, TFile } from "obsidian";
+import { App, Notice, parseYaml, stringifyYaml, TFile } from "obsidian";
 
 import { readFieldValue } from "../io/read";
 import { writeFieldValue } from "../io/write";
@@ -24,7 +24,14 @@ import {
 	ChoiceSuggestModal,
 	MultiSelectModal,
 	PromptModal,
+	TextAreaInputModal,
 } from "./input/valueModals";
+import {
+	parseStructured,
+	serializeStructured,
+	StructuredType,
+	YamlCodec,
+} from "./structuredText";
 import { formatLink, linkTargetPath } from "./links";
 import { asListValue, asObjectValue } from "./objectDraft";
 import { baseBindingOptions, numberOptions } from "./options";
@@ -112,6 +119,31 @@ function openNumberPrompt(
 		},
 		validate: (v) => validateField(field, coerceInput(field, v)),
 		onSubmit: (v) => onValue(coerceInput(field, v)),
+	}).open();
+}
+
+const YAML_CODEC: YamlCodec = { parse: parseYaml, stringify: stringifyYaml };
+
+/** A monospace textarea editing a free-form JSON/YAML value, parser-validated. */
+function openStructuredPrompt(
+	app: App,
+	field: Field,
+	current: unknown,
+	onValue: (value: unknown) => void
+): void {
+	const type = field.type as StructuredType;
+	new TextAreaInputModal(app, {
+		title: `Set ${field.name}`,
+		initial: serializeStructured(type, current, YAML_CODEC),
+		placeholder: type === "JSON" ? '{\n  "key": "value"\n}' : "key: value",
+		validate: (v) => {
+			const r = parseStructured(type, v, YAML_CODEC);
+			return r.ok ? { ok: true } : { ok: false, message: r.message };
+		},
+		onSubmit: (v) => {
+			const r = parseStructured(type, v, YAML_CODEC);
+			if (r.ok) onValue(r.value);
+		},
 	}).open();
 }
 
@@ -246,6 +278,11 @@ export async function promptFieldValue(
 
 		case "Number":
 			openNumberPrompt(app, field, current, onValue);
+			return;
+
+		case "JSON":
+		case "YAML":
+			openStructuredPrompt(app, field, current, onValue);
 			return;
 
 		default:

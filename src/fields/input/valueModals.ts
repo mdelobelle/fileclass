@@ -3,7 +3,7 @@
  * generic: a text prompt, a single-choice suggester, and a multi-select toggle
  * list. Field-type wiring lives in fieldActions.ts.
  */
-import { App, Modal, SuggestModal, Setting, TextComponent } from "obsidian";
+import { App, Modal, SuggestModal, Setting, TextAreaComponent, TextComponent } from "obsidian";
 
 import { ValidationResult } from "../validate";
 
@@ -56,6 +56,62 @@ export class PromptModal extends Modal {
 		new Setting(contentEl).addButton((b) =>
 			b.setButtonText("Save").setCta().onClick(submit)
 		);
+	}
+
+	onClose(): void {
+		this.contentEl.empty();
+	}
+}
+
+export interface TextAreaOptions {
+	title: string;
+	initial?: string;
+	placeholder?: string;
+	validate?: (value: string) => ValidationResult;
+	onSubmit: (value: string) => void;
+}
+
+/** Multi-line input with inline validation (JSON/YAML). Cmd/Ctrl+Enter saves. */
+export class TextAreaInputModal extends Modal {
+	constructor(app: App, private readonly opts: TextAreaOptions) {
+		super(app);
+	}
+
+	onOpen(): void {
+		const { contentEl } = this;
+		contentEl.createEl("h3", { text: this.opts.title });
+		const errorEl = contentEl.createDiv();
+		errorEl.style.color = "var(--text-error)";
+		errorEl.style.minHeight = "1.2em";
+		errorEl.style.whiteSpace = "pre-wrap";
+
+		const input = new TextAreaComponent(contentEl);
+		input.setValue(this.opts.initial ?? "").setPlaceholder(this.opts.placeholder ?? "");
+		input.inputEl.style.width = "100%";
+		input.inputEl.rows = 10;
+		input.inputEl.style.fontFamily = "var(--font-monospace)";
+		window.setTimeout(() => input.inputEl.focus(), 0);
+
+		const submit = () => {
+			const value = input.getValue();
+			const result = this.opts.validate?.(value);
+			if (result && !result.ok) {
+				errorEl.setText(result.message ?? "Invalid value");
+				return;
+			}
+			this.opts.onSubmit(value);
+			this.close();
+		};
+
+		input.inputEl.addEventListener("keydown", (e) => {
+			if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+				e.preventDefault();
+				submit();
+			}
+		});
+		new Setting(contentEl)
+			.setDesc("Cmd/Ctrl+Enter to save")
+			.addButton((b) => b.setButtonText("Save").setCta().onClick(submit));
 	}
 
 	onClose(): void {

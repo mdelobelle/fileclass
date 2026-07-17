@@ -27,10 +27,14 @@ field types and the commands that set values. Everything is written to
 | **MultiMedia** | list | toggle list | a list of links |
 | **Object** | nested object | draft editor | each known child validates |
 | **ObjectList** | list of objects | draft editor | each item's children validate |
+| **JSON** | free-form value | monospace textarea | must parse as JSON |
+| **YAML** | free-form value | monospace textarea | must parse as YAML |
 
 Empty values are always valid — a field is optional unless a constraint says
 otherwise. `Lookup` and `Formula` (computed fields) are **out of scope** for
 Fileclass — use Bases views for reverse relations and computed columns.
+`Canvas`/`CanvasGroup`/`CanvasGroupLink` are a separate, planned feature (see
+below).
 
 ## Link fields (File / Media)
 
@@ -100,6 +104,28 @@ Editing opens a **draft editor**:
 
 Only **root** fields appear in the field picker; nested fields are reached by
 editing their parent object.
+
+## Structured fields (JSON / YAML)
+
+**JSON** and **YAML** hold a **free-form nested value** with no declared schema —
+the escape hatch for structures Object/ObjectList don't model. Editing opens a
+**monospace textarea** (Cmd/Ctrl+Enter saves); the text must parse as JSON (resp.
+YAML) or the modal shows the parser error. The parsed value is written to
+frontmatter as-is; clearing the text removes the field.
+
+Use Object/ObjectList when the shape is known and you want typed, guided input;
+use JSON/YAML for arbitrary or externally-defined blobs.
+
+## Canvas fields (planned)
+
+`Canvas`, `CanvasGroup`, and `CanvasGroupLink` derive their value from a
+`.canvas` file's graph (nodes/edges/groups) — e.g. links to the notes connected
+to this one, or the canvas group it belongs to. Unlike `Lookup`/`Formula`, they
+need **no Dataview** and have **no Bases equivalent** (Bases doesn't index canvas
+adjacency), so they are a **planned dedicated feature**: an event-driven engine
+that watches `.canvas` edits and writes the derived links back to frontmatter.
+Their type is already parsed and preserved; the auto-maintenance engine is not
+implemented yet.
 
 ## Writing model
 

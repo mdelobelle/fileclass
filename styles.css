@@ -21,6 +21,21 @@
 .fileclass-field-value {
 	color: var(--text-muted);
 	margin-right: 8px;
+	/* Truncate a long value instead of squeezing the field name. */
+	flex: 0 1 auto;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+/* Keep the field name fully visible; the value column absorbs the shrink. */
+.fileclass-field-row .setting-item-info {
+	flex-shrink: 0;
+	margin-right: 12px;
+}
+.fileclass-field-row .setting-item-control {
+	min-width: 0;
+	flex-wrap: nowrap;
 }
 
 /* Note-fields modal footer: applied fileClass(es) as inheritance breadcrumbs. */

@@ -17,6 +17,7 @@ import { readFieldValue } from "../io/read";
 import { Field, isRootField } from "../schema/field";
 import { AddFileClassModal } from "./addFileClassModal";
 import { openFileClassSchema } from "./fileClassSchemaModal";
+import { renderValueWithLinks } from "./valueLinks";
 
 export class NoteFieldsModal extends Modal {
 	private changeRef?: EventRef;
@@ -100,7 +101,10 @@ export class NoteFieldsModal extends Modal {
 	private renderFieldRow(ctx: EditContext, deps: DisplayDeps, field: Field): void {
 		const value = describeField(field, readFieldValue(this.app, this.file, field), deps);
 		const setting = new Setting(this.contentEl).setName(field.name).setDesc(field.type);
-		setting.controlEl.createSpan({ text: value, cls: "fileclass-field-value" });
+		setting.settingEl.addClass("fileclass-field-row");
+		const valueEl = setting.controlEl.createSpan({ cls: "fileclass-field-value" });
+		if (value) valueEl.setAttribute("title", value); // full value on hover (truncated)
+		renderValueWithLinks(valueEl, value, this.file.path, this.app);
 
 		if (isInputSupported(field.type)) {
 			setting.addButton((b) =>

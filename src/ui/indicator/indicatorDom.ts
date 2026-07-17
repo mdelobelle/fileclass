@@ -18,6 +18,8 @@ export const INDICATOR_MARKER = "fileclass-indicator";
 export const NAV_SCOPE = "fileclass-indicator--nav";
 /** Scope for internal-link icons (reading view, backlinks, Bases). */
 export const LINK_SCOPE = "fileclass-indicator--link";
+/** Scope for icons rendered inside the note-fields modal (self-managed). */
+export const MODAL_SCOPE = "fileclass-indicator--modal";
 
 /** The file if Fileclass applies to `path` (Markdown note with resolved fields). */
 export function fileWithFields(plugin: FileclassPlugin, path: string | null): TFile | null {

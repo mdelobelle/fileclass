@@ -12,7 +12,9 @@ export function renderValueWithLinks(
 	parent: HTMLElement,
 	text: string,
 	sourcePath: string,
-	app: App
+	app: App,
+	/** Optional indicator icon injected after a link (null = none for that link). */
+	makeIndicator?: (linktext: string) => HTMLElement | null
 ): void {
 	for (const seg of parseCellSegments(text)) {
 		if ("link" in seg) {
@@ -24,8 +26,11 @@ export function renderValueWithLinks(
 				e.stopPropagation();
 				app.workspace.openLinkText(seg.link, sourcePath, e.ctrlKey || e.metaKey);
 			});
+			const icon = makeIndicator?.(seg.link);
+			if (icon) parent.appendChild(icon);
 		} else {
-			parent.appendText(seg.text);
+			// A span (not a bare text node) so it can truncate in the flex row.
+			parent.createSpan({ cls: "fc-seg", text: seg.text });
 		}
 	}
 }

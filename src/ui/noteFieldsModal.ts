@@ -17,6 +17,7 @@ import { readFieldValue } from "../io/read";
 import { Field, isRootField } from "../schema/field";
 import { AddFileClassModal } from "./addFileClassModal";
 import { openFileClassSchema } from "./fileClassSchemaModal";
+import { makeIndicatorIcon, MODAL_SCOPE, navIndicatorFile } from "./indicator/indicatorDom";
 import { renderValueWithLinks } from "./valueLinks";
 
 export class NoteFieldsModal extends Modal {
@@ -104,7 +105,9 @@ export class NoteFieldsModal extends Modal {
 		setting.settingEl.addClass("fileclass-field-row");
 		const valueEl = setting.controlEl.createSpan({ cls: "fileclass-field-value" });
 		if (value) valueEl.setAttribute("title", value); // full value on hover (truncated)
-		renderValueWithLinks(valueEl, value, this.file.path, this.app);
+		renderValueWithLinks(valueEl, value, this.file.path, this.app, (linktext) =>
+			this.linkIndicator(linktext)
+		);
 
 		if (isInputSupported(field.type)) {
 			setting.addButton((b) =>
@@ -117,5 +120,13 @@ export class NoteFieldsModal extends Modal {
 				.setTooltip("Clear")
 				.onClick(() => void clearField(this.app, this.file, field))
 		);
+	}
+
+	/** The field indicator for a linked note (fileClass fields), or null. */
+	private linkIndicator(linktext: string): HTMLElement | null {
+		const dest = this.app.metadataCache.getFirstLinkpathDest(linktext, this.file.path);
+		if (!dest) return null;
+		const target = navIndicatorFile(this.plugin, dest.path);
+		return target ? makeIndicatorIcon(this.plugin, target, MODAL_SCOPE) : null;
 	}
 }

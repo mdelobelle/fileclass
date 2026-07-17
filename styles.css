@@ -17,16 +17,28 @@
 	height: 14px;
 }
 
-/* Field value shown in the note-fields modal. */
+/* Field value shown in the note-fields modal. A flex row so text/links
+ * truncate while a trailing indicator stays pinned (like the table cell). */
 .fileclass-field-value {
 	color: var(--text-muted);
 	margin-right: 8px;
+	display: flex;
+	align-items: center;
+	gap: 3px;
 	/* Truncate a long value instead of squeezing the field name. */
 	flex: 0 1 auto;
 	min-width: 0;
 	overflow: hidden;
+}
+.fileclass-field-value > .fc-seg,
+.fileclass-field-value > a.internal-link {
+	min-width: 0;
+	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
+}
+.fileclass-field-value > .fileclass-indicator {
+	flex-shrink: 0;
 }
 /* Keep the field name fully visible; the value column absorbs the shrink. */
 .fileclass-field-row .setting-item-info {

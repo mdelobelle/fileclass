@@ -56,6 +56,13 @@ export class CanvasEngine extends Component {
 		);
 		// A note may gain/lose a Canvas binding when a fileClass changes.
 		this.registerEvent(this.plugin.index.on(INDEXED_EVENT, () => this.syncAll()));
+		// Obsidian doesn't live-refresh a canvas file-node's rendered properties
+		// when the note changes on disk (e.g. our own writes). Reload the node.
+		this.registerEvent(
+			this.plugin.app.metadataCache.on("changed", (f) => {
+				if (this.plugin.settings.enableCanvasEngine) this.refreshCanvasNodes(f.path);
+			})
+		);
 	}
 
 	private isCanvas(f: unknown): f is TFile {
@@ -197,4 +204,36 @@ export class CanvasEngine extends Component {
 		if (value === undefined || value === null || value === "") return [];
 		return (Array.isArray(value) ? value : [value]).map(String);
 	}
+
+	/**
+	 * Reloads the rendered card of any open-canvas file-node backing `path`.
+	 * Verified live (Obsidian 1.13.2): the node's child exposes `loadFile()`,
+	 * which re-reads the file and repaints its properties. Private API — every
+	 * access is structurally typed and guarded, so a future drift just no-ops.
+	 */
+	private refreshCanvasNodes(path: string): void {
+		for (const leaf of this.plugin.app.workspace.getLeavesOfType("canvas")) {
+			const canvas = (leaf.view as unknown as CanvasViewLike).canvas;
+			const nodes = canvas?.nodes;
+			if (!nodes) continue;
+			try {
+				for (const node of nodes.values()) {
+					const nodePath = node.filePath ?? node.file?.path;
+					if (nodePath === path) node.child?.loadFile?.();
+				}
+			} catch {
+				/* canvas internals drifted — refresh is best-effort */
+			}
+		}
+	}
+}
+
+/** Structural view of the private canvas internals we reach into. */
+interface CanvasNodeLike {
+	filePath?: string;
+	file?: { path: string };
+	child?: { loadFile?: () => unknown };
+}
+interface CanvasViewLike {
+	canvas?: { nodes?: Map<unknown, CanvasNodeLike> };
 }

@@ -12,6 +12,7 @@ import { Notice, Plugin, TAbstractFile, TFile, debounce } from "obsidian";
 import { setPlugin, clearPlugin } from "./src/globals";
 import { isBasesAvailable } from "./src/engine/basesAdapter";
 import { QueryCache } from "./src/engine/queryCache";
+import { createFileClass } from "./src/commands/createFileClass";
 import { insertMissingFields } from "./src/commands/insertMissingFields";
 import { pickAndUpdateField } from "./src/fields/fieldActions";
 import { FileclassIndex } from "./src/schema/fileclassIndex";
@@ -26,6 +27,7 @@ import { openFileClassSchema } from "./src/ui/fileClassSchemaModal";
 import { pickAndCreateBase } from "./src/views/baseFileGenerator";
 import { syncFileClassToBase } from "./src/views/baseSync";
 import { registerFileclassTableView } from "./src/views/fileclassTableView";
+import { CanvasEngine } from "./src/fields/canvas/canvasEngine";
 import { FieldIndicator } from "./src/ui/indicator/fieldIndicator";
 import { LinkIndicator } from "./src/ui/indicator/linkIndicator";
 import { NoteFieldsModal } from "./src/ui/noteFieldsModal";
@@ -42,6 +44,9 @@ export default class FileclassPlugin extends Plugin {
 
 	/** Field indicator on internal links (reading view, backlinks, Bases — §19.4). */
 	linkIndicator!: LinkIndicator;
+
+	/** Auto-maintains Canvas/CanvasGroup/CanvasGroupLink fields (§9.1). */
+	canvasEngine!: CanvasEngine;
 
 	/** Long-lived cache of parsed .base queries, invalidated on vault modify. */
 	queryCache!: QueryCache;
@@ -66,6 +71,7 @@ export default class FileclassPlugin extends Plugin {
 		this.addChild(new FileclassContextMenu(this));
 		this.indicator = this.addChild(new FieldIndicator(this));
 		this.linkIndicator = this.addChild(new LinkIndicator(this));
+		this.canvasEngine = this.addChild(new CanvasEngine(this));
 		this.registerCommands();
 		this.registerVaultListeners();
 
@@ -147,6 +153,12 @@ export default class FileclassPlugin extends Plugin {
 				if (!checking) void insertMissingFields(this.app, file, this.index.getFields(file));
 				return true;
 			},
+		});
+
+		this.addCommand({
+			id: "create-fileclass",
+			name: "Create a fileClass",
+			callback: () => createFileClass(this),
 		});
 
 		this.addCommand({

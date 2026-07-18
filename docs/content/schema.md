@@ -14,6 +14,10 @@ A fileClass is a Markdown note whose frontmatter declares fields and options.
 Its **name** is the note's filename, and all fileClass notes live under one
 folder, set in **Settings → Fileclass → Class files folder**.
 
+Create one with the command **Fileclass: create a fileClass** — it prompts for a
+name (capitalized automatically), creates the note in that folder, and opens its
+schema editor.
+
 ```yaml
 ---
 extends: Media          # optional parent fileClass

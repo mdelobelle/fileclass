@@ -13,6 +13,7 @@ import { buildOptionUpdates, EditableOptions } from "../schema/fileClassWrite";
 import { applyBaseSync } from "../views/baseSync";
 import { isBaseViewSynced } from "../views/baseYaml";
 import { BaseFileSuggest } from "./baseSuggest";
+import { IconSuggest, paintIcon } from "./iconSuggest";
 
 const csv = (v: string): string[] => v.split(",").map((s) => s.trim()).filter(Boolean);
 
@@ -46,10 +47,18 @@ export class FileClassOptionsModal extends Modal {
 		const { contentEl } = this;
 		contentEl.createEl("h3", { text: `Options — ${this.name}` });
 
-		new Setting(contentEl)
-			.setName("Icon")
-			.setDesc("Lucide icon name.")
-			.addText((t) => t.setValue(this.opts.icon ?? "").onChange((v) => (this.opts.icon = v)));
+		const iconSetting = new Setting(contentEl).setName("Icon").setDesc("Lucide icon name.");
+		const preview = iconSetting.controlEl.createSpan({ cls: "fileclass-icon-preview" });
+		const fallback = this.plugin.settings.fileClassIcon;
+		const paintPreview = (v: string) => paintIcon(preview, v.trim() || fallback);
+		iconSetting.addText((t) => {
+			t.setValue(this.opts.icon ?? "").onChange((v) => {
+				this.opts.icon = v;
+				paintPreview(v);
+			});
+			new IconSuggest(this.app, t.inputEl);
+		});
+		paintPreview(this.opts.icon ?? "");
 
 		new Setting(contentEl)
 			.setName("Extends")

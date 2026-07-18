@@ -17,6 +17,19 @@ import { FIELD_TYPES, FieldOptions, FieldType } from "../schema/field";
 const EXCLUDED = new Set<FieldType>(["Lookup", "Formula"]);
 export const EDITABLE_FIELD_TYPES: FieldType[] = FIELD_TYPES.filter((t) => !EXCLUDED.has(t));
 
+/** Friendlier picker labels; the stored type id is unchanged. */
+const TYPE_LABELS: Partial<Record<FieldType, string>> = {
+	Select: "Select (single value)",
+	Multi: "Multi (select several)",
+	Cycle: "Cycle (rotate values)",
+	File: "File (link)",
+	MultiFile: "Multi file (links)",
+	Media: "Media (embed/link)",
+	MultiMedia: "Multi media",
+	Object: "Object (nested)",
+	ObjectList: "Object list",
+};
+
 export interface FieldDefResult {
 	name: string;
 	type: FieldType;
@@ -56,7 +69,7 @@ export class FieldDefModal extends Modal {
 			renderFieldOptionsSettings(optionsEl, this.type, this.draft, { app: this.app });
 
 		new Setting(contentEl).setName("Type").addDropdown((d) => {
-			EDITABLE_FIELD_TYPES.forEach((t) => d.addOption(t, t));
+			EDITABLE_FIELD_TYPES.forEach((t) => d.addOption(t, TYPE_LABELS[t] ?? t));
 			d.setValue(this.type).onChange((v) => {
 				this.type = v as FieldType;
 				renderOptions();

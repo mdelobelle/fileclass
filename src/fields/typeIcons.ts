@@ -16,7 +16,7 @@ const TYPE_ICONS: Record<FieldType, string> = {
 	Date: "calendar",
 	DateTime: "calendar-clock",
 	Time: "clock",
-	Multi: "list",
+	Multi: "list-checks",
 	File: "file",
 	MultiFile: "files",
 	Media: "image",

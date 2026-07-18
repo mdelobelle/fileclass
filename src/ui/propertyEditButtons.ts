@@ -14,6 +14,7 @@ import { Component, TFile, debounce, setIcon } from "obsidian";
 import type FileclassPlugin from "../../main";
 import { EditContext, updateField } from "../fields/fieldActions";
 import { isInputSupported } from "../fields/support";
+import { fieldTypeIcon } from "../fields/typeIcons";
 import { Field, isRootField } from "../schema/field";
 
 const BTN_CLASS = "fileclass-prop-edit";
@@ -110,8 +111,8 @@ export class PropertyEditButtons extends Component {
 	private makeButton(file: TFile, field: Field, key: string): HTMLElement {
 		const btn = createSpan({ cls: `${BTN_CLASS} clickable-icon` });
 		btn.dataset.fcKey = key;
-		btn.setAttribute("aria-label", `Edit "${field.name}" (Fileclass)`);
-		setIcon(btn, "square-pen");
+		btn.setAttribute("aria-label", `Edit "${field.name}" — ${field.type} (Fileclass)`);
+		setIcon(btn, fieldTypeIcon(field.type));
 		btn.addEventListener("click", (e) => {
 			e.preventDefault();
 			e.stopPropagation();

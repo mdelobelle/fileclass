@@ -322,6 +322,23 @@ export function clearField(app: App, file: TFile, field: Field): Promise<void> {
 	return writeFieldValue(app, file, field, undefined);
 }
 
+/** Flips a Boolean field and writes it directly (no modal, single write). */
+export async function toggleBooleanField(ctx: EditContext, field: Field): Promise<void> {
+	const current = readFieldValue(ctx.host.app, ctx.file, field);
+	const next = !(current === true || current === "true");
+	await commit(ctx.host.app, ctx.file, field, next);
+}
+
+/** Cycles a Cycle field to its next allowed value and writes it (single write). */
+export async function cycleField(ctx: EditContext, field: Field): Promise<void> {
+	const allowed = await resolveFieldValues(ctx.host, field, ctx.file);
+	if (!allowed.length) return updateField(ctx, field); // no list → fall back to input
+	const current = readFieldValue(ctx.host.app, ctx.file, field);
+	const idx = allowed.indexOf(current == null ? "" : String(current));
+	const next = allowed[(idx + 1) % allowed.length];
+	await commit(ctx.host.app, ctx.file, field, next);
+}
+
 /** Lets the user pick one of a note's editable root fields, then edits it. */
 export function pickAndUpdateField(host: AdapterHost, file: TFile, fields: Field[]): void {
 	const ctx: EditContext = { host, file, allFields: fields };

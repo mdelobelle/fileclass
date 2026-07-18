@@ -49,6 +49,34 @@
 	min-width: 0;
 	flex-wrap: nowrap;
 }
+/* Compact rows: tighter padding, type shown as a leading icon. */
+.fileclass-field-row {
+	padding-top: var(--size-2-3);
+	padding-bottom: var(--size-2-3);
+}
+.fileclass-field-row .setting-item-name {
+	display: flex;
+	align-items: center;
+	font-size: var(--font-ui-small);
+}
+.fileclass-type-icon {
+	display: inline-flex;
+	align-items: center;
+	margin-right: 6px;
+	color: var(--text-muted);
+}
+.fileclass-type-icon svg {
+	width: 16px;
+	height: 16px;
+}
+/* Action icons: match the 16px type icon (Obsidian's default is larger). */
+.fileclass-field-row .setting-item-control .clickable-icon {
+	padding: 4px;
+}
+.fileclass-field-row .setting-item-control .clickable-icon svg {
+	width: 16px;
+	height: 16px;
+}
 
 /* Edit button injected between key and value in the Properties editor. */
 .metadata-property > .fileclass-prop-edit {

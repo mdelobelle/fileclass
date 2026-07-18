@@ -5,14 +5,21 @@
  * dispatcher (updateField/clearField) — no new write path. Re-renders on
  * metadata changes so edits made through sub-modals show immediately.
  */
-import { EventRef, Modal, Setting, TFile } from "obsidian";
+import { EventRef, Modal, Setting, setIcon, TFile } from "obsidian";
 
 import type FileclassPlugin from "../../main";
 import { insertMissingFields } from "../commands/insertMissingFields";
 import { makeDisplayDeps } from "../fields/displayDeps";
-import { clearField, EditContext, updateField } from "../fields/fieldActions";
+import {
+	clearField,
+	cycleField,
+	EditContext,
+	toggleBooleanField,
+	updateField,
+} from "../fields/fieldActions";
 import { describeField, DisplayDeps } from "../fields/objectDisplay";
 import { isInputSupported } from "../fields/support";
+import { fieldTypeIcon } from "../fields/typeIcons";
 import { readFieldValue } from "../io/read";
 import { Field, isRootField } from "../schema/field";
 import { AddFileClassModal } from "./addFileClassModal";
@@ -101,17 +108,36 @@ export class NoteFieldsModal extends Modal {
 
 	private renderFieldRow(ctx: EditContext, deps: DisplayDeps, field: Field): void {
 		const value = describeField(field, readFieldValue(this.app, this.file, field), deps);
-		const setting = new Setting(this.contentEl).setName(field.name).setDesc(field.type);
+		// Compact row: the type is shown as a leading icon, not a text label.
+		const setting = new Setting(this.contentEl).setName(field.name);
 		setting.settingEl.addClass("fileclass-field-row");
+		const typeIcon = createSpan({ cls: "fileclass-type-icon" });
+		typeIcon.setAttribute("aria-label", field.type);
+		setIcon(typeIcon, fieldTypeIcon(field.type));
+		setting.nameEl.prepend(typeIcon);
+
 		const valueEl = setting.controlEl.createSpan({ cls: "fileclass-field-value" });
 		if (value) valueEl.setAttribute("title", value); // full value on hover (truncated)
 		renderValueWithLinks(valueEl, value, this.file.path, this.app, (linktext) =>
 			this.linkIndicator(linktext)
 		);
 
-		if (isInputSupported(field.type)) {
-			setting.addButton((b) =>
-				b.setButtonText("Edit").onClick(() => void updateField(ctx, field))
+		this.addRowActions(ctx, setting, field);
+	}
+
+	/** Right-side quick actions, chosen by field type. */
+	private addRowActions(ctx: EditContext, setting: Setting, field: Field): void {
+		if (field.type === "Boolean") {
+			setting.addExtraButton((b) =>
+				b.setIcon("toggle-left").setTooltip("Toggle").onClick(() => void toggleBooleanField(ctx, field))
+			);
+		} else if (field.type === "Cycle") {
+			setting.addExtraButton((b) =>
+				b.setIcon("rotate-cw").setTooltip("Next value").onClick(() => void cycleField(ctx, field))
+			);
+		} else if (isInputSupported(field.type)) {
+			setting.addExtraButton((b) =>
+				b.setIcon("pencil").setTooltip("Edit").onClick(() => void updateField(ctx, field))
 			);
 		}
 		setting.addExtraButton((b) =>

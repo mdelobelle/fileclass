@@ -102,8 +102,18 @@ export class NoteFieldsModal extends Modal {
 					e.preventDefault();
 					openFileClassSchema(this.plugin, cls);
 				});
+				// Hovering a fileClass marks the rows of the fields it declares.
+				link.addEventListener("mouseenter", () => this.highlightOwner(cls));
+				link.addEventListener("mouseleave", () => this.highlightOwner(null));
 			});
 		}
+	}
+
+	/** Marks field rows declared by `name` (footer hover); null clears. */
+	private highlightOwner(name: string | null): void {
+		this.contentEl.querySelectorAll<HTMLElement>(".fileclass-field-row").forEach((row) => {
+			row.toggleClass("is-fc-highlight", name !== null && row.dataset.fcOwner === name);
+		});
 	}
 
 	private renderFieldRow(ctx: EditContext, deps: DisplayDeps, field: Field): void {
@@ -111,6 +121,7 @@ export class NoteFieldsModal extends Modal {
 		// Compact row: the type is shown as a leading icon, not a text label.
 		const setting = new Setting(this.contentEl).setName(field.name);
 		setting.settingEl.addClass("fileclass-field-row");
+		setting.settingEl.dataset.fcOwner = field.fileClassName; // for footer hover highlight
 		const typeIcon = createSpan({ cls: "fileclass-type-icon" });
 		typeIcon.setAttribute("aria-label", field.type);
 		setIcon(typeIcon, fieldTypeIcon(field.type));

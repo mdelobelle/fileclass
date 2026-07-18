@@ -53,6 +53,22 @@
 .fileclass-field-row {
 	padding-top: var(--size-2-3);
 	padding-bottom: var(--size-2-3);
+	position: relative;
+}
+/* Hovering a fileClass in the footer marks the rows it declares: a vertical
+ * bar in the modal's left margin (kept off the type icon). */
+.fileclass-field-row.is-fc-highlight {
+	background: var(--background-modifier-hover);
+}
+.fileclass-field-row.is-fc-highlight::before {
+	content: "";
+	position: absolute;
+	left: -9px;
+	top: 3px;
+	bottom: 3px;
+	width: 3px;
+	border-radius: 2px;
+	background: var(--interactive-accent);
 }
 .fileclass-field-row .setting-item-name {
 	display: flex;

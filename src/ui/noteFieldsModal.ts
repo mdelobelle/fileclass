@@ -20,6 +20,7 @@ import {
 import { describeField, DisplayDeps } from "../fields/objectDisplay";
 import { isInputSupported } from "../fields/support";
 import { fieldTypeIcon } from "../fields/typeIcons";
+import { INDEXED_EVENT } from "../schema/fileclassIndex";
 import { readFieldValue } from "../io/read";
 import { Field, isRootField } from "../schema/field";
 import { AddFileClassModal } from "./addFileClassModal";
@@ -29,6 +30,7 @@ import { renderValueWithLinks } from "./valueLinks";
 
 export class NoteFieldsModal extends Modal {
 	private changeRef?: EventRef;
+	private indexRef?: EventRef;
 
 	constructor(private readonly plugin: FileclassPlugin, private readonly file: TFile) {
 		super(plugin.app);
@@ -40,10 +42,14 @@ export class NoteFieldsModal extends Modal {
 		this.changeRef = this.app.metadataCache.on("changed", (f) => {
 			if (f.path === this.file.path) this.render();
 		});
+		// Re-render on schema changes too, so edits to a field's definition
+		// (e.g. a Select's allowed values) are picked up by the row's controls.
+		this.indexRef = this.plugin.index.on(INDEXED_EVENT, () => this.render());
 	}
 
 	onClose(): void {
 		if (this.changeRef) this.app.metadataCache.offref(this.changeRef);
+		if (this.indexRef) this.plugin.index.offref(this.indexRef);
 		this.contentEl.empty();
 	}
 

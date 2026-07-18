@@ -79,11 +79,28 @@ describe("Select/Cycle/Multi list source", () => {
 			sourceType: "ValuesFromBase",
 			baseFile: "Activities.base",
 			viewName: "All",
+			valuesColumn: "",
 		});
 		expect(buildFieldOptions("Select", draft)).toEqual({
 			sourceType: "ValuesFromBase",
 			baseFile: "Activities.base",
 			viewName: "All",
+		});
+	});
+
+	it("round-trips a Base-view source with a values column", () => {
+		const draft = optionsToDraft("Multi", {
+			sourceType: "ValuesFromBase",
+			baseFile: "Activities.base",
+			viewName: "All",
+			valuesColumn: "note.title",
+		});
+		expect(draft.valuesColumn).toBe("note.title");
+		expect(buildFieldOptions("Multi", draft)).toEqual({
+			sourceType: "ValuesFromBase",
+			baseFile: "Activities.base",
+			viewName: "All",
+			valuesColumn: "note.title",
 		});
 	});
 

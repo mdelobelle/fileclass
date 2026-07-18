@@ -5,7 +5,7 @@
  */
 import { AbstractInputSuggest, App } from "obsidian";
 
-import { listBaseViews } from "../engine/basesAdapter";
+import { getBaseRows, listBaseViews } from "../engine/basesAdapter";
 
 export class BaseFileSuggest extends AbstractInputSuggest<string> {
 	constructor(app: App, private readonly inputEl: HTMLInputElement) {
@@ -71,6 +71,40 @@ export class BaseViewSuggest extends AbstractInputSuggest<string> {
 		try {
 			const q = query.toLowerCase();
 			return (await listBaseViews(this.app, base)).filter((v) => v.toLowerCase().includes(q));
+		} catch {
+			return [];
+		}
+	}
+
+	renderSuggestion(value: string, el: HTMLElement): void {
+		el.setText(value);
+	}
+
+	selectSuggestion(value: string): void {
+		this.setValue(value);
+		this.inputEl.trigger("input");
+		this.close();
+	}
+}
+
+/** Autocomplete for a column id of a base view (`file.name`, `note.title`, …). */
+export class BaseColumnSuggest extends AbstractInputSuggest<string> {
+	constructor(
+		app: App,
+		private readonly inputEl: HTMLInputElement,
+		private readonly getBasePath: () => string,
+		private readonly getViewName: () => string
+	) {
+		super(app, inputEl);
+	}
+
+	protected async getSuggestions(query: string): Promise<string[]> {
+		const base = this.getBasePath();
+		if (!base) return [];
+		try {
+			const q = query.toLowerCase();
+			const result = await getBaseRows(this.app, base, this.getViewName() || undefined);
+			return result.columns.filter((c) => c.toLowerCase().includes(q));
 		} catch {
 			return [];
 		}

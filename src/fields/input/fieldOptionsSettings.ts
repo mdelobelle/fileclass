@@ -8,7 +8,7 @@
 import { App, Setting } from "obsidian";
 
 import { FieldType } from "../../schema/field";
-import { BaseFileSuggest, BaseViewSuggest } from "../../ui/baseSuggest";
+import { BaseColumnSuggest, BaseFileSuggest, BaseViewSuggest } from "../../ui/baseSuggest";
 import { OptionsDraft } from "../optionsDraft";
 import { renderCanvasSettings } from "./canvasOptionsSettings";
 
@@ -176,7 +176,7 @@ function renderListSettings(
 	if (draft.sourceType === "ValuesFromBase") {
 		new Setting(container)
 			.setName("Base file")
-			.setDesc("Values are the matching files' names.")
+			.setDesc("A .base whose view provides the values.")
 			.addText((t) => {
 				t.setValue(draft.baseFile ?? "").onChange((v) => (draft.baseFile = v));
 				new BaseFileSuggest(ctx.app, t.inputEl);
@@ -187,6 +187,20 @@ function renderListSettings(
 			.addText((t) => {
 				t.setValue(draft.viewName ?? "").onChange((v) => (draft.viewName = v));
 				new BaseViewSuggest(ctx.app, t.inputEl, () => draft.baseFile ?? "");
+			});
+		new Setting(container)
+			.setName("Column")
+			.setDesc("Column whose values become the list. Blank = the files' names.")
+			.addText((t) => {
+				t.setPlaceholder("(file name)")
+					.setValue(draft.valuesColumn ?? "")
+					.onChange((v) => (draft.valuesColumn = v));
+				new BaseColumnSuggest(
+					ctx.app,
+					t.inputEl,
+					() => draft.baseFile ?? "",
+					() => draft.viewName ?? ""
+				);
 			});
 		return;
 	}

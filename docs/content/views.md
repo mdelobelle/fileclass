@@ -23,6 +23,13 @@ records the choices on the fileClass (`baseFile`/`baseView`). Pointing at an
 **existing** base is safe: only the managed view is added or updated — your other
 views are left untouched.
 
+Once a base exists, the right-click menu on the fileClass note changes:
+
+- **Modify base for this fileClass** — reopens the same dialog (create/sync) on
+  the existing base.
+- **Open base for this fileClass** — opens the `.base` in a new tab. There's also
+  the command **Fileclass: open this fileClass's base**.
+
 ## Keeping a base in sync
 
 A fileClass can **mirror** its fields into a base — **one-way and explicit**, so
@@ -45,9 +52,6 @@ fileClass to its base**.
 
 > The sync round-trips the YAML, which reformats the file and drops YAML
 > comments — fine for the plugin-managed base.
-
-> An editable **fileclass-table** view (in-cell editing through Fileclass's typed
-> inputs) is being built next; generated bases will be able to use it.
 
 ## Editable table view
 

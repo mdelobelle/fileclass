@@ -10,20 +10,29 @@ the UI surfaces; on-name indicators come later).
 ## Note-fields modal
 
 The **note-fields modal** is the hub for a note's fields. It lists every root
-field of the note's fileClass(es) with its current value and:
+field of the note's fileClass(es) — each row is compact, with the field's **type
+shown as a leading icon** (hover it for the type name) and its current value.
 
-- **Edit** — opens the type-appropriate input (the same input used everywhere;
-  nested Object/ObjectList fields open the draft editor).
-- **Clear** — removes the field's value.
-- **Insert missing fields** — adds any root fields absent from the frontmatter.
-- **Add fileClass** — binds another fileClass to the note.
+Right-side actions depend on the field type:
+
+- **Boolean** — a **toggle** flips the value directly.
+- **Cycle** — a **next** button rotates to the next allowed value.
+- other editable types — **Edit**, the type-appropriate input (the same input
+  used everywhere; nested Object/ObjectList fields open the draft editor).
+- computed (Lookup) and auto-maintained (Canvas) types — no edit action.
+- **Clear** (all) — removes the field's value.
+
+Header actions: **Insert missing fields** (adds any root fields absent from the
+frontmatter) and **Add fileClass** (binds another fileClass to the note).
 
 The modal refreshes automatically as values are written, so edits made through a
 sub-modal appear immediately.
 
 Its **footer** shows the fileClass(es) applying to the note as an **inheritance
-breadcrumb** (`ancestor › parent › fileClass`). Each name is **clickable** and
-opens that fileClass's schema editor.
+breadcrumb** (`ancestor › parent › fileClass`). Each name is **clickable** (opens
+that fileClass's schema editor) and, on **hover**, marks the rows of the fields
+that fileClass declares with a vertical bar — so you can see which fileClass owns
+which field (inherited fields point at the ancestor that declares them).
 
 Open it with the command **Fileclass: manage note fields** or from a context
 menu.

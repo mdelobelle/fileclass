@@ -27,6 +27,14 @@ enableGitInfo = true
     name = "Views"
     pageRef = "/views"
     weight = 50
+  [[menu.main]]
+    name = "Settings"
+    pageRef = "/settings"
+    weight = 60
+  [[menu.main]]
+    name = "Modeling"
+    pageRef = "/modeling"
+    weight = 70
 
 [markup.goldmark.renderer]
   unsafe = true

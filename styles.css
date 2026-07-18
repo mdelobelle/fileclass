@@ -50,6 +50,27 @@
 	flex-wrap: nowrap;
 }
 
+/* Edit button injected between key and value in the Properties editor. */
+.metadata-property > .fileclass-prop-edit {
+	flex: 0 0 auto;
+	align-self: center; /* center in the row, aligned with key/value text */
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	height: var(--input-height, 26px);
+	margin: 0 2px;
+	padding: 0 3px;
+	color: var(--text-muted);
+	cursor: pointer;
+}
+.metadata-property > .fileclass-prop-edit:hover {
+	color: var(--text-normal);
+}
+.metadata-property > .fileclass-prop-edit svg {
+	width: 15px;
+	height: 15px;
+}
+
 /* Canvas field filters: color/side chips + label chip list. */
 .fileclass-color-chip,
 .fileclass-side-chip {

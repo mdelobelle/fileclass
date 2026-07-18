@@ -58,3 +58,16 @@ The indicator is a best-effort UI decoration layered on Obsidian's DOM (and, for
 Live Preview, its CodeMirror editor): if a surface changes in a future Obsidian
 version, the icon simply stops appearing there — the modal, menus, and commands
 keep working.
+
+## Property editor buttons
+
+In Obsidian's native **Properties** editor, each row whose key matches an
+**editable field** of the note's fileClass gets a small **edit button between the
+key and the value**. Clicking it opens the same type-appropriate input used
+everywhere (with validation), instead of Obsidian's untyped value cell. Auto-
+maintained fields (Canvas family) and computed types get no button. Toggle it
+under **Settings → Fileclass → Property editor buttons**.
+
+Like the indicators, this is a best-effort DOM decoration (Obsidian exposes no
+API for it): if the properties DOM changes, the buttons simply stop appearing and
+everything else keeps working.

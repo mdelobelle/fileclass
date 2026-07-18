@@ -441,6 +441,17 @@ dispatcher (`promptFieldValue`/`updateField`, one `processFrontMatter` write, D5
   is a known-fragile boundary (§17): if a surface breaks on a new Obsidian, only
   its module changes and the core (modal, menus, commands) keeps working.
 
+### 19.6 Property editor buttons (`src/ui/propertyEditButtons.ts`)
+An edit button injected between the key and value of each native Properties row
+whose key (case-insensitively) is an editable root field of the note's fileClass;
+clicking opens `updateField` (typed input + validation). No Obsidian API exists
+for this (`metadataTypeManager.registeredTypeWidgets` is per-property-*type*
+value rendering, global and private — not per-field) — so it's DOM injection,
+same fragile-boundary treatment as the indicators (§19.4): MutationObservers on
+markdown/file-properties leaves, dedup-guarded, behind the enablePropertyEditButtons
+setting, removed on unload. Canvas cards are skipped (row not in a real
+properties editor); auto-maintained (Canvas) and computed types get no button.
+
 ## 20. fileClass schema editor (P2-ter)
 
 Authoring the fileClass itself — the write-side counterpart of P1's read-only

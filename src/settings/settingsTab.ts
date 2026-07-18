@@ -112,6 +112,17 @@ export class FileclassSettingTab extends PluginSettingTab {
 				})
 			);
 
+		new Setting(containerEl)
+			.setName("Property editor buttons")
+			.setDesc("Show an edit button on properties that match a fileClass field, for typed input.")
+			.addToggle((toggle) =>
+				toggle.setValue(this.plugin.settings.enablePropertyEditButtons).onChange(async (value) => {
+					this.plugin.settings.enablePropertyEditButtons = value;
+					await this.plugin.saveSettings();
+					this.plugin.propertyButtons.refreshNow();
+				})
+			);
+
 		new Setting(containerEl).setName("Indicators").setHeading();
 		containerEl.createEl("p", {
 			text: "A clickable icon next to a note's name opens its fields.",

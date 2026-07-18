@@ -21,6 +21,8 @@ export interface FileclassSettings {
 	enableCanvasEngine: boolean;
 	/** Add Fileclass entries to the file/editor context menus. */
 	enableContextMenu: boolean;
+	/** Show an edit button on matching rows of the native Properties editor. */
+	enablePropertyEditButtons: boolean;
 	/** Show the field indicator icon in the tab header. */
 	enableTabHeaderIndicator: boolean;
 	/** Show the field indicator icon in the file explorer. */
@@ -44,6 +46,7 @@ export const DEFAULT_SETTINGS: FileclassSettings = {
 	defaultDateDisplayFormat: "",
 	enableCanvasEngine: true,
 	enableContextMenu: true,
+	enablePropertyEditButtons: true,
 	enableTabHeaderIndicator: true,
 	enableFileExplorerIndicator: true,
 	enableBookmarksIndicator: true,

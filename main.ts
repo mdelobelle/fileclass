@@ -30,6 +30,7 @@ import { registerFileclassTableView } from "./src/views/fileclassTableView";
 import { CanvasEngine } from "./src/fields/canvas/canvasEngine";
 import { FieldIndicator } from "./src/ui/indicator/fieldIndicator";
 import { LinkIndicator } from "./src/ui/indicator/linkIndicator";
+import { PropertyEditButtons } from "./src/ui/propertyEditButtons";
 import { NoteFieldsModal } from "./src/ui/noteFieldsModal";
 
 export default class FileclassPlugin extends Plugin {
@@ -47,6 +48,9 @@ export default class FileclassPlugin extends Plugin {
 
 	/** Auto-maintains Canvas/CanvasGroup/CanvasGroupLink fields (§9.1). */
 	canvasEngine!: CanvasEngine;
+
+	/** Edit buttons in the native Properties editor (§19.6). */
+	propertyButtons!: PropertyEditButtons;
 
 	/** Long-lived cache of parsed .base queries, invalidated on vault modify. */
 	queryCache!: QueryCache;
@@ -72,6 +76,7 @@ export default class FileclassPlugin extends Plugin {
 		this.indicator = this.addChild(new FieldIndicator(this));
 		this.linkIndicator = this.addChild(new LinkIndicator(this));
 		this.canvasEngine = this.addChild(new CanvasEngine(this));
+		this.propertyButtons = this.addChild(new PropertyEditButtons(this));
 		this.registerCommands();
 		this.registerVaultListeners();
 

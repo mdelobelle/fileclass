@@ -6,7 +6,16 @@
  * options untouched (no clobbering — D5-style safety).
  */
 import { FieldOptions, FieldType } from "../schema/field";
+import { CanvasDirection } from "./canvas/canvasGraph";
 import { baseBindingOptionsFromOptions, listOptionsFromOptions } from "./options";
+
+const CANVAS_DIRECTIONS: CanvasDirection[] = ["incoming", "outgoing", "bothsides"];
+
+function strArr(value: unknown): string[] | undefined {
+	if (!Array.isArray(value)) return undefined;
+	const list = value.filter((v): v is string => typeof v === "string");
+	return list.length ? list : undefined;
+}
 
 export interface OptionsDraft {
 	// Number
@@ -21,6 +30,18 @@ export interface OptionsDraft {
 	displayTemplate?: string;
 	/** Original options, so unknown keys survive a template edit. */
 	objectRawOptions?: Record<string, unknown>;
+	// Canvas / CanvasGroup / CanvasGroupLink
+	canvasPath?: string;
+	canvasDirection?: CanvasDirection;
+	edgeColors?: string[];
+	edgeFromSides?: string[];
+	edgeToSides?: string[];
+	edgeLabels?: string[];
+	nodeColors?: string[];
+	groupColors?: string[];
+	groupLabels?: string[];
+	/** Original options, so genuinely-unknown keys survive an edit. */
+	canvasRawOptions?: Record<string, unknown>;
 	// Select / Cycle / Multi — undefined sourceType means an unsupported source
 	// (legacy dataview), left untouched by this editor.
 	sourceType?: "ValuesList" | "ValuesListNotePath" | "ValuesFromBase";
@@ -76,6 +97,25 @@ export function optionsToDraft(type: FieldType, options: FieldOptions): OptionsD
 			return {
 				displayTemplate: typeof o.displayTemplate === "string" ? o.displayTemplate : "",
 				objectRawOptions: Array.isArray(options) ? {} : { ...o },
+			};
+		case "Canvas":
+		case "CanvasGroup":
+		case "CanvasGroupLink":
+			return {
+				canvasPath: typeof o.canvasPath === "string" ? o.canvasPath : "",
+				canvasDirection: CANVAS_DIRECTIONS.includes(o.direction as CanvasDirection)
+					? (o.direction as CanvasDirection)
+					: "bothsides",
+				edgeColors: strArr(o.edgeColors),
+				edgeFromSides: strArr(o.edgeFromSides),
+				edgeToSides: strArr(o.edgeToSides),
+				edgeLabels: strArr(o.edgeLabels),
+				nodeColors: strArr(o.nodeColors),
+				groupColors: strArr(o.groupColors),
+				groupLabels: strArr(o.groupLabels),
+				baseFile: typeof o.baseFile === "string" ? o.baseFile : "",
+				viewName: typeof o.viewName === "string" ? o.viewName : "",
+				canvasRawOptions: Array.isArray(options) ? {} : { ...o },
 			};
 		case "Select":
 		case "Cycle":
@@ -142,6 +182,40 @@ export function buildFieldOptions(type: FieldType, draft: OptionsDraft): FieldOp
 			delete o.displayTemplate;
 			const tpl = draft.displayTemplate?.trim();
 			if (tpl) o.displayTemplate = tpl;
+			return o;
+		}
+		case "Canvas":
+		case "CanvasGroup":
+		case "CanvasGroupLink": {
+			// Preserve genuinely-unknown keys; manage path/direction/filters.
+			const o = { ...(draft.canvasRawOptions ?? {}) };
+			const setArr = (key: string, arr?: string[]) => {
+				if (arr && arr.length) o[key] = arr;
+				else delete o[key];
+			};
+			if (draft.canvasPath?.trim()) o.canvasPath = draft.canvasPath.trim();
+			else delete o.canvasPath;
+
+			const hasEdges = type !== "CanvasGroup";
+			const hasGroups = type !== "Canvas";
+			const hasLinks = type !== "CanvasGroup";
+
+			if (hasEdges) o.direction = draft.canvasDirection ?? "bothsides";
+			else delete o.direction;
+
+			setArr("edgeColors", hasEdges ? draft.edgeColors : undefined);
+			setArr("edgeFromSides", hasEdges ? draft.edgeFromSides : undefined);
+			setArr("edgeToSides", hasEdges ? draft.edgeToSides : undefined);
+			setArr("edgeLabels", hasEdges ? draft.edgeLabels : undefined);
+			setArr("nodeColors", hasEdges ? draft.nodeColors : undefined);
+			setArr("groupColors", hasGroups ? draft.groupColors : undefined);
+			setArr("groupLabels", hasGroups ? draft.groupLabels : undefined);
+
+			// Matching-files base view (link-producing types only).
+			if (hasLinks && draft.baseFile?.trim()) o.baseFile = draft.baseFile.trim();
+			else delete o.baseFile;
+			if (hasLinks && draft.viewName?.trim()) o.viewName = draft.viewName.trim();
+			else delete o.viewName;
 			return o;
 		}
 		case "Select":

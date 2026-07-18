@@ -129,6 +129,60 @@ describe("unmanaged types preserve options", () => {
 	});
 });
 
+describe("Canvas options", () => {
+	it("reads path + direction and preserves advanced filter keys", () => {
+		const draft = optionsToDraft("Canvas", {
+			canvasPath: "Board.canvas",
+			direction: "incoming",
+			edgeColors: ["1"],
+		});
+		expect(draft.canvasPath).toBe("Board.canvas");
+		expect(draft.canvasDirection).toBe("incoming");
+		expect(draft.canvasRawOptions).toEqual({ canvasPath: "Board.canvas", direction: "incoming", edgeColors: ["1"] });
+	});
+	it("writes path + direction, keeping unknown filter keys", () => {
+		const draft = optionsToDraft("CanvasGroupLink", { edgeLabels: ["rel"] });
+		draft.canvasPath = "B.canvas";
+		draft.canvasDirection = "outgoing";
+		expect(buildFieldOptions("CanvasGroupLink", draft)).toEqual({
+			canvasPath: "B.canvas",
+			direction: "outgoing",
+			edgeLabels: ["rel"],
+		});
+	});
+	it("drops direction for CanvasGroup", () => {
+		const draft = optionsToDraft("CanvasGroup", { canvasPath: "B.canvas", direction: "incoming" });
+		expect(buildFieldOptions("CanvasGroup", draft)).toEqual({ canvasPath: "B.canvas" });
+	});
+	it("round-trips edge/node filters and matching-files base for Canvas", () => {
+		const stored = {
+			canvasPath: "B.canvas",
+			direction: "outgoing",
+			edgeColors: ["1", "0"],
+			edgeFromSides: ["top"],
+			edgeLabels: ["rel"],
+			nodeColors: ["4"],
+			baseFile: "People.base",
+			viewName: "Students",
+		};
+		const draft = optionsToDraft("Canvas", stored);
+		expect(draft.edgeColors).toEqual(["1", "0"]);
+		expect(draft.baseFile).toBe("People.base");
+		expect(buildFieldOptions("Canvas", draft)).toEqual(stored);
+	});
+	it("keeps group filters but drops edge/link keys for CanvasGroup", () => {
+		const draft = optionsToDraft("CanvasGroup", { canvasPath: "B.canvas", groupLabels: ["Team"] });
+		draft.edgeColors = ["1"]; // not applicable to CanvasGroup
+		draft.baseFile = "X.base";
+		expect(buildFieldOptions("CanvasGroup", draft)).toEqual({ canvasPath: "B.canvas", groupLabels: ["Team"] });
+	});
+	it("defaults an absent direction to bothsides", () => {
+		const draft = optionsToDraft("Canvas", { canvasPath: "B.canvas" });
+		expect(draft.canvasDirection).toBe("bothsides");
+		expect(buildFieldOptions("Canvas", draft)).toEqual({ canvasPath: "B.canvas", direction: "bothsides" });
+	});
+});
+
 describe("Object/ObjectList display template", () => {
 	it("reads the template and keeps the original options", () => {
 		const draft = optionsToDraft("Object", { displayTemplate: "{{ville}}", foo: "bar" });

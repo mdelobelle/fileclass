@@ -29,12 +29,13 @@ field types and the commands that set values. Everything is written to
 | **ObjectList** | list of objects | draft editor | each item's children validate |
 | **JSON** | free-form value | monospace textarea | must parse as JSON |
 | **YAML** | free-form value | monospace textarea | must parse as YAML |
+| **Canvas** | list of links | auto-filled from a `.canvas` | — |
+| **CanvasGroup** | list of group names | auto-filled from a `.canvas` | — |
+| **CanvasGroupLink** | list of links | auto-filled from a `.canvas` | — |
 
 Empty values are always valid — a field is optional unless a constraint says
 otherwise. `Lookup` and `Formula` (computed fields) are **out of scope** for
 Fileclass — use Bases views for reverse relations and computed columns.
-`Canvas`/`CanvasGroup`/`CanvasGroupLink` are a separate, planned feature (see
-below).
 
 ## Link fields (File / Media)
 
@@ -133,16 +134,35 @@ use JSON/YAML for arbitrary or externally-defined blobs. For the fuller decision
 — including when the data deserves a fileClass of its own instead — see the
 [Modeling guide](../modeling/).
 
-## Canvas fields (planned)
+## Canvas fields (Canvas / CanvasGroup / CanvasGroupLink)
 
-`Canvas`, `CanvasGroup`, and `CanvasGroupLink` derive their value from a
-`.canvas` file's graph (nodes/edges/groups) — e.g. links to the notes connected
-to this one, or the canvas group it belongs to. Unlike `Lookup`/`Formula`, they
-need **no Dataview** and have **no Bases equivalent** (Bases doesn't index canvas
-adjacency), so they are a **planned dedicated feature**: an event-driven engine
-that watches `.canvas` edits and writes the derived links back to frontmatter.
-Their type is already parsed and preserved; the auto-maintenance engine is not
-implemented yet.
+These are **auto-maintained** from an Obsidian **`.canvas`** file — you don't
+edit them; the **Canvas engine** derives their value from the canvas graph and
+writes it to frontmatter whenever the canvas changes. Configure each field with
+a **Canvas file** path (and, for `Canvas`/`CanvasGroupLink`, a **Direction**):
+
+- **Canvas** — links to the notes connected to this note by edges in the canvas
+  (following the chosen **Direction**: incoming / outgoing / both sides).
+- **CanvasGroup** — the name(s) of the canvas group(s) this note sits inside.
+- **CanvasGroupLink** — links to the notes connected to the group(s) this note
+  is in.
+
+Each field also has **conjunctive (AND) filters** in the schema editor:
+
+- **Edge matching colors / from side / to side / labels** — only follow edges
+  matching all set criteria (nothing set = any).
+- **Node matching colors** — only keep target notes whose node has these colors.
+- **Group matching colors / labels** (`CanvasGroup`/`CanvasGroupLink`).
+- **Matching files** — restrict targets to the notes returned by a **`.base`
+  view** (this replaces Metadata Menu's DataviewJS query — D1).
+
+Unlike `Lookup`/`Formula`, this needs **no Dataview** and has **no Bases
+equivalent** (Bases doesn't index canvas adjacency).
+
+The engine watches `.canvas` edits, writes only when a value changed (no churn),
+and clears fields on notes that dropped out of the canvas. It is the one surface
+that writes frontmatter automatically — toggle it under **Settings → Fileclass →
+Canvas fields engine**.
 
 ## Writing model
 

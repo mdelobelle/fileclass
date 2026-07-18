@@ -91,6 +91,18 @@ export class FileclassSettingTab extends PluginSettingTab {
 			);
 
 		new Setting(containerEl)
+			.setName("Canvas fields engine")
+			.setDesc(
+				"Auto-fill Canvas/CanvasGroup/CanvasGroupLink fields from .canvas files. This writes to frontmatter automatically when a canvas changes."
+			)
+			.addToggle((toggle) =>
+				toggle.setValue(this.plugin.settings.enableCanvasEngine).onChange(async (value) => {
+					this.plugin.settings.enableCanvasEngine = value;
+					await this.plugin.saveSettings();
+				})
+			);
+
+		new Setting(containerEl)
 			.setName("Context menu entries")
 			.setDesc("Add Fileclass actions to the file and editor right-click menus.")
 			.addToggle((toggle) =>

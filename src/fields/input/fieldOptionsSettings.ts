@@ -10,6 +10,7 @@ import { App, Setting } from "obsidian";
 import { FieldType } from "../../schema/field";
 import { BaseFileSuggest, BaseViewSuggest } from "../../ui/baseSuggest";
 import { OptionsDraft } from "../optionsDraft";
+import { renderCanvasSettings } from "./canvasOptionsSettings";
 
 export interface FieldOptionsCtx {
 	app: App;
@@ -61,6 +62,11 @@ export function renderFieldOptionsSettings(
 		case "Media":
 		case "MultiMedia":
 			renderLinkSettings(container, type, draft, ctx);
+			return;
+		case "Canvas":
+		case "CanvasGroup":
+		case "CanvasGroupLink":
+			renderCanvasSettings(container, type, draft, ctx.app);
 			return;
 		case "Object":
 		case "ObjectList":

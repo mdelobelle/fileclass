@@ -50,6 +50,94 @@
 	flex-wrap: nowrap;
 }
 
+/* Canvas field filters: color/side chips + label chip list. */
+.fileclass-color-chip,
+.fileclass-side-chip {
+	width: 22px;
+	height: 22px;
+	margin-left: 4px;
+	padding: 0;
+	border: 2px solid var(--background-modifier-border);
+	border-radius: 4px;
+	cursor: pointer;
+	opacity: 0.45;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+}
+.fileclass-color-chip.is-selected,
+.fileclass-side-chip.is-selected {
+	opacity: 1;
+	border-color: var(--interactive-accent);
+}
+.fileclass-color-none {
+	background: repeating-linear-gradient(
+		45deg,
+		var(--background-secondary),
+		var(--background-secondary) 3px,
+		var(--background-modifier-border) 3px,
+		var(--background-modifier-border) 6px
+	);
+}
+.fileclass-side-chip svg {
+	width: 14px;
+	height: 14px;
+}
+.fileclass-chip-list {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px;
+	margin: 0 0 8px 0;
+}
+.fileclass-text-chip {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	padding: 2px 6px;
+	border-radius: 4px;
+	background: var(--background-secondary);
+	font-size: var(--font-ui-smaller);
+}
+.fileclass-text-chip-x {
+	display: inline-flex;
+	cursor: pointer;
+	opacity: 0.6;
+}
+.fileclass-text-chip-x:hover {
+	opacity: 1;
+}
+.fileclass-text-chip-x svg {
+	width: 12px;
+	height: 12px;
+}
+
+/* Icon field: live preview next to the input + glyphs in the suggester. */
+.fileclass-icon-preview {
+	display: inline-flex;
+	align-items: center;
+	margin-right: 8px;
+}
+.fileclass-icon-preview svg {
+	width: 18px;
+	height: 18px;
+}
+.fileclass-icon-missing {
+	color: var(--text-error);
+}
+.fileclass-icon-suggestion {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+.fileclass-icon-suggestion-pic {
+	display: inline-flex;
+	align-items: center;
+}
+.fileclass-icon-suggestion-pic svg {
+	width: 16px;
+	height: 16px;
+}
+
 /* Note-fields modal footer: applied fileClass(es) as inheritance breadcrumbs. */
 .fileclass-modal-footer {
 	margin-top: 12px;

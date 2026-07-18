@@ -2,10 +2,52 @@
  * Typed accessors over the loosely-typed `Field.options` (ARCHITECTURE.md §7).
  * Pure — no Obsidian. The option shapes are Metadata Menu's (D3).
  */
+import {
+	CanvasDirection,
+	CanvasGroupOptions,
+	CanvasLinkOptions,
+} from "./canvas/canvasGraph";
 import { Field, FieldOptions } from "../schema/field";
 
 function asRecord(options: FieldOptions): Record<string, unknown> {
 	return Array.isArray(options) ? {} : options;
+}
+
+function strArray(value: unknown): string[] | undefined {
+	if (!Array.isArray(value)) return undefined;
+	const list = value.filter((v): v is string => typeof v === "string");
+	return list.length ? list : undefined;
+}
+
+const CANVAS_DIRECTIONS: CanvasDirection[] = ["incoming", "outgoing", "bothsides"];
+
+export interface CanvasOptions extends CanvasLinkOptions, CanvasGroupOptions {
+	/** Path of the `.canvas` file this field derives from. */
+	canvasPath: string;
+	/** Optional `.base` file + view restricting target files (matching files). */
+	matchingFilesBase?: string;
+	matchingFilesView?: string;
+}
+
+/** Options for the Canvas field family (canvasPath + direction + filters). */
+export function canvasOptions(field: Field): CanvasOptions {
+	const o = asRecord(field.options);
+	const direction = CANVAS_DIRECTIONS.includes(o.direction as CanvasDirection)
+		? (o.direction as CanvasDirection)
+		: "bothsides";
+	return {
+		canvasPath: typeof o.canvasPath === "string" ? o.canvasPath : "",
+		direction,
+		nodeColors: strArray(o.nodeColors),
+		edgeColors: strArray(o.edgeColors),
+		edgeFromSides: strArray(o.edgeFromSides),
+		edgeToSides: strArray(o.edgeToSides),
+		edgeLabels: strArray(o.edgeLabels),
+		groupColors: strArray(o.groupColors),
+		groupLabels: strArray(o.groupLabels),
+		matchingFilesBase: typeof o.baseFile === "string" ? o.baseFile : undefined,
+		matchingFilesView: typeof o.viewName === "string" ? o.viewName : undefined,
+	};
 }
 
 function num(value: unknown): number | undefined {

@@ -227,17 +227,19 @@ rejected Dataview dep, D1). Excluding Canvas* loses a capability **with no
 substitute**. Decision: **implement** as a dedicated feature (chosen over
 out-of-scope), scheduled **after JSON/YAML**.
 
-**Shape of the engine (to build):** a small canvas→frontmatter sync, no Dataview:
-- watch `.canvas` via `vault.on("modify"|"create"|"delete"|"rename")`, debounced;
-- parse canvas JSON → traverse nodes/edges (incoming/outgoing/bothsides) or group
-  membership per the field's `canvasPath` + direction options;
-- diff against last-known links (an index map like MDM's `canvasLastFiles`) to
-  avoid write churn; write derived links back with the single-write path (D5).
-- It **auto-writes** frontmatter (unlike the rest of Fileclass's explicit writes)
-  — deterministic and bounded, but call it out in user docs.
-
-Until built, the three types parse and their values display read-only (like any
-unsupported type); no engine, no auto-maintenance.
+**Implemented** (`src/fields/canvas/`): a small canvas→frontmatter sync, no Dataview:
+- pure `canvasGraph.ts` — parse + traversal (oriented edges, color/side/label
+  filters, geometric group membership); fully unit-tested;
+- `canvasEngine.ts` — a Component watching `.canvas` via
+  `vault.on("modify"|"create"|"delete"|"rename")` (debounced) and re-syncing on
+  the index event; parses the canvas, computes each note's Canvas-family field
+  values, **diffs vs current** (writes only on change → no loop), writes with the
+  single-write path (D5), and clears fields on notes that dropped out
+  (`lastNotes` map, like MDM's `canvasLastFiles`);
+- options `canvasPath` + `direction` in the schema editor (advanced
+  color/side/label filters preserved and honored if present);
+- gated by the **enableCanvasEngine** setting (it auto-writes frontmatter, the
+  one surface that does).
 
 ## 10. Index
 

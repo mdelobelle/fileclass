@@ -10,6 +10,7 @@ import type FileclassPlugin from "../../main";
 import { insertMissingFields } from "../commands/insertMissingFields";
 import { pickAndUpdateField } from "../fields/fieldActions";
 import { pickAndCreateBase } from "../views/baseFileGenerator";
+import { fileClassBaseFile, openFileClassBase } from "../views/baseSync";
 import { AddFileClassModal } from "./addFileClassModal";
 import { openFileClassSchema } from "./fileClassSchemaModal";
 import { NoteFieldsModal } from "./noteFieldsModal";
@@ -58,12 +59,21 @@ export class FileclassContextMenu extends Component {
 				.setIcon("wrench")
 				.onClick(() => openFileClassSchema(this.plugin, fcName))
 		);
+		const hasBase = !!fileClassBaseFile(this.plugin, fcName);
 		menu.addItem((item) =>
 			item
-				.setTitle("Create a base for this fileClass")
+				.setTitle(hasBase ? "Modify base for this fileClass" : "Create a base for this fileClass")
 				.setIcon("layout-grid")
 				.onClick(() => pickAndCreateBase(this.plugin, fcName))
 		);
+		if (hasBase) {
+			menu.addItem((item) =>
+				item
+					.setTitle("Open base for this fileClass")
+					.setIcon("table")
+					.onClick(() => openFileClassBase(this.plugin, fcName))
+			);
+		}
 	}
 
 	private buildNoteMenu(menu: Menu, file: TFile): void {

@@ -30,6 +30,24 @@ export function managedViewName(plugin: FileclassPlugin, name: string): string {
 	return liveOptions(plugin, name)?.baseView?.trim() || name;
 }
 
+/** The fileClass's declared base file, if it is set and exists in the vault. */
+export function fileClassBaseFile(plugin: FileclassPlugin, name: string): TFile | null {
+	const baseFile = liveOptions(plugin, name)?.baseFile?.trim();
+	if (!baseFile) return null;
+	const file = plugin.app.vault.getFileByPath(normalizePath(baseFile));
+	return file instanceof TFile ? file : null;
+}
+
+/** Opens the fileClass's base file in a new tab (Notice if none is set yet). */
+export function openFileClassBase(plugin: FileclassPlugin, name: string): void {
+	const file = fileClassBaseFile(plugin, name);
+	if (!file) {
+		new Notice(`Fileclass: "${name}" has no base yet.`);
+		return;
+	}
+	void plugin.app.workspace.getLeaf("tab").openFile(file);
+}
+
 function rootFieldNames(plugin: FileclassPlugin, name: string): string[] {
 	return plugin.index
 		.getResolvedFields(name)

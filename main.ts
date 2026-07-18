@@ -25,7 +25,7 @@ import { AddFileClassModal } from "./src/ui/addFileClassModal";
 import { FileclassContextMenu } from "./src/ui/contextMenu";
 import { openFileClassSchema } from "./src/ui/fileClassSchemaModal";
 import { pickAndCreateBase } from "./src/views/baseFileGenerator";
-import { syncFileClassToBase } from "./src/views/baseSync";
+import { fileClassBaseFile, openFileClassBase, syncFileClassToBase } from "./src/views/baseSync";
 import { registerFileclassTableView } from "./src/views/fileclassTableView";
 import { CanvasEngine } from "./src/fields/canvas/canvasEngine";
 import { FieldIndicator } from "./src/ui/indicator/fieldIndicator";
@@ -202,6 +202,18 @@ export default class FileclassPlugin extends Plugin {
 				const name = active ? this.index.fileClassNameOfNote(active.path) : undefined;
 				if (!name || !this.index.getFileClass(name)?.options.baseFile) return false;
 				if (!checking) void syncFileClassToBase(this, name);
+				return true;
+			},
+		});
+
+		this.addCommand({
+			id: "open-fileclass-base",
+			name: "Open this fileClass's base",
+			checkCallback: (checking) => {
+				const active = this.app.workspace.getActiveFile();
+				const name = active ? this.index.fileClassNameOfNote(active.path) : undefined;
+				if (!name || !fileClassBaseFile(this, name)) return false;
+				if (!checking) openFileClassBase(this, name);
 				return true;
 			},
 		});

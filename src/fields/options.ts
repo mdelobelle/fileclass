@@ -90,6 +90,8 @@ export interface ListOptions {
 	/** Base view providing the values (sourceType `ValuesFromBase`). */
 	baseFile?: string;
 	viewName?: string;
+	/** Column id whose values are the list (blank = the files' names). */
+	valuesColumn?: string;
 }
 
 export function listOptions(field: Field): ListOptions {
@@ -125,6 +127,8 @@ export function listOptionsFromOptions(options: FieldOptions): ListOptions {
 			typeof o.valuesListNotePath === "string" ? o.valuesListNotePath : undefined,
 		baseFile: typeof o.baseFile === "string" && o.baseFile ? o.baseFile : undefined,
 		viewName: typeof o.viewName === "string" && o.viewName ? o.viewName : undefined,
+		valuesColumn:
+			typeof o.valuesColumn === "string" && o.valuesColumn ? o.valuesColumn : undefined,
 	};
 }
 

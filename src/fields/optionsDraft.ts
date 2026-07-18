@@ -51,6 +51,8 @@ export interface OptionsDraft {
 	baseFile?: string;
 	viewName?: string;
 	displayColumn?: string;
+	/** Column whose values feed a Select/Multi list (ValuesFromBase). */
+	valuesColumn?: string;
 	embed?: boolean;
 }
 
@@ -129,6 +131,7 @@ export function optionsToDraft(type: FieldType, options: FieldOptions): OptionsD
 					sourceType: "ValuesFromBase",
 					baseFile: lo.baseFile ?? "",
 					viewName: lo.viewName ?? "",
+					valuesColumn: lo.valuesColumn ?? "",
 				};
 			}
 			if (lo.sourceType === "ValuesList") {
@@ -228,11 +231,13 @@ export function buildFieldOptions(type: FieldType, draft: OptionsDraft): FieldOp
 				};
 			}
 			if (draft.sourceType === "ValuesFromBase") {
-				return {
+				const o: Record<string, unknown> = {
 					sourceType: "ValuesFromBase",
 					baseFile: draft.baseFile?.trim() ?? "",
 					viewName: draft.viewName?.trim() ?? "",
 				};
+				if (draft.valuesColumn?.trim()) o.valuesColumn = draft.valuesColumn.trim();
+				return o;
 			}
 			if (draft.sourceType === "ValuesList") {
 				return { sourceType: "ValuesList", valuesList: valuesToRecord(draft.values ?? []) };

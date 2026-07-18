@@ -6,7 +6,7 @@
  */
 import { TFile } from "obsidian";
 
-import { getBaseFiles } from "../engine/basesAdapter";
+import { getBaseFiles, getBaseRows } from "../engine/basesAdapter";
 import { AdapterHost } from "./candidates";
 import { Field } from "../schema/field";
 import { listOptions } from "./options";
@@ -26,6 +26,21 @@ export async function resolveFieldValues(
 	if (opts.sourceType === "ValuesFromBase") {
 		if (!opts.baseFile || !host.basesAvailable) return [];
 		try {
+			// A chosen column: its distinct non-empty values. Otherwise file names.
+			if (opts.valuesColumn) {
+				const result = await getBaseRows(
+					host.app,
+					opts.baseFile,
+					opts.viewName,
+					contextFile?.path
+				);
+				const seen = new Set<string>();
+				for (const row of result.rows) {
+					const v = row.values[opts.valuesColumn];
+					if (v != null && v !== "") seen.add(v);
+				}
+				return [...seen];
+			}
 			const files = await getBaseFiles(host.app, opts.baseFile, opts.viewName, contextFile?.path);
 			return files.map((f) => f.basename);
 		} catch {

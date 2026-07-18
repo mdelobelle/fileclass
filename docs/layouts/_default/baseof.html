@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="{{ .Site.LanguageCode | default "en" }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ if .IsHome }}{{ .Site.Title }}{{ else }}{{ .Title }} · {{ .Site.Title }}{{ end }}</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body { max-width: 46rem; margin: 2rem auto; padding: 0 1rem;
+      font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    nav { display: flex; gap: 1rem; flex-wrap: wrap; border-bottom: 1px solid #8884;
+      padding-bottom: .75rem; margin-bottom: 2rem; }
+    nav a { text-decoration: none; }
+    nav .brand { font-weight: 700; }
+    table { border-collapse: collapse; }
+    th, td { border: 1px solid #8884; padding: .3rem .6rem; text-align: left; }
+    pre { background: #8881; padding: .8rem; overflow-x: auto; border-radius: 6px; }
+    code { background: #8881; padding: .1rem .3rem; border-radius: 3px; }
+    pre code { background: none; padding: 0; }
+  </style>
+</head>
+<body>
+  <nav>
+    <a class="brand" href="{{ "/" | relURL }}">{{ .Site.Title }}</a>
+    {{ range .Site.Menus.main }}<a href="{{ .URL | relURL }}">{{ .Name }}</a>{{ end }}
+  </nav>
+  <main>{{ block "main" . }}{{ end }}</main>
+</body>
+</html>

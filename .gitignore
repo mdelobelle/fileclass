@@ -1,0 +1,23 @@
+# build artifacts
+main.js
+*.js.map
+styles.css.map
+
+# dependencies
+node_modules/
+
+# vitest / coverage
+coverage/
+
+# editor / os
+.DS_Store
+*.log
+
+# local plugin state / dev
+data.json
+.hotreload
+
+# Hugo build output
+docs/public/
+docs/resources/
+docs/.hugo_build.lock

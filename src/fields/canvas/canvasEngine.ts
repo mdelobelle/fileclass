@@ -41,7 +41,7 @@ export class CanvasEngine extends Component {
 	}
 
 	onload(): void {
-		this.flush = debounce(() => void this.flushDirty(), 400, true);
+		this.flush = debounce(() => void this.flushDirty(), 150, true);
 		const vault = this.plugin.app.vault;
 		this.registerEvent(vault.on("modify", (f) => this.mark(f)));
 		this.registerEvent(vault.on("create", (f) => this.mark(f)));
@@ -131,9 +131,11 @@ export class CanvasEngine extends Component {
 		for (const field of fields) {
 			const opts = canvasOptions(field);
 			let value: unknown;
+			// When nothing matches, set the field to null (keep the key) rather
+			// than removing it, so the binding stays visible on the note.
 			if (field.type === "CanvasGroup") {
 				const labels = resolveGroupLabels(node, data, opts);
-				value = labels.length ? labels : undefined;
+				value = labels.length ? labels : null;
 			} else {
 				const matchingFiles = await this.matchingFiles(note, opts);
 				const linkOpts = { ...opts, matchingFiles };
@@ -142,7 +144,7 @@ export class CanvasEngine extends Component {
 						? resolveGroupLinkedFiles(node, data, linkOpts)
 						: resolveLinkedFiles(node, data, linkOpts);
 				const links = refs.map((r) => this.toLink(note.path, r));
-				value = links.length ? links : undefined;
+				value = links.length ? links : null;
 			}
 			if (!this.equalValue(readFieldValue(this.plugin.app, note, field), value)) {
 				writes.push({ namePath: [field.name], value });
@@ -180,7 +182,7 @@ export class CanvasEngine extends Component {
 			if (!(note instanceof TFile)) continue;
 			const writes = this.canvasFields(note, canvasPath)
 				.filter((f) => this.norm(readFieldValue(this.plugin.app, note, f)).length > 0)
-				.map((f) => ({ namePath: [f.name], value: undefined }));
+				.map((f) => ({ namePath: [f.name], value: null }));
 			if (writes.length) await writeValues(this.plugin.app, note, writes);
 		}
 	}

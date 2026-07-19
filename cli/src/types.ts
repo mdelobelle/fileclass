@@ -39,6 +39,10 @@ export interface NoteRow {
 	path: string;
 	values: Record<string, unknown>;
 }
+export interface BaseTable {
+	columns: string[];
+	rows: NoteRow[];
+}
 export interface Violation {
 	path: string;
 	field: string;

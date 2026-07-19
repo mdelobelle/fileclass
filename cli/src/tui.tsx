@@ -7,8 +7,16 @@
 import { Box, render, Text, useApp, useInput } from "ink";
 import { useEffect, useState, type ReactNode } from "react";
 
-import { callApi } from "./transport.js";
-import type { ExplainField, FileClassSummary, NoteExplain, NoteRow, WriteResult } from "./types.js";
+import { callApi, probeVault } from "./transport.js";
+import type {
+	BaseTable,
+	ExplainField,
+	FileClassSummary,
+	NoteExplain,
+	NoteRow,
+	WriteResult,
+} from "./types.js";
+import { listVaults } from "./vaults.js";
 
 const WINDOW = 15;
 const CHOICE = new Set(["Select", "Cycle"]);
@@ -91,7 +99,13 @@ function Loading({ label }: { label: string }) {
 	return <Text>Loading {label}…</Text>;
 }
 
-function FileClasses({ onPick }: { onPick: (fileClass: string) => void }) {
+function FileClasses({
+	onPick,
+	predicate,
+}: {
+	onPick: (fileClass: string) => void;
+	predicate?: (f: FileClassSummary) => boolean;
+}) {
 	const [items, setItems] = useState<Item[] | null>(null);
 	const [err, setErr] = useState<string>();
 	useEffect(() => {
@@ -99,6 +113,7 @@ function FileClasses({ onPick }: { onPick: (fileClass: string) => void }) {
 			.then((fcs) =>
 				setItems(
 					[...fcs]
+						.filter((f) => !predicate || predicate(f))
 						.sort((a, b) => a.name.localeCompare(b.name))
 						.map((f) => ({
 							label: `${f.name}   ${f.fieldCount} field${f.fieldCount === 1 ? "" : "s"}${
@@ -325,15 +340,102 @@ function Edit({
 	return <Text dimColor>Editing {field.type} fields isn't supported in the TUI yet.</Text>;
 }
 
+function Home({ onPick }: { onPick: (t: string) => void }) {
+	return (
+		<List
+			items={[
+				{ label: "Browse fileClass notes", value: "fc" },
+				{ label: "Configure a fileClass", value: "configure" },
+				{ label: "Open a fileClass base (table)", value: "base" },
+				{ label: "Change vault", value: "vault" },
+			]}
+			onSelect={onPick}
+		/>
+	);
+}
+
+/** Read-only, vertically scrolling view of a base's rows/columns. */
+function TableView({ table }: { table: BaseTable }) {
+	const [row, setRow] = useState(0);
+	useInput((_i, key) => {
+		if (key.upArrow) setRow((x) => Math.max(0, x - 1));
+		else if (key.downArrow) setRow((x) => Math.min(table.rows.length - 1, x + 1));
+	});
+	const cols = table.columns.slice(0, 6);
+	const W = 16;
+	const cell = (v: unknown): string => {
+		const s = fmt(v);
+		return (s.length > W ? s.slice(0, W - 1) + "…" : s).padEnd(W);
+	};
+	const start = Math.min(
+		Math.max(0, row - Math.floor(WINDOW / 2)),
+		Math.max(0, table.rows.length - WINDOW)
+	);
+	return (
+		<Box flexDirection="column">
+			<Text bold>{cols.map((c) => cell(c)).join(" ")}</Text>
+			{table.rows.slice(start, start + WINDOW).map((r, idx) => {
+				const real = start + idx;
+				return (
+					<Text key={r.path + real} color={real === row ? "green" : undefined}>
+						{cols.map((c) => cell(r.values[c])).join(" ")}
+					</Text>
+				);
+			})}
+			<Text dimColor>
+				{"  "}
+				{table.rows.length ? row + 1 : 0}/{table.rows.length}
+				{table.columns.length > cols.length ? `  (${cols.length}/${table.columns.length} cols)` : ""}
+			</Text>
+		</Box>
+	);
+}
+
+function BaseTableScreen({ fileClass }: { fileClass: string }) {
+	const [table, setTable] = useState<BaseTable | null | undefined>(undefined);
+	useEffect(() => {
+		callApi<BaseTable | null>("baseTable", [fileClass])
+			.then(setTable)
+			.catch(() => setTable(null));
+	}, [fileClass]);
+	if (table === undefined) return <Loading label="base" />;
+	if (!table) return <Text dimColor>No base for {fileClass} (or Bases disabled).</Text>;
+	return <TableView table={table} />;
+}
+
+function VaultPicker({ onChoose }: { onChoose: (name: string) => void }) {
+	const vaults = listVaults();
+	if (!vaults.length) {
+		return (
+			<Box>
+				<Text>Vault name: </Text>
+				<TextEdit initial="" onSubmit={onChoose} />
+			</Box>
+		);
+	}
+	return (
+		<List
+			items={vaults.map((v) => ({ label: `${v.name}${v.open ? "  (open)" : ""}`, value: v.name }))}
+			onSelect={onChoose}
+		/>
+	);
+}
+
 type Screen =
+	| { t: "home" }
 	| { t: "fc" }
 	| { t: "notes"; fileClass: string }
 	| { t: "fields"; note: string }
-	| { t: "edit"; note: string; field: ExplainField };
+	| { t: "edit"; note: string; field: ExplainField }
+	| { t: "configure" }
+	| { t: "base" }
+	| { t: "baseTable"; fileClass: string }
+	| { t: "vault" };
 
-function App({ vault }: { vault: string }) {
+function App({ vault: initialVault }: { vault: string }) {
 	const { exit } = useApp();
-	const [stack, setStack] = useState<Screen[]>([{ t: "fc" }]);
+	const [vault, setVault] = useState(initialVault);
+	const [stack, setStack] = useState<Screen[]>([{ t: "home" }]);
 	const [status, setStatus] = useState("");
 	const push = (s: Screen): void => {
 		setStatus("");
@@ -349,20 +451,43 @@ function App({ vault }: { vault: string }) {
 		}
 	});
 
-	const crumb = stack
-		.map((s) =>
-			s.t === "fc"
-				? "fileClasses"
+	const chooseVault = (name: string): void => {
+		void probeVault(name).then((reached) => {
+			if (!reached) return setStatus(`✗ couldn't reach a vault named "${name}"`);
+			process.env.FILECLASS_VAULT = reached;
+			setVault(reached);
+			setStack([{ t: "home" }]);
+			setStatus(`Now on vault "${reached}".`);
+		});
+	};
+	const configure = (fc: string): void => {
+		void callApi<WriteResult>("openSchema", [fc]).then((r) => {
+			setStatus(r.ok ? `Opened schema editor for "${fc}" in Obsidian.` : `✗ ${r.message}`);
+			pop();
+		});
+	};
+
+	const label = (s: Screen): string =>
+		s.t === "home"
+			? "home"
+			: s.t === "fc"
+				? "browse"
 				: s.t === "notes"
 					? s.fileClass
 					: s.t === "fields"
 						? (s.note.split("/").pop() ?? s.note)
-						: s.field.name
-		)
-		.join(" › ");
+						: s.t === "edit"
+							? s.field.name
+							: s.t === "baseTable"
+								? `${s.fileClass} base`
+								: s.t; // configure / base / vault
+	const crumb = stack.map(label).join(" › ");
 
 	let body: ReactNode;
 	switch (top.t) {
+		case "home":
+			body = <Home onPick={(t) => push({ t } as Screen)} />;
+			break;
 		case "fc":
 			body = <FileClasses onPick={(fc) => push({ t: "notes", fileClass: fc })} />;
 			break;
@@ -384,6 +509,23 @@ function App({ vault }: { vault: string }) {
 				/>
 			);
 			break;
+		case "configure":
+			body = <FileClasses onPick={configure} />;
+			break;
+		case "base":
+			body = (
+				<FileClasses
+					predicate={(f) => f.hasBase}
+					onPick={(fc) => push({ t: "baseTable", fileClass: fc })}
+				/>
+			);
+			break;
+		case "baseTable":
+			body = <BaseTableScreen fileClass={top.fileClass} />;
+			break;
+		case "vault":
+			body = <VaultPicker onChoose={chooseVault} />;
+			break;
 	}
 
 	return (
@@ -391,7 +533,7 @@ function App({ vault }: { vault: string }) {
 			<Text color="cyan">
 				fileclass <Text dimColor>· vault:</Text> {vault}
 			</Text>
-			<Text dimColor>{crumb}   (↑↓ move · ↵ open/save · esc back · Ctrl+C quit)</Text>
+			<Text dimColor>{crumb}   (↑↓/type · ↵ select · esc back · Ctrl+C quit)</Text>
 			<Box marginY={1}>{body}</Box>
 			{status ? <Text color={status.startsWith("✗") ? "red" : "yellow"}>{status}</Text> : null}
 		</Box>

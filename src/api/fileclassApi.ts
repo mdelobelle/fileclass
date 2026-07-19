@@ -15,9 +15,11 @@ import { TFile } from "obsidian";
 import type FileclassPlugin from "../../main";
 import { Filter, matchesFilter } from "./filter";
 import { insertMissingFields } from "../commands/insertMissingFields";
+import { getBaseRows } from "../engine/basesAdapter";
 import { isMediaType, resolveCandidates } from "../fields/candidates";
 import { formatLink } from "../fields/links";
 import { baseBindingOptions } from "../fields/options";
+import { openFileClassSchema } from "../ui/fileClassSchemaModal";
 import { makeDisplayDeps } from "../fields/displayDeps";
 import { clearField } from "../fields/fieldActions";
 import { describeField } from "../fields/objectDisplay";
@@ -96,6 +98,10 @@ export interface NoteRow {
 	path: string;
 	values: Record<string, unknown>;
 }
+export interface BaseTable {
+	columns: string[];
+	rows: NoteRow[];
+}
 export interface BulkResult {
 	ok: boolean;
 	changed: number;
@@ -123,6 +129,11 @@ export interface FileclassApi {
 	/** Link candidates for a File/MultiFile/Media/MultiMedia field. */
 	fileCandidates(path: string, field: string): Promise<{ display: string; link: string }[]>;
 	listNotes(fileClass: string, opts?: ListOptions): Promise<NoteRow[]>;
+
+	/** The fileClass's base view as rows/columns (null if no base / Bases off). */
+	baseTable(fileClass: string): Promise<BaseTable | null>;
+	/** Opens the fileClass's schema editor in the Obsidian window. */
+	openSchema(fileClass: string): Promise<WriteResult>;
 
 	// Validate
 	validate(scope?: ValidateScope): Promise<Violation[]>;
@@ -313,6 +324,26 @@ export function createFileclassApi(plugin: FileclassPlugin): FileclassApi {
 				path: file.path,
 				values: Object.fromEntries(columns.map((c) => [c, readByName(file, c) ?? null])),
 			}));
+		},
+
+		async baseTable(fileClass) {
+			const fc = index.getFileClass(fileClass);
+			const baseFile = fc?.options.baseFile?.trim();
+			if (!baseFile || !plugin.basesAvailable) return null;
+			const view = fc?.options.baseView?.trim() || fileClass;
+			const result = await getBaseRows(app, baseFile, view, null);
+			return {
+				columns: result.columns,
+				rows: result.rows.map((r) => ({ path: r.file.path, values: r.values })),
+			};
+		},
+
+		async openSchema(fileClass) {
+			if (!index.getFileClass(fileClass)) {
+				return { ok: false, path: fileClass, message: `No fileClass "${fileClass}".` };
+			}
+			openFileClassSchema(plugin, fileClass);
+			return { ok: true, path: fileClass };
 		},
 
 		async validate(scope = {}) {

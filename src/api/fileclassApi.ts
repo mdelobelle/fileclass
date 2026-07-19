@@ -15,6 +15,9 @@ import { TFile } from "obsidian";
 import type FileclassPlugin from "../../main";
 import { Filter, matchesFilter } from "./filter";
 import { insertMissingFields } from "../commands/insertMissingFields";
+import { isMediaType, resolveCandidates } from "../fields/candidates";
+import { formatLink } from "../fields/links";
+import { baseBindingOptions } from "../fields/options";
 import { makeDisplayDeps } from "../fields/displayDeps";
 import { clearField } from "../fields/fieldActions";
 import { describeField } from "../fields/objectDisplay";
@@ -26,6 +29,8 @@ import { Field, isRootField } from "../schema/field";
 import { fileClassBaseFile } from "../views/baseSync";
 
 export const API_VERSION = "1.0";
+
+const LINK_TYPES = new Set<string>(["File", "MultiFile", "Media", "MultiMedia"]);
 
 export interface FileClassSummary {
 	name: string;
@@ -115,6 +120,8 @@ export interface FileclassApi {
 	getFields(path: string): Promise<FieldInfo[]>;
 	getValue(path: string, field: string): Promise<unknown>;
 	allowedValues(path: string, field: string): Promise<string[]>;
+	/** Link candidates for a File/MultiFile/Media/MultiMedia field. */
+	fileCandidates(path: string, field: string): Promise<{ display: string; link: string }[]>;
 	listNotes(fileClass: string, opts?: ListOptions): Promise<NoteRow[]>;
 
 	// Validate
@@ -273,6 +280,24 @@ export function createFileclassApi(plugin: FileclassPlugin): FileclassApi {
 			const file = requireFile(path);
 			const f = rootField(file, field);
 			return f ? allowedFor(file, f) : [];
+		},
+
+		async fileCandidates(path, field) {
+			const file = requireFile(path);
+			const f = rootField(file, field);
+			if (!f || !LINK_TYPES.has(f.type)) return [];
+			const embed = isMediaType(f.type) && baseBindingOptions(f).embed;
+			const candidates = await resolveCandidates(plugin, f, file);
+			return candidates.map((c) => ({
+				display: c.display,
+				link: formatLink(
+					app,
+					c.file,
+					file.path,
+					c.display !== c.file.basename ? c.display : undefined,
+					embed
+				),
+			}));
 		},
 
 		async listNotes(fileClass, opts = {}) {

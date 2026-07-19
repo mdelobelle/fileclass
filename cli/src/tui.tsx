@@ -13,6 +13,13 @@ import type { ExplainField, FileClassSummary, NoteExplain, NoteRow, WriteResult 
 const WINDOW = 15;
 const CHOICE = new Set(["Select", "Cycle"]);
 const TEXT = new Set(["Input", "Number", "Date", "DateTime", "Time"]);
+const FILE = new Set(["File", "Media"]);
+const MULTIFILE = new Set(["MultiFile", "MultiMedia"]);
+
+interface Candidate {
+	display: string;
+	link: string;
+}
 
 interface Item {
 	label: string;
@@ -22,21 +29,32 @@ interface Item {
 const fmt = (v: unknown): string =>
 	v === null || v === undefined ? "" : Array.isArray(v) ? v.map(String).join(", ") : String(v);
 
-/** A scrolling, keyboard-driven single-select list. */
+/** A scrolling, keyboard-driven single-select list with type-to-filter. */
 function List({ items, onSelect }: { items: Item[]; onSelect: (value: string) => void }) {
 	const [i, setI] = useState(0);
-	useInput((_input, key) => {
+	const [q, setQ] = useState("");
+	const filtered = q ? items.filter((it) => it.label.toLowerCase().includes(q.toLowerCase())) : items;
+	useInput((input, key) => {
 		if (key.upArrow) setI((x) => Math.max(0, x - 1));
-		else if (key.downArrow) setI((x) => Math.min(items.length - 1, x + 1));
-		else if (key.return && items[i]) onSelect(items[i].value);
+		else if (key.downArrow) setI((x) => Math.min(filtered.length - 1, x + 1));
+		else if (key.return && filtered[i]) onSelect(filtered[i].value);
+		else if (key.backspace || key.delete) {
+			setQ((s) => s.slice(0, -1));
+			setI(0);
+		} else if (input && !key.ctrl && !key.meta) {
+			setQ((s) => s + input);
+			setI(0);
+		}
 	});
 	if (!items.length) return <Text dimColor>(empty)</Text>;
-	const start = Math.min(Math.max(0, i - Math.floor(WINDOW / 2)), Math.max(0, items.length - WINDOW));
+	const cur = Math.min(i, Math.max(0, filtered.length - 1));
+	const start = Math.min(Math.max(0, cur - Math.floor(WINDOW / 2)), Math.max(0, filtered.length - WINDOW));
 	return (
 		<Box flexDirection="column">
-			{items.slice(start, start + WINDOW).map((it, idx) => {
+			{q ? <Text dimColor>filter: {q}</Text> : null}
+			{filtered.slice(start, start + WINDOW).map((it, idx) => {
 				const real = start + idx;
-				const sel = real === i;
+				const sel = real === cur;
 				return (
 					<Text key={it.value + real} color={sel ? "green" : undefined}>
 						{sel ? "› " : "  "}
@@ -46,7 +64,8 @@ function List({ items, onSelect }: { items: Item[]; onSelect: (value: string) =>
 			})}
 			<Text dimColor>
 				{"  "}
-				{i + 1}/{items.length}
+				{filtered.length ? cur + 1 : 0}/{filtered.length}
+				{q && filtered.length !== items.length ? ` (of ${items.length})` : ""}
 			</Text>
 		</Box>
 	);
@@ -134,6 +153,104 @@ function Fields({ note, onPick }: { note: string; onPick: (field: ExplainField) 
 	);
 }
 
+/** Single-select of link candidates (File/Media). */
+function FilePicker({
+	note,
+	field,
+	onPick,
+}: {
+	note: string;
+	field: string;
+	onPick: (link: string) => void;
+}) {
+	const [items, setItems] = useState<Item[] | null>(null);
+	useEffect(() => {
+		callApi<Candidate[]>("fileCandidates", [note, field])
+			.then((cs) => setItems(cs.map((c) => ({ label: c.display, value: c.link }))))
+			.catch(() => setItems([]));
+	}, [note, field]);
+	if (!items) return <Loading label="candidates" />;
+	if (!items.length) return <Text dimColor>No candidates for {field}.</Text>;
+	return (
+		<Box flexDirection="column">
+			<Text>Pick {field}:</Text>
+			<List items={items} onSelect={onPick} />
+		</Box>
+	);
+}
+
+/** Multi-select of link candidates (MultiFile/MultiMedia). Replaces the value. */
+function MultiFilePicker({
+	note,
+	field,
+	onDone,
+}: {
+	note: string;
+	field: string;
+	onDone: (links: string[]) => void;
+}) {
+	const [cands, setCands] = useState<Candidate[] | null>(null);
+	const [sel, setSel] = useState<Set<string>>(new Set());
+	const [i, setI] = useState(0);
+	const [q, setQ] = useState("");
+	useEffect(() => {
+		callApi<Candidate[]>("fileCandidates", [note, field])
+			.then(setCands)
+			.catch(() => setCands([]));
+	}, [note, field]);
+	const filtered = cands
+		? q
+			? cands.filter((c) => c.display.toLowerCase().includes(q.toLowerCase()))
+			: cands
+		: [];
+	const cur = Math.min(i, Math.max(0, filtered.length - 1));
+	useInput((input, key) => {
+		if (!cands) return;
+		if (key.upArrow) setI((x) => Math.max(0, x - 1));
+		else if (key.downArrow) setI((x) => Math.min(filtered.length - 1, x + 1));
+		else if (input === " " && filtered[cur]) {
+			const link = filtered[cur].link;
+			setSel((s) => {
+				const n = new Set(s);
+				if (n.has(link)) n.delete(link);
+				else n.add(link);
+				return n;
+			});
+		} else if (key.return) onDone(cands.filter((c) => sel.has(c.link)).map((c) => c.link));
+		else if (key.backspace || key.delete) {
+			setQ((s) => s.slice(0, -1));
+			setI(0);
+		} else if (input && input !== " " && !key.ctrl && !key.meta) {
+			setQ((s) => s + input);
+			setI(0);
+		}
+	});
+	if (!cands) return <Loading label="candidates" />;
+	if (!cands.length) return <Text dimColor>No candidates for {field}.</Text>;
+	const start = Math.min(Math.max(0, cur - Math.floor(WINDOW / 2)), Math.max(0, filtered.length - WINDOW));
+	return (
+		<Box flexDirection="column">
+			<Text>
+				Toggle {field} (space) · enter to save · {sel.size} selected
+			</Text>
+			{q ? <Text dimColor>filter: {q}</Text> : null}
+			{filtered.slice(start, start + WINDOW).map((c, idx) => {
+				const real = start + idx;
+				return (
+					<Text key={c.link + real} color={real === cur ? "green" : undefined}>
+						{real === cur ? "› " : "  "}[{sel.has(c.link) ? "x" : " "}] {c.display}
+					</Text>
+				);
+			})}
+			<Text dimColor>
+				{"  "}
+				{filtered.length ? cur + 1 : 0}/{filtered.length}
+				{q && filtered.length !== cands.length ? ` (of ${cands.length})` : ""}
+			</Text>
+		</Box>
+	);
+}
+
 function Edit({
 	note,
 	field,
@@ -198,6 +315,12 @@ function Edit({
 				/>
 			</Box>
 		);
+	}
+	if (FILE.has(field.type)) {
+		return <FilePicker note={note} field={field.name} onPick={(link) => save(link)} />;
+	}
+	if (MULTIFILE.has(field.type)) {
+		return <MultiFilePicker note={note} field={field.name} onDone={(links) => save(links)} />;
 	}
 	return <Text dimColor>Editing {field.type} fields isn't supported in the TUI yet.</Text>;
 }

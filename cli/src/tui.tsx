@@ -14,6 +14,7 @@ import type {
 	FileClassSummary,
 	NoteExplain,
 	NoteRow,
+	Violation,
 	WriteResult,
 } from "./types.js";
 import { listVaults } from "./vaults.js";
@@ -134,29 +135,44 @@ function Notes({ fileClass, onPick }: { fileClass: string; onPick: (note: string
 	const [items, setItems] = useState<Item[] | null>(null);
 	const [err, setErr] = useState<string>();
 	useEffect(() => {
-		callApi<NoteRow[]>("listNotes", [fileClass, { columns: [] }])
-			.then((rows) => setItems(rows.map((r) => ({ label: r.path, value: r.path }))))
+		Promise.all([
+			callApi<NoteRow[]>("listNotes", [fileClass, { columns: [] }]),
+			callApi<Violation[]>("validate", [{ fileClass }]),
+		])
+			.then(([rows, viols]) => {
+				const bad = new Set(viols.map((v) => v.path));
+				setItems(rows.map((r) => ({ label: `${bad.has(r.path) ? "❌" : "✅"} ${r.path}`, value: r.path })));
+			})
 			.catch((e: Error) => setErr(e.message));
 	}, [fileClass]);
 	if (err) return <Text color="red">{err}</Text>;
-	if (!items) return <Loading label={`${fileClass} notes`} />;
+	if (!items) return <Loading label={`${fileClass} notes (validating)`} />;
 	return <List items={items} onSelect={onPick} />;
 }
 
 function Fields({ note, onPick }: { note: string; onPick: (field: ExplainField) => void }) {
 	const [ex, setEx] = useState<NoteExplain | null>(null);
+	const [errs, setErrs] = useState<Map<string, string>>(new Map());
 	const [err, setErr] = useState<string>();
 	useEffect(() => {
 		callApi<NoteExplain | null>("explain", [note])
 			.then((e) => setEx(e ?? { path: note, fileClasses: [], ancestry: [], fields: [] }))
 			.catch((e: Error) => setErr(e.message));
+		callApi<Violation[]>("validate", [{ path: note }])
+			.then((v) => setErrs(new Map(v.map((x) => [x.field, x.message]))))
+			.catch(() => setErrs(new Map()));
 	}, [note]);
 	if (err) return <Text color="red">{err}</Text>;
 	if (!ex) return <Loading label="fields" />;
-	const items = ex.fields.map((f) => ({
-		label: `${f.name} = ${f.display || fmt(f.value)}   [${f.type}]`,
-		value: f.name,
-	}));
+	const items = ex.fields.map((f) => {
+		const bad = errs.get(f.name);
+		return {
+			label: `${bad ? "❌" : "✅"} ${f.name} = ${f.display || fmt(f.value)}   [${f.type}]${
+				bad ? `   ❗${bad}` : ""
+			}`,
+			value: f.name,
+		};
+	});
 	return (
 		<List
 			items={items}

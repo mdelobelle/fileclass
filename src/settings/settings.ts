@@ -19,6 +19,8 @@ export interface FileclassSettings {
 	defaultDateDisplayFormat: string;
 	/** Auto-maintain Canvas/CanvasGroup/CanvasGroupLink fields from .canvas files. */
 	enableCanvasEngine: boolean;
+	/** Add computed valid/errors columns to the editable fileclass-table view. */
+	enableValidationColumns: boolean;
 	/** Add Fileclass entries to the file/editor context menus. */
 	enableContextMenu: boolean;
 	/** Show an edit button on matching rows of the native Properties editor. */
@@ -45,6 +47,7 @@ export const DEFAULT_SETTINGS: FileclassSettings = {
 	fileClassIcon: "file-spreadsheet",
 	defaultDateDisplayFormat: "",
 	enableCanvasEngine: true,
+	enableValidationColumns: true,
 	enableContextMenu: true,
 	enablePropertyEditButtons: true,
 	enableTabHeaderIndicator: true,

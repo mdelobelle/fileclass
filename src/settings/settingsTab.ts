@@ -91,6 +91,18 @@ export class FileclassSettingTab extends PluginSettingTab {
 			);
 
 		new Setting(containerEl)
+			.setName("Validation columns")
+			.setDesc(
+				"Add valid ✓/✗ and errors columns to the editable fileclass-table view, showing which notes violate their schema."
+			)
+			.addToggle((toggle) =>
+				toggle.setValue(this.plugin.settings.enableValidationColumns).onChange(async (value) => {
+					this.plugin.settings.enableValidationColumns = value;
+					await this.plugin.saveSettings();
+				})
+			);
+
+		new Setting(containerEl)
 			.setName("Canvas fields engine")
 			.setDesc(
 				"Auto-fill Canvas/CanvasGroup/CanvasGroupLink fields from .canvas files. This writes to frontmatter automatically when a canvas changes."

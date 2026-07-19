@@ -95,6 +95,19 @@ describe("Input", () => {
 	});
 });
 
+describe("required", () => {
+	it("empty is valid unless required", () => {
+		expect(validateField(make("Input"), "").ok).toBe(true);
+		expect(validateField(make("Input", { required: true }), "").ok).toBe(false);
+		expect(validateField(make("Input", { required: true }), undefined).ok).toBe(false);
+		expect(validateField(make("Input", { required: "true" }), "").ok).toBe(false);
+	});
+	it("a present value on a required field still validates by type", () => {
+		expect(validateField(make("Input", { required: true }), "ok").ok).toBe(true);
+		expect(validateField(make("Number", { required: true }), "x").ok).toBe(false);
+	});
+});
+
 describe("type predicates — list vs choice", () => {
 	it("isListType is the multi-valued types (array-valued)", () => {
 		expect(["Multi", "MultiFile", "MultiMedia"].every((t) => isListType(t as FieldType))).toBe(true);

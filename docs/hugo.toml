@@ -28,6 +28,10 @@ enableGitInfo = true
     pageRef = "/views"
     weight = 50
   [[menu.main]]
+    name = "CLI & API"
+    pageRef = "/cli"
+    weight = 55
+  [[menu.main]]
     name = "Settings"
     pageRef = "/settings"
     weight = 60

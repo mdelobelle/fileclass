@@ -115,11 +115,15 @@ fileclass/
 │   │   ├── read.ts                 # frontmatter reads (getFileCache + objectPath)
 │   │   └── write.ts                # processFrontMatter writes; single write per user action (D5)
 │   ├── views/
-│   │   ├── fileclassBasesView.ts   # registered custom Bases view with editable cells (§11)
-│   │   └── baseFileGenerator.ts    # generate <fileClass>.base files (§11)
+│   │   ├── fileclassTableView.ts   # registered custom Bases view with editable cells + validation columns (§11)
+│   │   ├── baseFileGenerator.ts    # generate <fileClass>.base files (§11)
+│   │   └── baseSync.ts             # one-way explicit fileClass → base sync (§11)
 │   ├── ui/                         # modals, suggesters, field options menu, status icons
 │   ├── settings/                   # settings tab + per-fileClass settings
-│   └── api.ts                      # public API (§12)
+│   └── api/
+│       ├── fileclassApi.ts         # public API surface (§12)
+│       └── filter.ts               # pure where-filter predicate (§12)
+├── cli/                            # standalone `fileclass` CLI + ink TUI over the API (§12)
 ├── tests/
 │   ├── unit/                       # vitest, pure logic (objectPath, schema resolver, validators, draft editor)
 │   └── e2e/                        # CDP harness against a fixture vault (§14)
@@ -169,6 +173,12 @@ Out of scope: `Lookup`, `Formula` — computed types, not validated input (§9).
 Legacy fileClasses may still declare them: they parse and display read-only, but
 have no input, no settings UI, and are not offered when authoring a fileClass.
 Planned (dedicated feature, §9.1): `Canvas`, `CanvasGroup`, `CanvasGroupLink`.
+
+**Required (landed):** a common `required` flag on any field's options (schema
+editor toggle, `src/ui/fieldDefModal.ts`). Empty values stay valid *unless*
+`required` is set — `isRequired`/`validateField` (`src/fields/validate.ts`)
+report a violation for an empty required field. Enforced uniformly: the
+validation columns (§11), the API/CLI `validate`, and every write path.
 
 Each field module ships: options settings UI, value input modal/suggester,
 `validate(value, options)`, cell renderer for the custom view, doc page, unit
@@ -267,6 +277,11 @@ canvas file tracking (comes with the planned Canvas engine, §9.1).
   Registration/deregistration on plugin load/unload; feature-detect like D4
   (this is adapter territory: expose `registerFileclassView(app, spec)` from
   basesAdapter).
+- **Validation columns (landed):** the `fileclass-table` view can prepend a
+  `valid` (✓/✗) column and append an `errors` column, validating **all** of each
+  note's root fields (not just shown columns) via `validateField`; allowed values
+  are resolved once per render and cached. Gated by
+  `settings.enableValidationColumns` (default on).
 - `baseFileGenerator`: command "Create base for fileClass" → writes
   `<basesFolder>/<FileClass>.base` with `filters: fileClass == "X"` (respect
   `settings.fileClassAlias`), `order:` = the fileClass fields, one `table` view
@@ -299,8 +314,18 @@ The filter predicate is pure (`src/api/filter.ts`, unit-tested): `is`/`isNot`
 aggregates a `BulkResult`. Verified live via CDP (no-op and out-of-list bulk both
 wrote nothing).
 
-**Next:** a `fileclass` binary (Node/Bun + ink) shelling out to `obsidian eval`
-for ergonomic commands + TUI; optional schema-authoring API and a no-app CI mode.
+**CLI/TUI (landed):** a standalone `fileclass` binary in `cli/` (Node + React/
+ink, its own `package.json`) shelling out to `obsidian eval` via a small
+transport, over the same API. Commands: `fileclasses`, `schema`, `explain`,
+`list`, `get`, `set`, `validate` (exit 1 on any violation — CI-friendly),
+dry-run-by-default `set-where`, plus `tui` (interactive browse + typed editing +
+inline validation status). Vault targeting: `--vault` > `FILECLASS_VAULT` >
+`fileclass use` persisted default (`~/.config/fileclass/config.json`) > active
+vault; every command echoes `vault: <name>` to stderr. `--json` on any command.
+Obsidian-coupled → verified live rather than unit-tested (the pure `where` filter
+and formatting helpers are unit-tested).
+
+**Next (optional):** a schema-authoring API and a no-app CI mode.
 
 ## 13. Legacy fileClass options
 
@@ -359,10 +384,11 @@ fields/user docs (first-write warning), not in a migration guide.
   remove/reorder fields; (2) per-type option settings (Number/Date/Boolean,
   Select/Cycle/Multi with base-picker); (3) File/Media + Object/ObjectList.
 - **P3 Views**: base file generator + explicit base sync (done, §11); then the
-  fileclass-table custom Bases view with editable cells. *(Computed fields —
-  Lookup/Formula — are out of scope; see §9.)*
-- **Deferred — future sprint**: public API + CLI/TUI (§12). No migration
-  tooling (§13).
+  fileclass-table custom Bases view with editable cells + validation columns.
+  *(Computed fields — Lookup/Formula — are out of scope; see §9.)*
+- **P4 Terminal (landed)**: public API (API-1 + API-2), the `fileclass` CLI, and
+  the ink TUI (§12); `required` fields + validation columns (§7, §11). No
+  migration tooling (§13).
 
 ## 16. Coding conventions
 

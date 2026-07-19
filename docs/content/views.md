@@ -68,6 +68,22 @@ disabled the view type is simply unavailable (switch the view back to `table`).
 > It renders all rows (no virtualization yet), so very large bases are better
 > viewed with a native `table` view.
 
+## Validation columns
+
+The `fileclass-table` view can prepend a **`valid`** column and append an
+**`errors`** column, turning the table into a live data-quality dashboard:
+
+- **`valid`** shows **✓** when every one of the note's fields satisfies its
+  schema, or **✗** when at least one does not (missing [required
+  fields](../fields/#required-fields), out-of-range numbers, values outside a
+  `Select`'s allowed list, malformed dates, …).
+- **`errors`** lists the messages for the failing fields (full text on hover).
+
+Validation covers **all** of the note's root fields, not just the columns shown.
+Toggle it under **Settings → Fileclass → Validation columns** (on by default).
+The same checks back `fileclass validate` on the [CLI](../cli/) and the API's
+`validate()`.
+
 ## Embedding
 
 Embed any base in a note with a native ` ```base ` code block — no Fileclass

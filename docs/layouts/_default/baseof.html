@@ -139,10 +139,10 @@
 <body>
   <div class="layout">
     <aside class="sidebar">
-      <a class="brand" href="{{ "/" | relURL }}">file<span>class</span></a>
+      <a class="brand" href="{{ .Site.Home.RelPermalink }}">file<span>class</span></a>
       <nav>
         {{ $current := . }}
-        <a href="{{ "/" | relURL }}"{{ if .IsHome }} class="active"{{ end }}>Overview</a>
+        <a href="{{ .Site.Home.RelPermalink }}"{{ if .IsHome }} class="active"{{ end }}>Overview</a>
         {{ range .Site.Menus.main }}
           <a href="{{ .URL | relURL }}"{{ if $current.IsMenuCurrent "main" . }} class="active"{{ end }}>{{ .Name }}</a>
         {{ end }}

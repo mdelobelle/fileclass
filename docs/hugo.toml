@@ -44,5 +44,8 @@ enableGitInfo = true
   unsafe = true
 
 [markup.highlight]
+  # github-dark: light tokens on a dark background, matching the always-dark
+  # code blocks in the theme (readable in both light and dark page modes).
   noClasses = true
-  style = "github"
+  style = "github-dark"
+  tabWidth = 2

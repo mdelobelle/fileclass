@@ -291,9 +291,16 @@ modal), structured `WriteResult`s. Surface: `listFileClasses`, `getSchema`,
 scope = whole vault), `setValue`, `clearValue`, `insertMissing`. Obsidian-coupled
 → verified live via CDP rather than unit-tested (the wired core is unit-tested).
 
-**Next:** API-2 (`listNotes`, `setValueWhere` bulk); then a `fileclass` binary
-(Node/Bun + ink) shelling out to `obsidian eval` for ergonomic commands + TUI;
-optional schema-authoring API and a no-app CI mode later.
+**API-2 (landed):** `listNotes(fileClass, { columns?, where?, limit? })` and
+`setValueWhere(fileClass, field, value, where?)` — bulk over a fileClass's notes.
+The filter predicate is pure (`src/api/filter.ts`, unit-tested): `is`/`isNot`
+(string compare), `contains` (array membership / substring), `isEmpty`/
+`isNotEmpty`. `setValueWhere` validates each write (strict), skips no-ops, and
+aggregates a `BulkResult`. Verified live via CDP (no-op and out-of-list bulk both
+wrote nothing).
+
+**Next:** a `fileclass` binary (Node/Bun + ink) shelling out to `obsidian eval`
+for ergonomic commands + TUI; optional schema-authoring API and a no-app CI mode.
 
 ## 13. Legacy fileClass options
 

@@ -13,6 +13,7 @@
 import { TFile } from "obsidian";
 
 import type FileclassPlugin from "../../main";
+import { Filter, matchesFilter } from "./filter";
 import { insertMissingFields } from "../commands/insertMissingFields";
 import { makeDisplayDeps } from "../fields/displayDeps";
 import { clearField } from "../fields/fieldActions";
@@ -86,6 +87,21 @@ export interface ValidateScope {
 	path?: string;
 	folder?: string;
 }
+export interface NoteRow {
+	path: string;
+	values: Record<string, unknown>;
+}
+export interface BulkResult {
+	ok: boolean;
+	changed: number;
+	skipped: number;
+	errors: WriteResult[];
+}
+export interface ListOptions {
+	columns?: string[];
+	where?: Filter;
+	limit?: number;
+}
 
 export interface FileclassApi {
 	/** Semver of this surface; bumped on breaking changes. */
@@ -98,6 +114,7 @@ export interface FileclassApi {
 	getFields(path: string): Promise<FieldInfo[]>;
 	getValue(path: string, field: string): Promise<unknown>;
 	allowedValues(path: string, field: string): Promise<string[]>;
+	listNotes(fileClass: string, opts?: ListOptions): Promise<NoteRow[]>;
 
 	// Validate
 	validate(scope?: ValidateScope): Promise<Violation[]>;
@@ -106,6 +123,12 @@ export interface FileclassApi {
 	setValue(path: string, field: string, value: unknown): Promise<WriteResult>;
 	clearValue(path: string, field: string): Promise<WriteResult>;
 	insertMissing(path: string): Promise<WriteResult>;
+	setValueWhere(
+		fileClass: string,
+		field: string,
+		value: unknown,
+		where?: Filter
+	): Promise<BulkResult>;
 }
 
 export function createFileclassApi(plugin: FileclassPlugin): FileclassApi {
@@ -123,6 +146,24 @@ export function createFileclassApi(plugin: FileclassPlugin): FileclassApi {
 	};
 	const rootField = (file: TFile, name: string): Field | undefined =>
 		index.getFields(file).find((x) => x.name === name && isRootField(x));
+
+	const readByName = (file: TFile, name: string): unknown => {
+		const f = rootField(file, name);
+		return f ? readFieldValue(app, file, f) : undefined;
+	};
+
+	/** Notes bound to `fileClass`, optionally narrowed by a filter. */
+	const selectNotes = (fileClass: string, where?: Filter): TFile[] => {
+		const bound = app.vault
+			.getMarkdownFiles()
+			.filter((f) => index.getFileClasses(f).includes(fileClass));
+		return where ? bound.filter((f) => matchesFilter(readByName(f, where.field), where)) : bound;
+	};
+
+	const sameStored = (a: unknown, b: unknown): boolean =>
+		Array.isArray(a) || Array.isArray(b)
+			? JSON.stringify(a) === JSON.stringify(b)
+			: String(a ?? "") === String(b ?? "");
 
 	/** Allowed values for a choice field (Select/Cycle/Multi, Bases-aware); else []. */
 	const allowedFor = (file: TFile, field: Field): Promise<string[]> =>
@@ -225,6 +266,21 @@ export function createFileclassApi(plugin: FileclassPlugin): FileclassApi {
 			return f ? allowedFor(file, f) : [];
 		},
 
+		async listNotes(fileClass, opts = {}) {
+			const columns =
+				opts.columns ??
+				index
+					.getResolvedFields(fileClass)
+					.filter(isRootField)
+					.map((f) => f.name);
+			let notes = selectNotes(fileClass, opts.where);
+			if (opts.limit != null) notes = notes.slice(0, opts.limit);
+			return notes.map((file) => ({
+				path: file.path,
+				values: Object.fromEntries(columns.map((c) => [c, readByName(file, c) ?? null])),
+			}));
+		},
+
 		async validate(scope = {}) {
 			const violations: Violation[] = [];
 			for (const file of filesForScope(scope)) {
@@ -284,6 +340,35 @@ export function createFileclassApi(plugin: FileclassPlugin): FileclassApi {
 			} catch (e) {
 				return { ok: false, path, message: (e as Error).message };
 			}
+		},
+
+		async setValueWhere(fileClass, field, value, where) {
+			let changed = 0;
+			let skipped = 0;
+			const errors: WriteResult[] = [];
+			for (const file of selectNotes(fileClass, where)) {
+				const f = rootField(file, field);
+				if (!f) {
+					errors.push({ ok: false, path: file.path, field, message: `No field "${field}".` });
+					continue;
+				}
+				const result = validateField(f, value, await allowedFor(file, f));
+				if (!result.ok) {
+					errors.push({ ok: false, path: file.path, field, message: result.message });
+					continue;
+				}
+				if (sameStored(readFieldValue(app, file, f), value)) {
+					skipped++; // already at the target value — no write
+					continue;
+				}
+				try {
+					await writeFieldValue(app, file, f, value);
+					changed++;
+				} catch (e) {
+					errors.push({ ok: false, path: file.path, field, message: (e as Error).message });
+				}
+			}
+			return { ok: errors.length === 0, changed, skipped, errors };
 		},
 	};
 }

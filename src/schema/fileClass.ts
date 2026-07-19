@@ -3,7 +3,7 @@
  * object (read elsewhere via metadataCache) and returns a normalized
  * ParsedFileClass. The file format is Metadata Menu's, unchanged; D1 options
  * (dvQueryString/customRendering/customSorting) are simply ignored here and
- * reported by the migration audit (§13), never acted upon.
+ * never acted upon (§13 — no migration/audit tooling ships).
  */
 import { Field, parseRawField, RawField } from "./field";
 

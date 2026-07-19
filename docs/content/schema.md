@@ -39,7 +39,8 @@ fields:
 
 The file format is **Metadata Menu's, unchanged** — existing fileClass notes
 load as-is. Legacy Dataview-era options (`dvQueryString`, `customRendering`, …)
-are ignored here and reported by the migration audit (a later phase).
+are ignored (they never crash the index); new link fields use a `.base` file +
+view instead.
 
 ## Fields
 

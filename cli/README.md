@@ -44,6 +44,7 @@ works but installing globally as root is best avoided.)
 ## Usage
 
 ```bash
+fileclass tui                              # interactive browse + edit (ink)
 fileclass fileclasses                      # every fileClass
 fileclass schema Book                      # a fileClass's options + fields
 fileclass explain "Books/Dune.md"          # a note's fileClasses + resolved fields

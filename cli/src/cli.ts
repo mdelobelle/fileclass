@@ -25,6 +25,9 @@ const USAGE = `fileclass — typed frontmatter from the terminal (needs Obsidian
 
 Usage: fileclass <command> [args] [--vault <name>] [--json]
 
+Interactive
+  tui                               browse fileClasses → notes → fields and edit
+
 Vault
   vault                             the vault this CLI is talking to
   use <name>                        persist a default vault (use --clear to unset)
@@ -120,6 +123,11 @@ async function main(): Promise<void> {
 		console.log(values.json ? json(result) : pretty(result));
 
 	switch (cmd) {
+		case "tui": {
+			const { runTui } = await import("./tui.js");
+			return runTui();
+		}
+
 		case "vault": {
 			const info = await callApi<{ name: string; path: string }>("vaultInfo");
 			return out(info, (i) => `${i.name}\n${i.path}`);

@@ -11,6 +11,14 @@ and validation engine, so results have full fidelity.
 Both drive the **running Obsidian app** through Obsidian's own CLI
 (`obsidian eval`). Obsidian must be running with the Fileclass plugin enabled.
 
+> **⚠️ These tools write to your notes.** The API, the CLI and the TUI edit
+> real frontmatter in your live vault — including **bulk** edits across many
+> notes at once (`setValueWhere` / `fileclass set-where`). Writes go straight to
+> disk and are **not undoable** from Fileclass. Handle them with care, prefer a
+> dry run before a bulk change, and **keep regular backups** of your vault (Git,
+> Obsidian Sync, or a file-level backup) — good practice for any tool that
+> automates edits to your files.
+
 ## Public API
 
 The plugin publishes a stable, JSON-serializable surface on its instance —
@@ -44,6 +52,12 @@ degrade gracefully (return `null` / `[]`) when Bases is unavailable.
 
 The API is **versioned** (`api.version`, currently `1.0`); breaking changes bump
 it. The plugin driving the CLI must be recent enough to expose `plugin.api`.
+
+> **⚠️ Mutating methods write to disk.** `setValue`, `clearValue`,
+> `insertMissing` and `setValueWhere` change note frontmatter in the live vault.
+> `setValueWhere` can touch **many notes in one call** — scope its `where` filter
+> carefully. There is no built-in undo; back up your vault before scripting
+> writes.
 
 ## Installing the CLI
 
@@ -89,6 +103,11 @@ Add `--json` to any command for machine-readable output. `validate` exits
 non-zero when it finds a violation, so it drops straight into a CI or pre-commit
 check.
 
+> **⚠️ `set` and `set-where` modify your notes.** `set` writes a single value;
+> `set-where` edits every matching note. `set-where` is a **dry run by default** —
+> inspect the reported changes first, then re-run with `--apply`. Keep a backup
+> before applying bulk edits.
+
 ## Interactive TUI
 
 `fileclass tui` opens an [ink](https://github.com/vadimdemedes/ink)-based
@@ -98,6 +117,10 @@ candidate pickers with filtering for `File`/`Media` fields, and text input for
 the rest. It also shows each note's **validation status** and lets you open a
 fileClass's base or switch vaults. It talks to the same live API as the CLI, so
 every edit is validated exactly as it would be in the app.
+
+> **⚠️ TUI edits are saved immediately.** Confirming a value in the TUI writes it
+> to the note's frontmatter right away — there is no separate save step and no
+> undo. As with the CLI and API, keep regular backups of your vault.
 
 ## Choosing the vault
 

@@ -1,0 +1,32 @@
+{
+  "name": "fileclass-cli",
+  "version": "0.0.1",
+  "description": "Terminal access to the Fileclass Obsidian plugin — validate, inspect and edit typed frontmatter from the command line.",
+  "type": "module",
+  "bin": {
+    "fileclass": "./dist/cli.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "node --experimental-strip-types src/cli.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": [
+    "obsidian",
+    "fileclass",
+    "metadata",
+    "cli"
+  ],
+  "author": "mdelobelle",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.4.0"
+  }
+}

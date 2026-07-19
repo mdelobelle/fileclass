@@ -35,7 +35,7 @@ Positioning vs core Obsidian:
 
 | # | Decision | Consequence |
 |---|----------|-------------|
-| D1 | **No dataview dependency, ever.** | Query engine = Bases via `src/engine/basesAdapter.ts`. `dvQueryString`/`customRendering`/`customSorting` options from legacy fileClasses are ignored (migration audit reports them, §13). |
+| D1 | **No dataview dependency, ever.** | Query engine = Bases via `src/engine/basesAdapter.ts`. `dvQueryString`/`customRendering`/`customSorting` options from legacy fileClasses are ignored silently (§13). |
 | D2 | **Frontmatter-only.** No inline (`key:: value`) fields. | All reads via `metadataCache.getFileCache(f).frontmatter`; all writes via `app.fileManager.processFrontMatter`. No line-level note parsing (Metadata Menu's `note/lineNode` machinery is NOT ported). |
 | D3 | **fileClass file format is Metadata Menu's, unchanged.** | Normative reference: `/Users/mdelobel/Obsidian-Dev/.obsidian/plugins/metadatamenu/src/fileClass/fileClass.ts` (+ `fileClassAttribute.ts`). Existing fileClass notes must load as-is (minus D1 options). |
 | D4 | **All Bases private-API access lives in `src/engine/basesAdapter.ts`.** | No other module may touch `embedRegistry`, `internalPlugins.getPluginById('bases')`, controllers, datasets. The adapter feature-detects and throws `BasesUnavailableError` with a graceful UI fallback upstream. |
@@ -286,7 +286,8 @@ the field validators/dispatcher — already exist.)
 
 ## 13. Legacy fileClass options
 
-No migration tooling ships: users migrated their fileClass **format** to Metadata
+No migration tooling ships, and the once-considered **audit command is dropped**
+(decision July 2026): users migrated their fileClass **format** to Metadata
 Menu's current schema long ago. The only remnant is dataview-era *option* keys
 (`dvQueryString` / `customRendering` / `customSorting` / `customListFunction` /
 `customSummarizingFunction` / fileClassQueries). Per D1 these are **ignored

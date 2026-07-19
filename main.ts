@@ -27,6 +27,7 @@ import { openFileClassSchema } from "./src/ui/fileClassSchemaModal";
 import { pickAndCreateBase } from "./src/views/baseFileGenerator";
 import { fileClassBaseFile, openFileClassBase, syncFileClassToBase } from "./src/views/baseSync";
 import { registerFileclassTableView } from "./src/views/fileclassTableView";
+import { createFileclassApi, FileclassApi } from "./src/api/fileclassApi";
 import { CanvasEngine } from "./src/fields/canvas/canvasEngine";
 import { FieldIndicator } from "./src/ui/indicator/fieldIndicator";
 import { LinkIndicator } from "./src/ui/indicator/linkIndicator";
@@ -52,6 +53,9 @@ export default class FileclassPlugin extends Plugin {
 	/** Edit buttons in the native Properties editor (§19.6). */
 	propertyButtons!: PropertyEditButtons;
 
+	/** Public JSON API for the Obsidian CLI / a future fileclass CLI (§12). */
+	api!: FileclassApi;
+
 	/** Long-lived cache of parsed .base queries, invalidated on vault modify. */
 	queryCache!: QueryCache;
 
@@ -70,6 +74,7 @@ export default class FileclassPlugin extends Plugin {
 		this.register(() => this.queryCache.dispose());
 
 		this.index = new FileclassIndex(this);
+		this.api = createFileclassApi(this);
 
 		this.addSettingTab(new FileclassSettingTab(this.app, this));
 		this.addChild(new FileclassContextMenu(this));

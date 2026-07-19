@@ -274,15 +274,26 @@ canvas file tracking (comes with the planned Canvas engine, §9.1).
   confirmation.
 - Embeds: users embed bases natively (```` ```base ````); no custom code block.
 
-## 12. Public API — deferred to a future sprint
+## 12. Public API + CLI/TUI
 
-**Decision (July 2026):** don't re-implement Metadata Menu's `plugin.api`
-one-to-one. Instead, defer the public surface to a dedicated later sprint with a
-broader goal: a **complete API** plus a **CLI (and possibly a TUI)** to read and
-edit notes from the terminal — reusing Obsidian's indexing engine and Fileclass's
-metadata schema/validation engine. To be scoped then; revisit this section at
-that point. (The internals it would build on — `index`, `io/read`, `io/write`,
-the field validators/dispatcher — already exist.)
+**Goal:** a JSON-serializable public surface reusable from Obsidian's own CLI
+(`obsidian eval "…"`, which runs JS in the live app — reachability + JSON
+round-trip verified) and a future standalone `fileclass` CLI/TUI wrapper. Not a
+one-to-one port of Metadata Menu's `plugin.api`.
+
+**API-1 (landed):** `src/api/fileclassApi.ts` → `createFileclassApi(plugin)`,
+exposed as `plugin.api` (`app.plugins.plugins.fileclass.api`, `version` "1.0").
+Thin wiring over the existing engine (index, `validateField`, `io/read`+`write`,
+`resolveFieldValues`, `describeField`, `insertMissingFields`), JSON in/out,
+non-interactive (`setValue` validates then writes — strict list membership, no
+modal), structured `WriteResult`s. Surface: `listFileClasses`, `getSchema`,
+`explain`, `getFields`, `getValue`, `allowedValues`, `validate(scope?)` (empty
+scope = whole vault), `setValue`, `clearValue`, `insertMissing`. Obsidian-coupled
+→ verified live via CDP rather than unit-tested (the wired core is unit-tested).
+
+**Next:** API-2 (`listNotes`, `setValueWhere` bulk); then a `fileclass` binary
+(Node/Bun + ink) shelling out to `obsidian eval` for ergonomic commands + TUI;
+optional schema-authoring API and a no-app CI mode later.
 
 ## 13. Legacy fileClass options
 

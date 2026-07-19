@@ -10,7 +10,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && chmod +x dist/cli.js",
     "dev": "node --experimental-strip-types src/cli.ts",
     "typecheck": "tsc --noEmit"
   },

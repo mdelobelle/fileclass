@@ -13,8 +13,33 @@ plugin enabled.
 cd cli
 npm install
 npm run build
-npm link          # exposes the `fileclass` command
 ```
+
+Then expose the `fileclass` command. If your Node lives in a system location,
+`npm link` needs a writable global prefix — pick one that avoids `sudo`:
+
+**A. Shell alias (quickest, no global install)**
+
+```bash
+echo "alias fileclass='node $(pwd)/dist/cli.js'" >> ~/.zshrc && source ~/.zshrc
+```
+
+**B. User-owned npm prefix, then `npm link`**
+
+```bash
+npm config set prefix ~/.npm-global
+echo 'export PATH="$HOME/.npm-global/bin:$PATH"' >> ~/.zshrc && source ~/.zshrc
+npm link
+```
+
+**C. Symlink into a bin dir you already own (on your PATH)**
+
+```bash
+ln -sf "$(pwd)/dist/cli.js" ~/.local/bin/fileclass   # if ~/.local/bin is on PATH
+```
+
+(Or just run it directly: `node dist/cli.js <command>`. `sudo npm link` also
+works but installing globally as root is best avoided.)
 
 ## Usage
 

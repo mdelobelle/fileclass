@@ -4,26 +4,157 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{{ if .IsHome }}{{ .Site.Title }}{{ else }}{{ .Title }} · {{ .Site.Title }}{{ end }}</title>
+  {{ if .Description }}<meta name="description" content="{{ .Description }}">{{ end }}
   <style>
-    :root { color-scheme: light dark; }
-    body { max-width: 46rem; margin: 2rem auto; padding: 0 1rem;
-      font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
-    nav { display: flex; gap: 1rem; flex-wrap: wrap; border-bottom: 1px solid #8884;
-      padding-bottom: .75rem; margin-bottom: 2rem; }
-    nav a { text-decoration: none; }
-    nav .brand { font-weight: 700; }
-    table { border-collapse: collapse; }
-    th, td { border: 1px solid #8884; padding: .3rem .6rem; text-align: left; }
-    pre { background: #8881; padding: .8rem; overflow-x: auto; border-radius: 6px; }
-    code { background: #8881; padding: .1rem .3rem; border-radius: 3px; }
-    pre code { background: none; padding: 0; }
+    /* ---- Fileclass docs skin: self-contained, no external theme ---- */
+    :root {
+      color-scheme: light dark;
+      --bg: #ffffff;
+      --bg-soft: #f6f7f9;
+      --fg: #24292f;
+      --fg-muted: #656d76;
+      --border: #d8dee4;
+      --accent: #6d5ae6;
+      --accent-soft: #efeafc;
+      --code-bg: #0d1117;
+      --code-fg: #e6edf3;
+      --sidebar-w: 16rem;
+      --content-w: 44rem;
+      --radius: 8px;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f1115;
+        --bg-soft: #171a21;
+        --fg: #d6dae0;
+        --fg-muted: #9098a3;
+        --border: #2a2f3a;
+        --accent: #a99bff;
+        --accent-soft: #21203a;
+        --code-bg: #161b22;
+        --code-fg: #e6edf3;
+      }
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--fg);
+      font: 16px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .layout { display: grid; grid-template-columns: var(--sidebar-w) minmax(0, 1fr); gap: 0; min-height: 100vh; }
+
+    /* Sidebar */
+    .sidebar {
+      position: sticky; top: 0; align-self: start;
+      height: 100vh; overflow-y: auto;
+      padding: 1.75rem 1.25rem;
+      background: var(--bg-soft);
+      border-right: 1px solid var(--border);
+    }
+    .sidebar .brand {
+      display: block; font-size: 1.15rem; font-weight: 700;
+      color: var(--fg); text-decoration: none; letter-spacing: -.01em;
+      margin-bottom: 1.5rem;
+    }
+    .sidebar .brand span { color: var(--accent); }
+    .sidebar nav a {
+      display: block; padding: .4rem .6rem; margin: .1rem 0;
+      color: var(--fg-muted); text-decoration: none;
+      border-radius: 6px; font-size: .95rem;
+    }
+    .sidebar nav a:hover { background: var(--accent-soft); color: var(--fg); }
+    .sidebar nav a.active { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+    .sidebar .foot { margin-top: 2rem; font-size: .8rem; color: var(--fg-muted); }
+    .sidebar .foot a { color: var(--fg-muted); }
+
+    /* Content */
+    .content { padding: 3rem 2rem 5rem; }
+    article { max-width: var(--content-w); margin: 0 auto; }
+
+    article h1 { font-size: 2.1rem; line-height: 1.2; letter-spacing: -.02em; margin: 0 0 1.25rem; }
+    article h2 { font-size: 1.5rem; letter-spacing: -.01em; margin: 2.75rem 0 1rem; padding-bottom: .35rem; border-bottom: 1px solid var(--border); }
+    article h3 { font-size: 1.2rem; margin: 2rem 0 .75rem; }
+    article p, article li { color: var(--fg); }
+    article a { color: var(--accent); text-decoration: none; }
+    article a:hover { text-decoration: underline; }
+    article strong { font-weight: 650; }
+
+    /* Tables (markdown emits a bare <table>; make it scroll on narrow screens) */
+    article table {
+      display: block; overflow-x: auto; width: 100%;
+      border-collapse: collapse; font-size: .93rem; margin: 1.25rem 0;
+    }
+    th, td { border: 1px solid var(--border); padding: .5rem .8rem; text-align: left; vertical-align: top; white-space: normal; }
+    thead th { background: var(--bg-soft); font-weight: 650; }
+    tbody tr:nth-child(even) { background: color-mix(in srgb, var(--bg-soft) 55%, transparent); }
+
+    /* Blockquotes / callouts */
+    blockquote {
+      margin: 1.25rem 0; padding: .6rem 1rem;
+      border-left: 3px solid var(--accent);
+      background: var(--accent-soft);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      color: var(--fg);
+    }
+    blockquote p { margin: .3rem 0; }
+
+    /* Code — always dark, readable in both themes */
+    pre {
+      background: var(--code-bg); color: var(--code-fg);
+      padding: .9rem 1.1rem; overflow-x: auto;
+      border-radius: var(--radius); border: 1px solid var(--border);
+      font-size: .88rem; line-height: 1.55;
+    }
+    pre code { background: none; padding: 0; color: inherit; font-size: inherit; }
+    code {
+      background: var(--accent-soft); color: var(--fg);
+      padding: .12rem .38rem; border-radius: 4px;
+      font-size: .86em;
+      font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    }
+    pre, pre code { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace; }
+
+    hr { border: none; border-top: 1px solid var(--border); margin: 2.5rem 0; }
+
+    /* Mobile: sidebar becomes a top bar */
+    @media (max-width: 800px) {
+      .layout { grid-template-columns: 1fr; }
+      .sidebar {
+        position: static; height: auto;
+        border-right: none; border-bottom: 1px solid var(--border);
+        padding: 1rem 1.25rem;
+      }
+      .sidebar nav { display: flex; flex-wrap: wrap; gap: .25rem; }
+      .sidebar .brand { margin-bottom: .75rem; }
+      .sidebar .foot { display: none; }
+      .content { padding: 2rem 1.25rem 4rem; }
+    }
   </style>
 </head>
 <body>
-  <nav>
-    <a class="brand" href="{{ "/" | relURL }}">{{ .Site.Title }}</a>
-    {{ range .Site.Menus.main }}<a href="{{ .URL | relURL }}">{{ .Name }}</a>{{ end }}
-  </nav>
-  <main>{{ block "main" . }}{{ end }}</main>
+  <div class="layout">
+    <aside class="sidebar">
+      <a class="brand" href="{{ "/" | relURL }}">file<span>class</span></a>
+      <nav>
+        {{ $current := . }}
+        <a href="{{ "/" | relURL }}"{{ if .IsHome }} class="active"{{ end }}>Overview</a>
+        {{ range .Site.Menus.main }}
+          <a href="{{ .URL | relURL }}"{{ if $current.IsMenuCurrent "main" . }} class="active"{{ end }}>{{ .Name }}</a>
+        {{ end }}
+      </nav>
+      <div class="foot">
+        <a href="https://github.com/mdelobelle/fileclass">GitHub</a> ·
+        successor to Metadata Menu
+      </div>
+    </aside>
+    <div class="content">
+      <main>{{ block "main" . }}{{ end }}</main>
+    </div>
+  </div>
 </body>
 </html>

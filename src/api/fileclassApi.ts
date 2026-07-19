@@ -17,7 +17,7 @@ import { insertMissingFields } from "../commands/insertMissingFields";
 import { makeDisplayDeps } from "../fields/displayDeps";
 import { clearField } from "../fields/fieldActions";
 import { describeField } from "../fields/objectDisplay";
-import { isListType, validateField } from "../fields/validate";
+import { hasAllowedValues, validateField } from "../fields/validate";
 import { resolveFieldValues } from "../fields/valuesIo";
 import { readFieldValue } from "../io/read";
 import { writeFieldValue } from "../io/write";
@@ -124,9 +124,9 @@ export function createFileclassApi(plugin: FileclassPlugin): FileclassApi {
 	const rootField = (file: TFile, name: string): Field | undefined =>
 		index.getFields(file).find((x) => x.name === name && isRootField(x));
 
-	/** Allowed values for a list field (Bases-aware), or [] for non-list/free. */
+	/** Allowed values for a choice field (Select/Cycle/Multi, Bases-aware); else []. */
 	const allowedFor = (file: TFile, field: Field): Promise<string[]> =>
-		isListType(field.type) ? resolveFieldValues(plugin, field, file) : Promise.resolve([]);
+		hasAllowedValues(field.type) ? resolveFieldValues(plugin, field, file) : Promise.resolve([]);
 
 	const toFieldDef = (f: Field): FieldDef => ({
 		name: f.name,

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { Field, FieldType, FieldOptions } from "../../src/schema/field";
-import { validateField } from "../../src/fields/validate";
+import { hasAllowedValues, isListType, validateField } from "../../src/fields/validate";
 
 const make = (type: FieldType, options: FieldOptions = []): Field => ({
 	id: "i",
@@ -92,5 +92,18 @@ describe("Input", () => {
 		expect(validateField(make("Input"), "text").ok).toBe(true);
 		expect(validateField(make("Input"), 5).ok).toBe(true);
 		expect(validateField(make("Input"), { a: 1 }).ok).toBe(false);
+	});
+});
+
+describe("type predicates — list vs choice", () => {
+	it("isListType is the multi-valued types (array-valued)", () => {
+		expect(["Multi", "MultiFile", "MultiMedia"].every((t) => isListType(t as FieldType))).toBe(true);
+		expect(isListType("Select")).toBe(false);
+		expect(isListType("Cycle")).toBe(false);
+	});
+	it("hasAllowedValues is Select/Cycle/Multi (validated against a values list)", () => {
+		expect(["Select", "Cycle", "Multi"].every((t) => hasAllowedValues(t as FieldType))).toBe(true);
+		expect(hasAllowedValues("MultiFile")).toBe(false); // draws from candidates, not a list
+		expect(hasAllowedValues("Input")).toBe(false);
 	});
 });

@@ -33,6 +33,12 @@ export function isListType(type: FieldType): boolean {
 	return LIST_TYPES.has(type);
 }
 
+/** Types whose value is checked against an allowed-values list (Select/Cycle/Multi). */
+export const CHOICE_TYPES: ReadonlySet<FieldType> = new Set<FieldType>(["Select", "Cycle", "Multi"]);
+export function hasAllowedValues(type: FieldType): boolean {
+	return CHOICE_TYPES.has(type);
+}
+
 export function isEmpty(value: unknown): boolean {
 	return value == null || value === "";
 }
@@ -82,12 +88,20 @@ function validateDatePattern(value: unknown, field: Field, re: RegExp): Validati
  * Validates a raw frontmatter `value` for `field`. `allowedValues` is required
  * only for list types (Select/Cycle/Multi); pass the resolved values or [].
  */
+/** A field marked `required: true` in its options must have a value. */
+export function isRequired(field: Field): boolean {
+	return (
+		!Array.isArray(field.options) &&
+		(field.options.required === true || field.options.required === "true")
+	);
+}
+
 export function validateField(
 	field: Field,
 	value: unknown,
 	allowedValues: string[] = []
 ): ValidationResult {
-	if (isEmpty(value)) return VALID;
+	if (isEmpty(value)) return isRequired(field) ? invalid(`"${field.name}" is required`) : VALID;
 
 	switch (field.type) {
 		case "Input":

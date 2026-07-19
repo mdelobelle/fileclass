@@ -16,6 +16,9 @@ import type FileclassPlugin from "../../main";
 import { registerFileclassView } from "../engine/basesAdapter";
 import { EditContext, updateField } from "../fields/fieldActions";
 import { isInputSupported } from "../fields/support";
+import { hasAllowedValues, validateField } from "../fields/validate";
+import { resolveFieldValues } from "../fields/valuesIo";
+import { readFieldValue } from "../io/read";
 import { Field, isRootField } from "../schema/field";
 import {
 	columnLabel,
@@ -72,16 +75,58 @@ class FileclassTableView extends Component {
 		this.containerEl.empty();
 		if (!ds || !ds.properties?.length) return;
 
+		const showValidation = this.plugin.settings.enableValidationColumns;
 		const table = this.containerEl.createEl("table", { cls: "fileclass-table" });
 		const headRow = table.createEl("thead").createEl("tr");
+		if (showValidation) headRow.createEl("th", { text: "valid", cls: "fc-valid-col" });
 		for (const col of ds.properties) headRow.createEl("th", { text: columnLabel(col) });
+		if (showValidation) headRow.createEl("th", { text: "errors", cls: "fc-errors-col" });
 
 		const body = table.createEl("tbody");
+		// Allowed values are per-field, not per-note — resolve once per render.
+		const allowedCache = new Map<string, Promise<string[]>>();
 		for (const entry of ds.data) {
 			const row = body.createEl("tr");
-			for (const col of ds.properties) {
-				this.renderCell(row, entry, col);
+			const validCell = showValidation ? row.createEl("td", { cls: "fc-valid-col" }) : undefined;
+			for (const col of ds.properties) this.renderCell(row, entry, col);
+			if (showValidation && validCell) {
+				const errCell = row.createEl("td", { cls: "fc-errors-col" });
+				void this.fillValidation(entry.file, validCell, errCell, allowedCache);
 			}
+		}
+	}
+
+	/** Validates a note's fields (all root fields, not just shown columns) and
+	 * fills the computed valid/errors cells. Async: allowed values may hit Bases. */
+	private async fillValidation(
+		file: TFile,
+		validCell: HTMLElement,
+		errCell: HTMLElement,
+		cache: Map<string, Promise<string[]>>
+	): Promise<void> {
+		const errors: string[] = [];
+		for (const f of this.plugin.index.getFields(file).filter(isRootField)) {
+			let allowed: string[] = [];
+			if (hasAllowedValues(f.type)) {
+				let pending = cache.get(f.id);
+				if (!pending) {
+					pending = resolveFieldValues(this.plugin, f, file).catch(() => []);
+					cache.set(f.id, pending);
+				}
+				allowed = await pending;
+			}
+			const result = validateField(f, readFieldValue(this.plugin.app, file, f), allowed);
+			if (!result.ok) errors.push(result.message ?? `"${f.name}" is invalid`);
+		}
+		if (!validCell.isConnected) return; // re-rendered while awaiting
+		if (errors.length) {
+			validCell.setText("✗");
+			validCell.addClass("fc-invalid");
+			errCell.setText(errors.join("; "));
+			errCell.setAttribute("title", errors.join("\n"));
+		} else {
+			validCell.setText("✓");
+			validCell.addClass("fc-ok");
 		}
 	}
 

@@ -271,6 +271,26 @@
 .fileclass-table .fc-cell > .fileclass-indicator {
 	flex-shrink: 0;
 }
+/* Computed valid/errors columns (data quality). */
+.fileclass-table th.fc-valid-col,
+.fileclass-table td.fc-valid-col {
+	text-align: center;
+	font-weight: var(--font-bold);
+}
+.fileclass-table td.fc-valid-col.fc-ok {
+	color: var(--color-green);
+}
+.fileclass-table td.fc-valid-col.fc-invalid {
+	color: var(--color-red);
+}
+.fileclass-table td.fc-errors-col {
+	max-width: 24em;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	color: var(--text-error);
+	font-size: var(--font-ui-smaller);
+}
+
 .fileclass-table td.fileclass-editable {
 	cursor: pointer;
 }

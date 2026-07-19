@@ -43,13 +43,38 @@ First development cycle — the successor to Metadata Menu, built on the core
   input).
 - Context menus for notes and fileClass notes.
 
+### Data quality
+
+- **Required fields** — a per-field `required` flag (schema editor toggle); an
+  empty required field is a violation.
+- **Validation columns** in the `fileclass-table` view — a `valid` ✓/✗ column and
+  an `errors` column showing which notes violate their schema (toggle in
+  Settings, on by default).
+- Consistent validation everywhere: the table columns, the `validate` API/CLI
+  command, and every write (`setValue` / `set-where`) share one engine.
+
 ### Views (Bases)
 
 - Generate a `.base` for a fileClass; one-way explicit sync with a status button.
 - Editable **`fileclass-table`** Bases view (in-cell typed editing).
 - Open / Modify a fileClass's base (command + context menu).
 
+### Terminal (API, CLI & TUI)
+
+- **Public plugin API** (v1.0) on `plugin.api` — JSON-serializable inspect /
+  validate / mutate surface (`listFileClasses`, `getSchema`, `explain`,
+  `listNotes`, `validate`, `setValue`, `clearValue`, `insertMissing`,
+  `setValueWhere`, …), reachable via `obsidian eval`.
+- **`fileclass` CLI** — terminal access driving the running app: `fileclasses`,
+  `schema`, `explain`, `list`, `get`, `set`, `validate` (CI-friendly exit code),
+  and dry-run-by-default `set-where` bulk edits; `--json` on any command.
+- **Interactive TUI** (ink) — home menu, browse fileClasses → notes → fields,
+  typed editing (choice + File-candidate pickers), inline validation status, and
+  vault switching.
+- **Vault targeting** — `--vault` / `FILECLASS_VAULT` / `fileclass use` default /
+  active vault, in that precedence.
+
 ### Quality
 
-- 176 unit tests; TypeScript strict; private Obsidian/Bases internals isolated
+- 186 unit tests; TypeScript strict; private Obsidian/Bases internals isolated
   behind a single adapter and best-effort DOM boundaries.

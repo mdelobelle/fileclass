@@ -37,6 +37,22 @@ Empty values are always valid — a field is optional unless a constraint says
 otherwise. `Lookup` and `Formula` (computed fields) are **out of scope** for
 Fileclass — use Bases views for reverse relations and computed columns.
 
+## Required fields
+
+Any field can be marked **Required** in the schema editor (the toggle sits with
+the common field options, alongside the name and type). A required field with an
+empty value is reported as a violation — everywhere validation surfaces:
+
+- the [validation columns](../views/#validation-columns) of the editable
+  `fileclass-table` view,
+- `fileclass validate` on the [CLI](../cli/#cli-commands) (non-zero exit on any
+  violation), and the API's `validate(scope)`, and
+- `setValue` / `set-where`, which refuse to write an empty value into a required
+  field.
+
+Non-empty values keep their normal per-type validation (a number stays numeric,
+a `Select` must still be an allowed value, and so on).
+
 ## Link fields (File / Media)
 
 `File`, `MultiFile`, `Media`, and `MultiMedia` store wikilinks. Their **candidate

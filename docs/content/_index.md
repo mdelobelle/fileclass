@@ -20,7 +20,10 @@ has **no Dataview dependency**.
 - [Schema layer](schema/) — fileClass notes, fields, inheritance, and binding.
 - [Fields & input](fields/) — typed, validated value input for every field type.
 - [UI surfaces](ui/) — the note-fields modal, indicators, and property buttons.
-- [Views](views/) — generating and syncing a `.base`, and the editable table.
+- [Views](views/) — generating and syncing a `.base`, the editable table, and
+  its validation columns.
+- [CLI & API](cli/) — the public plugin API and the `fileclass` CLI/TUI:
+  inspect, validate and edit typed frontmatter from the terminal.
 - [Settings](settings/) — every setting explained.
 - [Modeling guide](modeling/) — when to use a dedicated fileClass, a nested
   Object/ObjectList, or a free-form JSON/YAML field.

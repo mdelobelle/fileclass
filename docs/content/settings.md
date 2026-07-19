@@ -20,6 +20,7 @@ All settings live under **Settings → Fileclass**.
 
 | Setting | What it does |
 |---------|--------------|
+| **Validation columns** | Adds `valid` ✓/✗ and `errors` columns to the editable [`fileclass-table`](../views/#validation-columns) view, flagging notes that violate their schema. On by default. |
 | **Canvas fields engine** | Auto-fills `Canvas`/`CanvasGroup`/`CanvasGroupLink` fields from `.canvas` files. This is the one surface that writes frontmatter automatically. |
 | **Context menu entries** | Adds Fileclass actions to the file and editor right-click menus. |
 | **Property editor buttons** | Shows a per-field edit button (its type icon) in Obsidian's native Properties editor, for typed input. |

@@ -41,6 +41,7 @@ export class FieldDefModal extends Modal {
 	private name: string;
 	private type: FieldType;
 	private draft: OptionsDraft;
+	private required: boolean;
 
 	constructor(
 		app: App,
@@ -54,6 +55,8 @@ export class FieldDefModal extends Modal {
 		this.name = opts.initial?.name ?? "";
 		this.type = opts.initial?.type ?? "Input";
 		this.draft = optionsToDraft(this.type, opts.initial?.options ?? []);
+		const io = opts.initial?.options;
+		this.required = !!io && !Array.isArray(io) && (io.required === true || io.required === "true");
 	}
 
 	onOpen(): void {
@@ -76,6 +79,11 @@ export class FieldDefModal extends Modal {
 			});
 		});
 
+		new Setting(contentEl)
+			.setName("Required")
+			.setDesc("Flag the note as invalid when this field has no value.")
+			.addToggle((t) => t.setValue(this.required).onChange((v) => (this.required = v)));
+
 		renderOptions();
 
 		new Setting(contentEl).addButton((b) =>
@@ -91,11 +99,20 @@ export class FieldDefModal extends Modal {
 					this.opts.onSubmit({
 						name,
 						type: this.type,
-						options: buildFieldOptions(this.type, this.draft),
+						options: this.withRequired(buildFieldOptions(this.type, this.draft)),
 					});
 					this.close();
 				})
 		);
+	}
+
+	/** Merges the common `required` flag into the type's options (or removes it). */
+	private withRequired(options: FieldOptions | undefined): FieldOptions | undefined {
+		if (options === undefined) return this.required ? { required: true } : undefined;
+		if (Array.isArray(options)) return options; // inline values list — required N/A
+		if (this.required) options.required = true;
+		else delete options.required;
+		return options;
 	}
 
 	onClose(): void {

@@ -1,5 +1,5 @@
 # build artifacts
-main.js
+# main.js is committed so users can install from GitHub without building.
 *.js.map
 styles.css.map
 

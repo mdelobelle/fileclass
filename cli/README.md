@@ -60,7 +60,29 @@ fileclass set-where Book status "to read" --where "status isEmpty" --apply
 
 Add `--json` to any command for machine-readable output.
 
+## Choosing the vault
+
+With several vaults open, pick which one commands run against. Every command
+prints the target vault to stderr (`vault: <name>`). Precedence:
+
+```
+--vault <name>   >   FILECLASS_VAULT (env)   >   `fileclass use` default   >   active vault
+```
+
+```bash
+fileclass vault                 # which vault am I talking to?
+fileclass use Obsidian-Dev      # persist a default (survives sessions)
+fileclass use --clear           # unset it
+fileclass list Book --vault Work   # one-off override
+export FILECLASS_VAULT=Work      # for a shell session / scripts
+```
+
+The plugin driving the CLI must be recent enough to expose `plugin.api`; each
+vault runs its own plugin version.
+
 ## Configuration
 
 - `OBSIDIAN_BIN` — path to the `obsidian` binary (default: `obsidian` on PATH).
-- `FILECLASS_VAULT` — target vault name when several are open.
+- `FILECLASS_VAULT` — target vault for the shell session.
+- `FILECLASS_QUIET` — hide the `vault:` stderr line.
+- Config file: `~/.config/fileclass/config.json` (the `use` default).

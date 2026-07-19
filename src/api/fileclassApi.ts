@@ -108,6 +108,7 @@ export interface FileclassApi {
 	readonly version: string;
 
 	// Inspect
+	vaultInfo(): Promise<{ name: string; path: string }>;
 	listFileClasses(): Promise<FileClassSummary[]>;
 	getSchema(fileClass: string): Promise<SchemaDef | null>;
 	explain(path: string): Promise<NoteExplain | null>;
@@ -192,6 +193,14 @@ export function createFileclassApi(plugin: FileclassPlugin): FileclassApi {
 
 	return {
 		version: API_VERSION,
+
+		async vaultInfo() {
+			const adapter = app.vault.adapter as unknown as {
+				basePath?: string;
+				getBasePath?: () => string;
+			};
+			return { name: app.vault.getName(), path: adapter.getBasePath?.() ?? adapter.basePath ?? "" };
+		},
 
 		async listFileClasses() {
 			return index.fileClassNames.map((name) => {

@@ -5,8 +5,9 @@
  */
 import { parseArgs } from "node:util";
 
+import { CONFIG_FILE, readConfig, writeConfig } from "./config.js";
 import { json, table } from "./format.js";
-import { callApi } from "./transport.js";
+import { callApi, probeVault } from "./transport.js";
 import type {
 	BulkResult,
 	FileClassSummary,
@@ -22,7 +23,11 @@ const CLI_VERSION = "0.0.1";
 
 const USAGE = `fileclass — typed frontmatter from the terminal (needs Obsidian running).
 
-Usage: fileclass <command> [args] [--json]
+Usage: fileclass <command> [args] [--vault <name>] [--json]
+
+Vault
+  vault                             the vault this CLI is talking to
+  use <name>                        persist a default vault (use --clear to unset)
 
 Inspect
   fileclasses                       list every fileClass
@@ -41,8 +46,9 @@ Edit
                                     bulk set; dry-run unless --apply
 
 Filters (--where): <field> is|isNot|contains|isEmpty|isNotEmpty [value]
-Global: --json (machine output), -v/--version, -h/--help
-Env: OBSIDIAN_BIN (obsidian binary), FILECLASS_VAULT (target vault)`;
+Target vault: --vault <name>  >  FILECLASS_VAULT env  >  'use' default  >  active
+Global: --json, -v/--version, -h/--help
+Env: OBSIDIAN_BIN (obsidian binary), FILECLASS_VAULT, FILECLASS_QUIET`;
 
 function fail(message: string): never {
 	console.error(message);
@@ -72,6 +78,8 @@ async function main(): Promise<void> {
 			path: { type: "string" },
 			folder: { type: "string" },
 			apply: { type: "boolean", default: false },
+			vault: { type: "string" },
+			clear: { type: "boolean", default: false },
 			help: { type: "boolean", short: "h", default: false },
 			version: { type: "boolean", short: "v", default: false },
 		},
@@ -81,10 +89,42 @@ async function main(): Promise<void> {
 	const [cmd, ...args] = positionals;
 	if (!cmd || values.help) return console.log(USAGE);
 
+	// Persist/inspect the default vault.
+	if (cmd === "use") {
+		if (values.clear) {
+			writeConfig({});
+			return console.log("Default vault cleared.");
+		}
+		if (!args[0]) {
+			const cur = readConfig().vault;
+			return console.log(cur ? `default vault: ${cur}` : "No default vault set.");
+		}
+		const requested = args[0];
+		const reached = await probeVault(requested);
+		if (!reached || reached.toLowerCase() !== requested.toLowerCase()) {
+			fail(
+				reached
+					? `fileclass: no open vault named "${requested}" (Obsidian answered "${reached}"). Not saved.`
+					: `fileclass: couldn't reach a vault named "${requested}". Is it open in Obsidian? Not saved.`
+			);
+		}
+		writeConfig({ vault: reached });
+		return console.log(`Default vault set to "${reached}" (${CONFIG_FILE}).`);
+	}
+
+	// Target vault precedence: --vault > FILECLASS_VAULT env > `use` default.
+	const vault = values.vault ?? process.env.FILECLASS_VAULT ?? readConfig().vault;
+	if (vault) process.env.FILECLASS_VAULT = vault;
+
 	const out = <T>(result: T, pretty: (r: T) => string): void =>
 		console.log(values.json ? json(result) : pretty(result));
 
 	switch (cmd) {
+		case "vault": {
+			const info = await callApi<{ name: string; path: string }>("vaultInfo");
+			return out(info, (i) => `${i.name}\n${i.path}`);
+		}
+
 		case "fileclasses": {
 			const r = await callApi<FileClassSummary[]>("listFileClasses");
 			return out(r, (rows) => table(rows, ["name", "extends", "fieldCount", "hasBase", "icon"]));

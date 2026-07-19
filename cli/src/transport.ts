@@ -17,18 +17,43 @@ const run = promisify(execFile);
 const OBSIDIAN_BIN = process.env.OBSIDIAN_BIN ?? "obsidian";
 const SENTINEL = "__FCJSON__";
 
-export async function callApi<T = unknown>(method: string, args: unknown[] = []): Promise<T> {
-	const call = `app.plugins.plugins.fileclass.api.${method}(${args
-		.map((a) => JSON.stringify(a))
-		.join(", ")})`;
-	// Return-value strategy (assumes eval awaits + prints the resolved value):
-	const js = `Promise.resolve(${call}).then(r => ${JSON.stringify(SENTINEL)} + JSON.stringify(r))`;
-	// console.log fallback (uncomment if the probe shows eval doesn't print the value):
-	// const js = `Promise.resolve(${call}).then(r => console.log(${JSON.stringify(SENTINEL)} + JSON.stringify(r)))`;
+/**
+ * Confirms a vault is reachable (open in Obsidian) and returns its actual name,
+ * or null if it can't be reached. Raw eval — no plugin needed.
+ */
+export async function probeVault(vault: string): Promise<string | null> {
+	const js = `(() => ${JSON.stringify(SENTINEL)} + JSON.stringify(app.vault.getName()))()`;
+	try {
+		const { stdout } = await run(OBSIDIAN_BIN, [`vault=${vault}`, "eval", `code=${js}`], {
+			maxBuffer: 1 << 20,
+		});
+		const idx = stdout.lastIndexOf(SENTINEL);
+		if (idx === -1) return null;
+		return JSON.parse(stdout.slice(idx + SENTINEL.length).trim().split("\n")[0]) as string;
+	} catch {
+		return null;
+	}
+}
 
-	// The Obsidian CLI takes named params: `eval code=<javascript>`.
-	const evalArgs = ["eval", `code=${js}`];
+export async function callApi<T = unknown>(method: string, args: unknown[] = []): Promise<T> {
+	const argList = args.map((a) => JSON.stringify(a)).join(", ");
+	const S = JSON.stringify(SENTINEL);
+	// Defensive: report the vault, a clear message if the plugin is absent in the
+	// target vault, and any API error — all as a structured { v, r?, err? } after
+	// the sentinel. The whole expression resolves to that string (eval prints it).
+	const js =
+		`(() => { const v = app.vault.getName(); const p = app.plugins.plugins.fileclass;` +
+		` if (!p) return Promise.resolve(${S} + JSON.stringify({ v, err: "The Fileclass plugin isn't enabled in this vault." }));` +
+		` if (!p.api) return Promise.resolve(${S} + JSON.stringify({ v, err: "The Fileclass plugin in this vault has no API — update it to a build that exposes plugin.api." }));` +
+		` return Promise.resolve().then(() => p.api.${method}(${argList}))` +
+		` .then(r => ${S} + JSON.stringify({ v, r }))` +
+		` .catch(e => ${S} + JSON.stringify({ v, err: String((e && e.message) || e) })); })()`;
+
+	// The Obsidian CLI takes `vault=<name>` before the command, then
+	// `eval code=<javascript>`.
+	const evalArgs: string[] = [];
 	if (process.env.FILECLASS_VAULT) evalArgs.push(`vault=${process.env.FILECLASS_VAULT}`);
+	evalArgs.push("eval", `code=${js}`);
 
 	let stdout: string;
 	try {
@@ -47,5 +72,9 @@ export async function callApi<T = unknown>(method: string, args: unknown[] = [])
 		throw new Error(`fileclass: no response from the plugin.\n---\n${stdout.trim()}`);
 	}
 	const json = stdout.slice(idx + SENTINEL.length).trim().split("\n")[0];
-	return JSON.parse(json) as T;
+	const { v, r, err } = JSON.parse(json) as { v: string; r?: T; err?: string };
+	// Always surface the target vault (on stderr, so stdout/JSON pipes stay clean).
+	if (!process.env.FILECLASS_QUIET) process.stderr.write(`vault: ${v}\n`);
+	if (err !== undefined) throw new Error(`fileclass: ${err}`);
+	return r as T;
 }

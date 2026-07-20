@@ -27,14 +27,16 @@ export async function writeValueAtPath(
 	namePath: PathSegment[],
 	value: unknown
 ): Promise<void> {
-	await app.fileManager.processFrontMatter(file, (fm) => applyWrite(fm, { namePath, value }));
+	await app.fileManager.processFrontMatter(file, (fm) =>
+		applyWrite(fm as Record<string, unknown>, { namePath, value })
+	);
 }
 
 /** Writes several values in a single processFrontMatter write (D5). */
 export async function writeValues(app: App, file: TFile, writes: ValueWrite[]): Promise<void> {
 	if (!writes.length) return;
 	await app.fileManager.processFrontMatter(file, (fm) => {
-		for (const write of writes) applyWrite(fm, write);
+		for (const write of writes) applyWrite(fm as Record<string, unknown>, write);
 	});
 }
 

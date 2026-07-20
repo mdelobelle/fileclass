@@ -62,7 +62,7 @@ export async function baseSyncStatus(plugin: FileclassPlugin, name: string): Pro
 	const file = plugin.app.vault.getFileByPath(normalizePath(baseFile));
 	if (!(file instanceof TFile)) return "diverged"; // missing → needs sync (create)
 	try {
-		const base = parseYaml(await plugin.app.vault.read(file));
+		const base: unknown = parseYaml(await plugin.app.vault.read(file));
 		return isBaseViewSynced(base, managedViewName(plugin, name), rootFieldNames(plugin, name))
 			? "synced"
 			: "diverged";
@@ -93,7 +93,7 @@ export async function applyBaseSync(
 		return;
 	}
 
-	const base = parseYaml(await app.vault.read(file));
+	const base: unknown = parseYaml(await app.vault.read(file));
 	if (mirrorBaseView(base, view, fields)) {
 		await app.vault.modify(file, stringifyYaml(base));
 	}

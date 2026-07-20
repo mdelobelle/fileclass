@@ -14,7 +14,7 @@ A fileClass is a Markdown note whose frontmatter declares fields and options.
 Its **name** is the note's filename, and all fileClass notes live under one
 folder, set in **Settings → Fileclass → Class files folder**.
 
-Create one with the command **Fileclass: create a fileClass** — it prompts for a
+Create one with the command **Fileclass: create a class** — it prompts for a
 name (capitalized automatically), creates the note in that folder, and opens its
 schema editor.
 
@@ -85,14 +85,14 @@ a fileClass note changes, and emits a `fileclass:indexed` event.
 
 ## Adding a fileClass to a note
 
-Run the command **Fileclass: add fileClass to current file** and pick a
+Run the command **Fileclass: add a class to this note** and pick a
 fileClass. It writes the binding into the note's frontmatter (frontmatter-only,
 via a single `processFrontMatter` write).
 
 ## Editing a fileClass
 
 You can author a fileClass's own definition from the UI — no need to edit its
-YAML by hand. Run **Fileclass: edit a fileClass schema** (or right-click a
+YAML by hand. Run **Fileclass: edit a class schema** (or right-click a
 fileClass note → **Manage this fileClass**) to open the schema editor:
 
 - **Fields** — add, edit, remove, and reorder field definitions. A field has a

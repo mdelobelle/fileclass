@@ -250,7 +250,7 @@ function collectMatchingEntries(
         try {
             const entry = new EntryCls(ctx, f);
             if (!ctx.filter || ctx.filter.test(entry)) results.set(f, entry);
-        } catch (e) {
+        } catch {
             // Native behavior: files whose filter evaluation throws are excluded.
         }
     }
@@ -339,7 +339,7 @@ export async function getBaseRows(
             let v: BasesValue | null = null;
             try {
                 v = entry.getValue(id);
-            } catch (e) {
+            } catch {
                 /* column unreadable for this file → null */
             }
             values[id] = v == null || v === nullSentinel ? null : v.toString();
@@ -378,7 +378,7 @@ export function registerFileclassView(
     return () => {
         try {
             instance.deregisterView?.(viewId);
-        } catch (e) {
+        } catch {
             /* plugin may already be unloaded */
         }
     };

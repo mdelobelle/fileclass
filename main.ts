@@ -122,8 +122,8 @@ export default class FileclassPlugin extends Plugin {
 
 	private registerCommands(): void {
 		this.addCommand({
-			id: "add-fileclass-to-current-file",
-			name: "Add fileClass to current file",
+			id: "add-class-to-note",
+			name: "Add a class to this note",
 			checkCallback: (checking) => {
 				const file = this.app.workspace.getActiveFile();
 				if (!file || file.extension !== "md") return false;
@@ -166,14 +166,14 @@ export default class FileclassPlugin extends Plugin {
 		});
 
 		this.addCommand({
-			id: "create-fileclass",
-			name: "Create a fileClass",
+			id: "create-class",
+			name: "Create a class",
 			callback: () => createFileClass(this),
 		});
 
 		this.addCommand({
-			id: "edit-fileclass-schema",
-			name: "Edit a fileClass schema",
+			id: "edit-class-schema",
+			name: "Edit a class schema",
 			checkCallback: (checking) => {
 				if (!this.index.fileClassNames.length) return false;
 				if (!checking) {
@@ -186,8 +186,8 @@ export default class FileclassPlugin extends Plugin {
 		});
 
 		this.addCommand({
-			id: "create-base-for-fileclass",
-			name: "Create a base for a fileClass",
+			id: "create-base",
+			name: "Create a base for a class",
 			checkCallback: (checking) => {
 				if (!this.index.fileClassNames.length) return false;
 				if (!checking) {
@@ -200,8 +200,8 @@ export default class FileclassPlugin extends Plugin {
 		});
 
 		this.addCommand({
-			id: "sync-fileclass-to-base",
-			name: "Sync this fileClass to its base",
+			id: "sync-to-base",
+			name: "Sync this class to its base",
 			checkCallback: (checking) => {
 				const active = this.app.workspace.getActiveFile();
 				const name = active ? this.index.fileClassNameOfNote(active.path) : undefined;
@@ -212,8 +212,8 @@ export default class FileclassPlugin extends Plugin {
 		});
 
 		this.addCommand({
-			id: "open-fileclass-base",
-			name: "Open this fileClass's base",
+			id: "open-base",
+			name: "Open this class's base",
 			checkCallback: (checking) => {
 				const active = this.app.workspace.getActiveFile();
 				const name = active ? this.index.fileClassNameOfNote(active.path) : undefined;

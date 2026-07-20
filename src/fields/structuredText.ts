@@ -41,7 +41,7 @@ export function parseStructured(
 	const trimmed = text.trim();
 	if (trimmed === "") return { ok: true, value: undefined };
 	try {
-		const value = type === "JSON" ? JSON.parse(trimmed) : yaml.parse(trimmed);
+		const value: unknown = type === "JSON" ? JSON.parse(trimmed) : yaml.parse(trimmed);
 		return { ok: true, value };
 	} catch (err) {
 		return { ok: false, message: `Invalid ${type}: ${(err as Error).message}` };

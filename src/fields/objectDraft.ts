@@ -12,7 +12,7 @@ import { validateField } from "./validate";
 /** Deep-clones a draft value (structuredClone when available). */
 export function cloneDraft<T>(value: T): T {
 	if (typeof structuredClone === "function") return structuredClone(value);
-	return JSON.parse(JSON.stringify(value ?? null));
+	return JSON.parse(JSON.stringify(value ?? null)) as T;
 }
 
 /**

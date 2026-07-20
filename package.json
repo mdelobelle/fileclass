@@ -30,7 +30,6 @@
 		"@eslint/js": "^9.39.5",
 		"@lezer/common": "^1.5.2",
 		"@types/node": "^22.0.0",
-		"builtin-modules": "^3.3.0",
 		"esbuild": "^0.20.0",
 		"eslint": "^9.39.5",
 		"obsidian": "^1.7.2",

@@ -61,10 +61,13 @@ it. The plugin driving the CLI must be recent enough to expose `plugin.api`.
 
 ## Installing the CLI
 
-The CLI lives in the plugin's `cli/` directory.
+The CLI lives in its own repository:
+**https://github.com/mdelobelle/fileclass-cli** (it is a standalone Node tool, not
+part of the plugin bundle Obsidian downloads).
 
 ```bash
-cd cli
+git clone https://github.com/mdelobelle/fileclass-cli
+cd fileclass-cli
 npm install
 npm run build
 ```

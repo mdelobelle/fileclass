@@ -123,7 +123,6 @@ fileclass/
 │   └── api/
 │       ├── fileclassApi.ts         # public API surface (§12)
 │       └── filter.ts               # pure where-filter predicate (§12)
-├── cli/                            # standalone `fileclass` CLI + ink TUI over the API (§12)
 ├── tests/
 │   ├── unit/                       # vitest, pure logic (objectPath, schema resolver, validators, draft editor)
 │   └── e2e/                        # CDP harness against a fixture vault (§14)
@@ -314,9 +313,13 @@ The filter predicate is pure (`src/api/filter.ts`, unit-tested): `is`/`isNot`
 aggregates a `BulkResult`. Verified live via CDP (no-op and out-of-list bulk both
 wrote nothing).
 
-**CLI/TUI (landed):** a standalone `fileclass` binary in `cli/` (Node + React/
-ink, its own `package.json`) shelling out to `obsidian eval` via a small
-transport, over the same API. Commands: `fileclasses`, `schema`, `explain`,
+**CLI/TUI (landed, separate repo):** a standalone `fileclass` binary (Node +
+React/ink) shelling out to `obsidian eval` via a small transport, over the same
+API. It lives in its **own repository** — `mdelobelle/fileclass-cli` — NOT in
+this plugin repo: it uses Node built-ins (fs/os/path/child_process) that the
+Obsidian plugin review linter (rightly) rejects for a mobile-capable plugin
+bundle, and it is never part of what Obsidian downloads. Commands: `fileclasses`,
+`schema`, `explain`,
 `list`, `get`, `set`, `validate` (exit 1 on any violation — CI-friendly),
 dry-run-by-default `set-where`, plus `tui` (interactive browse + typed editing +
 inline validation status). Vault targeting: `--vault` > `FILECLASS_VAULT` >
@@ -392,8 +395,10 @@ fields/user docs (first-write warning), not in a migration guide.
 
 ## 16. Coding conventions
 
-- TypeScript strict; no `any` outside `src/engine/basesAdapter.ts` (private
-  internals are structurally typed there, `any` allowed at the boundary).
+- TypeScript strict; **no `any` anywhere** — the Obsidian review linter forbids
+  it (and disabling the rule). Private Bases/Obsidian internals are reached only
+  in `src/engine/basesAdapter.ts`, structurally typed via `unknown` casts to
+  minimal interfaces (`AppInternals`, `BasesInstance`, …).
 - `getPlugin()` singleton (D7); adapter and objectPath take explicit params
   (pure, testable).
 - No new dependency without necessity; UI built on obsidian API primitives.

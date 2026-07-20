@@ -13,7 +13,9 @@ Hard rules (details in the architecture doc):
 - No dataview imports or references, ever.
 - Never use the bare global `app`: use `getPlugin().app` (singleton in
   `src/globals.ts`) or an explicit `App` parameter.
-- TypeScript strict; `any` allowed only inside `src/engine/basesAdapter.ts`.
+- TypeScript strict; **no `any` anywhere** (the Obsidian review linter forbids it
+  and disabling the rule). Private internals in `src/engine/basesAdapter.ts` use
+  `unknown` casts to minimal interfaces instead.
 - Every phase deliverable includes unit tests (vitest) and a doc page (mkdocs).
 
 Reference implementation to port behavior from (fileClass format, field UX):

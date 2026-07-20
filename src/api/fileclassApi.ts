@@ -239,7 +239,7 @@ export function createFileclassApi(plugin: FileclassPlugin): FileclassApi {
 			return {
 				name: fileClass,
 				ancestors: index.getAncestors(fileClass),
-				options: { ...fc.options } as Record<string, unknown>,
+				options: { ...fc.options },
 				fields: index.getResolvedFields(fileClass).map(toFieldDef),
 			};
 		},

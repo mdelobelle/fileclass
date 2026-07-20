@@ -27,12 +27,11 @@ export class PromptModal extends Modal {
 		const { contentEl } = this;
 		contentEl.createEl("h3", { text: this.opts.title });
 		const errorEl = contentEl.createDiv();
-		errorEl.style.color = "var(--text-error)";
-		errorEl.style.minHeight = "1.2em";
+		errorEl.setCssStyles({ color: "var(--text-error)", minHeight: "1.2em" });
 
 		const input = new TextComponent(contentEl);
 		input.setValue(this.opts.initial ?? "").setPlaceholder(this.opts.placeholder ?? "");
-		input.inputEl.style.width = "100%";
+		input.inputEl.setCssStyles({ width: "100%" });
 		this.opts.configureInput?.(input.inputEl);
 		window.setTimeout(() => input.inputEl.focus(), 0);
 
@@ -81,15 +80,16 @@ export class TextAreaInputModal extends Modal {
 		const { contentEl } = this;
 		contentEl.createEl("h3", { text: this.opts.title });
 		const errorEl = contentEl.createDiv();
-		errorEl.style.color = "var(--text-error)";
-		errorEl.style.minHeight = "1.2em";
-		errorEl.style.whiteSpace = "pre-wrap";
+		errorEl.setCssStyles({
+			color: "var(--text-error)",
+			minHeight: "1.2em",
+			whiteSpace: "pre-wrap",
+		});
 
 		const input = new TextAreaComponent(contentEl);
 		input.setValue(this.opts.initial ?? "").setPlaceholder(this.opts.placeholder ?? "");
-		input.inputEl.style.width = "100%";
 		input.inputEl.rows = 10;
-		input.inputEl.style.fontFamily = "var(--font-monospace)";
+		input.inputEl.setCssStyles({ width: "100%", fontFamily: "var(--font-monospace)" });
 		window.setTimeout(() => input.inputEl.focus(), 0);
 
 		const submit = () => {

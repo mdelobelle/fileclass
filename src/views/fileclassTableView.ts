@@ -182,7 +182,7 @@ class FileclassTableView extends Component {
 		a.addEventListener("click", (e) => {
 			e.preventDefault();
 			e.stopPropagation();
-			this.plugin.app.workspace.openLinkText(linktext, sourcePath, e.ctrlKey || e.metaKey);
+			void this.plugin.app.workspace.openLinkText(linktext, sourcePath, e.ctrlKey || e.metaKey);
 		});
 	}
 

@@ -3,63 +3,63 @@
 
 # --- Type -------------------------------------------------------------------
 - name: bug
-  color: d73a4a
+  color: "d73a4a"
   description: Something behaves incorrectly
 - name: enhancement
-  color: a2eeef
+  color: "a2eeef"
   description: New capability or improvement
 - name: documentation
-  color: 0075ca
+  color: "0075ca"
   description: Docs site / README / in-app text
 
 # --- Triage & status --------------------------------------------------------
 - name: needs-triage
-  color: ededed
+  color: "ededed"
   description: Awaiting first review (auto-applied by issue forms)
 - name: needs-info
-  color: d876e3
+  color: "d876e3"
   description: Blocked on missing information from the reporter
 - name: needs-repro
-  color: f9d0c4
+  color: "f9d0c4"
   description: Can't reproduce yet — needs a minimal repro
 - name: duplicate
-  color: cfd3d7
+  color: "cfd3d7"
   description: Already tracked by another issue
 - name: out-of-scope
-  color: e99695
+  color: "e99695"
   description: "Belongs to Bases (Lookup/Formula/queries) or is not Fileclass's job"
 - name: good first issue # exact name → GitHub's contributor-discovery features
-  color: 7057ff
+  color: "7057ff"
   description: Good for newcomers
 - name: wontfix
-  color: ffffff
+  color: "ffffff"
   description: Deliberately not being worked on
 
 # --- Area (matches the issue-form Area dropdown & TRIAGE.md map) -------------
 - name: "area:schema"
-  color: 1d76db
+  color: "1d76db"
   description: fileClass parsing, inheritance, binding, index
 - name: "area:fields"
-  color: 0e8a16
+  color: "0e8a16"
   description: Typed fields & input
 - name: "area:validation"
-  color: fbca04
+  color: "fbca04"
   description: Required fields, valid/errors columns
 - name: "area:views"
-  color: 5319e7
+  color: "5319e7"
   description: fileclass-table, base generation & sync
 - name: "area:canvas"
-  color: b60205
+  color: "b60205"
   description: Canvas / CanvasGroup / CanvasGroupLink fields
 - name: "area:ui"
-  color: 0052cc
+  color: "0052cc"
   description: Modal, indicators, property buttons, context menus
 - name: "area:settings"
-  color: c5def5
+  color: "c5def5"
   description: Settings tab
 - name: "area:api"
-  color: 006b75
+  color: "006b75"
   description: Public plugin API
 - name: "area:performance"
-  color: d4c5f9
+  color: "d4c5f9"
   description: Indexing / query cache / speed

@@ -66,6 +66,59 @@ the alias shown in the picker and written into the link.
 - `Media`/`MultiMedia` with the `embed` option store an embed (`![[…]]`).
 - Links honor your vault's link settings (`generateMarkdownLink`).
 
+### Conditional candidates (dependent fields)
+
+A link field's candidate list can depend on the value of **another field of the
+note you are editing**. When the picker opens, Fileclass runs the bound Base view
+with the current note as its context, so `this` inside the view's filters and
+formulas resolves to that note — not only `this.file`, but its frontmatter
+properties too (`this.<PropertyName>`). Write a view filter that compares each
+candidate row against `this.<PropertyName>` and the list narrows to the rows that
+match the note's current value.
+
+For example, an `Objective` note has a `Goal` link field and a `Project` field,
+and you want `Project` to offer only the projects attached to the goal already
+chosen in `Goal`. In the projects `.base`, add a formula and a dedicated view:
+
+```yaml
+formulas:
+  # true when this project's Goal is the same as the edited note's Goal
+  isThisGoal: Goal.isTruthy() && this.Goal.isTruthy() && (file(Goal).basename == file(this.Goal).basename)
+views:
+  - type: table
+    name: Goal's projects
+    filters:
+      and:
+        - formula.isThisGoal == true
+```
+
+Then point the `Project` field at that view (`baseFile` + `viewName`). Note the
+two distinct references: the **unqualified** `Goal` is each candidate row's own
+property, while `this.Goal` is the `Goal` property of the note being edited — a
+common pitfall is writing `this.file.basename` (the edited note's *name*) when
+you meant `this.Goal` (its *field value*).
+
+The `.isTruthy()` guards are not decorative: `file(x).basename` on an empty value
+yields `null`, so a bare `file(Goal).basename == file(this.Goal).basename`
+reduces to `null == null` — **`true`** — whenever both sides are empty. Without a
+guard, opening the picker before the source field is set would surface every
+candidate that *also* has an empty value. A single guard on either side removes
+this false match; the example keeps both so it reads as "only when the edited
+note has a Goal, match rows that share it".
+
+Two requirements: the field the filter
+depends on must be **saved first** (the picker reads it from the frontmatter, so
+set `Goal` before opening `Project`), and after changing a field's bound view you
+must **save the change in the fileClass settings** for the picker to use it.
+
+> **Warning — the dependency is not reactive.** The source field only constrains
+> the *candidate list shown when you open the picker*. A value already stored in
+> the dependent field is **never revalidated, reset, or cleared** when you later
+> change the source field. In the example above, if you edit `Goal` after having
+> set `Project`, the existing `Project` value stays as-is even if that project no
+> longer belongs to the new goal — leaving the note in an inconsistent state
+> until you re-open and re-pick `Project` yourself.
+
 ## Date fields (Date / DateTime / Time)
 
 Editing a date opens a **native picker** (calendar / clock) with **Today** and

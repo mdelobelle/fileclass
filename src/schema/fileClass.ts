@@ -66,7 +66,7 @@ export function fileClassNameFromPath(classFilesPath: string, path: string): str
  * malformed field entries are collected in `errors` and skipped.
  */
 export function parseFileClass(name: string, frontmatter: Frontmatter): ParsedFileClass {
-	const fm = (frontmatter ?? {}) as Record<string, unknown>;
+	const fm = frontmatter ?? {};
 	const errors: string[] = [];
 
 	const rawFields = Array.isArray(fm.fields) ? (fm.fields as RawField[]) : [];

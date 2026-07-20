@@ -42,8 +42,10 @@ field's candidates. Field-value filtering runs entirely on core Obsidian.
   table view and via the CLI/API.
 - **Views**: generate a `.base` for a fileClass and keep it in one-way sync;
   an editable **`fileclass-table`** Bases view with in-cell typed editing.
-- **Terminal**: a public plugin **API**, a **CLI**, and an interactive **TUI**
-  to inspect, validate and edit typed frontmatter from the command line.
+- **Terminal**: a public plugin **API** (on the plugin instance), plus a
+  standalone **CLI** and interactive **TUI** — in their own repo,
+  [fileclass-cli](https://github.com/mdelobelle/fileclass-cli) — to inspect,
+  validate and edit typed frontmatter from the command line.
 
 ## Requirements
 

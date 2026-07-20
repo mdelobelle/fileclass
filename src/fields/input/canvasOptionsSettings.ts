@@ -44,7 +44,7 @@ function colorSelect(container: HTMLElement, name: string, draft: OptionsDraft, 
 	for (const c of CANVAS_COLORS) {
 		const chip = setting.controlEl.createEl("button", { cls: "fileclass-color-chip" });
 		if (c.id === "0") chip.addClass("fileclass-color-none");
-		else chip.style.backgroundColor = c.color;
+		else chip.setCssStyles({ backgroundColor: c.color });
 		chip.setAttribute("aria-label", c.label);
 		const sync = () => chip.toggleClass("is-selected", get(draft, key).includes(c.id));
 		sync();

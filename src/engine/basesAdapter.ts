@@ -152,16 +152,34 @@ export class BasesUnavailableError extends Error {
 // Feature detection
 // ---------------------------------------------------------------------------
 
+/** The headless table view built by the Bases view factory (only members we use). */
+interface BasesTableView {
+    config: BasesViewConfig;
+    data?: BasesDataset;
+}
+
+/** The core Bases plugin instance (minified — only the members we call are typed). */
+interface BasesInstance {
+    getViewFactory?(
+        type: string
+    ): ((controller: QueryController, containerEl: HTMLElement) => BasesTableView) | undefined;
+    registerView?(id: string, registration: BasesViewRegistration): void;
+    deregisterView?(id: string): void;
+}
+
+/** Private Obsidian surfaces reached only here, cast through `unknown` (never `any`). */
+interface AppInternals {
+    embedRegistry?: { embedByExtension?: Record<string, unknown> };
+    internalPlugins?: { getPluginById?(id: string): { instance?: BasesInstance } | undefined };
+}
+
 function getEmbedCreator(app: App): EmbedCreator | null {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const creator = (app as any).embedRegistry?.embedByExtension?.["base"];
+    const creator = (app as unknown as AppInternals).embedRegistry?.embedByExtension?.["base"];
     return typeof creator === "function" ? (creator as EmbedCreator) : null;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function getBasesInstance(app: App): any | null {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return (app as any).internalPlugins?.getPluginById?.("bases")?.instance ?? null;
+function getBasesInstance(app: App): BasesInstance | null {
+    return (app as unknown as AppInternals).internalPlugins?.getPluginById?.("bases")?.instance ?? null;
 }
 
 /** True when the Bases plugin is enabled and the internals we rely on are present. */

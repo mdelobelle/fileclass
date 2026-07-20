@@ -1,7 +1,7 @@
 {
 	"id": "fileclass",
 	"name": "Fileclass",
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"minAppVersion": "1.13.2",
 	"description": "Schemas, typed fields & data quality for your vault — powered by Bases.",
 	"author": "mdelobelle",

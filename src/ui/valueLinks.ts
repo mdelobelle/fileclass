@@ -24,7 +24,7 @@ export function renderValueWithLinks(
 			a.addEventListener("click", (e) => {
 				e.preventDefault();
 				e.stopPropagation();
-				app.workspace.openLinkText(seg.link, sourcePath, e.ctrlKey || e.metaKey);
+				void app.workspace.openLinkText(seg.link, sourcePath, e.ctrlKey || e.metaKey);
 			});
 			const icon = makeIndicator?.(seg.link);
 			if (icon) parent.appendChild(icon);

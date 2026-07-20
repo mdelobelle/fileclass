@@ -7,6 +7,8 @@ on:
 
 permissions:
   contents: write
+  id-token: write     # required for build provenance attestation
+  attestations: write
 
 jobs:
   build:
@@ -29,13 +31,24 @@ jobs:
       - name: Build plugin
         run: npm run build
 
+      # Provenance: lets users cryptographically verify these assets were built
+      # from this repo by this workflow (Obsidian review recommendation).
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: |
+            main.js
+            styles.css
+
       - name: Create release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           tag="${GITHUB_REF#refs/tags/}"
 
+          # Obsidian only downloads main.js/manifest.json/styles.css — no extras.
           gh release create "$tag" \
             --title="$tag" \
+            --generate-notes \
             --draft \
-            main.js manifest.json versions.json styles.css
+            main.js manifest.json styles.css

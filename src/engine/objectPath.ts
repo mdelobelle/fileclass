@@ -143,7 +143,7 @@ export function getAtPath(root: unknown, path: Path): unknown {
 			current = current[seg];
 		} else {
 			if (Array.isArray(current)) return undefined;
-			current = (current as Record<string, unknown>)[seg];
+			current = current[seg];
 		}
 	}
 	return current;
@@ -223,7 +223,7 @@ export function removeAtPath<T>(root: T, path: Path): T {
 			parent.splice(last, 1);
 		}
 	} else if (!Array.isArray(parent)) {
-		delete (parent as Record<string, unknown>)[last];
+		delete parent[last];
 	}
 	return root;
 }
@@ -236,7 +236,7 @@ function readChild(container: Container, seg: PathSegment): unknown {
 	if (typeof seg === "number") {
 		return Array.isArray(container) ? container[seg] : undefined;
 	}
-	return Array.isArray(container) ? undefined : (container as Record<string, unknown>)[seg];
+	return Array.isArray(container) ? undefined : container[seg];
 }
 
 function writeChild(container: Container, seg: PathSegment, value: unknown): void {
@@ -249,7 +249,7 @@ function writeChild(container: Container, seg: PathSegment, value: unknown): voi
 		if (Array.isArray(container)) {
 			throw new Error(`objectPath: string key on an array`);
 		}
-		(container as Record<string, unknown>)[seg] = value;
+		container[seg] = value;
 	}
 }
 

@@ -72,7 +72,7 @@ export class FieldDefModal extends Modal {
 			renderFieldOptionsSettings(optionsEl, this.type, this.draft, { app: this.app });
 
 		new Setting(contentEl).setName("Type").addDropdown((d) => {
-			EDITABLE_FIELD_TYPES.forEach((t) => d.addOption(t, TYPE_LABELS[t] ?? t));
+			for (const t of EDITABLE_FIELD_TYPES) d.addOption(t, TYPE_LABELS[t] ?? t);
 			d.setValue(this.type).onChange((v) => {
 				this.type = v as FieldType;
 				renderOptions();

@@ -9,7 +9,7 @@ use a `.base` file; Fileclass helps you create one.
 
 ## Generating a base
 
-Run **Fileclass: create a base for a fileClass**, or **right-click a fileClass
+Run **Fileclass: create a base for a class**, or **right-click a fileClass
 note** → **Create a base for this fileClass**. A small dialog lets you choose:
 
 - the **base file** path (new or existing; defaults to
@@ -28,7 +28,7 @@ Once a base exists, the right-click menu on the fileClass note changes:
 - **Modify base for this fileClass** — reopens the same dialog (create/sync) on
   the existing base.
 - **Open base for this fileClass** — opens the `.base` in a new tab. There's also
-  the command **Fileclass: open this fileClass's base**.
+  the command **Fileclass: open this class's base**.
 
 ## Keeping a base in sync
 
@@ -48,7 +48,7 @@ the **Sync to base** group has:
 Nothing is written automatically: when the fileClass or the base changes, the
 status simply flips to **Sync** and waits for you. If the declared base doesn't
 exist, **Sync** creates it. There's also a command, **Fileclass: sync this
-fileClass to its base**.
+class to its base**.
 
 > The sync round-trips the YAML, which reformats the file and drops YAML
 > comments — fine for the plugin-managed base.

@@ -33,14 +33,15 @@ export class AddFileClassModal extends SuggestModal<string> {
 		const alias = this.plugin.settings.fileClassAlias;
 		try {
 			await this.app.fileManager.processFrontMatter(this.file, (fm) => {
-				const current = fm[alias];
-				const names = Array.isArray(current)
-					? [...current]
+				const fmRec = fm as Record<string, unknown>;
+				const current = fmRec[alias];
+				const names: string[] = Array.isArray(current)
+					? (current as unknown[]).map((n) => String(n))
 					: typeof current === "string" && current.trim()
-						? current.split(",").map((n: string) => n.trim())
+						? current.split(",").map((n) => n.trim())
 						: [];
 				if (!names.includes(name)) names.push(name);
-				fm[alias] = names.length === 1 ? names[0] : names;
+				fmRec[alias] = names.length === 1 ? names[0] : names;
 			});
 		} catch (err) {
 			new Notice(`Fileclass: could not add "${name}" (${(err as Error).message}).`);

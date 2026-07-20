@@ -125,7 +125,7 @@ export class FileClassOptionsModal extends Modal {
 		const file = this.app.vault.getFileByPath(normalizePath(baseFile));
 		if (!(file instanceof TFile)) return "diverged"; // missing → Sync creates it
 		try {
-			const base = parseYaml(await this.app.vault.read(file));
+			const base: unknown = parseYaml(await this.app.vault.read(file));
 			const view = this.opts.baseView?.trim() || this.name;
 			const fields = this.plugin.index
 				.getResolvedFields(this.name)

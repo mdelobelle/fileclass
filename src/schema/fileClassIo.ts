@@ -14,8 +14,9 @@ export async function mutateFields(
 	fn: (fields: RawFieldEntry[]) => void
 ): Promise<void> {
 	await app.fileManager.processFrontMatter(file, (fm) => {
-		if (!Array.isArray(fm.fields)) fm.fields = [];
-		fn(fm.fields as RawFieldEntry[]);
+		const rec = fm as Record<string, unknown>;
+		if (!Array.isArray(rec.fields)) rec.fields = [];
+		fn(rec.fields as RawFieldEntry[]);
 	});
 }
 
@@ -25,5 +26,7 @@ export async function writeOptions(
 	file: TFile,
 	updates: Record<string, unknown>
 ): Promise<void> {
-	await app.fileManager.processFrontMatter(file, (fm) => Object.assign(fm, updates));
+	await app.fileManager.processFrontMatter(file, (fm) => {
+		Object.assign(fm as Record<string, unknown>, updates);
+	});
 }

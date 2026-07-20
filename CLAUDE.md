@@ -5,6 +5,9 @@ the binding design decisions (D1-D8), the runtime-verified facts about Obsidian
 internals this plugin relies on, the module map, and the phase plan. Do not
 contradict it; if a task seems to require deviating, stop and ask.
 
+**Triaging a GitHub issue?** Follow `.claude/docs/TRIAGE.md` — it maps the issue
+form fields to code areas and defines the analyze → propose-resolution flow.
+
 Hard rules (details in the architecture doc):
 - `src/engine/basesAdapter.ts` is **runtime-proven code — do not refactor it**;
   it is the only module allowed to touch Bases/private Obsidian internals.

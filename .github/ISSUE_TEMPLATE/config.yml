@@ -1,0 +1,12 @@
+# Force the structured forms; no blank issues (they can't be triaged reliably).
+blank_issues_enabled: false
+contact_links:
+  - name: 📖 Documentation
+    url: https://mdelobelle.github.io/fileclass/
+    about: Most "how do I…" questions are answered here — check before opening an issue.
+  - name: 💬 Questions & ideas (Discussions)
+    url: https://github.com/mdelobelle/fileclass/discussions
+    about: For usage help, open-ended questions, or to float an idea before filing a feature request.
+  - name: 🧩 CLI / TUI issues
+    url: https://github.com/mdelobelle/fileclass-cli/issues
+    about: The command-line tool lives in its own repository — report CLI/TUI problems there.

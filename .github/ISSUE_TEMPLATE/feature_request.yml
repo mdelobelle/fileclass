@@ -1,0 +1,74 @@
+name: ✨ Feature request
+description: Suggest a capability or improvement.
+title: "[Feature]: "
+labels: ["enhancement", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Fileclass is **frontmatter-only** and delegates querying/display to the core
+        **Bases** plugin. `Lookup` and `Formula` are intentionally out of scope (use
+        Bases views). Keep that framing in mind — it shapes what fits.
+
+  - type: checkboxes
+    id: preflight
+    attributes:
+      label: Pre-flight checks
+      options:
+        - label: I searched [existing issues](https://github.com/mdelobelle/fileclass/issues?q=is%3Aissue) and this isn't already requested.
+          required: true
+        - label: I checked the [documentation](https://mdelobelle.github.io/fileclass/) — this isn't already possible.
+          required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - "Schema & inheritance"
+        - "Fields & typed input"
+        - "Data validation"
+        - "Views / Bases"
+        - "Canvas fields"
+        - "UI"
+        - "Settings"
+        - "Public API"
+        - "Other"
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem / use case
+      description: What are you trying to do, and what's blocking you today? Describe the outcome, not a pre-decided solution.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: How might Fileclass address this? Sketch the UX (command, field option, setting, view…).
+    validations:
+      required: false
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Workarounds you tried, including whether a plain Bases view already does it.
+    validations:
+      required: false
+
+  - type: dropdown
+    id: mdm-parity
+    attributes:
+      label: Metadata Menu parity?
+      description: Is this something Metadata Menu did that you miss?
+      options:
+        - "No — brand-new idea"
+        - "Yes — Metadata Menu had this"
+        - "Not sure"
+    validations:
+      required: true

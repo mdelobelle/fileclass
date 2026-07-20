@@ -1,0 +1,46 @@
+name: Sync labels
+
+# Upserts .github/labels.yml into the repo's labels using the built-in
+# GITHUB_TOKEN via `gh` (pre-installed on the runner). No third-party actions.
+# Non-destructive: labels not listed in the manifest are left untouched.
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/labels.yml"
+      - ".github/workflows/labels.yml"
+  workflow_dispatch:
+
+permissions:
+  issues: write
+
+jobs:
+  labeler:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: ${{ github.repository }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Upsert labels from manifest
+        run: |
+          set -euo pipefail
+          # yq + jq are pre-installed on ubuntu-latest. yq converts YAML→JSON,
+          # jq emits one compact object per label.
+          yq -o=json '.' .github/labels.yml | jq -c '.[]' | while IFS= read -r label; do
+            name=$(jq -r '.name' <<<"$label")
+            color=$(jq -r '.color' <<<"$label")
+            desc=$(jq -r '.description // ""' <<<"$label")
+            enc=$(jq -rn --arg n "$name" '$n | @uri')   # URL-encode (e.g. "area:views")
+
+            if gh api "repos/$REPO/labels/$enc" >/dev/null 2>&1; then
+              gh api -X PATCH "repos/$REPO/labels/$enc" \
+                -f new_name="$name" -f color="$color" -f description="$desc" >/dev/null
+              echo "updated  $name"
+            else
+              gh api -X POST "repos/$REPO/labels" \
+                -f name="$name" -f color="$color" -f description="$desc" >/dev/null
+              echo "created  $name"
+            fi
+          done

@@ -1,0 +1,161 @@
+name: 🐞 Bug report
+description: Something in Fileclass behaves incorrectly.
+title: "[Bug]: "
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting! The fields below are what make a bug **reproducible** —
+        the more precise they are, the faster it gets fixed. Please don't skip the
+        fileClass definition and the reproduction steps.
+
+  - type: checkboxes
+    id: preflight
+    attributes:
+      label: Pre-flight checks
+      description: Please confirm each of these before filing.
+      options:
+        - label: I searched [existing issues](https://github.com/mdelobelle/fileclass/issues?q=is%3Aissue) and this isn't a duplicate.
+          required: true
+        - label: I'm on the **latest** Fileclass release.
+          required: true
+        - label: The core **Bases** plugin is enabled.
+          required: true
+        - label: "**Metadata Menu is disabled** — Fileclass and Metadata Menu must not run at the same time."
+          required: true
+        - label: I reproduced this with **other plugins disabled** (or I list the culprit below).
+          required: false
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      description: Which part of Fileclass is affected? (Pick the closest — helps routing.)
+      options:
+        - "Schema & inheritance (fileClass parsing, extends/excludes, binding)"
+        - "Fields & typed input (Input/Number/Select/Date/File/Object/JSON/YAML…)"
+        - "Data validation (required fields, valid/errors columns)"
+        - "Views / Bases (fileclass-table, base generation & sync)"
+        - "Canvas fields (Canvas/CanvasGroup/CanvasGroupLink)"
+        - "UI (note-fields modal, indicators, property buttons, context menus)"
+        - "Settings"
+        - "Public API (plugin.api)"
+        - "Indexing / performance"
+        - "Other / not sure"
+    validations:
+      required: true
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: What happened?
+      description: A clear description of the bug and its impact.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Numbered, minimal steps. Start from a fresh/empty vault if you can.
+      placeholder: |
+        1. Create a fileClass note `Book` with the definition below.
+        2. Open a note bound to it and run "Fileclass: manage note fields".
+        3. Edit the `status` field → …
+    validations:
+      required: true
+
+  - type: textarea
+    id: fileclass-definition
+    attributes:
+      label: fileClass definition(s)
+      description: >
+        Paste the **frontmatter of the fileClass note(s)** involved (and any relevant
+        `.base` YAML). This is essential — Fileclass is schema-driven, so bugs rarely
+        reproduce without it. Redact private data, keep the structure.
+      render: yaml
+    validations:
+      required: true
+
+  - type: textarea
+    id: note-frontmatter
+    attributes:
+      label: Affected note's frontmatter
+      description: The frontmatter of the note you were editing when the bug occurred (if relevant).
+      render: yaml
+    validations:
+      required: false
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: console
+    attributes:
+      label: Console errors
+      description: >
+        Open the developer console (Ctrl/Cmd+Shift+I → Console), reproduce, and paste
+        any red errors here (full stack trace). "No errors" is a useful answer too.
+      render: shell
+    validations:
+      required: false
+
+  - type: textarea
+    id: media
+    attributes:
+      label: Screenshots or screen recording
+      description: Drag images/video here if they help.
+    validations:
+      required: false
+
+  - type: input
+    id: fileclass-version
+    attributes:
+      label: Fileclass version
+      placeholder: e.g. 0.0.3
+    validations:
+      required: true
+
+  - type: input
+    id: obsidian-version
+    attributes:
+      label: Obsidian version
+      description: Settings → About → Current version (and Installer version).
+      placeholder: e.g. 1.13.2
+    validations:
+      required: true
+
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      multiple: true
+      options:
+        - Windows
+        - macOS
+        - Linux
+        - iOS
+        - Android
+    validations:
+      required: true
+
+  - type: input
+    id: other-plugins
+    attributes:
+      label: Other plugins that might be involved
+      description: If the bug only happens with certain plugins enabled, name them.
+      placeholder: e.g. none — reproduces with only Fileclass + Bases
+    validations:
+      required: false

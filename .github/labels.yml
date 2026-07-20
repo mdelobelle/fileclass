@@ -28,9 +28,9 @@
 - name: out-of-scope
   color: e99695
   description: "Belongs to Bases (Lookup/Formula/queries) or is not Fileclass's job"
-- name: good-first-issue
+- name: good first issue # exact name → GitHub's contributor-discovery features
   color: 7057ff
-  description: Approachable for a first contribution
+  description: Good for newcomers
 - name: wontfix
   color: ffffff
   description: Deliberately not being worked on

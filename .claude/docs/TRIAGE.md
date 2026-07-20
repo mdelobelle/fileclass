@@ -56,7 +56,7 @@ The form renders as a Markdown body with `### <label>` headings — parse those.
 ## Suggested labels
 
 `bug` / `enhancement` (auto-applied by the form) · `needs-info` ·
-`needs-repro` · `duplicate` · `out-of-scope` · `good-first-issue` ·
+`needs-repro` · `duplicate` · `out-of-scope` · `good first issue` ·
 plus an area label matching the table above.
 
 ## Output shape (triage comment)

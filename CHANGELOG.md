@@ -6,8 +6,11 @@ All notable changes to Fileclass are documented here. The format follows
 
 ## [Unreleased]
 
-First development cycle — the successor to Metadata Menu, built on the core
-**Bases** plugin, frontmatter-only, with no Dataview dependency.
+## [0.0.4] - 2026-07-21
+
+First public release installable on the stable Obsidian line (see
+**Compatibility**). The successor to Metadata Menu, built on the core **Bases**
+plugin, frontmatter-only, with no Dataview dependency.
 
 ### Schema
 

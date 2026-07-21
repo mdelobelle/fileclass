@@ -10,7 +10,7 @@ import { getBaseFiles, getBaseRows } from "../engine/basesAdapter";
 import { AdapterHost } from "./candidates";
 import { Field } from "../schema/field";
 import { listOptions } from "./options";
-import { linesOf, resolveValues } from "./values";
+import { linesOf, resolveNoteFile, resolveValues } from "./values";
 
 /**
  * Resolves a list field's allowed values (empty = unconstrained / free entry).
@@ -49,7 +49,13 @@ export async function resolveFieldValues(
 	}
 
 	if (opts.sourceType === "ValuesListNotePath" && opts.valuesListNotePath) {
-		const file = host.app.vault.getFileByPath(opts.valuesListNotePath);
+		// Resolve tolerantly (exact path, then linkpath) so a path without the
+		// `.md` extension — or an MDM-style value — still finds the note.
+		const file = resolveNoteFile(
+			opts.valuesListNotePath,
+			(p) => host.app.vault.getFileByPath(p),
+			(lp, src) => host.app.metadataCache.getFirstLinkpathDest(lp, src)
+		);
 		if (!(file instanceof TFile)) return [];
 		const content = await host.app.vault.cachedRead(file);
 		return resolveValues(field, () => linesOf(content));

@@ -36,3 +36,17 @@ export function resolveValues(field: Field, readNoteLines?: NoteLinesReader): st
 export function linesOf(content: string): string[] {
 	return content.split(/\r?\n/);
 }
+
+/**
+ * Resolves a note-path option to a file, tolerantly: the exact vault path first,
+ * then linkpath resolution — so a path without the `.md` extension (or an
+ * MDM-style value) still finds the note. Both lookups are injected so this stays
+ * unit-testable with no Obsidian runtime. Returns `null` when neither resolves.
+ */
+export function resolveNoteFile<T>(
+	path: string,
+	getByPath: (p: string) => T | null,
+	getByLinkpath: (linkpath: string, sourcePath: string) => T | null
+): T | null {
+	return getByPath(path) ?? getByLinkpath(path, "");
+}

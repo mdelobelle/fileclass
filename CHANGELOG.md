@@ -79,6 +79,14 @@ First development cycle — the successor to Metadata Menu, built on the core
 - 186 unit tests; TypeScript strict; private Obsidian/Bases internals isolated
   behind a single adapter and best-effort DOM boundaries.
 
+### Fixed
+
+- **Select/Cycle/Multi "From a note" source** now resolves the note path
+  tolerantly (exact path, then linkpath), so a `valuesListNotePath` without the
+  `.md` extension still finds the note and returns its values instead of a blank
+  list. The field-options "Note path" input also gained a note autocomplete, so
+  the path is picked rather than typed by hand (#20).
+
 ### Compatibility
 
 - Lowered `minAppVersion` to **1.12.7** (was 1.13.2). The plugin loads and the

@@ -1,8 +1,8 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { Field, FieldOptions } from "../../src/schema/field";
 import { dateOptions, listOptions, numberOptions } from "../../src/fields/options";
-import { resolveValues } from "../../src/fields/values";
+import { resolveNoteFile, resolveValues } from "../../src/fields/values";
 import { displayValue } from "../../src/fields/display";
 
 const make = (options: FieldOptions, type: Field["type"] = "Select"): Field => ({
@@ -73,6 +73,32 @@ describe("resolveValues", () => {
 	});
 	it("is unconstrained for a dataview/base source", () => {
 		expect(resolveValues(make({ sourceType: "ValuesFromDVQuery" }))).toEqual([]);
+	});
+});
+
+describe("resolveNoteFile", () => {
+	it("uses the exact path when it resolves, without falling back", () => {
+		const byPath = vi.fn((p: string) => (p === "L.md" ? { tag: "exact" } : null));
+		const byLink = vi.fn(() => ({ tag: "link" }));
+		expect(resolveNoteFile("L.md", byPath, byLink)).toEqual({ tag: "exact" });
+		expect(byLink).not.toHaveBeenCalled();
+	});
+
+	it("falls back to linkpath resolution when the exact path misses (e.g. no .md)", () => {
+		const byPath = vi.fn(() => null);
+		const byLink = vi.fn((lp: string) => (lp === "dir/Regno" ? { tag: "link" } : null));
+		expect(resolveNoteFile("dir/Regno", byPath, byLink)).toEqual({ tag: "link" });
+		expect(byLink).toHaveBeenCalledWith("dir/Regno", "");
+	});
+
+	it("returns null when neither lookup resolves", () => {
+		expect(
+			resolveNoteFile(
+				"missing",
+				() => null,
+				() => null
+			)
+		).toBeNull();
 	});
 });
 

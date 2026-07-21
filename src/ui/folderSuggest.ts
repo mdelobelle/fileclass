@@ -1,6 +1,6 @@
 /*
  * Folder-path autocomplete for a settings text input. Uses Obsidian's built-in
- * AbstractInputSuggest (since 1.4.10; our minAppVersion is 1.13.2) rather than a
+ * AbstractInputSuggest (since 1.4.10; our minAppVersion is 1.12.7) rather than a
  * bespoke suggester — no extra infra to maintain.
  */
 import { AbstractInputSuggest, App, TFolder } from "obsidian";

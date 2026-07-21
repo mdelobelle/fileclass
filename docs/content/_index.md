@@ -44,6 +44,9 @@ inline fields (`key:: value`), stay there.
 
 ## Requirements
 
-- Obsidian **1.13.2+** with the core **Bases** plugin enabled.
+- Obsidian **1.12.7+** with the core **Bases** plugin enabled.
 - Schema and typed input work without Bases; query-dependent features
-  (File/Media fields, generated views) require it.
+  (File/Media fields, generated views) require it. These features rely on Bases
+  internals validated on 1.13.2; on older versions they degrade gracefully
+  (link fields fall back to all-files, the editable table view is skipped) rather
+  than erroring.

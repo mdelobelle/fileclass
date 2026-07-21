@@ -78,3 +78,11 @@ First development cycle — the successor to Metadata Menu, built on the core
 
 - 186 unit tests; TypeScript strict; private Obsidian/Bases internals isolated
   behind a single adapter and best-effort DOM boundaries.
+
+### Compatibility
+
+- Lowered `minAppVersion` to **1.12.7** (was 1.13.2). The plugin loads and the
+  schema/typed-input layer works without Bases; Bases-backed features degrade
+  gracefully when the core Bases internals differ or are absent, rather than
+  erroring. Full parity of Bases-backed features on 1.12.7 should be verified on
+  a real install before release.

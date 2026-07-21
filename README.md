@@ -1,12 +1,19 @@
 # Fileclass
 
-**Schemas, typed fields & data quality for your Obsidian vault — powered by the
-core Bases plugin.**
+**Give your notes typed, validated properties with guided input — define
+reusable note types, like a schema for your frontmatter.**
 
-Fileclass adds typed, validated, per-note-type property schemas
-("fileClasses") to your notes: guided input for every field, nested objects,
-data-quality checks, and generated Bases views — all **frontmatter-only**, with
-**no Dataview dependency**.
+You define reusable **note types** (called *fileClasses*), each with a fixed set
+of typed fields. For example, a **Book** type where `author` must be a link to a
+Person note, `status` is one of *Reading* / *Read* / *Abandoned*, and `rating`
+is a number from 1 to 5. Every note of that type then gets **guided input** for
+those fields (dropdowns, date pickers, link autocomplete), and Fileclass flags
+any note where a field is missing or has the wrong type.
+
+In short: a **schema and input forms for your frontmatter**. You define the
+fields and fill them in; the core **Bases** plugin queries and displays them. If
+you have used Notion databases or Metadata Menu, it is that idea — but
+**frontmatter-only**, with **no Dataview dependency**.
 
 📖 **Documentation: https://mdelobelle.github.io/fileclass/**
 

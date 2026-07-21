@@ -3,6 +3,11 @@ title: "Positioning"
 weight: 10
 ---
 
+> **New here?** In one line: Fileclass lets you define *note types* with typed,
+> validated properties and guided input — a schema and input forms for your
+> frontmatter. See [What is Fileclass?](../) for a concrete example, then come
+> back here for how it compares to what you already use.
+
 Fileclass sits deliberately between three things Obsidian users already know.
 Understanding the boundaries is the fastest way to know whether it is for you.
 

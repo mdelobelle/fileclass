@@ -4,14 +4,28 @@ title: "Fileclass"
 
 # Fileclass
 
-**Fileclass** is the schema and data-quality layer for Obsidian vaults: typed,
-validated, per-note-type property schemas ("fileClasses") with guided input and
-nested objects — using the **core Bases plugin** as the query and view engine.
+**Fileclass** gives your notes **typed, validated properties** — and helps you
+fill them in correctly.
+
+You define reusable **note types** (called *fileClasses*), each with a fixed set
+of typed fields. For example, a **Book** type where:
+
+- `author` must be a link to a Person note,
+- `status` is one of *Reading* / *Read* / *Abandoned*,
+- `rating` is a number from 1 to 5.
+
+Every note of that type then gets **guided input** for those fields — dropdowns,
+date pickers, link autocomplete — and Fileclass flags any note where a field is
+missing or has the wrong type. In short, it's a **schema and input forms for your
+frontmatter**: you define the fields and fill them in; the core **Bases** plugin
+queries and displays them.
+
+If you have used Notion databases or Metadata Menu, it is that idea — but
+**frontmatter-only**, with **no Dataview dependency**.
 
 It is the successor of [Metadata Menu](https://github.com/mdelobelle/metadatamenu)
 (same author). Metadata Menu goes into maintenance mode; if you rely on Dataview
-inline fields (`key:: value`), stay there. Fileclass is **frontmatter-only** and
-has **no Dataview dependency**.
+inline fields (`key:: value`), stay there.
 
 ## Documentation
 

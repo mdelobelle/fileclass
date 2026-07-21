@@ -8,7 +8,12 @@
 import { App, Setting } from "obsidian";
 
 import { FieldType } from "../../schema/field";
-import { BaseColumnSuggest, BaseFileSuggest, BaseViewSuggest } from "../../ui/baseSuggest";
+import {
+	BaseColumnSuggest,
+	BaseFileSuggest,
+	BaseViewSuggest,
+	NoteFileSuggest,
+} from "../../ui/baseSuggest";
 import { OptionsDraft } from "../optionsDraft";
 import { renderCanvasSettings } from "./canvasOptionsSettings";
 
@@ -167,9 +172,12 @@ function renderListSettings(
 		new Setting(container)
 			.setName("Note path")
 			.setDesc("Values are the note's non-empty lines.")
-			.addText((t) =>
-				t.setValue(draft.valuesListNotePath ?? "").onChange((v) => (draft.valuesListNotePath = v))
-			);
+			.addText((t) => {
+				t.setValue(draft.valuesListNotePath ?? "").onChange(
+					(v) => (draft.valuesListNotePath = v)
+				);
+				new NoteFileSuggest(ctx.app, t.inputEl);
+			});
 		return;
 	}
 

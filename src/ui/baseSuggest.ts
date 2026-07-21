@@ -56,6 +56,31 @@ export class CanvasFileSuggest extends AbstractInputSuggest<string> {
 	}
 }
 
+/** Autocomplete for a markdown-note path (e.g. a `valuesListNotePath` source). */
+export class NoteFileSuggest extends AbstractInputSuggest<string> {
+	constructor(app: App, private readonly inputEl: HTMLInputElement) {
+		super(app, inputEl);
+	}
+
+	protected getSuggestions(query: string): string[] {
+		const q = query.toLowerCase();
+		return this.app.vault
+			.getFiles()
+			.filter((f) => f.extension === "md" && f.path.toLowerCase().includes(q))
+			.map((f) => f.path);
+	}
+
+	renderSuggestion(value: string, el: HTMLElement): void {
+		el.setText(value);
+	}
+
+	selectSuggestion(value: string): void {
+		this.setValue(value);
+		this.inputEl.trigger("input");
+		this.close();
+	}
+}
+
 export class BaseViewSuggest extends AbstractInputSuggest<string> {
 	constructor(
 		app: App,

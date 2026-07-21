@@ -26,6 +26,9 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Lint (Obsidian plugin rules)
+        run: npm run lint:obsidian
+
       - name: Unit tests
         run: npm test
 

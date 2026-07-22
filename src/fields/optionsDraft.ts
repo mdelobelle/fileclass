@@ -43,6 +43,11 @@ export interface OptionsDraft {
 	iconSource?: string;
 	/** Original Icon options, so unknown keys survive an edit. */
 	iconRawOptions?: Record<string, unknown>;
+	// Color
+	/** Palette the picker offers (#33); default "canvas". */
+	colorSource?: string;
+	/** Original Color options, so unknown keys survive an edit. */
+	colorRawOptions?: Record<string, unknown>;
 	// Object / ObjectList
 	displayTemplate?: string;
 	/** Original options, so unknown keys survive a template edit. */
@@ -119,6 +124,11 @@ export function optionsToDraft(type: FieldType, options: FieldOptions): OptionsD
 			return {
 				iconSource: typeof o.iconSource === "string" ? o.iconSource : "lucide",
 				iconRawOptions: Array.isArray(options) ? {} : { ...o },
+			};
+		case "Color":
+			return {
+				colorSource: typeof o.colorSource === "string" ? o.colorSource : "canvas",
+				colorRawOptions: Array.isArray(options) ? {} : { ...o },
 			};
 		case "Number":
 			return { step: numStr(o.step), min: numStr(o.min), max: numStr(o.max) };
@@ -220,6 +230,14 @@ export function buildFieldOptions(type: FieldType, draft: OptionsDraft): FieldOp
 			delete o.iconSource;
 			const src = draft.iconSource?.trim();
 			if (src && src !== "lucide") o.iconSource = src;
+			return o;
+		}
+		case "Color": {
+			// Preserve any unknown option keys; only manage colorSource (omit default).
+			const o = { ...(draft.colorRawOptions ?? {}) };
+			delete o.colorSource;
+			const src = draft.colorSource?.trim();
+			if (src && src !== "canvas") o.colorSource = src;
 			return o;
 		}
 		case "Number": {

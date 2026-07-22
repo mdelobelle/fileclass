@@ -7,6 +7,7 @@
  * `allowedValues` (see values.ts); an empty list means "unconstrained".
  */
 import { Field, FieldType } from "../schema/field";
+import { isValidCssColor } from "./color";
 import { isValidDuration } from "./duration";
 import { isPlausibleIconId } from "./icon";
 import { isValidLocation } from "./location";
@@ -169,6 +170,10 @@ export function validateField(
 			return isPlausibleIconId(String(value))
 				? VALID
 				: invalid(`"${field.name}" must be an icon id`);
+		case "Color":
+			return isValidCssColor(String(value))
+				? VALID
+				: invalid(`"${field.name}" must be a CSS color (hex, rgb(), or a name)`);
 		case "Date":
 			return validateDatePattern(value, field, DATE_RE);
 		case "DateTime":

@@ -23,6 +23,7 @@ import { DateInputModal } from "./input/dateInputModal";
 import { DurationInputModal, CycleDurationEditorModal } from "./input/durationModal";
 import { LocationInputModal } from "./input/locationModal";
 import { IconPickerModal } from "./input/iconPicker";
+import { ColorPickerModal } from "./input/colorPicker";
 import { addDuration, formatDuration } from "./duration";
 import {
 	BooleanInputModal,
@@ -43,6 +44,7 @@ import { formatLink, linkTargetPath } from "./links";
 import { asListValue, asObjectValue } from "./objectDraft";
 import {
 	baseBindingOptions,
+	colorSource,
 	dateOptions,
 	durationPresets,
 	iconSource,
@@ -385,6 +387,15 @@ export async function promptFieldValue(
 				title: `Set ${field.name}`,
 				initial: current == null ? "" : String(current),
 				source: iconSource(field),
+				onSubmit: (v) => onValue(v),
+			}).open();
+			return;
+
+		case "Color":
+			new ColorPickerModal(app, {
+				title: `Set ${field.name}`,
+				initial: current == null ? "" : String(current),
+				source: colorSource(field),
 				onSubmit: (v) => onValue(v),
 			}).open();
 			return;

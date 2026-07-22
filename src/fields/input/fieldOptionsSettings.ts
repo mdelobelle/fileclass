@@ -176,10 +176,6 @@ function renderDurationPresets(container: HTMLElement, draft: OptionsDraft, app:
 	if (!draft.durationPresets) draft.durationPresets = [];
 	const presets = draft.durationPresets;
 
-	new Setting(container)
-		.setName("Preset durations")
-		.setDesc("Optional. Offered as quick picks when entering a value on a note.");
-
 	const listEl = container.createDiv();
 	const rebuild = () => {
 		listEl.empty();
@@ -213,22 +209,28 @@ function renderDurationPresets(container: HTMLElement, draft: OptionsDraft, app:
 				);
 		});
 	};
-	rebuild();
 
-	new Setting(container).addButton((b) =>
-		b.setButtonText("Add preset").onClick(() =>
-			new DurationInputModal(app, {
-				title: "Preset duration",
-				initial: "",
-				onSubmit: (v) => {
-					if (v) {
-						presets.push(v);
-						rebuild();
-					}
-				},
-			}).open()
-		)
-	);
+	// Header row carries the "Add preset" action (right-aligned), list renders below it.
+	const header = new Setting(container)
+		.setName("Preset durations")
+		.setDesc("Optional. Offered as quick picks when entering a value on a note.")
+		.addButton((b) =>
+			b.setButtonText("Add preset").onClick(() =>
+				new DurationInputModal(app, {
+					title: "Preset duration",
+					initial: "",
+					onSubmit: (v) => {
+						if (v) {
+							presets.push(v);
+							rebuild();
+						}
+					},
+				}).open()
+			)
+		);
+	// Keep the list directly under the header.
+	header.settingEl.insertAdjacentElement("afterend", listEl);
+	rebuild();
 }
 
 function numberField(

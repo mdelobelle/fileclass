@@ -57,10 +57,11 @@ export class DateInputModal extends Modal {
 			onSubmit: (value: string | undefined) => void;
 			/**
 			 * When set, a "Set next date" button advances the date by a linked
-			 * Duration/CycleDuration field. It performs the full write itself (date +
-			 * any interval rotation) and resolves; the modal then closes.
+			 * Duration/CycleDuration field. `label` is the human-readable interval to
+			 * be applied (shown to the user); `apply` performs the full write itself
+			 * (date + any interval rotation) and resolves; the modal then closes.
 			 */
-			onAdvance?: (currentIso: string) => Promise<boolean>;
+			nextInterval?: { label: string; apply: (currentIso: string) => Promise<boolean> };
 		}
 	) {
 		super(app);
@@ -128,17 +129,18 @@ export class DateInputModal extends Modal {
 			})
 			.addButton((b) => b.setButtonText("Save").setCta().onClick(() => this.submit()));
 
-		if (this.opts.onAdvance) {
-			const advance = this.opts.onAdvance;
+		if (this.opts.nextInterval) {
+			const { label, apply } = this.opts.nextInterval;
 			new Setting(contentEl)
-				.setDesc("Advance this date by the linked interval, and cycle it to the next value.")
+				.setName(`Next interval: +${label}`)
+				.setDesc("Advance this date by the interval, and cycle it to the next value.")
 				.addButton((b) =>
 					b
 						.setButtonText("Set next date")
 						.setIcon("skip-forward")
 						.onClick(async () => {
 							const base = this.inputEl.value || moment().format(this.nativeFormat);
-							if (await advance(base)) this.close();
+							if (await apply(base)) this.close();
 						})
 				);
 		}

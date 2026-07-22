@@ -183,6 +183,12 @@ export function durationPresets(field: Field): string[] {
 		: [];
 }
 
+/** The Icon field's `iconSource` option (which bank the picker offers); default "lucide". */
+export function iconSource(field: Field): string {
+	const o = asRecord(field.options);
+	return typeof o.iconSource === "string" && o.iconSource ? o.iconSource : "lucide";
+}
+
 export interface DateOptions {
 	/** moment.js format; defaults per type when absent. */
 	dateFormat?: string;

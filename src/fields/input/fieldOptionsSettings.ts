@@ -18,6 +18,7 @@ import { formatDuration } from "../duration";
 import { OptionsDraft } from "../optionsDraft";
 import { renderCanvasSettings } from "./canvasOptionsSettings";
 import { DurationInputModal } from "./durationModal";
+import { ICON_SOURCES } from "./iconPicker";
 
 export interface FieldOptionsCtx {
 	app: App;
@@ -55,6 +56,15 @@ export function renderFieldOptionsSettings(
 		case "Duration":
 		case "CycleDuration":
 			renderDurationPresets(container, draft, ctx.app);
+			return;
+		case "Icon":
+			new Setting(container)
+				.setName("Icon source")
+				.setDesc("Which icon bank the picker offers.")
+				.addDropdown((d) => {
+					for (const s of ICON_SOURCES) d.addOption(s.id, s.label);
+					d.setValue(draft.iconSource ?? "lucide").onChange((v) => (draft.iconSource = v));
+				});
 			return;
 		case "Number":
 			numberField(container, "Min", draft, "min");

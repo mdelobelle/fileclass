@@ -25,6 +25,7 @@ field types and the commands that set values. Everything is written to
 | **Duration** | length of time | duration builder | an RFC 5545 `DURATION` (`P1W`, `PT1H30M`) |
 | **CycleDuration** | list of durations | duration list editor | a list of durations |
 | **Location** | `"lat,lon"` | coordinate inputs + paste | lat −90..90, lon −180..180 |
+| **Icon** | icon id | [searchable icon grid](#icon) | a registered icon id |
 | **File** | link | note picker | a link string |
 | **MultiFile** | list of links | toggle list | a list of links |
 | **Media** | link/embed | file picker | a link string |
@@ -240,6 +241,25 @@ Because the value uses the standard `"lat,lon"` convention, a note with a
 `Location` field is picked up **automatically** by the core **Bases Map view**
 and the community **Map View** plugin — Fileclass just makes the property easy to
 enter correctly; it does not generate map views itself.
+
+## Icon
+
+An `Icon` field stores an icon **id** (a single scalar), chosen from a visual
+picker:
+
+```yaml
+icon: map-pin
+```
+
+Editing opens a **searchable grid** of real icon previews; click one to pick it,
+or clear the value. The icons come from an extensible **source** (field option
+**Icon source**): **Lucide** (the default, bundled with Obsidian) or **all
+registered icons** (Lucide plus any icon other plugins register). Rendering uses
+Obsidian's `getIconIds()` / `setIcon()` — no bundled icon list, no dependency.
+
+The stored value is the **bare id** (`map-pin`, not `lucide-map-pin`). Naming an
+`Icon` field `icon` (with Lucide icons) lets the core **Bases Map view** use it
+as the marker icon — Fileclass just makes the property easy to enter.
 
 ## Where allowed values come from
 

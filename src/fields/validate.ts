@@ -8,6 +8,7 @@
  */
 import { Field, FieldType } from "../schema/field";
 import { isValidDuration } from "./duration";
+import { isPlausibleIconId } from "./icon";
 import { isValidLocation } from "./location";
 import { numberOptions } from "./options";
 
@@ -163,6 +164,11 @@ export function validateField(
 			return isValidLocation(String(value))
 				? VALID
 				: invalid(`"${field.name}" must be "lat,lon" (lat −90..90, lon −180..180)`);
+		case "Icon":
+			// The picker guarantees a registered id; here just reject non-id shapes.
+			return isPlausibleIconId(String(value))
+				? VALID
+				: invalid(`"${field.name}" must be an icon id`);
 		case "Date":
 			return validateDatePattern(value, field, DATE_RE);
 		case "DateTime":

@@ -107,6 +107,14 @@ describe("Location", () => {
 	});
 });
 
+describe("Icon", () => {
+	it("accepts a plausible icon id, rejects spaces/objects", () => {
+		expect(validateField(make("Icon"), "map-pin").ok).toBe(true);
+		expect(validateField(make("Icon"), "map pin").ok).toBe(false);
+		expect(validateField(make("Icon"), "").ok).toBe(true); // optional
+	});
+});
+
 describe("Date / DateTime / Time patterns", () => {
 	it("validates default formats", () => {
 		expect(validateField(make("Date"), "2026-07-15").ok).toBe(true);

@@ -22,6 +22,7 @@ import {
 import { DateInputModal } from "./input/dateInputModal";
 import { DurationInputModal, CycleDurationEditorModal } from "./input/durationModal";
 import { LocationInputModal } from "./input/locationModal";
+import { IconPickerModal } from "./input/iconPicker";
 import { addDuration, formatDuration } from "./duration";
 import {
 	BooleanInputModal,
@@ -44,6 +45,7 @@ import {
 	baseBindingOptions,
 	dateOptions,
 	durationPresets,
+	iconSource,
 	inputTemplate,
 	numberOptions,
 } from "./options";
@@ -374,6 +376,15 @@ export async function promptFieldValue(
 			new LocationInputModal(app, {
 				title: `Set ${field.name}`,
 				initial: current == null ? "" : String(current),
+				onSubmit: (v) => onValue(v),
+			}).open();
+			return;
+
+		case "Icon":
+			new IconPickerModal(app, {
+				title: `Set ${field.name}`,
+				initial: current == null ? "" : String(current),
+				source: iconSource(field),
 				onSubmit: (v) => onValue(v),
 			}).open();
 			return;

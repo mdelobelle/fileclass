@@ -8,6 +8,11 @@ All notable changes to Fileclass are documented here. The format follows
 
 ### Fields & typed input
 
+- **`Icon` field type** ([#32](https://github.com/mdelobelle/fileclass/issues/32)):
+  stores an icon id chosen from a searchable **visual picker** (real previews via
+  `getIconIds()`/`setIcon()`). An extensible **Icon source** option selects the
+  bank — Lucide (default) or all registered icons. Stores the bare id (`map-pin`)
+  for core Bases Map view marker interop. No dependency.
 - **`Location` field type** ([#31](https://github.com/mdelobelle/fileclass/issues/31)):
   stores geographic coordinates as a `"lat,lon"` scalar (Bases Map view
   convention). Guided entry with range-validated latitude/longitude fields, a

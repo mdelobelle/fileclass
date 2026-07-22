@@ -12,7 +12,7 @@ field types and the commands that set values. Everything is written to
 
 | Type | Stores | Input | Validation |
 |------|--------|-------|------------|
-| **Input** | text | text prompt | must be scalar text |
+| **Input** | text | text prompt (or [guided template](#input-templates)) | must be scalar text |
 | **Number** | number | number input (spinner, `min`/`max`/`step`) | numeric; optional `min`/`max` |
 | **Boolean** | true/false | toggle | boolean |
 | **Select** | one value | value picker | must be an allowed value (if a list is defined) |
@@ -52,6 +52,27 @@ empty value is reported as a violation — everywhere validation surfaces:
 
 Non-empty values keep their normal per-type validation (a number stays numeric,
 a `Select` must still be an allowed value, and so on).
+
+## Input templates
+
+An `Input` field can define a **Template** in its options so its value follows a
+fixed structure instead of being typed by hand. The template is a plain string
+with placeholders:
+
+- `{{name}}` → a free-text sub-input for that part.
+- `{{name:["a","b"]}}` → a **dropdown** limited to that JSON array of choices.
+
+For example, a `repository` field with the template
+`https://github.com/{{user}}/{{repo}}/`, or a `price` field with
+`{{amount}} {{unit:["gp","sp","cp"]}}`.
+
+When a template is set, editing the field opens a **guided form** — one control
+per placeholder plus a live **Result preview** you can still fine-tune by hand.
+The stored value stays a **single text scalar** (the rendered string): a
+templated `Input` is still an `Input`, with no computation and no Bases
+dependency. A placeholder name that appears more than once is driven by a single
+control. If a dropdown's choices aren't valid JSON, that part falls back to a
+free-text input.
 
 ## Link fields (File / Media)
 

@@ -183,6 +183,37 @@ Each field module ships: options settings UI, value input modal/suggester,
 `validate(value, options)`, cell renderer for the custom view, doc page, unit
 tests for the validator.
 
+### 7.1 Proposed new field types (design discussion, July 2026)
+
+Seven proposals filed as issues on `mdelobelle/fileclass` after triaging
+Metadata Menu's open field-type requests (mm = metadatamenu issue). All respect
+the field contract above: a typed scalar/structured value with guided input +
+validation, frontmatter-only, no computation (§9). **None is scheduled into a
+delivery phase yet** — these record the accepted design so the eventual
+implementation doesn't re-litigate it.
+
+| Type / change | Issue | Storage | Dep | Key decisions |
+|---|---|---|---|---|
+| `template` **option** on `Input` | #27 (mm #304) | scalar (rendered string) | — | Port MDM's `options.template`: placeholders `{{name}}` → text sub-input, `{{name:["a","b"]}}` → dropdown, live "Result preview". An **option, not a new type**. **Implemented** (`src/fields/inputTemplate.ts` pure parser/renderer; `TemplateInputModal` in `valueModals.ts`; Input case in `optionsDraft`/`fieldOptionsSettings`/`fieldActions`; `inputTemplate()` accessor in `options.ts`). |
+| `MultiInput` type | #28 (mm #547) | YAML list | — | Multi-cardinality Input that **reuses** the `template` option. **Depends on #27.** Convention-consistent with `File`/`MultiFile`. |
+| `Recurrence` type | #29 (mm #174/#327) | RFC 5545 `RRULE` scalar | **`rrule`** | **First runtime dep** (only `tslib`, already present; ~25-30 KB gz) — deliberate, documented exception. Obsidian ships a single CJS `main.js` (no code-split), so `await import('rrule')` defers *evaluation* only, **not** bundle size. Option `linkedDateField` (a Date/DateTime field) + a **manual "Set next occurrence"** action on that date field (`rrule.after(current)`, single write) — a user action like MDM's date-shift, **not** Formula/Lookup (no auto-recompute, no cross-note traversal). Adapter converts at the Obsidian-date ↔ rrule-floating-UTC boundary via `moment`. Chose `rrule` over `moment`-only (no RRULE engine ⇒ hand-rolling the spec) and over `ical.js`/`rschedule` (heavier). |
+| `Duration` type | #30 (mm #751) | RFC 5545 `DURATION` scalar | — (`moment`) | `moment.duration` (already provided) parses/serializes ISO 8601; builder constrained to `W/D/H/M/S` (RFC forbids months/years) keeps output RFC-valid. **Zero dep.** Lexical sort of durations in a Bases view is a Bases limitation, out of scope for the field. |
+| `Location` type | #31 | `"lat,lon"` scalar | — | Matches the core **Bases Map view** text format. Two range-validated number inputs (lat ∈ ±90, lon ∈ ±180) + paste. **No embedded map picker** — external tiles = network, against no-external-dep and Obsidian review guidelines. |
+| `Icon` type | #32 | bare icon id scalar | — (`getIconIds`/`setIcon`) | Select over an **extensible icon-bank provider registry** (Lucide first), field option `iconSource`. The bank is a **picker concern, not storage**: Obsidian's registry is global with unique ids, so storage stays the bare id ⇒ Bases-Map `icon` interop. Generalizes the fileClass-icon picker (§20.1). Rejected "one type per bank". |
+| `Color` type | #33 | CSS color scalar | — (native `<input type=color>`) | Same **palette-source provider** pattern as Icon: default = canvas palette (reuse `canvasOptionsSettings.ts` `CANVAS_COLORS`/`fileclass-color-chip`), option `colorSource`, + custom hex. Storage stays a raw CSS value ⇒ Bases-Map `color` interop. |
+
+**Bases Map view interop (decided):** Fileclass **does not generate map views**.
+If a user names fields `coordinates` / `icon` / `color`, the core Bases Map view
+picks them up on its own; otherwise the note is simply absent from it. The
+`Location`/`Icon`/`Color` types only make those properties easy to enter
+correctly. View generation is out of the plugin's purpose.
+
+**Rejected as out of scope** (mm requests that violate §9): AI Field (mm #607 —
+computed via LLM + queries), Relationship/reverse-lookup combo (mm #222 =
+Lookup), classes-as-fields / UML aggregation (mm #611 = Lookup). **Better as
+options on existing types, not new types:** email/format on `Input` (mm #197),
+label≠value on `Select` (mm #341), link-to-nonexistent on `File` (mm #193).
+
 ## 8. Object / ObjectList
 
 - `objectPath.ts`: `parsePath("fields[0].name") → ["fields", 0, "name"]`,

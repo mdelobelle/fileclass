@@ -2,6 +2,27 @@ import { describe, expect, it } from "vitest";
 
 import { buildFieldOptions, optionsToDraft } from "../../src/fields/optionsDraft";
 
+describe("Input options", () => {
+	it("round-trips the template option", () => {
+		const draft = optionsToDraft("Input", { template: "pg. {{page}}" });
+		expect(draft.template).toBe("pg. {{page}}");
+		expect(buildFieldOptions("Input", draft)).toEqual({ template: "pg. {{page}}" });
+	});
+	it("omits a blank template", () => {
+		expect(buildFieldOptions("Input", { template: "   " })).toEqual({});
+		expect(buildFieldOptions("Input", {})).toEqual({});
+	});
+	it("preserves unknown option keys through a template edit", () => {
+		const draft = optionsToDraft("Input", { required: true, custom: "x" });
+		draft.template = "{{a}}";
+		expect(buildFieldOptions("Input", draft)).toEqual({
+			required: true,
+			custom: "x",
+			template: "{{a}}",
+		});
+	});
+});
+
 describe("Number options", () => {
 	it("round-trips min/max/step", () => {
 		const draft = optionsToDraft("Number", { min: 1, max: 10, step: 0.5 });
@@ -139,10 +160,8 @@ describe("File / Media base binding", () => {
 });
 
 describe("unmanaged types preserve options", () => {
-	it("returns undefined for Boolean/Input", () => {
-		for (const t of ["Boolean", "Input"] as const) {
-			expect(buildFieldOptions(t, {})).toBeUndefined();
-		}
+	it("returns undefined for Boolean (no options)", () => {
+		expect(buildFieldOptions("Boolean", {})).toBeUndefined();
 	});
 });
 

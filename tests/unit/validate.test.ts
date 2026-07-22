@@ -98,6 +98,15 @@ describe("Duration / CycleDuration", () => {
 	});
 });
 
+describe("Location", () => {
+	it("accepts an in-range lat,lon, rejects malformed or out-of-range", () => {
+		expect(validateField(make("Location"), "48.8566,2.3522").ok).toBe(true);
+		expect(validateField(make("Location"), "100,2").ok).toBe(false);
+		expect(validateField(make("Location"), "here").ok).toBe(false);
+		expect(validateField(make("Location"), "").ok).toBe(true); // optional
+	});
+});
+
 describe("Date / DateTime / Time patterns", () => {
 	it("validates default formats", () => {
 		expect(validateField(make("Date"), "2026-07-15").ok).toBe(true);

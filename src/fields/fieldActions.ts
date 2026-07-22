@@ -21,6 +21,7 @@ import {
 } from "./input/objectEditor";
 import { DateInputModal } from "./input/dateInputModal";
 import { DurationInputModal, CycleDurationEditorModal } from "./input/durationModal";
+import { LocationInputModal } from "./input/locationModal";
 import { addDuration, formatDuration } from "./duration";
 import {
 	BooleanInputModal,
@@ -366,6 +367,14 @@ export async function promptFieldValue(
 				initial: toSelectedList(current),
 				presets: durationPresets(field),
 				onSubmit: (vals) => onValue(vals),
+			}).open();
+			return;
+
+		case "Location":
+			new LocationInputModal(app, {
+				title: `Set ${field.name}`,
+				initial: current == null ? "" : String(current),
+				onSubmit: (v) => onValue(v),
 			}).open();
 			return;
 

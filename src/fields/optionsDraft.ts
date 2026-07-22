@@ -90,6 +90,7 @@ export function optionsToDraft(type: FieldType, options: FieldOptions): OptionsD
 	const o = Array.isArray(options) ? ({} as Record<string, unknown>) : options;
 	switch (type) {
 		case "Input":
+		case "MultiInput":
 			return {
 				template: typeof o.template === "string" ? o.template : "",
 				inputRawOptions: Array.isArray(options) ? {} : { ...o },
@@ -169,7 +170,8 @@ export function optionsToDraft(type: FieldType, options: FieldOptions): OptionsD
  */
 export function buildFieldOptions(type: FieldType, draft: OptionsDraft): FieldOptions | undefined {
 	switch (type) {
-		case "Input": {
+		case "Input":
+		case "MultiInput": {
 			// Preserve any unknown option keys (e.g. required); only manage template.
 			const o = { ...(draft.inputRawOptions ?? {}) };
 			delete o.template;

@@ -13,6 +13,11 @@ All notable changes to Fileclass are documented here. The format follows
   `{{name:["a","b"]}}` (dropdown) placeholders. Editing shows a guided form with
   one control per placeholder plus a live result preview; the stored value stays
   a single text scalar. Ports Metadata Menu's `options.template`.
+- **`MultiInput` field type** ([#28](https://github.com/mdelobelle/fileclass/issues/28)):
+  the list-valued counterpart of `Input` — stores a YAML list of text scalars and
+  reuses the `template` option. A list editor adds/removes/reorders items, each
+  entered through the same guided (or plain) input as `Input`. For capturing
+  several values that share one shape (e.g. repository URLs).
 
 ## [0.0.4] - 2026-07-21
 

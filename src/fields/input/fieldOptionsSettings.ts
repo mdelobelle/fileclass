@@ -30,13 +30,14 @@ export function renderFieldOptionsSettings(
 	container.empty();
 	switch (type) {
 		case "Input":
+		case "MultiInput":
 			new Setting(container)
 				.setName("Template")
 				.setDesc(
-					'Optional. Compose the value from fixed parts. {{name}} is a text sub-input; ' +
-						'{{name:["a","b"]}} is a dropdown over the JSON array of choices. When set, the ' +
-						"value editor shows one control per placeholder plus a live preview; the stored " +
-						"value stays a single string."
+					'Optional. Compose each value from fixed parts. {{name}} is a text sub-input; ' +
+						'{{name:["a","b"]}} is a dropdown over the JSON array of choices. When set, entry ' +
+						"shows one control per placeholder plus a live preview; each stored value stays a " +
+						(type === "MultiInput" ? "single string (one per list item)." : "single string.")
 				)
 				.addTextArea((t) => {
 					t.setPlaceholder("https://github.com/{{user}}/{{repo}}/")

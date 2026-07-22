@@ -13,6 +13,7 @@ field types and the commands that set values. Everything is written to
 | Type | Stores | Input | Validation |
 |------|--------|-------|------------|
 | **Input** | text | text prompt (or [guided template](#input-templates)) | must be scalar text |
+| **MultiInput** | list of text | list editor (add/remove/reorder; each item plain or [templated](#input-templates)) | a list of scalar text items |
 | **Number** | number | number input (spinner, `min`/`max`/`step`) | numeric; optional `min`/`max` |
 | **Boolean** | true/false | toggle | boolean |
 | **Select** | one value | value picker | must be an allowed value (if a list is defined) |
@@ -73,6 +74,16 @@ templated `Input` is still an `Input`, with no computation and no Bases
 dependency. A placeholder name that appears more than once is driven by a single
 control. If a dropdown's choices aren't valid JSON, that part falls back to a
 free-text input.
+
+### MultiInput — a list of templated values
+
+`MultiInput` is the list-valued counterpart of `Input`: it stores a **YAML list
+of text scalars** (one per item) and **reuses the same Template option**. Editing
+opens a list editor to **add / remove / reorder** items; each item is entered
+through the same guided sub-form as `Input` (placeholder controls + preview), or
+a plain prompt when no template is set. Blank items are dropped on save. Use it
+when several values share one shape — e.g. a list of repository URLs from a
+`https://github.com/{{user}}/{{repo}}/` template.
 
 ## Link fields (File / Media)
 

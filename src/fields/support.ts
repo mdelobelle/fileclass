@@ -21,6 +21,7 @@ export const SUPPORTED_INPUT_TYPES: ReadonlySet<FieldType> = new Set<FieldType>(
 	"Select",
 	"Cycle",
 	"Multi",
+	"MultiInput",
 	"File",
 	"MultiFile",
 	"Media",
@@ -48,6 +49,7 @@ export function defaultValueFor(field: Field): unknown {
 		case "YAML":
 			return {};
 		case "Multi":
+		case "MultiInput":
 		case "MultiFile":
 		case "MultiMedia":
 		case "ObjectList":

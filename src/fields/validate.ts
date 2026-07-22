@@ -25,6 +25,7 @@ export const MULTI_TYPES: ReadonlySet<FieldType> = new Set<FieldType>(["Multi"])
 /** All types that store a list value (for display/iteration). */
 export const LIST_TYPES: ReadonlySet<FieldType> = new Set<FieldType>([
 	"Multi",
+	"MultiInput",
 	"MultiFile",
 	"MultiMedia",
 ]);
@@ -108,6 +109,15 @@ export function validateField(
 			return typeof value === "object"
 				? invalid(`"${field.name}" must be text`)
 				: VALID;
+		case "MultiInput": {
+			if (!Array.isArray(value)) return invalid(`"${field.name}" must be a list`);
+			for (const item of value) {
+				if (item !== null && typeof item === "object") {
+					return invalid(`"${field.name}" items must be text`);
+				}
+			}
+			return VALID;
+		}
 		case "Number":
 			return validateNumber(value, field);
 		case "Boolean":

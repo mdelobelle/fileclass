@@ -23,6 +23,7 @@ import { DateInputModal } from "./input/dateInputModal";
 import {
 	BooleanInputModal,
 	ChoiceSuggestModal,
+	MultiInputEditorModal,
 	MultiSelectModal,
 	PromptModal,
 	TemplateInputModal,
@@ -289,6 +290,15 @@ export async function promptFieldValue(
 		case "JSON":
 		case "YAML":
 			openStructuredPrompt(app, field, current, onValue);
+			return;
+
+		case "MultiInput":
+			new MultiInputEditorModal(app, {
+				title: `Edit ${field.name}`,
+				template: inputTemplate(field),
+				initial: toSelectedList(current),
+				onSubmit: (vals) => onValue(vals),
+			}).open();
 			return;
 
 		case "Input": {

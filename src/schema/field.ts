@@ -14,6 +14,7 @@ export const PATH_SEPARATOR = "____";
  */
 export const FIELD_TYPES = [
 	"Input",
+	"MultiInput",
 	"Number",
 	"Select",
 	"Cycle",

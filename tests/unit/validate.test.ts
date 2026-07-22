@@ -68,6 +68,21 @@ describe("Multi", () => {
 	});
 });
 
+describe("MultiInput", () => {
+	it("requires a list of scalar items (no allowed-values constraint)", () => {
+		expect(validateField(make("MultiInput"), "x").ok).toBe(false); // not a list
+		expect(validateField(make("MultiInput"), []).ok).toBe(true);
+		expect(validateField(make("MultiInput"), ["a", "b"]).ok).toBe(true);
+		expect(validateField(make("MultiInput"), ["a", 2]).ok).toBe(true); // any scalar
+		expect(validateField(make("MultiInput"), [{ a: 1 }]).ok).toBe(false); // object item
+	});
+	it("empty is valid unless required", () => {
+		expect(validateField(make("MultiInput"), []).ok).toBe(true);
+		expect(validateField(make("MultiInput", { required: true }), []).ok).toBe(true); // [] is not empty
+		expect(validateField(make("MultiInput", { required: true }), undefined).ok).toBe(false);
+	});
+});
+
 describe("Date / DateTime / Time patterns", () => {
 	it("validates default formats", () => {
 		expect(validateField(make("Date"), "2026-07-15").ok).toBe(true);
@@ -110,8 +125,9 @@ describe("required", () => {
 
 describe("type predicates — list vs choice", () => {
 	it("isListType is the multi-valued types (array-valued)", () => {
-		expect(["Multi", "MultiFile", "MultiMedia"].every((t) => isListType(t as FieldType))).toBe(true);
+		expect(["Multi", "MultiInput", "MultiFile", "MultiMedia"].every((t) => isListType(t as FieldType))).toBe(true);
 		expect(isListType("Select")).toBe(false);
+		expect(isListType("Input")).toBe(false);
 		expect(isListType("Cycle")).toBe(false);
 	});
 	it("hasAllowedValues is Select/Cycle/Multi (validated against a values list)", () => {

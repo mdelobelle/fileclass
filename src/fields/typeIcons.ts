@@ -9,6 +9,7 @@ import { FieldType } from "../schema/field";
 
 const TYPE_ICONS: Record<FieldType, string> = {
 	Input: "pencil",
+	MultiInput: "list-plus",
 	Number: "hash",
 	Boolean: "toggle-left",
 	Select: "chevrons-up-down",

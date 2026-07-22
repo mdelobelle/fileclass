@@ -21,6 +21,11 @@ describe("Input options", () => {
 			template: "{{a}}",
 		});
 	});
+	it("MultiInput reuses the same template option handling", () => {
+		const draft = optionsToDraft("MultiInput", { template: "{{a}}-{{b}}" });
+		expect(draft.template).toBe("{{a}}-{{b}}");
+		expect(buildFieldOptions("MultiInput", draft)).toEqual({ template: "{{a}}-{{b}}" });
+	});
 });
 
 describe("Number options", () => {

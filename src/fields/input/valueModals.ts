@@ -196,6 +196,108 @@ export class TemplateInputModal extends Modal {
 	}
 }
 
+export interface MultiInputOptions {
+	title: string;
+	/** The field's `template` option; when set, each item uses the guided form. */
+	template?: string;
+	initial: string[];
+	onSubmit: (values: string[]) => void;
+}
+
+/**
+ * List editor for a MultiInput field (#28): add / remove / reorder items, each
+ * entered through the same templated sub-form as Input (or a plain prompt when
+ * no template is set). Stores a YAML list of scalars; blank items are dropped on
+ * save. Mirrors the ObjectList editor's add/reorder UX for scalars.
+ */
+export class MultiInputEditorModal extends Modal {
+	private readonly items: string[];
+
+	constructor(app: App, private readonly opts: MultiInputOptions) {
+		super(app);
+		this.items = [...opts.initial];
+	}
+
+	onOpen(): void {
+		this.render();
+	}
+
+	private editItem(index: number): void {
+		const current = this.items[index] ?? "";
+		const onValue = (value: string) => {
+			this.items[index] = value;
+			this.render();
+		};
+		const title = `${this.opts.title} — item ${index + 1}`;
+		if (this.opts.template) {
+			new TemplateInputModal(this.app, {
+				title,
+				template: this.opts.template,
+				initial: current,
+				onSubmit: onValue,
+			}).open();
+		} else {
+			new PromptModal(this.app, { title, initial: current, onSubmit: onValue }).open();
+		}
+	}
+
+	private move(index: number, delta: number): void {
+		const target = index + delta;
+		if (target < 0 || target >= this.items.length) return;
+		[this.items[index], this.items[target]] = [this.items[target], this.items[index]];
+		this.render();
+	}
+
+	private render(): void {
+		const { contentEl } = this;
+		contentEl.empty();
+		contentEl.createEl("h3", { text: this.opts.title });
+
+		this.items.forEach((item, index) => {
+			new Setting(contentEl)
+				.setName(`Item ${index + 1}`)
+				.setDesc(item || "(empty)")
+				.addExtraButton((b) =>
+					b.setIcon("chevron-up").setTooltip("Move up").onClick(() => this.move(index, -1))
+				)
+				.addExtraButton((b) =>
+					b.setIcon("chevron-down").setTooltip("Move down").onClick(() => this.move(index, 1))
+				)
+				.addButton((b) => b.setButtonText("Edit").onClick(() => this.editItem(index)))
+				.addExtraButton((b) =>
+					b
+						.setIcon("trash")
+						.setTooltip("Remove")
+						.onClick(() => {
+							this.items.splice(index, 1);
+							this.render();
+						})
+				);
+		});
+
+		new Setting(contentEl)
+			.addButton((b) =>
+				b.setButtonText("Add item").onClick(() => {
+					this.items.push("");
+					this.editItem(this.items.length - 1);
+				})
+			)
+			.addButton((b) =>
+				b
+					.setButtonText("Save")
+					.setCta()
+					.onClick(() => {
+						this.opts.onSubmit(this.items.map((v) => v.trim()).filter((v) => v !== ""));
+						this.close();
+					})
+			);
+	}
+
+	onClose(): void {
+		this.contentEl.empty();
+	}
+}
+
 /** Boolean input: a real toggle (like MDM) plus Save; Enter confirms. */
 export class BooleanInputModal extends Modal {
 	constructor(

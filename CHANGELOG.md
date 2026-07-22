@@ -19,9 +19,11 @@ All notable changes to Fileclass are documented here. The format follows
   entered through the same guided (or plain) input as `Input`. For capturing
   several values that share one shape (e.g. repository URLs).
 - **`Duration` field type** ([#30](https://github.com/mdelobelle/fileclass/issues/30)):
-  stores an RFC 5545 `DURATION` scalar (`P1W`, `PT1H30M`…) with a guided builder
-  (weeks/days/hours/minutes/seconds) and a compact human preview. Zero runtime
-  dependency — parsing and date math are done in-house.
+  stores an RFC 5545 `DURATION` scalar (`P1W`, `PT1H30M`…). Editing lets you
+  **type the value** in ISO (`PT1H30M`) or a human form (`1h 30m`, `2w`) with
+  inline validation, or use weeks/days/hours/minutes/seconds spinners — the two
+  stay in sync with a live compact preview. Zero runtime dependency; parsing and
+  date math are done in-house.
 - **`MultiDuration` field type** + **date "Set next date" action**: an ordered
   list of durations (an interval sequence). A `Date`/`DateTime` field can name a
   Duration/MultiDuration field via its **Next interval field** option; the date

@@ -4,9 +4,15 @@
  * DURATION logic lives in src/fields/duration.ts; this is just the UI. Reused
  * per item by the MultiDuration list editor.
  */
-import { App, Modal, Setting } from "obsidian";
+import { App, Modal, Setting, TextComponent } from "obsidian";
 
-import { buildDuration, DurationParts, formatDuration, parseDuration, ZERO_DURATION } from "../duration";
+import {
+	buildDuration,
+	DurationParts,
+	formatDuration,
+	parseDurationInput,
+	ZERO_DURATION,
+} from "../duration";
 
 const UNITS: { key: keyof DurationParts; label: string }[] = [
 	{ key: "weeks", label: "Weeks" },
@@ -24,25 +30,39 @@ export interface DurationModalOptions {
 
 export class DurationInputModal extends Modal {
 	private parts: DurationParts;
+	private freeText!: TextComponent;
+	private readonly spinners = new Map<keyof DurationParts, TextComponent>();
 	private previewEl!: HTMLElement;
+	private errorEl!: HTMLElement;
 
 	constructor(app: App, private readonly opts: DurationModalOptions) {
 		super(app);
-		this.parts = parseDuration(opts.initial) ?? { ...ZERO_DURATION };
+		this.parts = parseDurationInput(opts.initial) ?? { ...ZERO_DURATION };
 	}
 
 	onOpen(): void {
 		const { contentEl } = this;
 		contentEl.createEl("h3", { text: this.opts.title });
 
+		// Free-text entry: type ISO (PT1H30M) or a human form (1h 30m, 2w).
+		new Setting(contentEl)
+			.setName("Duration")
+			.setDesc('Type it, e.g. "1h 30m", "2w", or ISO "PT1H30M" — or use the fields below.')
+			.addText((t) => {
+				this.freeText = t;
+				t.setPlaceholder("1h 30m").setValue(buildDuration(this.parts));
+				t.onChange((v) => this.onFreeText(v));
+				window.setTimeout(() => t.inputEl.focus(), 0);
+			});
+		this.errorEl = contentEl.createDiv({ cls: "setting-item-description" });
+		this.errorEl.setCssStyles({ color: "var(--text-error)", minHeight: "1.2em" });
+
 		for (const { key, label } of UNITS) {
 			new Setting(contentEl).setName(label).addText((t) => {
+				this.spinners.set(key, t);
 				t.inputEl.type = "number";
 				t.inputEl.min = "0";
-				t.setValue(String(this.parts[key])).onChange((v) => {
-					this.parts[key] = Math.max(0, Math.trunc(Number(v)) || 0);
-					this.refreshPreview();
-				});
+				t.setValue(String(this.parts[key])).onChange((v) => this.onSpinner(key, v));
 			});
 		}
 
@@ -51,18 +71,59 @@ export class DurationInputModal extends Modal {
 		this.refreshPreview();
 
 		new Setting(contentEl).addButton((b) =>
-			b
-				.setButtonText("Save")
-				.setCta()
-				.onClick(() => {
-					this.opts.onSubmit(buildDuration(this.parts));
-					this.close();
-				})
+			b.setButtonText("Save").setCta().onClick(() => this.submit())
 		);
+	}
+
+	/** Free-text changed: parse (ISO or human), sync spinners + preview, or flag. */
+	private onFreeText(value: string): void {
+		const raw = value.trim();
+		if (!raw) {
+			this.parts = { ...ZERO_DURATION };
+			this.syncSpinners();
+			this.setError("");
+			this.refreshPreview();
+			return;
+		}
+		const parsed = parseDurationInput(raw);
+		if (!parsed) {
+			this.setError("Not a valid duration.");
+			return;
+		}
+		this.parts = parsed;
+		this.syncSpinners();
+		this.setError("");
+		this.refreshPreview();
+	}
+
+	/** A spinner changed: update parts and reflect the canonical ISO in the text. */
+	private onSpinner(key: keyof DurationParts, value: string): void {
+		this.parts[key] = Math.max(0, Math.trunc(Number(value)) || 0);
+		this.freeText.setValue(buildDuration(this.parts)); // setValue doesn't refire onChange
+		this.setError("");
+		this.refreshPreview();
+	}
+
+	private syncSpinners(): void {
+		for (const [key, comp] of this.spinners) comp.setValue(String(this.parts[key]));
 	}
 
 	private refreshPreview(): void {
 		this.previewEl.setText(formatDuration(buildDuration(this.parts)) || "—");
+	}
+
+	private setError(message: string): void {
+		this.errorEl.setText(message);
+	}
+
+	private submit(): void {
+		const raw = this.freeText.getValue().trim();
+		if (raw && !parseDurationInput(raw)) {
+			this.setError("Not a valid duration.");
+			return;
+		}
+		this.opts.onSubmit(buildDuration(this.parts));
+		this.close();
 	}
 
 	onClose(): void {

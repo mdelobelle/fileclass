@@ -179,9 +179,12 @@ total_time: P1DT6H   # 1 day 6 h
 brew: P2W            # 2 weeks
 ```
 
-Editing opens a **builder** with weeks / days / hours / minutes / seconds
-spinners and a compact preview (`1d 6h`). Output stays RFC-5545-valid (weeks
-stand alone; otherwise they fold into days). No runtime dependency.
+Editing opens a **builder**: either **type the duration** directly — ISO
+(`PT1H30M`) or a human form (`1h 30m`, `2w`, `1 day 6 hours`) — or use the
+weeks / days / hours / minutes / seconds spinners. The two stay in sync, with a
+live compact preview (`1d 6h`); the stored value is always the canonical ISO
+form. Output stays RFC-5545-valid (weeks stand alone; otherwise they fold into
+days). No runtime dependency.
 
 `MultiDuration` stores an **ordered list** of durations — an *interval sequence*.
 

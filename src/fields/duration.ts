@@ -78,6 +78,39 @@ export function buildDuration(parts: Partial<DurationParts>): string {
 	return out;
 }
 
+// Human/compact form: "1w 2d", "1h30m", "90m", "2 weeks", "1 day"… Bare "m" is
+// minutes (RFC durations have no months, so no ambiguity to resolve).
+const HUMAN_RE =
+	/(\d+)\s*(weeks?|w|days?|d|hours?|hrs?|hr|h|minutes?|mins?|min|m|seconds?|secs?|sec|s)/giu;
+
+/** Parses a loose human/compact duration into parts, or null if unrecognized. */
+export function parseHuman(str: string): DurationParts | null {
+	if (typeof str !== "string") return null;
+	const s = str.trim().toLowerCase();
+	if (!s) return null;
+	const parts: DurationParts = { ...ZERO_DURATION };
+	let matched = false;
+	for (const m of s.matchAll(HUMAN_RE)) {
+		matched = true;
+		const n = +m[1];
+		const u = m[2];
+		if (u.startsWith("w")) parts.weeks += n;
+		else if (u.startsWith("d")) parts.days += n;
+		else if (u.startsWith("h")) parts.hours += n;
+		else if (u === "s" || u.startsWith("sec")) parts.seconds += n;
+		else parts.minutes += n; // m / min(s) / minute(s)
+	}
+	if (!matched) return null;
+	// Reject anything with stray, unparsed characters (e.g. "1 banana", "1mo").
+	const leftover = s.replace(HUMAN_RE, "").replace(/[\s,]+/gu, "");
+	return leftover ? null : parts;
+}
+
+/** Parses a user-typed duration: ISO 8601 (`PT1H30M`) first, else a human form. */
+export function parseDurationInput(str: string): DurationParts | null {
+	return parseDuration(str) ?? parseHuman(str);
+}
+
 /** Compact human-readable form ("1w", "1d 6h", "1h 30m"), or "" when empty. */
 export function formatDuration(str: string): string {
 	const p = parseDuration(str);

@@ -7,6 +7,8 @@ import {
 	formatDuration,
 	isValidDuration,
 	parseDuration,
+	parseDurationInput,
+	parseHuman,
 } from "../../src/fields/duration";
 
 describe("parseDuration", () => {
@@ -52,6 +54,38 @@ describe("round-trip build → parse", () => {
 		for (const d of ["P1D", "P2W", "PT30M", "PT1H30M"]) {
 			expect(buildDuration(parseDuration(d)!)).toBe(d);
 		}
+	});
+});
+
+describe("parseHuman", () => {
+	it("parses compact and spaced forms", () => {
+		expect(parseHuman("1h 30m")).toEqual({ weeks: 0, days: 0, hours: 1, minutes: 30, seconds: 0 });
+		expect(parseHuman("1h30m")).toEqual({ weeks: 0, days: 0, hours: 1, minutes: 30, seconds: 0 });
+		expect(parseHuman("2w")).toEqual({ weeks: 2, days: 0, hours: 0, minutes: 0, seconds: 0 });
+		expect(parseHuman("90m")).toEqual({ weeks: 0, days: 0, hours: 0, minutes: 90, seconds: 0 });
+	});
+	it("parses worded units and accumulates", () => {
+		expect(parseHuman("2 weeks")).toEqual({ weeks: 2, days: 0, hours: 0, minutes: 0, seconds: 0 });
+		expect(parseHuman("1 day 6 hours")).toEqual({ weeks: 0, days: 1, hours: 6, minutes: 0, seconds: 0 });
+	});
+	it("rejects stray input and month-like tokens", () => {
+		expect(parseHuman("1 banana")).toBeNull();
+		expect(parseHuman("1mo")).toBeNull(); // no months
+		expect(parseHuman("")).toBeNull();
+	});
+});
+
+describe("parseDurationInput", () => {
+	it("accepts ISO first, then a human form", () => {
+		expect(parseDurationInput("PT1H30M")).toEqual({ weeks: 0, days: 0, hours: 1, minutes: 30, seconds: 0 });
+		expect(parseDurationInput("1h 30m")).toEqual({ weeks: 0, days: 0, hours: 1, minutes: 30, seconds: 0 });
+		expect(parseDurationInput("nope")).toBeNull();
+	});
+	it("normalizes both directions via buildDuration", () => {
+		// human in → ISO out
+		expect(buildDuration(parseDurationInput("1h 30m")!)).toBe("PT1H30M");
+		// ISO in → same ISO out
+		expect(buildDuration(parseDurationInput("PT1H30M")!)).toBe("PT1H30M");
 	});
 });
 

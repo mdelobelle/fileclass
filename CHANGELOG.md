@@ -8,6 +8,11 @@ All notable changes to Fileclass are documented here. The format follows
 
 ### Fields & typed input
 
+- **`Color` field type** ([#33](https://github.com/mdelobelle/fileclass/issues/33)):
+  stores a CSS color scalar, chosen from **palette swatches** (extensible **Color
+  source** option, Obsidian Canvas palette by default) plus a **custom color**
+  (native color input + any CSS value: hex/`rgb()`/name). Stores the raw CSS
+  value for core Bases Map view marker interop. Native input + CSS, no dependency.
 - **`Icon` field type** ([#32](https://github.com/mdelobelle/fileclass/issues/32)):
   stores an icon id chosen from a searchable **visual picker** (real previews via
   `getIconIds()`/`setIcon()`). An extensible **Icon source** option selects the

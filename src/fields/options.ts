@@ -189,6 +189,12 @@ export function iconSource(field: Field): string {
 	return typeof o.iconSource === "string" && o.iconSource ? o.iconSource : "lucide";
 }
 
+/** The Color field's `colorSource` option (which palette the picker offers); default "canvas". */
+export function colorSource(field: Field): string {
+	const o = asRecord(field.options);
+	return typeof o.colorSource === "string" && o.colorSource ? o.colorSource : "canvas";
+}
+
 export interface DateOptions {
 	/** moment.js format; defaults per type when absent. */
 	dateFormat?: string;

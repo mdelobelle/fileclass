@@ -26,6 +26,7 @@ field types and the commands that set values. Everything is written to
 | **CycleDuration** | list of durations | duration list editor | a list of durations |
 | **Location** | `"lat,lon"` | coordinate inputs + paste | lat −90..90, lon −180..180 |
 | **Icon** | icon id | [searchable icon grid](#icon) | a registered icon id |
+| **Color** | CSS color | [swatch palette + custom](#color) | a valid CSS color |
 | **File** | link | note picker | a link string |
 | **MultiFile** | list of links | toggle list | a list of links |
 | **Media** | link/embed | file picker | a link string |
@@ -260,6 +261,24 @@ Obsidian's `getIconIds()` / `setIcon()` — no bundled icon list, no dependency.
 The stored value is the **bare id** (`map-pin`, not `lucide-map-pin`). Naming an
 `Icon` field `icon` (with Lucide icons) lets the core **Bases Map view** use it
 as the marker icon — Fileclass just makes the property easy to enter.
+
+## Color
+
+A `Color` field stores a **CSS color** value (a single scalar):
+
+```yaml
+color: "#fb464c"
+```
+
+Editing opens a picker with **palette swatches** (field option **Color source** —
+the Obsidian **Canvas** palette by default; extensible to more palettes) plus a
+**custom color**: a native color input and a text field accepting any CSS value
+(hex, `rgb()`, or a color name). Click a swatch to pick it, or clear the value.
+Uses a native input + CSS — no dependency.
+
+Like `Icon`, the palette is a picker convenience; the stored value is a raw CSS
+color. Naming a `Color` field `color` lets the core **Bases Map view** use it as
+the marker color.
 
 ## Where allowed values come from
 

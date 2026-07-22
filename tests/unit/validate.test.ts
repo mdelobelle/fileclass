@@ -115,6 +115,15 @@ describe("Icon", () => {
 	});
 });
 
+describe("Color", () => {
+	it("accepts CSS colors, rejects junk", () => {
+		expect(validateField(make("Color"), "#fb464c").ok).toBe(true);
+		expect(validateField(make("Color"), "rebeccapurple").ok).toBe(true);
+		expect(validateField(make("Color"), "not-a-color").ok).toBe(false);
+		expect(validateField(make("Color"), "").ok).toBe(true); // optional
+	});
+});
+
 describe("Date / DateTime / Time patterns", () => {
 	it("validates default formats", () => {
 		expect(validateField(make("Date"), "2026-07-15").ok).toBe(true);

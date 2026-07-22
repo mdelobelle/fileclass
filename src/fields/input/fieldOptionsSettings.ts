@@ -19,6 +19,7 @@ import { OptionsDraft } from "../optionsDraft";
 import { renderCanvasSettings } from "./canvasOptionsSettings";
 import { DurationInputModal } from "./durationModal";
 import { ICON_SOURCES } from "./iconPicker";
+import { COLOR_SOURCES } from "./colorPicker";
 
 export interface FieldOptionsCtx {
 	app: App;
@@ -64,6 +65,15 @@ export function renderFieldOptionsSettings(
 				.addDropdown((d) => {
 					for (const s of ICON_SOURCES) d.addOption(s.id, s.label);
 					d.setValue(draft.iconSource ?? "lucide").onChange((v) => (draft.iconSource = v));
+				});
+			return;
+		case "Color":
+			new Setting(container)
+				.setName("Color source")
+				.setDesc("Which palette the picker offers (custom colors are always allowed).")
+				.addDropdown((d) => {
+					for (const s of COLOR_SOURCES) d.addOption(s.id, s.label);
+					d.setValue(draft.colorSource ?? "canvas").onChange((v) => (draft.colorSource = v));
 				});
 			return;
 		case "Number":

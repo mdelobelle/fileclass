@@ -344,3 +344,77 @@
 .fileclass-icon-cell.is-selected {
 	border-color: var(--interactive-accent);
 }
+
+/* Color picker (#33) — canvas-style row of circular swatches + rainbow custom. */
+.fileclass-color-circles {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--size-4-2);
+	padding: var(--size-4-2) 0;
+}
+.fileclass-color-circle {
+	width: 30px;
+	height: 30px;
+	padding: 0;
+	border-radius: 50%;
+	/* Theme/Chromium apply a squircle corner-shape; force true round → a circle. */
+	corner-shape: round;
+	border: 2px solid var(--background-modifier-border);
+	box-shadow: none;
+	cursor: pointer;
+	flex: 0 0 auto;
+	background-clip: padding-box;
+}
+.fileclass-color-circle:hover {
+	border-color: var(--interactive-accent-hover);
+}
+.fileclass-color-circle.is-selected {
+	border-color: var(--interactive-accent);
+	box-shadow: 0 0 0 2px var(--interactive-accent);
+}
+.fileclass-color-circle.is-clear {
+	background: var(--background-modifier-border);
+}
+.fileclass-color-circle.is-custom {
+	background: conic-gradient(
+		from 0deg,
+		#fb464c,
+		#ec7500,
+		#e0ac00,
+		#08b94e,
+		#00b7d3,
+		#7852ee,
+		#fb464c
+	);
+}
+.fileclass-color-hidden {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	opacity: 0;
+	pointer-events: none;
+}
+
+/* Value previews in the note-fields modal (#33/#32): color dot + icon glyph. */
+.fileclass-color-dot {
+	display: inline-block;
+	width: 0.9em;
+	height: 0.9em;
+	margin-right: 0.4em;
+	border-radius: 50%;
+	corner-shape: round;
+	border: 1px solid var(--background-modifier-border);
+	vertical-align: -0.1em;
+	flex: 0 0 auto;
+}
+.fileclass-value-icon {
+	display: inline-flex;
+	align-items: center;
+	margin-right: 0.4em;
+	flex: 0 0 auto;
+}
+.fileclass-value-icon svg {
+	width: 1em;
+	height: 1em;
+}

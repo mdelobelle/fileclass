@@ -21,6 +21,7 @@ describe("isInputSupported", () => {
 		expect(isInputSupported("CycleDuration")).toBe(true);
 		expect(isInputSupported("Location")).toBe(true);
 		expect(isInputSupported("Icon")).toBe(true);
+		expect(isInputSupported("Color")).toBe(true);
 		expect(isInputSupported("MultiFile")).toBe(true);
 		expect(isInputSupported("ObjectList")).toBe(true);
 		expect(isInputSupported("Lookup")).toBe(false);

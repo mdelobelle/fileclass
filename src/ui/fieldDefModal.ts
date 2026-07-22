@@ -24,6 +24,7 @@ const TYPE_LABELS: Partial<Record<FieldType, string>> = {
 	CycleDuration: "Cycle duration (interval cycle)",
 	Location: "Location (coordinates)",
 	Icon: "Icon (picker)",
+	Color: "Color (picker)",
 	Select: "Select (single value)",
 	Multi: "Multi (select several)",
 	Cycle: "Cycle (rotate values)",

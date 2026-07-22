@@ -21,6 +21,7 @@ const TYPE_ICONS: Record<FieldType, string> = {
 	CycleDuration: "list-ordered",
 	Location: "map-pin",
 	Icon: "shapes",
+	Color: "palette",
 	Multi: "list-checks",
 	File: "file",
 	MultiFile: "files",

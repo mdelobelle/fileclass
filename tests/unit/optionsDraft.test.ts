@@ -56,6 +56,15 @@ describe("Icon options", () => {
 	});
 });
 
+describe("Color options", () => {
+	it("round-trips a non-default colorSource, omits the default", () => {
+		expect(buildFieldOptions("Color", optionsToDraft("Color", { colorSource: "theme" }))).toEqual({
+			colorSource: "theme",
+		});
+		expect(buildFieldOptions("Color", optionsToDraft("Color", {}))).toEqual({}); // default canvas omitted
+	});
+});
+
 describe("Date next-interval option", () => {
 	it("round-trips nextIntervalField for Date/DateTime", () => {
 		const draft = optionsToDraft("Date", { nextIntervalField: "interval" });

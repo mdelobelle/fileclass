@@ -25,6 +25,7 @@ import {
 	ChoiceSuggestModal,
 	MultiSelectModal,
 	PromptModal,
+	TemplateInputModal,
 	TextAreaInputModal,
 } from "./input/valueModals";
 import {
@@ -35,7 +36,7 @@ import {
 } from "./structuredText";
 import { formatLink, linkTargetPath } from "./links";
 import { asListValue, asObjectValue } from "./objectDraft";
-import { baseBindingOptions, numberOptions } from "./options";
+import { baseBindingOptions, inputTemplate, numberOptions } from "./options";
 import { editableRootFields, TEXT_INPUT_TYPES } from "./support";
 import { resolveFieldValues } from "./valuesIo";
 import { validateField } from "./validate";
@@ -289,6 +290,21 @@ export async function promptFieldValue(
 		case "YAML":
 			openStructuredPrompt(app, field, current, onValue);
 			return;
+
+		case "Input": {
+			const template = inputTemplate(field);
+			if (template) {
+				new TemplateInputModal(app, {
+					title: `Set ${field.name}`,
+					template,
+					initial: current == null ? "" : String(current),
+					onSubmit: (v) => onValue(v),
+				}).open();
+				return;
+			}
+			openTextPrompt(app, field, current, onValue);
+			return;
+		}
 
 		default:
 			if (TEXT_INPUT_TYPES.has(field.type)) openTextPrompt(app, field, current, onValue);

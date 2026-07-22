@@ -29,6 +29,23 @@ export function renderFieldOptionsSettings(
 ): void {
 	container.empty();
 	switch (type) {
+		case "Input":
+			new Setting(container)
+				.setName("Template")
+				.setDesc(
+					'Optional. Compose the value from fixed parts. {{name}} is a text sub-input; ' +
+						'{{name:["a","b"]}} is a dropdown over the JSON array of choices. When set, the ' +
+						"value editor shows one control per placeholder plus a live preview; the stored " +
+						"value stays a single string."
+				)
+				.addTextArea((t) => {
+					t.setPlaceholder("https://github.com/{{user}}/{{repo}}/")
+						.setValue(draft.template ?? "")
+						.onChange((v) => (draft.template = v));
+					t.inputEl.rows = 4;
+					t.inputEl.setCssStyles({ width: "100%" });
+				});
+			return;
 		case "Number":
 			numberField(container, "Min", draft, "min");
 			numberField(container, "Max", draft, "max");

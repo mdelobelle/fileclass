@@ -6,6 +6,14 @@ All notable changes to Fileclass are documented here. The format follows
 
 ## [Unreleased]
 
+### Fields & typed input
+
+- **`template` option on `Input`** ([#27](https://github.com/mdelobelle/fileclass/issues/27)):
+  compose an `Input` value from a fixed structure with `{{name}}` (free-text) and
+  `{{name:["a","b"]}}` (dropdown) placeholders. Editing shows a guided form with
+  one control per placeholder plus a live result preview; the stored value stays
+  a single text scalar. Ports Metadata Menu's `options.template`.
+
 ## [0.0.4] - 2026-07-21
 
 First public release installable on the stable Obsidian line (see

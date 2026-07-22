@@ -26,6 +26,11 @@ export interface OptionsDraft {
 	dateFormat?: string;
 	defaultInsertAsLink?: boolean;
 	dateLinkPath?: string;
+	// Input
+	/** Input `template` option (#27): guided composed value with placeholders. */
+	template?: string;
+	/** Original Input options, so unknown keys survive a template edit. */
+	inputRawOptions?: Record<string, unknown>;
 	// Object / ObjectList
 	displayTemplate?: string;
 	/** Original options, so unknown keys survive a template edit. */
@@ -84,6 +89,11 @@ function valuesToRecord(values: string[]): Record<string, string> {
 export function optionsToDraft(type: FieldType, options: FieldOptions): OptionsDraft {
 	const o = Array.isArray(options) ? ({} as Record<string, unknown>) : options;
 	switch (type) {
+		case "Input":
+			return {
+				template: typeof o.template === "string" ? o.template : "",
+				inputRawOptions: Array.isArray(options) ? {} : { ...o },
+			};
 		case "Number":
 			return { step: numStr(o.step), min: numStr(o.min), max: numStr(o.max) };
 		case "Date":
@@ -159,6 +169,14 @@ export function optionsToDraft(type: FieldType, options: FieldOptions): OptionsD
  */
 export function buildFieldOptions(type: FieldType, draft: OptionsDraft): FieldOptions | undefined {
 	switch (type) {
+		case "Input": {
+			// Preserve any unknown option keys (e.g. required); only manage template.
+			const o = { ...(draft.inputRawOptions ?? {}) };
+			delete o.template;
+			const tpl = draft.template?.trim();
+			if (tpl) o.template = tpl;
+			return o;
+		}
 		case "Number": {
 			const o: Record<string, number> = {};
 			const step = numOrUndef(draft.step);

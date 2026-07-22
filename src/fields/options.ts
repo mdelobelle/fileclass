@@ -162,6 +162,16 @@ export function baseBindingOptionsFromOptions(options: FieldOptions): BaseBindin
 	};
 }
 
+/**
+ * The `template` option of an Input field (#27), or undefined when unset/blank.
+ * Presence switches the value input from a plain prompt to the guided template
+ * form (see `inputTemplate.ts`).
+ */
+export function inputTemplate(field: Field): string | undefined {
+	const o = asRecord(field.options);
+	return typeof o.template === "string" && o.template.trim() ? o.template : undefined;
+}
+
 export interface DateOptions {
 	/** moment.js format; defaults per type when absent. */
 	dateFormat?: string;

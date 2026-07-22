@@ -7,6 +7,7 @@
  * `allowedValues` (see values.ts); an empty list means "unconstrained".
  */
 import { Field, FieldType } from "../schema/field";
+import { isValidDuration } from "./duration";
 import { numberOptions } from "./options";
 
 export interface ValidationResult {
@@ -26,6 +27,7 @@ export const MULTI_TYPES: ReadonlySet<FieldType> = new Set<FieldType>(["Multi"])
 export const LIST_TYPES: ReadonlySet<FieldType> = new Set<FieldType>([
 	"Multi",
 	"MultiInput",
+	"MultiDuration",
 	"MultiFile",
 	"MultiMedia",
 ]);
@@ -143,6 +145,19 @@ export function validateField(
 			return Array.isArray(value)
 				? VALID
 				: invalid(`"${field.name}" must be a list of links`);
+		case "Duration":
+			return isValidDuration(String(value))
+				? VALID
+				: invalid(`"${field.name}" must be a duration (e.g. P1W, PT1H30M)`);
+		case "MultiDuration": {
+			if (!Array.isArray(value)) return invalid(`"${field.name}" must be a list`);
+			for (const item of value) {
+				if (!isValidDuration(String(item))) {
+					return invalid(`"${field.name}" items must be durations (e.g. P1W)`);
+				}
+			}
+			return VALID;
+		}
 		case "Date":
 			return validateDatePattern(value, field, DATE_RE);
 		case "DateTime":

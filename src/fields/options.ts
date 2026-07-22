@@ -177,6 +177,12 @@ export interface DateOptions {
 	dateFormat?: string;
 	defaultInsertAsLink?: boolean;
 	dateLinkPath?: string;
+	/**
+	 * Name of a Duration/MultiDuration field in the same fileClass (#30). When set,
+	 * the date editor gets a "Set next date" button advancing this date by that
+	 * field's (head) interval — and rotating the list for MultiDuration.
+	 */
+	nextIntervalField?: string;
 }
 
 export function dateOptions(field: Field): DateOptions {
@@ -186,5 +192,9 @@ export function dateOptions(field: Field): DateOptions {
 		defaultInsertAsLink:
 			o.defaultInsertAsLink === true || o.defaultInsertAsLink === "true",
 		dateLinkPath: typeof o.dateLinkPath === "string" ? o.dateLinkPath : undefined,
+		nextIntervalField:
+			typeof o.nextIntervalField === "string" && o.nextIntervalField
+				? o.nextIntervalField
+				: undefined,
 	};
 }

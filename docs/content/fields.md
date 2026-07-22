@@ -22,6 +22,8 @@ field types and the commands that set values. Everything is written to
 | **Date** | date | date picker | `YYYY-MM-DD` (unless a custom format is set) |
 | **DateTime** | date+time | date-time picker | `YYYY-MM-DDTHH:mm` |
 | **Time** | time | time picker | `HH:mm` |
+| **Duration** | length of time | duration builder | an RFC 5545 `DURATION` (`P1W`, `PT1H30M`) |
+| **MultiDuration** | list of durations | duration list editor | a list of durations |
 | **File** | link | note picker | a link string |
 | **MultiFile** | list of links | toggle list | a list of links |
 | **Media** | link/embed | file picker | a link string |
@@ -164,6 +166,47 @@ Editing a date opens a **native picker** (calendar / clock) with **Today** and
 Set a custom **`dateFormat`** (moment.js tokens) to store any format; otherwise
 the ISO default above is used. If the **Natural Language Dates** plugin is
 installed, an extra field parses phrases like *"next friday"* into the picker.
+
+## Durations & interval cycling
+
+A `Duration` field stores a **length of time** as an RFC 5545 `DURATION` string —
+unlike a `Time` field it doesn't wrap at 24h, so it fits prep times, effort
+estimates, brew times, etc.:
+
+```yaml
+prep_time: PT1H30M   # 1 h 30 min
+total_time: P1DT6H   # 1 day 6 h
+brew: P2W            # 2 weeks
+```
+
+Editing opens a **builder** with weeks / days / hours / minutes / seconds
+spinners and a compact preview (`1d 6h`). Output stays RFC-5545-valid (weeks
+stand alone; otherwise they fold into days). No runtime dependency.
+
+`MultiDuration` stores an **ordered list** of durations — an *interval sequence*.
+
+### Set next date (spaced repetition)
+
+This is how you schedule a date that moves forward by your own sequence of
+intervals (spaced repetition, recurring reviews, chores):
+
+1. Add a **`MultiDuration`** field (e.g. `next interval`) and enter your intervals
+   in order — say `1 day`, `1 week`, `2 weeks`, `5 weeks`.
+2. On a **`Date`** (or `DateTime`) field (e.g. `next session`), set its **Next
+   interval field** option to that MultiDuration field's name.
+3. Editing the date now shows a **Set next date** button. One click:
+   - computes `current date + first interval`,
+   - writes it to the date field, and
+   - **rotates** the interval list so the next click uses the following interval,
+     wrapping back to the first after the last.
+
+So repeatedly clicking `next session` walks the date through `+1d`, `+1w`, `+2w`,
+`+5w`, then `+1d` again. Pointing the option at a plain **`Duration`** field
+instead gives a fixed interval (added every time, no rotation).
+
+It is a **manual, one-shot action** — no automatic recomputation and nothing
+touches other notes, so it stays within Fileclass's guided-input scope (computed
+fields remain out of scope).
 
 ## Where allowed values come from
 

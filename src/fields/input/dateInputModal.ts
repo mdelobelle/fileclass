@@ -55,6 +55,12 @@ export class DateInputModal extends Modal {
 			field: Field;
 			initial: string;
 			onSubmit: (value: string | undefined) => void;
+			/**
+			 * When set, a "Set next date" button advances the date by a linked
+			 * Duration/MultiDuration field. It performs the full write itself (date +
+			 * any interval rotation) and resolves; the modal then closes.
+			 */
+			onAdvance?: (currentIso: string) => Promise<boolean>;
 		}
 	) {
 		super(app);
@@ -121,6 +127,21 @@ export class DateInputModal extends Modal {
 				});
 			})
 			.addButton((b) => b.setButtonText("Save").setCta().onClick(() => this.submit()));
+
+		if (this.opts.onAdvance) {
+			const advance = this.opts.onAdvance;
+			new Setting(contentEl)
+				.setDesc("Advance this date by the linked interval, and cycle it to the next value.")
+				.addButton((b) =>
+					b
+						.setButtonText("Set next date")
+						.setIcon("skip-forward")
+						.onClick(async () => {
+							const base = this.inputEl.value || moment().format(this.nativeFormat);
+							if (await advance(base)) this.close();
+						})
+				);
+		}
 
 		this.inputEl.addEventListener("keydown", (e) => {
 			if (e.key === "Enter") {

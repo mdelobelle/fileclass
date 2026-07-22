@@ -77,6 +77,21 @@ export function renderFieldOptionsSettings(
 						.setValue(draft.dateLinkPath ?? "")
 						.onChange((v) => (draft.dateLinkPath = v))
 				);
+			if (type !== "Time") {
+				new Setting(container)
+					.setName("Next interval field")
+					.setDesc(
+						"Optional. Name of a Duration or MultiDuration field in this fileClass. Adds a " +
+							'"Set next date" button that advances this date by that interval (and cycles ' +
+							"a MultiDuration list to its next value)."
+					)
+					.addText((t) =>
+						t
+							.setPlaceholder("(none)")
+							.setValue(draft.nextIntervalField ?? "")
+							.onChange((v) => (draft.nextIntervalField = v))
+					);
+			}
 			return;
 		case "Select":
 		case "Cycle":

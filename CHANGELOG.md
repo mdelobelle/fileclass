@@ -18,6 +18,17 @@ All notable changes to Fileclass are documented here. The format follows
   reuses the `template` option. A list editor adds/removes/reorders items, each
   entered through the same guided (or plain) input as `Input`. For capturing
   several values that share one shape (e.g. repository URLs).
+- **`Duration` field type** ([#30](https://github.com/mdelobelle/fileclass/issues/30)):
+  stores an RFC 5545 `DURATION` scalar (`P1W`, `PT1H30M`…) with a guided builder
+  (weeks/days/hours/minutes/seconds) and a compact human preview. Zero runtime
+  dependency — parsing and date math are done in-house.
+- **`MultiDuration` field type** + **date "Set next date" action**: an ordered
+  list of durations (an interval sequence). A `Date`/`DateTime` field can name a
+  Duration/MultiDuration field via its **Next interval field** option; the date
+  editor then gets a **Set next date** button that advances the date by the head
+  interval and, for a MultiDuration, cycles the list to its next value (wrapping
+  after the last) — one write. Covers spaced-repetition scheduling without a
+  recurrence-rule engine (supersedes the dropped `Recurrence` proposal, #29).
 
 ## [0.0.4] - 2026-07-21
 

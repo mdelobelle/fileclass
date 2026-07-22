@@ -9,7 +9,7 @@
 import { App, Notice, parseYaml, stringifyYaml, TFile } from "obsidian";
 
 import { readFieldValue } from "../io/read";
-import { writeFieldValue } from "../io/write";
+import { writeFieldValue, writeValues } from "../io/write";
 import { childFieldsOf, Field } from "../schema/field";
 import { AdapterHost, Candidate, isMediaType, resolveCandidates } from "./candidates";
 import { makeDisplayDeps } from "./displayDeps";
@@ -20,6 +20,8 @@ import {
 	ObjectListEditorModal,
 } from "./input/objectEditor";
 import { DateInputModal } from "./input/dateInputModal";
+import { DurationInputModal, MultiDurationEditorModal } from "./input/durationModal";
+import { addDuration } from "./duration";
 import {
 	BooleanInputModal,
 	ChoiceSuggestModal,
@@ -37,7 +39,7 @@ import {
 } from "./structuredText";
 import { formatLink, linkTargetPath } from "./links";
 import { asListValue, asObjectValue } from "./objectDraft";
-import { baseBindingOptions, inputTemplate, numberOptions } from "./options";
+import { baseBindingOptions, dateOptions, inputTemplate, numberOptions } from "./options";
 import { editableRootFields, TEXT_INPUT_TYPES } from "./support";
 import { resolveFieldValues } from "./valuesIo";
 import { validateField } from "./validate";
@@ -48,6 +50,54 @@ export interface EditContext {
 	file: TFile;
 	/** All resolved fields of the note (including nested), for child lookup. */
 	allFields: Field[];
+}
+
+/**
+ * Builds the "Set next date" action for a Date/DateTime field, or undefined when
+ * its `nextIntervalField` option doesn't point at a Duration/MultiDuration field
+ * holding a value. The action advances the date by the (head) interval and, for
+ * a MultiDuration, rotates the list head→tail — both in a single write.
+ */
+function nextDateProvider(
+	ctx: EditContext,
+	dateField: Field
+): ((currentIso: string) => Promise<boolean>) | undefined {
+	const name = dateOptions(dateField).nextIntervalField;
+	if (!name) return undefined;
+	const interval = ctx.allFields.find(
+		(f) => f.name === name && (f.type === "Duration" || f.type === "MultiDuration")
+	);
+	if (!interval) return undefined;
+
+	return async (currentIso: string): Promise<boolean> => {
+		const app = ctx.host.app;
+		const stored = readFieldValue(app, ctx.file, interval);
+		const list = interval.type === "MultiDuration" ? toSelectedList(stored) : [String(stored ?? "")];
+		const head = list[0];
+		if (!head) {
+			new Notice(`Fileclass: "${interval.name}" has no interval to apply.`);
+			return false;
+		}
+		const nextDate = addDuration(currentIso, head);
+		if (!nextDate) {
+			new Notice(`Fileclass: could not compute the next date from "${head}".`);
+			return false;
+		}
+		const writes: { namePath: string[]; value: unknown }[] = [
+			{ namePath: [dateField.name], value: nextDate },
+		];
+		if (interval.type === "MultiDuration" && list.length > 1) {
+			writes.push({ namePath: [interval.name], value: [...list.slice(1), head] });
+		}
+		try {
+			await writeValues(app, ctx.file, writes);
+			new Notice(`Fileclass: ${dateField.name} → ${nextDate}`);
+			return true;
+		} catch (err) {
+			new Notice(`Fileclass: could not set the next date (${(err as Error).message}).`);
+			return false;
+		}
+	};
 }
 
 function placeholderFor(field: Field): string {
@@ -280,6 +330,23 @@ export async function promptFieldValue(
 				field,
 				initial: current == null ? "" : String(current),
 				onSubmit: (v) => onValue(v),
+				onAdvance: field.type === "Time" ? undefined : nextDateProvider(ctx, field),
+			}).open();
+			return;
+
+		case "Duration":
+			new DurationInputModal(app, {
+				title: `Set ${field.name}`,
+				initial: current == null ? "" : String(current),
+				onSubmit: (v) => onValue(v),
+			}).open();
+			return;
+
+		case "MultiDuration":
+			new MultiDurationEditorModal(app, {
+				title: `Edit ${field.name}`,
+				initial: toSelectedList(current),
+				onSubmit: (vals) => onValue(vals),
 			}).open();
 			return;
 

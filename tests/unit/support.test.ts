@@ -17,6 +17,8 @@ describe("isInputSupported", () => {
 	it("covers waves A/B/C, excludes computed types", () => {
 		expect(isInputSupported("Input")).toBe(true);
 		expect(isInputSupported("MultiInput")).toBe(true);
+		expect(isInputSupported("Duration")).toBe(true);
+		expect(isInputSupported("MultiDuration")).toBe(true);
 		expect(isInputSupported("MultiFile")).toBe(true);
 		expect(isInputSupported("ObjectList")).toBe(true);
 		expect(isInputSupported("Lookup")).toBe(false);

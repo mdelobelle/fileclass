@@ -22,6 +22,8 @@ export const FIELD_TYPES = [
 	"Date",
 	"DateTime",
 	"Time",
+	"Duration",
+	"CycleDuration",
 	"Multi",
 	"File",
 	"MultiFile",

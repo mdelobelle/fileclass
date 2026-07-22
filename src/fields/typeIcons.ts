@@ -17,6 +17,8 @@ const TYPE_ICONS: Record<FieldType, string> = {
 	Date: "calendar",
 	DateTime: "calendar-clock",
 	Time: "clock",
+	Duration: "timer",
+	CycleDuration: "list-ordered",
 	Multi: "list-checks",
 	File: "file",
 	MultiFile: "files",

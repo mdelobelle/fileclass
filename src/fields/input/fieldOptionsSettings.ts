@@ -14,8 +14,10 @@ import {
 	BaseViewSuggest,
 	NoteFileSuggest,
 } from "../../ui/baseSuggest";
+import { formatDuration } from "../duration";
 import { OptionsDraft } from "../optionsDraft";
 import { renderCanvasSettings } from "./canvasOptionsSettings";
+import { DurationInputModal } from "./durationModal";
 
 export interface FieldOptionsCtx {
 	app: App;
@@ -50,6 +52,10 @@ export function renderFieldOptionsSettings(
 					t.inputEl.addClass("fileclass-template-input");
 				});
 			return;
+		case "Duration":
+		case "CycleDuration":
+			renderDurationPresets(container, draft, ctx.app);
+			return;
 		case "Number":
 			numberField(container, "Min", draft, "min");
 			numberField(container, "Max", draft, "max");
@@ -77,6 +83,21 @@ export function renderFieldOptionsSettings(
 						.setValue(draft.dateLinkPath ?? "")
 						.onChange((v) => (draft.dateLinkPath = v))
 				);
+			if (type !== "Time") {
+				new Setting(container)
+					.setName("Next interval field")
+					.setDesc(
+						"Optional. Name of a Duration or CycleDuration field in this fileClass. Adds a " +
+							'"Set next date" button that advances this date by that interval (and cycles ' +
+							"a CycleDuration list to its next value)."
+					)
+					.addText((t) =>
+						t
+							.setPlaceholder("(none)")
+							.setValue(draft.nextIntervalField ?? "")
+							.onChange((v) => (draft.nextIntervalField = v))
+					);
+			}
 			return;
 		case "Select":
 		case "Cycle":
@@ -149,6 +170,67 @@ function renderLinkSettings(
 			.setDesc("Store the value as an embed (![[…]]).")
 			.addToggle((t) => t.setValue(!!draft.embed).onChange((v) => (draft.embed = v)));
 	}
+}
+
+function renderDurationPresets(container: HTMLElement, draft: OptionsDraft, app: App): void {
+	if (!draft.durationPresets) draft.durationPresets = [];
+	const presets = draft.durationPresets;
+
+	const listEl = container.createDiv();
+	const rebuild = () => {
+		listEl.empty();
+		presets.forEach((p, i) => {
+			new Setting(listEl)
+				.setName(formatDuration(p) || p)
+				.addExtraButton((b) =>
+					b
+						.setIcon("pencil")
+						.setTooltip("Edit")
+						.onClick(() =>
+							new DurationInputModal(app, {
+								title: "Preset duration",
+								initial: p,
+								onSubmit: (v) => {
+									if (v) presets[i] = v;
+									else presets.splice(i, 1);
+									rebuild();
+								},
+							}).open()
+						)
+				)
+				.addExtraButton((b) =>
+					b
+						.setIcon("trash")
+						.setTooltip("Remove")
+						.onClick(() => {
+							presets.splice(i, 1);
+							rebuild();
+						})
+				);
+		});
+	};
+
+	// Header row carries the "Add preset" action (right-aligned), list renders below it.
+	const header = new Setting(container)
+		.setName("Preset durations")
+		.setDesc("Optional. Offered as quick picks when entering a value on a note.")
+		.addButton((b) =>
+			b.setButtonText("Add preset").onClick(() =>
+				new DurationInputModal(app, {
+					title: "Preset duration",
+					initial: "",
+					onSubmit: (v) => {
+						if (v) {
+							presets.push(v);
+							rebuild();
+						}
+					},
+				}).open()
+			)
+		);
+	// Keep the list directly under the header.
+	header.settingEl.insertAdjacentElement("afterend", listEl);
+	rebuild();
 }
 
 function numberField(

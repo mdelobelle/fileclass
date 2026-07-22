@@ -20,6 +20,8 @@ export const EDITABLE_FIELD_TYPES: FieldType[] = FIELD_TYPES.filter((t) => !EXCL
 /** Friendlier picker labels; the stored type id is unchanged. */
 const TYPE_LABELS: Partial<Record<FieldType, string>> = {
 	MultiInput: "Multi input (repeatable)",
+	Duration: "Duration (length of time)",
+	CycleDuration: "Cycle duration (interval cycle)",
 	Select: "Select (single value)",
 	Multi: "Multi (select several)",
 	Cycle: "Cycle (rotate values)",

@@ -28,6 +28,32 @@ describe("Input options", () => {
 	});
 });
 
+describe("Duration presets option", () => {
+	it("round-trips the presets list for Duration and CycleDuration", () => {
+		const draft = optionsToDraft("CycleDuration", { presets: ["P1D", "P1W", "P2W"] });
+		expect(draft.durationPresets).toEqual(["P1D", "P1W", "P2W"]);
+		expect(buildFieldOptions("CycleDuration", draft)).toEqual({ presets: ["P1D", "P1W", "P2W"] });
+		expect(buildFieldOptions("Duration", optionsToDraft("Duration", { presets: ["PT30M"] }))).toEqual({
+			presets: ["PT30M"],
+		});
+	});
+	it("omits an empty presets list but preserves unknown keys", () => {
+		const draft = optionsToDraft("Duration", { custom: "x" });
+		expect(buildFieldOptions("Duration", draft)).toEqual({ custom: "x" });
+	});
+});
+
+describe("Date next-interval option", () => {
+	it("round-trips nextIntervalField for Date/DateTime", () => {
+		const draft = optionsToDraft("Date", { nextIntervalField: "interval" });
+		expect(draft.nextIntervalField).toBe("interval");
+		expect(buildFieldOptions("Date", draft)).toEqual({ nextIntervalField: "interval" });
+	});
+	it("never writes nextIntervalField for a Time field", () => {
+		expect(buildFieldOptions("Time", { nextIntervalField: "interval" })).toEqual({});
+	});
+});
+
 describe("Number options", () => {
 	it("round-trips min/max/step", () => {
 		const draft = optionsToDraft("Number", { min: 1, max: 10, step: 0.5 });
@@ -50,6 +76,7 @@ describe("Date options", () => {
 			dateFormat: "YYYY",
 			defaultInsertAsLink: true,
 			dateLinkPath: "Journal/",
+			nextIntervalField: "",
 		});
 		expect(buildFieldOptions("DateTime", draft)).toEqual({
 			dateFormat: "YYYY",
@@ -60,7 +87,12 @@ describe("Date options", () => {
 
 	it("defaults link path to empty and omits it when blank", () => {
 		const draft = optionsToDraft("Date", { dateFormat: "YYYY" });
-		expect(draft).toEqual({ dateFormat: "YYYY", defaultInsertAsLink: false, dateLinkPath: "" });
+		expect(draft).toEqual({
+			dateFormat: "YYYY",
+			defaultInsertAsLink: false,
+			dateLinkPath: "",
+			nextIntervalField: "",
+		});
 		expect(buildFieldOptions("Date", draft)).toEqual({ dateFormat: "YYYY" });
 	});
 });

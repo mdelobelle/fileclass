@@ -297,3 +297,22 @@
 .fileclass-table td.fileclass-editable:hover {
 	background: var(--background-modifier-hover);
 }
+
+/* Template field option (Input / MultiInput): stack the textarea full-width
+   below its label — the default Setting layout squeezes it into the narrow
+   right-hand control column. */
+.fileclass-template-setting {
+	display: block;
+}
+.fileclass-template-setting .setting-item-control {
+	margin-top: var(--size-4-2);
+	justify-content: flex-start;
+}
+.fileclass-template-input {
+	width: 100%;
+	min-height: 4.5em;
+	resize: vertical;
+	font-family: var(--font-monospace);
+	font-size: var(--font-ui-smaller);
+	white-space: pre-wrap;
+}

@@ -39,12 +39,15 @@ export function renderFieldOptionsSettings(
 						"shows one control per placeholder plus a live preview; each stored value stays a " +
 						(type === "MultiInput" ? "single string (one per list item)." : "single string.")
 				)
+				// Stack the textarea full-width under the label (it's cramped in the
+				// narrow control column otherwise); see styles.css.
+				.setClass("fileclass-template-setting")
 				.addTextArea((t) => {
 					t.setPlaceholder("https://github.com/{{user}}/{{repo}}/")
 						.setValue(draft.template ?? "")
 						.onChange((v) => (draft.template = v));
 					t.inputEl.rows = 4;
-					t.inputEl.setCssStyles({ width: "100%" });
+					t.inputEl.addClass("fileclass-template-input");
 				});
 			return;
 		case "Number":

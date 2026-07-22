@@ -22,9 +22,12 @@ describe("buildBaseYaml", () => {
 		);
 	});
 
-	it("quotes field names that aren't bare identifiers", () => {
+	it("YAML-quotes field names that aren't bare identifiers (bare property name, #37)", () => {
 		const yaml = buildBaseYaml("FC", ["due date"], "fileClass");
-		expect(yaml).toContain('      - note["due date"]');
+		// Bare quoted name — Bases normalizes to note.due date; NOT note["due date"]
+		// (which Bases would re-prefix to note.note["due date"]).
+		expect(yaml).toContain('      - "due date"');
+		expect(yaml).not.toContain("note[");
 	});
 
 	it("respects a custom alias", () => {
@@ -76,10 +79,20 @@ describe("mirrorBaseView", () => {
 		expect(base.views[0]).toEqual({ type: "fileclass-table", name: "Book", order: ["file.name", "a"] });
 	});
 
-	it("quotes non-identifier field names", () => {
+	it("uses bare property names in order (stringifyYaml handles quoting; #37)", () => {
 		const base = { views: [{ type: "table", name: "FC", order: [] }] };
 		mirrorBaseView(base, "FC", ["due date"]);
-		expect(base.views[0].order).toEqual(["file.name", 'note["due date"]']);
+		expect(base.views[0].order).toEqual(["file.name", "due date"]);
+	});
+
+	it("is idempotent for spaced field names — no perpetual re-sync (#37)", () => {
+		const fields = ["due date", "Playing style"];
+		const base = { views: [{ type: "table", name: "FC", order: [] }] };
+		mirrorBaseView(base, "FC", fields);
+		expect(base.views[0].order).toEqual(["file.name", "due date", "Playing style"]);
+		// A base already carrying the bare names reports synced and isn't rewritten.
+		expect(isBaseViewSynced(base, "FC", fields)).toBe(true);
+		expect(mirrorBaseView(base, "FC", fields)).toBe(false);
 	});
 });
 

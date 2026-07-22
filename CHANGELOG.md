@@ -6,6 +6,15 @@ All notable changes to Fileclass are documented here. The format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- **Base columns for fields whose name contains a space** ([#37](https://github.com/mdelobelle/fileclass/issues/37)):
+  a field like `Test Property` was written to the generated base's `order:` as
+  `note["Test Property"]`, which Bases re-prefixed to `note.note["Test Property"]`
+  — an empty, non-editable column. The `order:` now uses the **bare property
+  name** (`- "Test Property"`), which Bases normalizes to `note.Test Property`
+  and renders/edits correctly. Existing bases self-heal on the next sync.
+
 ### Fields & typed input
 
 - **`Color` field type** ([#33](https://github.com/mdelobelle/fileclass/issues/33)):

@@ -76,6 +76,16 @@ tests (§14) must catch it.
 - `entry.getValue('note.x' | 'file.x' | 'formula.x')` accepts string
   identifiers. Empty values are a **null-value singleton** (`toString() ===
   'null'`), not JS `null` — detect by identity (probe a nonexistent property).
+- **`order:` entries are bare property names, not access expressions** (verified
+  via CDP, issue #37). Bases normalizes each entry to a column id: an entry not
+  starting with `file.`/`formula.`/`note.` gets `note.` prepended — so `Playing
+  style` / `"Test Property"` → `note.Playing style` / `note.Test Property`. A
+  `note["Test Property"]` entry is **wrong in `order:`** (Bases re-prefixes it to
+  `note.note["Test Property"]`, an empty column) — the bracket form is only for
+  filters/formulas. `getValue` resolves `note.Test Property` (and bare `Test
+  Property`) but **not** the bracket form. Generate `order:` with the bare name,
+  YAML-quoted when needed (`baseYaml.ts` `yamlScalar`); the runtime column id
+  stays `note.<name>` (spaces included), which `columns.ts` already handles.
 - Bases **formulas/filters traverse nested structures**: `fields[0].name`,
   `note["a"][0]["b"]` work. Dotted *identifiers* (`note.a.0.b`) do NOT traverse
   (taken as a literal key).

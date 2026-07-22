@@ -27,7 +27,7 @@ export const MULTI_TYPES: ReadonlySet<FieldType> = new Set<FieldType>(["Multi"])
 export const LIST_TYPES: ReadonlySet<FieldType> = new Set<FieldType>([
 	"Multi",
 	"MultiInput",
-	"MultiDuration",
+	"CycleDuration",
 	"MultiFile",
 	"MultiMedia",
 ]);
@@ -149,7 +149,7 @@ export function validateField(
 			return isValidDuration(String(value))
 				? VALID
 				: invalid(`"${field.name}" must be a duration (e.g. P1W, PT1H30M)`);
-		case "MultiDuration": {
+		case "CycleDuration": {
 			if (!Array.isArray(value)) return invalid(`"${field.name}" must be a list`);
 			for (const item of value) {
 				if (!isValidDuration(String(item))) {

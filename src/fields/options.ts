@@ -172,15 +172,26 @@ export function inputTemplate(field: Field): string | undefined {
 	return typeof o.template === "string" && o.template.trim() ? o.template : undefined;
 }
 
+/**
+ * Preset durations offered as quick picks when entering a Duration/CycleDuration
+ * value (#30). Stored as an array of ISO 8601 duration strings in `options.presets`.
+ */
+export function durationPresets(field: Field): string[] {
+	const o = asRecord(field.options);
+	return Array.isArray(o.presets)
+		? o.presets.filter((v): v is string => typeof v === "string" && v.trim() !== "")
+		: [];
+}
+
 export interface DateOptions {
 	/** moment.js format; defaults per type when absent. */
 	dateFormat?: string;
 	defaultInsertAsLink?: boolean;
 	dateLinkPath?: string;
 	/**
-	 * Name of a Duration/MultiDuration field in the same fileClass (#30). When set,
+	 * Name of a Duration/CycleDuration field in the same fileClass (#30). When set,
 	 * the date editor gets a "Set next date" button advancing this date by that
-	 * field's (head) interval — and rotating the list for MultiDuration.
+	 * field's (head) interval — and rotating the list for CycleDuration.
 	 */
 	nextIntervalField?: string;
 }

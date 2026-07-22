@@ -24,13 +24,16 @@ All notable changes to Fileclass are documented here. The format follows
   inline validation, or use weeks/days/hours/minutes/seconds spinners — the two
   stay in sync with a live compact preview. Zero runtime dependency; parsing and
   date math are done in-house.
-- **`MultiDuration` field type** + **date "Set next date" action**: an ordered
+- **`CycleDuration` field type** + **date "Set next date" action**: an ordered
   list of durations (an interval sequence). A `Date`/`DateTime` field can name a
-  Duration/MultiDuration field via its **Next interval field** option; the date
+  Duration/CycleDuration field via its **Next interval field** option; the date
   editor then gets a **Set next date** button that advances the date by the head
-  interval and, for a MultiDuration, cycles the list to its next value (wrapping
+  interval and, for a CycleDuration, cycles the list to its next value (wrapping
   after the last) — one write. Covers spaced-repetition scheduling without a
   recurrence-rule engine (supersedes the dropped `Recurrence` proposal, #29).
+- **Preset durations**: `Duration`/`CycleDuration` fields can define a list of
+  preset durations in their schema, offered as quick picks at value entry (a
+  one-click button for `Duration`, tap-to-append chips for `CycleDuration`).
 
 ## [0.0.4] - 2026-07-21
 

@@ -83,18 +83,18 @@ describe("MultiInput", () => {
 	});
 });
 
-describe("Duration / MultiDuration", () => {
+describe("Duration / CycleDuration", () => {
 	it("Duration accepts an RFC 5545 duration, rejects junk", () => {
 		expect(validateField(make("Duration"), "P1W").ok).toBe(true);
 		expect(validateField(make("Duration"), "PT1H30M").ok).toBe(true);
 		expect(validateField(make("Duration"), "3 days").ok).toBe(false);
 		expect(validateField(make("Duration"), "").ok).toBe(true); // optional
 	});
-	it("MultiDuration requires a list of valid durations", () => {
-		expect(validateField(make("MultiDuration"), "P1W").ok).toBe(false); // not a list
-		expect(validateField(make("MultiDuration"), ["P1D", "P2W"]).ok).toBe(true);
-		expect(validateField(make("MultiDuration"), ["P1D", "oops"]).ok).toBe(false);
-		expect(validateField(make("MultiDuration"), []).ok).toBe(true);
+	it("CycleDuration requires a list of valid durations", () => {
+		expect(validateField(make("CycleDuration"), "P1W").ok).toBe(false); // not a list
+		expect(validateField(make("CycleDuration"), ["P1D", "P2W"]).ok).toBe(true);
+		expect(validateField(make("CycleDuration"), ["P1D", "oops"]).ok).toBe(false);
+		expect(validateField(make("CycleDuration"), []).ok).toBe(true);
 	});
 });
 
@@ -140,7 +140,7 @@ describe("required", () => {
 
 describe("type predicates — list vs choice", () => {
 	it("isListType is the multi-valued types (array-valued)", () => {
-		expect(["Multi", "MultiInput", "MultiDuration", "MultiFile", "MultiMedia"].every((t) => isListType(t as FieldType))).toBe(true);
+		expect(["Multi", "MultiInput", "CycleDuration", "MultiFile", "MultiMedia"].every((t) => isListType(t as FieldType))).toBe(true);
 		expect(isListType("Select")).toBe(false);
 		expect(isListType("Input")).toBe(false);
 		expect(isListType("Cycle")).toBe(false);

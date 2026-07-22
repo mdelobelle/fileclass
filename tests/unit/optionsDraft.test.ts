@@ -28,6 +28,21 @@ describe("Input options", () => {
 	});
 });
 
+describe("Duration presets option", () => {
+	it("round-trips the presets list for Duration and CycleDuration", () => {
+		const draft = optionsToDraft("CycleDuration", { presets: ["P1D", "P1W", "P2W"] });
+		expect(draft.durationPresets).toEqual(["P1D", "P1W", "P2W"]);
+		expect(buildFieldOptions("CycleDuration", draft)).toEqual({ presets: ["P1D", "P1W", "P2W"] });
+		expect(buildFieldOptions("Duration", optionsToDraft("Duration", { presets: ["PT30M"] }))).toEqual({
+			presets: ["PT30M"],
+		});
+	});
+	it("omits an empty presets list but preserves unknown keys", () => {
+		const draft = optionsToDraft("Duration", { custom: "x" });
+		expect(buildFieldOptions("Duration", draft)).toEqual({ custom: "x" });
+	});
+});
+
 describe("Date next-interval option", () => {
 	it("round-trips nextIntervalField for Date/DateTime", () => {
 		const draft = optionsToDraft("Date", { nextIntervalField: "interval" });

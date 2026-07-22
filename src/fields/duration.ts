@@ -1,5 +1,5 @@
 /*
- * RFC 5545 DURATION helpers for the Duration / MultiDuration fields (#30,
+ * RFC 5545 DURATION helpers for the Duration / CycleDuration fields (#30,
  * ARCHITECTURE §7.1). Pure, zero-dependency (no Obsidian, no moment): the
  * DURATION grammar is small and date arithmetic is done in UTC, so this is
  * fully unit-testable. Output is constrained to W/D/H/M/S (RFC 5545 forbids

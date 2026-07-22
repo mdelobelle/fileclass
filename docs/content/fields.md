@@ -23,7 +23,7 @@ field types and the commands that set values. Everything is written to
 | **DateTime** | date+time | date-time picker | `YYYY-MM-DDTHH:mm` |
 | **Time** | time | time picker | `HH:mm` |
 | **Duration** | length of time | duration builder | an RFC 5545 `DURATION` (`P1W`, `PT1H30M`) |
-| **MultiDuration** | list of durations | duration list editor | a list of durations |
+| **CycleDuration** | list of durations | duration list editor | a list of durations |
 | **File** | link | note picker | a link string |
 | **MultiFile** | list of links | toggle list | a list of links |
 | **Media** | link/embed | file picker | a link string |
@@ -186,17 +186,23 @@ live compact preview (`1d 6h`); the stored value is always the canonical ISO
 form. Output stays RFC-5545-valid (weeks stand alone; otherwise they fold into
 days). No runtime dependency.
 
-`MultiDuration` stores an **ordered list** of durations — an *interval sequence*.
+A field can also define **preset durations** in its schema (a list you build
+once). They then appear as **quick picks** when entering a value: a one-click
+button on a `Duration` field, and chips you tap to append on a `CycleDuration`
+list (you can still reorder, add a custom one, or repeat a preset). Presets are
+a convenience — values are still stored per note.
+
+`CycleDuration` stores an **ordered list** of durations — an *interval sequence*.
 
 ### Set next date (spaced repetition)
 
 This is how you schedule a date that moves forward by your own sequence of
 intervals (spaced repetition, recurring reviews, chores):
 
-1. Add a **`MultiDuration`** field (e.g. `next interval`) and enter your intervals
+1. Add a **`CycleDuration`** field (e.g. `next interval`) and enter your intervals
    in order — say `1 day`, `1 week`, `2 weeks`, `5 weeks`.
 2. On a **`Date`** (or `DateTime`) field (e.g. `next session`), set its **Next
-   interval field** option to that MultiDuration field's name.
+   interval field** option to that CycleDuration field's name.
 3. Editing the date now shows a **Set next date** button. One click:
    - computes `current date + first interval`,
    - writes it to the date field, and

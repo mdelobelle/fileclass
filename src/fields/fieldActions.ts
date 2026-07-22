@@ -20,7 +20,7 @@ import {
 	ObjectListEditorModal,
 } from "./input/objectEditor";
 import { DateInputModal } from "./input/dateInputModal";
-import { DurationInputModal, MultiDurationEditorModal } from "./input/durationModal";
+import { DurationInputModal, CycleDurationEditorModal } from "./input/durationModal";
 import { addDuration } from "./duration";
 import {
 	BooleanInputModal,
@@ -39,7 +39,13 @@ import {
 } from "./structuredText";
 import { formatLink, linkTargetPath } from "./links";
 import { asListValue, asObjectValue } from "./objectDraft";
-import { baseBindingOptions, dateOptions, inputTemplate, numberOptions } from "./options";
+import {
+	baseBindingOptions,
+	dateOptions,
+	durationPresets,
+	inputTemplate,
+	numberOptions,
+} from "./options";
 import { editableRootFields, TEXT_INPUT_TYPES } from "./support";
 import { resolveFieldValues } from "./valuesIo";
 import { validateField } from "./validate";
@@ -54,9 +60,9 @@ export interface EditContext {
 
 /**
  * Builds the "Set next date" action for a Date/DateTime field, or undefined when
- * its `nextIntervalField` option doesn't point at a Duration/MultiDuration field
+ * its `nextIntervalField` option doesn't point at a Duration/CycleDuration field
  * holding a value. The action advances the date by the (head) interval and, for
- * a MultiDuration, rotates the list head→tail — both in a single write.
+ * a CycleDuration, rotates the list head→tail — both in a single write.
  */
 function nextDateProvider(
 	ctx: EditContext,
@@ -65,14 +71,14 @@ function nextDateProvider(
 	const name = dateOptions(dateField).nextIntervalField;
 	if (!name) return undefined;
 	const interval = ctx.allFields.find(
-		(f) => f.name === name && (f.type === "Duration" || f.type === "MultiDuration")
+		(f) => f.name === name && (f.type === "Duration" || f.type === "CycleDuration")
 	);
 	if (!interval) return undefined;
 
 	return async (currentIso: string): Promise<boolean> => {
 		const app = ctx.host.app;
 		const stored = readFieldValue(app, ctx.file, interval);
-		const list = interval.type === "MultiDuration" ? toSelectedList(stored) : [String(stored ?? "")];
+		const list = interval.type === "CycleDuration" ? toSelectedList(stored) : [String(stored ?? "")];
 		const head = list[0];
 		if (!head) {
 			new Notice(`Fileclass: "${interval.name}" has no interval to apply.`);
@@ -86,7 +92,7 @@ function nextDateProvider(
 		const writes: { namePath: string[]; value: unknown }[] = [
 			{ namePath: [dateField.name], value: nextDate },
 		];
-		if (interval.type === "MultiDuration" && list.length > 1) {
+		if (interval.type === "CycleDuration" && list.length > 1) {
 			writes.push({ namePath: [interval.name], value: [...list.slice(1), head] });
 		}
 		try {
@@ -338,14 +344,16 @@ export async function promptFieldValue(
 			new DurationInputModal(app, {
 				title: `Set ${field.name}`,
 				initial: current == null ? "" : String(current),
+				presets: durationPresets(field),
 				onSubmit: (v) => onValue(v),
 			}).open();
 			return;
 
-		case "MultiDuration":
-			new MultiDurationEditorModal(app, {
+		case "CycleDuration":
+			new CycleDurationEditorModal(app, {
 				title: `Edit ${field.name}`,
 				initial: toSelectedList(current),
+				presets: durationPresets(field),
 				onSubmit: (vals) => onValue(vals),
 			}).open();
 			return;

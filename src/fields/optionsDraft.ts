@@ -26,13 +26,18 @@ export interface OptionsDraft {
 	dateFormat?: string;
 	defaultInsertAsLink?: boolean;
 	dateLinkPath?: string;
-	/** Date/DateTime: name of a Duration/MultiDuration field for "Set next date". */
+	/** Date/DateTime: name of a Duration/CycleDuration field for "Set next date". */
 	nextIntervalField?: string;
 	// Input
 	/** Input `template` option (#27): guided composed value with placeholders. */
 	template?: string;
 	/** Original Input options, so unknown keys survive a template edit. */
 	inputRawOptions?: Record<string, unknown>;
+	// Duration / CycleDuration
+	/** Preset durations (ISO strings) offered as quick picks at value entry (#30). */
+	durationPresets?: string[];
+	/** Original Duration options, so unknown keys survive an edit. */
+	durationRawOptions?: Record<string, unknown>;
 	// Object / ObjectList
 	displayTemplate?: string;
 	/** Original options, so unknown keys survive a template edit. */
@@ -96,6 +101,14 @@ export function optionsToDraft(type: FieldType, options: FieldOptions): OptionsD
 			return {
 				template: typeof o.template === "string" ? o.template : "",
 				inputRawOptions: Array.isArray(options) ? {} : { ...o },
+			};
+		case "Duration":
+		case "CycleDuration":
+			return {
+				durationPresets: Array.isArray(o.presets)
+					? o.presets.filter((v): v is string => typeof v === "string")
+					: [],
+				durationRawOptions: Array.isArray(options) ? {} : { ...o },
 			};
 		case "Number":
 			return { step: numStr(o.step), min: numStr(o.min), max: numStr(o.max) };
@@ -180,6 +193,15 @@ export function buildFieldOptions(type: FieldType, draft: OptionsDraft): FieldOp
 			delete o.template;
 			const tpl = draft.template?.trim();
 			if (tpl) o.template = tpl;
+			return o;
+		}
+		case "Duration":
+		case "CycleDuration": {
+			// Preserve any unknown option keys; only manage the presets list.
+			const o = { ...(draft.durationRawOptions ?? {}) };
+			delete o.presets;
+			const presets = (draft.durationPresets ?? []).filter((p) => p.trim() !== "");
+			if (presets.length) o.presets = presets;
 			return o;
 		}
 		case "Number": {

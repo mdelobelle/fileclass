@@ -9,7 +9,7 @@ import { isEmpty, isListType } from "./validate";
 export function displayValue(field: Field, value: unknown): string {
 	if (isEmpty(value)) return "";
 	if (field.type === "Duration") return formatDuration(String(value)) || String(value);
-	if (field.type === "MultiDuration" && Array.isArray(value)) {
+	if (field.type === "CycleDuration" && Array.isArray(value)) {
 		return value.map((v) => formatDuration(String(v)) || String(v)).join(", ");
 	}
 	if (field.type === "ObjectList") {

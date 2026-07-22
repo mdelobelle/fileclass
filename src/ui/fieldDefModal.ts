@@ -21,7 +21,7 @@ export const EDITABLE_FIELD_TYPES: FieldType[] = FIELD_TYPES.filter((t) => !EXCL
 const TYPE_LABELS: Partial<Record<FieldType, string>> = {
 	MultiInput: "Multi input (repeatable)",
 	Duration: "Duration (length of time)",
-	MultiDuration: "Multi duration (interval cycle)",
+	CycleDuration: "Cycle duration (interval cycle)",
 	Select: "Select (single value)",
 	Multi: "Multi (select several)",
 	Cycle: "Cycle (rotate values)",

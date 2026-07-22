@@ -57,7 +57,7 @@ export class DateInputModal extends Modal {
 			onSubmit: (value: string | undefined) => void;
 			/**
 			 * When set, a "Set next date" button advances the date by a linked
-			 * Duration/MultiDuration field. It performs the full write itself (date +
+			 * Duration/CycleDuration field. It performs the full write itself (date +
 			 * any interval rotation) and resolves; the modal then closes.
 			 */
 			onAdvance?: (currentIso: string) => Promise<boolean>;

@@ -23,7 +23,7 @@ export const FIELD_TYPES = [
 	"DateTime",
 	"Time",
 	"Duration",
-	"MultiDuration",
+	"CycleDuration",
 	"Multi",
 	"File",
 	"MultiFile",

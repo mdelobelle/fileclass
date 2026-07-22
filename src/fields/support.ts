@@ -23,7 +23,7 @@ export const SUPPORTED_INPUT_TYPES: ReadonlySet<FieldType> = new Set<FieldType>(
 	"Multi",
 	"MultiInput",
 	"Duration",
-	"MultiDuration",
+	"CycleDuration",
 	"File",
 	"MultiFile",
 	"Media",
@@ -52,7 +52,7 @@ export function defaultValueFor(field: Field): unknown {
 			return {};
 		case "Multi":
 		case "MultiInput":
-		case "MultiDuration":
+		case "CycleDuration":
 		case "MultiFile":
 		case "MultiMedia":
 		case "ObjectList":

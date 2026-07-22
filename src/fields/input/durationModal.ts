@@ -2,7 +2,7 @@
  * Duration builder modal (#30). Number inputs for weeks/days/hours/minutes/
  * seconds composing an RFC 5545 DURATION, with a live compact preview. Pure
  * DURATION logic lives in src/fields/duration.ts; this is just the UI. Reused
- * per item by the MultiDuration list editor.
+ * per item by the CycleDuration list editor.
  */
 import { App, Modal, Setting, TextComponent } from "obsidian";
 
@@ -26,6 +26,8 @@ export interface DurationModalOptions {
 	title: string;
 	initial: string;
 	onSubmit: (value: string) => void;
+	/** Preset durations (ISO) offered as one-click quick picks (#30). */
+	presets?: string[];
 }
 
 export class DurationInputModal extends Modal {
@@ -56,6 +58,16 @@ export class DurationInputModal extends Modal {
 			});
 		this.errorEl = contentEl.createDiv({ cls: "setting-item-description" });
 		this.errorEl.setCssStyles({ color: "var(--text-error)", minHeight: "1.2em" });
+
+		const presets = (this.opts.presets ?? []).filter((p) => parseDurationInput(p));
+		if (presets.length) {
+			const row = new Setting(contentEl).setName("Quick pick");
+			for (const preset of presets) {
+				row.addButton((b) =>
+					b.setButtonText(formatDuration(preset) || preset).onClick(() => this.applyValue(preset))
+				);
+			}
+		}
 
 		for (const { key, label } of UNITS) {
 			new Setting(contentEl).setName(label).addText((t) => {
@@ -104,6 +116,15 @@ export class DurationInputModal extends Modal {
 		this.refreshPreview();
 	}
 
+	/** Applies a whole duration value (from a quick pick) to text, spinners, preview. */
+	private applyValue(iso: string): void {
+		this.parts = parseDurationInput(iso) ?? { ...ZERO_DURATION };
+		this.freeText.setValue(buildDuration(this.parts));
+		this.syncSpinners();
+		this.setError("");
+		this.refreshPreview();
+	}
+
 	private syncSpinners(): void {
 		for (const [key, comp] of this.spinners) comp.setValue(String(this.parts[key]));
 	}
@@ -131,22 +152,24 @@ export class DurationInputModal extends Modal {
 	}
 }
 
-export interface MultiDurationModalOptions {
+export interface CycleDurationModalOptions {
 	title: string;
 	initial: string[];
 	onSubmit: (values: string[]) => void;
+	/** Preset durations (ISO) offered as one-click chips to append (#30). */
+	presets?: string[];
 }
 
 /**
- * Ordered list editor for a MultiDuration field (#30): add / remove / reorder
+ * Ordered list editor for a CycleDuration field (#30): add / remove / reorder
  * durations, each entered through the DurationInputModal. The order is
  * meaningful — it is the interval sequence a linked date field cycles through.
  * Blank durations are dropped on save.
  */
-export class MultiDurationEditorModal extends Modal {
+export class CycleDurationEditorModal extends Modal {
 	private readonly items: string[];
 
-	constructor(app: App, private readonly opts: MultiDurationModalOptions) {
+	constructor(app: App, private readonly opts: CycleDurationModalOptions) {
 		super(app);
 		this.items = [...opts.initial];
 	}
@@ -159,6 +182,7 @@ export class MultiDurationEditorModal extends Modal {
 		new DurationInputModal(this.app, {
 			title: `${this.opts.title} — item ${index + 1}`,
 			initial: this.items[index] ?? "",
+			presets: this.opts.presets,
 			onSubmit: (v) => {
 				this.items[index] = v;
 				this.render();
@@ -200,9 +224,22 @@ export class MultiDurationEditorModal extends Modal {
 				);
 		});
 
+		const presets = (this.opts.presets ?? []).filter((p) => parseDurationInput(p));
+		if (presets.length) {
+			const row = new Setting(contentEl).setName("Add preset");
+			for (const preset of presets) {
+				row.addButton((b) =>
+					b.setButtonText(formatDuration(preset) || preset).onClick(() => {
+						this.items.push(preset);
+						this.render();
+					})
+				);
+			}
+		}
+
 		new Setting(contentEl)
 			.addButton((b) =>
-				b.setButtonText("Add duration").onClick(() => {
+				b.setButtonText(presets.length ? "Add custom" : "Add duration").onClick(() => {
 					this.items.push("");
 					this.editItem(this.items.length - 1);
 				})

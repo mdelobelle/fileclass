@@ -8,6 +8,7 @@
  */
 import { Field, FieldType } from "../schema/field";
 import { isValidDuration } from "./duration";
+import { isValidLocation } from "./location";
 import { numberOptions } from "./options";
 
 export interface ValidationResult {
@@ -158,6 +159,10 @@ export function validateField(
 			}
 			return VALID;
 		}
+		case "Location":
+			return isValidLocation(String(value))
+				? VALID
+				: invalid(`"${field.name}" must be "lat,lon" (lat −90..90, lon −180..180)`);
 		case "Date":
 			return validateDatePattern(value, field, DATE_RE);
 		case "DateTime":

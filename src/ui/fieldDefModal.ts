@@ -22,6 +22,7 @@ const TYPE_LABELS: Partial<Record<FieldType, string>> = {
 	MultiInput: "Multi input (repeatable)",
 	Duration: "Duration (length of time)",
 	CycleDuration: "Cycle duration (interval cycle)",
+	Location: "Location (coordinates)",
 	Select: "Select (single value)",
 	Multi: "Multi (select several)",
 	Cycle: "Cycle (rotate values)",

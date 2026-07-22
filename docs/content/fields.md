@@ -24,6 +24,7 @@ field types and the commands that set values. Everything is written to
 | **Time** | time | time picker | `HH:mm` |
 | **Duration** | length of time | duration builder | an RFC 5545 `DURATION` (`P1W`, `PT1H30M`) |
 | **CycleDuration** | list of durations | duration list editor | a list of durations |
+| **Location** | `"lat,lon"` | coordinate inputs + paste | lat −90..90, lon −180..180 |
 | **File** | link | note picker | a link string |
 | **MultiFile** | list of links | toggle list | a list of links |
 | **Media** | link/embed | file picker | a link string |
@@ -216,6 +217,29 @@ instead gives a fixed interval (added every time, no rotation).
 It is a **manual, one-shot action** — no automatic recomputation and nothing
 touches other notes, so it stays within Fileclass's guided-input scope (computed
 fields remain out of scope).
+
+## Location
+
+A `Location` field stores geographic coordinates as a **`"lat,lon"`** scalar
+(the core Bases Map view / Map View plugin convention):
+
+```yaml
+location: "48.8566,2.3522"
+```
+
+Editing gives two **range-validated** number fields (latitude −90..90, longitude
+−180..180) plus a **paste** box that accepts a `"lat,lon"` string and fills them.
+**Open in map** opens the coordinates on OpenStreetMap in your browser.
+
+> **No embedded map picker.** An in-app map means loading remote tiles, which is
+> against Fileclass's no-remote-resources stance (and an Electron `<webview>`
+> proved unstable). To pick a new spot, use **Open in map** or any map site in
+> your browser, then copy the `lat,lon` from the URL and paste it here.
+
+Because the value uses the standard `"lat,lon"` convention, a note with a
+`Location` field is picked up **automatically** by the core **Bases Map view**
+and the community **Map View** plugin — Fileclass just makes the property easy to
+enter correctly; it does not generate map views itself.
 
 ## Where allowed values come from
 

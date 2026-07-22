@@ -8,6 +8,11 @@ All notable changes to Fileclass are documented here. The format follows
 
 ### Fields & typed input
 
+- **`Location` field type** ([#31](https://github.com/mdelobelle/fileclass/issues/31)):
+  stores geographic coordinates as a `"lat,lon"` scalar (Bases Map view
+  convention). Guided entry with range-validated latitude/longitude fields, a
+  paste box, and an **Open in map** link (opens OpenStreetMap in the browser).
+  No embedded map picker (no remote resources loaded in the plugin).
 - **`template` option on `Input`** ([#27](https://github.com/mdelobelle/fileclass/issues/27)):
   compose an `Input` value from a fixed structure with `{{name}}` (free-text) and
   `{{name:["a","b"]}}` (dropdown) placeholders. Editing shows a guided form with

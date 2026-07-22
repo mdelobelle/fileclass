@@ -19,6 +19,7 @@ const TYPE_ICONS: Record<FieldType, string> = {
 	Time: "clock",
 	Duration: "timer",
 	CycleDuration: "list-ordered",
+	Location: "map-pin",
 	Multi: "list-checks",
 	File: "file",
 	MultiFile: "files",

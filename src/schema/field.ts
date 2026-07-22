@@ -25,6 +25,7 @@ export const FIELD_TYPES = [
 	"Duration",
 	"CycleDuration",
 	"Location",
+	"Icon",
 	"Multi",
 	"File",
 	"MultiFile",

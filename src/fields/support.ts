@@ -25,6 +25,7 @@ export const SUPPORTED_INPUT_TYPES: ReadonlySet<FieldType> = new Set<FieldType>(
 	"Duration",
 	"CycleDuration",
 	"Location",
+	"Icon",
 	"File",
 	"MultiFile",
 	"Media",

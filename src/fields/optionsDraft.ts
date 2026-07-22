@@ -38,6 +38,11 @@ export interface OptionsDraft {
 	durationPresets?: string[];
 	/** Original Duration options, so unknown keys survive an edit. */
 	durationRawOptions?: Record<string, unknown>;
+	// Icon
+	/** Icon bank the picker offers (#32); default "lucide". */
+	iconSource?: string;
+	/** Original Icon options, so unknown keys survive an edit. */
+	iconRawOptions?: Record<string, unknown>;
 	// Object / ObjectList
 	displayTemplate?: string;
 	/** Original options, so unknown keys survive a template edit. */
@@ -109,6 +114,11 @@ export function optionsToDraft(type: FieldType, options: FieldOptions): OptionsD
 					? o.presets.filter((v): v is string => typeof v === "string")
 					: [],
 				durationRawOptions: Array.isArray(options) ? {} : { ...o },
+			};
+		case "Icon":
+			return {
+				iconSource: typeof o.iconSource === "string" ? o.iconSource : "lucide",
+				iconRawOptions: Array.isArray(options) ? {} : { ...o },
 			};
 		case "Number":
 			return { step: numStr(o.step), min: numStr(o.min), max: numStr(o.max) };
@@ -202,6 +212,14 @@ export function buildFieldOptions(type: FieldType, draft: OptionsDraft): FieldOp
 			delete o.presets;
 			const presets = (draft.durationPresets ?? []).filter((p) => p.trim() !== "");
 			if (presets.length) o.presets = presets;
+			return o;
+		}
+		case "Icon": {
+			// Preserve any unknown option keys; only manage iconSource (omit default).
+			const o = { ...(draft.iconRawOptions ?? {}) };
+			delete o.iconSource;
+			const src = draft.iconSource?.trim();
+			if (src && src !== "lucide") o.iconSource = src;
 			return o;
 		}
 		case "Number": {

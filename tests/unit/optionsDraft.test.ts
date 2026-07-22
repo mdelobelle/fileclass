@@ -43,6 +43,19 @@ describe("Duration presets option", () => {
 	});
 });
 
+describe("Icon options", () => {
+	it("round-trips a non-default iconSource, omits the default", () => {
+		const draft = optionsToDraft("Icon", { iconSource: "all" });
+		expect(draft.iconSource).toBe("all");
+		expect(buildFieldOptions("Icon", draft)).toEqual({ iconSource: "all" });
+		expect(buildFieldOptions("Icon", optionsToDraft("Icon", {}))).toEqual({}); // default lucide omitted
+	});
+	it("preserves unknown keys", () => {
+		const draft = optionsToDraft("Icon", { custom: "x" });
+		expect(buildFieldOptions("Icon", draft)).toEqual({ custom: "x" });
+	});
+});
+
 describe("Date next-interval option", () => {
 	it("round-trips nextIntervalField for Date/DateTime", () => {
 		const draft = optionsToDraft("Date", { nextIntervalField: "interval" });

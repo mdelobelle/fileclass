@@ -316,3 +316,31 @@
 	font-size: var(--font-ui-smaller);
 	white-space: pre-wrap;
 }
+
+/* Icon picker grid (#32) — real previews via setIcon. */
+.fileclass-icon-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(2.4em, 1fr));
+	gap: var(--size-4-1);
+	max-height: 50vh;
+	overflow-y: auto;
+	padding: var(--size-4-2) 0;
+}
+.fileclass-icon-cell {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	aspect-ratio: 1;
+	padding: 0;
+	cursor: pointer;
+	background: transparent;
+	border: 1px solid transparent;
+	border-radius: var(--radius-s);
+	box-shadow: none;
+}
+.fileclass-icon-cell:hover {
+	background: var(--background-modifier-hover);
+}
+.fileclass-icon-cell.is-selected {
+	border-color: var(--interactive-accent);
+}

@@ -6,6 +6,13 @@ All notable changes to Fileclass are documented here. The format follows
 
 ## [Unreleased]
 
+### UI
+
+- **Consistent field-type value previews** ([#44](https://github.com/mdelobelle/fileclass/issues/44)):
+  a `Color` value now shows its swatch and an `Icon` value its glyph everywhere a
+  value is displayed — the editable `fileclass-table` view, the native Properties
+  editor, and the note-fields modal — via one shared helper. Display-only.
+
 ### Fixed
 
 - **Base columns for fields whose name contains a space** ([#37](https://github.com/mdelobelle/fileclass/issues/37)):

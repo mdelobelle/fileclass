@@ -16,8 +16,10 @@ import { EditContext, updateField } from "../fields/fieldActions";
 import { isInputSupported } from "../fields/support";
 import { fieldTypeIcon } from "../fields/typeIcons";
 import { Field, isRootField } from "../schema/field";
+import { makeValuePreview } from "./valuePreview";
 
 const BTN_CLASS = "fileclass-prop-edit";
+const PREVIEW_CLASS = "fileclass-prop-preview";
 /** Leaf types whose views render a native Properties editor. */
 const LEAF_TYPES = ["markdown", "file-properties"];
 
@@ -96,16 +98,35 @@ export class PropertyEditButtons extends Component {
 		const file = this.fileForRow(row);
 		const field = file && this.editableField(file, key);
 		const existing = row.querySelector<HTMLElement>(`:scope > .${BTN_CLASS}`);
+		const existingPreview = row.querySelector<HTMLElement>(`:scope > .${PREVIEW_CLASS}`);
 
 		if (!field) {
 			existing?.remove(); // key no longer maps to an editable field
+			existingPreview?.remove();
 			return;
 		}
-		if (existing) {
-			if (existing.dataset.fcKey === key) return; // up to date
-			existing.remove();
+		if (!existing || existing.dataset.fcKey !== key) {
+			existing?.remove();
+			row.insertBefore(this.makeButton(file, field, key), valueEl);
 		}
-		row.insertBefore(this.makeButton(file, field, key), valueEl);
+		// Type preview (Color swatch / Icon glyph) beside the value. Dedup by
+		// key+value so a settled row triggers no further DOM mutation (the row is
+		// watched — re-injecting every run would loop).
+		const value = (valueEl.textContent ?? "").trim();
+		if (
+			!existingPreview ||
+			existingPreview.dataset.fcKey !== key ||
+			existingPreview.dataset.fcValue !== value
+		) {
+			existingPreview?.remove();
+			const preview = makeValuePreview(field, value);
+			if (preview) {
+				preview.addClass(PREVIEW_CLASS);
+				preview.dataset.fcKey = key;
+				preview.dataset.fcValue = value;
+				row.insertBefore(preview, valueEl);
+			}
+		}
 	}
 
 	private makeButton(file: TFile, field: Field, key: string): HTMLElement {

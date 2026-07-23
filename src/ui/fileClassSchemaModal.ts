@@ -20,6 +20,7 @@ import {
 } from "../schema/fileClassWrite";
 import { ChoiceSuggestModal } from "../fields/input/valueModals";
 import { FieldDefModal } from "./fieldDefModal";
+import { makeStickyFooter } from "./modalFooter";
 import { FileClassOptionsModal } from "./fileClassOptionsModal";
 
 export class FileClassSchemaModal extends Modal {
@@ -111,7 +112,7 @@ export class FileClassSchemaModal extends Modal {
 				);
 		});
 
-		new Setting(contentEl).addButton((b) =>
+		new Setting(makeStickyFooter(contentEl)).addButton((b) =>
 			b.setButtonText("Add field").setCta().onClick(() => this.addField())
 		);
 	}

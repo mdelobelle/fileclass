@@ -8,6 +8,7 @@ import { App, Modal, Notice, Setting } from "obsidian";
 import { renderFieldOptionsSettings } from "../fields/input/fieldOptionsSettings";
 import { buildFieldOptions, optionsToDraft, OptionsDraft } from "../fields/optionsDraft";
 import { FIELD_TYPES, FieldOptions, FieldType } from "../schema/field";
+import { makeStickyFooter } from "./modalFooter";
 
 /**
  * Types offered in the schema editor. Excludes only Lookup/Formula (computed —
@@ -92,7 +93,7 @@ export class FieldDefModal extends Modal {
 
 		renderOptions();
 
-		new Setting(contentEl).addButton((b) =>
+		new Setting(makeStickyFooter(contentEl)).addButton((b) =>
 			b
 				.setButtonText("Save")
 				.setCta()

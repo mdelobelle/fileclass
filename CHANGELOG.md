@@ -8,6 +8,11 @@ All notable changes to Fileclass are documented here. The format follows
 
 ### UI
 
+- **Sticky action footer in tall modals** ([#49](https://github.com/mdelobelle/fileclass/issues/49)):
+  the primary button (Save / Add field) stays pinned to the bottom while the
+  fields scroll, so it's always reachable — Add/edit field, fileClass options,
+  the schema editor, and the Object/ObjectList editors.
+
 - **User-editable custom color palette** ([#43](https://github.com/mdelobelle/fileclass/issues/43)):
   define your own colors in Settings → **Custom colors** (add via the native
   dialog, remove on hover). They appear in every `Color` picker after the

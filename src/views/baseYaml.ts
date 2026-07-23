@@ -6,9 +6,14 @@
  */
 import { FILECLASS_TABLE_VIEW } from "./columns";
 
-/** Quotes a value/property for the `order:` list only when it isn't a bare identifier. */
-export function orderEntry(name: string): string {
-	return /^[A-Za-z_$][\w$]*$/.test(name) ? name : `note[${JSON.stringify(name)}]`;
+/**
+ * YAML-quotes a field name for the manual `order:` text when it isn't a bare
+ * identifier. The order entry is the **bare property name** (Bases prefixes it
+ * with `note.`); a `note[...]` form is wrong there — Bases would re-prefix it to
+ * `note.note["…"]` (issue #37). The bracket form is only for filters/formulas.
+ */
+export function yamlScalar(name: string): string {
+	return /^[A-Za-z_$][\w$]*$/u.test(name) ? name : JSON.stringify(name);
 }
 
 interface BaseView {
@@ -28,9 +33,15 @@ function isManagedTable(view: BaseView, viewName: string): boolean {
 	);
 }
 
-/** The `order` a managed view mirrors: `file.name` then the fileClass fields. */
+/**
+ * The `order` a managed view mirrors: `file.name` then the fileClass fields, as
+ * **bare property names** — the value Bases parses (and normalizes to
+ * `note.<name>`) and the value `parseYaml` yields on re-read, so sync comparison
+ * is stable. YAML quoting is a serialization concern handled by `stringifyYaml`
+ * (sync path) or `yamlScalar` (create path).
+ */
 export function mirrorOrder(fieldNames: string[]): string[] {
-	return ["file.name", ...fieldNames.map(orderEntry)];
+	return ["file.name", ...fieldNames];
 }
 
 /**
@@ -83,7 +94,6 @@ export function buildBaseYaml(
 	alias: string,
 	viewName: string = fileClassName
 ): string {
-	const order = ["file.name", ...rootFieldNames.map(orderEntry)];
 	const lines = [
 		"filters:",
 		"  and:",
@@ -92,7 +102,8 @@ export function buildBaseYaml(
 		`  - type: ${FILECLASS_TABLE_VIEW}`,
 		`    name: ${JSON.stringify(viewName)}`,
 		"    order:",
-		...order.map((o) => `      - ${o}`),
+		"      - file.name",
+		...rootFieldNames.map((n) => `      - ${yamlScalar(n)}`),
 	];
 	return lines.join("\n") + "\n";
 }

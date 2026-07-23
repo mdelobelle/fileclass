@@ -1,7 +1,7 @@
 {
 	"id": "fileclass",
 	"name": "Fileclass",
-	"version": "0.0.4",
+	"version": "0.1.0",
 	"minAppVersion": "1.12.7",
 	"description": "Typed, validated note properties with guided input — reusable note types, a schema for your frontmatter. Successor to Metadata Menu, powered by Bases.",
 	"author": "mdelobelle",

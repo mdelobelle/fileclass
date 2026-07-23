@@ -1,6 +1,6 @@
 {
 	"name": "fileclass",
-	"version": "0.0.4",
+	"version": "0.1.0",
 	"description": "Schemas, typed fields & data quality for your Obsidian vault — powered by Bases.",
 	"main": "main.js",
 	"type": "module",

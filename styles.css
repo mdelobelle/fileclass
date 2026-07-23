@@ -110,6 +110,14 @@
 .metadata-property > .fileclass-prop-edit:hover {
 	color: var(--text-normal);
 }
+/* Type preview (color swatch / icon glyph) beside a property value. */
+.metadata-property > .fileclass-prop-preview {
+	flex: 0 0 auto;
+	align-self: center;
+	display: inline-flex;
+	align-items: center;
+	margin: 0 2px;
+}
 .metadata-property > .fileclass-prop-edit svg {
 	width: 15px;
 	height: 15px;

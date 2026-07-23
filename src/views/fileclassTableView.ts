@@ -19,6 +19,7 @@ import { isInputSupported } from "../fields/support";
 import { hasAllowedValues, validateField } from "../fields/validate";
 import { resolveFieldValues } from "../fields/valuesIo";
 import { readFieldValue } from "../io/read";
+import { makeValuePreview } from "../ui/valuePreview";
 import { Field, isRootField } from "../schema/field";
 import {
 	columnLabel,
@@ -135,12 +136,19 @@ class FileclassTableView extends Component {
 		// Flex wrapper: content truncates, an injected indicator stays pinned.
 		const content = cell.createDiv({ cls: "fc-cell" });
 		const source = entry.file.path;
+		const field = this.editableField(entry.file, col);
 
 		if (col === "file.name") {
 			// Like the standard first column: a link to the note.
 			this.renderInternalLink(content, entry.file.path, entry.file.basename, source);
 		} else {
-			for (const seg of parseCellSegments(this.cellText(entry, col))) {
+			const raw = this.cellText(entry, col);
+			// A type preview (Color swatch / Icon glyph) leads the value, if any.
+			if (field) {
+				const preview = makeValuePreview(field, raw);
+				if (preview) content.prepend(preview);
+			}
+			for (const seg of parseCellSegments(raw)) {
 				if ("link" in seg) this.renderInternalLink(content, seg.link, seg.display, source);
 				else content.createSpan({ cls: "fc-seg", text: seg.text });
 			}
@@ -150,7 +158,6 @@ class FileclassTableView extends Component {
 		const full = content.textContent ?? "";
 		if (full) cell.setAttribute("title", full);
 
-		const field = this.editableField(entry.file, col);
 		if (!field) return;
 		cell.addClass("fileclass-editable");
 		cell.addEventListener("click", (e) => {

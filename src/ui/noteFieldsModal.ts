@@ -18,14 +18,13 @@ import {
 	updateField,
 } from "../fields/fieldActions";
 import { describeField, DisplayDeps } from "../fields/objectDisplay";
-import { isValidCssColor } from "../fields/color";
 import { isInputSupported } from "../fields/support";
 import { fieldTypeIcon } from "../fields/typeIcons";
 import { INDEXED_EVENT } from "../schema/fileclassIndex";
 import { readFieldValue } from "../io/read";
 import { Field, isRootField } from "../schema/field";
 import { AddFileClassModal } from "./addFileClassModal";
-import { paintIcon } from "./iconSuggest";
+import { makeValuePreview } from "./valuePreview";
 import { FileClassNavModal } from "./fileClassNavModal";
 import { makeIndicatorIcon, MODAL_SCOPE, navIndicatorFile } from "./indicator/indicatorDom";
 import { renderValueWithLinks } from "./valueLinks";
@@ -140,23 +139,10 @@ export class NoteFieldsModal extends Modal {
 		renderValueWithLinks(valueEl, value, this.file.path, this.app, (linktext) =>
 			this.linkIndicator(linktext)
 		);
-		this.prependValuePreview(valueEl, field, value);
+		const preview = makeValuePreview(field, value);
+		if (preview) valueEl.prepend(preview);
 
 		this.addRowActions(ctx, setting, field);
-	}
-
-	/** Prepends a visual preview to a value: a color swatch (Color) or glyph (Icon). */
-	private prependValuePreview(valueEl: HTMLElement, field: Field, value: string): void {
-		if (!value) return;
-		if (field.type === "Color" && isValidCssColor(value)) {
-			const dot = valueEl.createSpan({ cls: "fileclass-color-dot" });
-			dot.setCssStyles({ backgroundColor: value });
-			valueEl.prepend(dot);
-		} else if (field.type === "Icon") {
-			const glyph = valueEl.createSpan({ cls: "fileclass-value-icon" });
-			paintIcon(glyph, value);
-			valueEl.prepend(glyph);
-		}
 	}
 
 	/** Right-side quick actions, chosen by field type. */

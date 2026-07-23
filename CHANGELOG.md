@@ -13,6 +13,11 @@ All notable changes to Fileclass are documented here. The format follows
   dialog, remove on hover). They appear in every `Color` picker after the
   standard palette — order: standard → your custom colors → the note's current
   value — and the picker's **+** pins a new color to the palette on the fly.
+- **Custom colors in canvas field filters** ([#43](https://github.com/mdelobelle/fileclass/issues/43)):
+  the color filters of `Canvas`/`CanvasGroup`/`CanvasGroupLink` fields are no
+  longer limited to the 6 presets — they now show circular swatches for the
+  presets, your saved custom colors, and the colors actually used in the
+  referenced `.canvas`, plus a **+** for an arbitrary color.
 - **Consistent field-type value previews** ([#44](https://github.com/mdelobelle/fileclass/issues/44)):
   a `Color` value now shows its swatch and an `Icon` value its glyph everywhere a
   value is displayed — the editable `fileclass-table` view, the native Properties

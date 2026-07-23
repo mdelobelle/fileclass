@@ -8,6 +8,11 @@ All notable changes to Fileclass are documented here. The format follows
 
 ### UI
 
+- **User-editable custom color palette** ([#43](https://github.com/mdelobelle/fileclass/issues/43)):
+  define your own colors in Settings → **Custom colors** (add via the native
+  dialog, remove on hover). They appear in every `Color` picker after the
+  standard palette — order: standard → your custom colors → the note's current
+  value — and the picker's **+** pins a new color to the palette on the fly.
 - **Consistent field-type value previews** ([#44](https://github.com/mdelobelle/fileclass/issues/44)):
   a `Color` value now shows its swatch and an `Icon` value its glyph everywhere a
   value is displayed — the editable `fileclass-table` view, the native Properties

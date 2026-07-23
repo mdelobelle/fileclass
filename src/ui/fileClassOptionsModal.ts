@@ -14,6 +14,7 @@ import { applyBaseSync } from "../views/baseSync";
 import { isBaseViewSynced } from "../views/baseYaml";
 import { BaseFileSuggest } from "./baseSuggest";
 import { IconSuggest, paintIcon } from "./iconSuggest";
+import { makeStickyFooter } from "./modalFooter";
 
 const csv = (v: string): string[] => v.split(",").map((s) => s.trim()).filter(Boolean);
 
@@ -105,7 +106,7 @@ export class FileClassOptionsModal extends Modal {
 		this.csvSetting("Bookmark groups", "bookmarksGroups");
 		this.csvSetting("Excludes", "excludes", "Inherited field names to drop.");
 
-		new Setting(contentEl).addButton((b) =>
+		new Setting(makeStickyFooter(contentEl)).addButton((b) =>
 			b
 				.setButtonText("Save")
 				.setCta()

@@ -12,6 +12,7 @@ import { App, Modal, Notice, Setting } from "obsidian";
 import { Field } from "../../schema/field";
 import { describeField, DisplayDeps, renderObjectItem } from "../objectDisplay";
 import { cloneDraft, validateObjectDraft } from "../objectDraft";
+import { makeStickyFooter } from "../../ui/modalFooter";
 
 /** Opens the input for a child field, calling back with its new value. */
 export type ChildPrompt = (
@@ -83,7 +84,7 @@ export class ObjectFieldsEditorModal extends Modal {
 				);
 		}
 
-		new Setting(contentEl).addButton((b) =>
+		new Setting(makeStickyFooter(contentEl)).addButton((b) =>
 			b
 				.setButtonText("Save")
 				.setCta()
@@ -172,7 +173,7 @@ export class ObjectListEditorModal extends Modal {
 				);
 		});
 
-		new Setting(contentEl)
+		new Setting(makeStickyFooter(contentEl))
 			.addButton((b) =>
 				b.setButtonText("Add item").onClick(() => {
 					this.draft.push({});

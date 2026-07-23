@@ -6,6 +6,12 @@ All notable changes to Fileclass are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-07-23
+
+Seven new field types / options (from a triage of Metadata Menu's most-requested
+types), consistent value previews, a user-editable color palette, and a base
+column fix. All frontmatter-only, no new runtime dependency.
+
 ### UI
 
 - **Sticky action footer in tall modals** ([#49](https://github.com/mdelobelle/fileclass/issues/49)):

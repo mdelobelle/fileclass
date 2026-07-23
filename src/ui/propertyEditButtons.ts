@@ -105,13 +105,15 @@ export class PropertyEditButtons extends Component {
 			existingPreview?.remove();
 			return;
 		}
-		if (!existing || existing.dataset.fcKey !== key) {
-			existing?.remove();
-			row.insertBefore(this.makeButton(file, field, key), valueEl);
+		let button = existing;
+		if (!button || button.dataset.fcKey !== key) {
+			button?.remove();
+			button = this.makeButton(file, field, key);
+			row.insertBefore(button, valueEl);
 		}
-		// Type preview (Color swatch / Icon glyph) beside the value. Dedup by
-		// key+value so a settled row triggers no further DOM mutation (the row is
-		// watched — re-injecting every run would loop).
+		// Type preview (Color swatch / Icon glyph) right after the button (between
+		// it and the value). Dedup by key+value so a settled row triggers no
+		// further DOM mutation (the row is watched — re-injecting every run loops).
 		const value = (valueEl.textContent ?? "").trim();
 		if (
 			!existingPreview ||
@@ -124,7 +126,7 @@ export class PropertyEditButtons extends Component {
 				preview.addClass(PREVIEW_CLASS);
 				preview.dataset.fcKey = key;
 				preview.dataset.fcValue = value;
-				row.insertBefore(preview, valueEl);
+				button.after(preview);
 			}
 		}
 	}

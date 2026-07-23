@@ -8,6 +8,8 @@ import { App, Setting, setIcon } from "obsidian";
 
 import { FieldType } from "../../schema/field";
 import { BaseFileSuggest, BaseViewSuggest, CanvasFileSuggest } from "../../ui/baseSuggest";
+import { parseCanvas } from "../canvas/canvasGraph";
+import { customColors } from "../customPalette";
 import { OptionsDraft } from "../optionsDraft";
 
 type ArrayKey = "edgeColors" | "edgeFromSides" | "edgeToSides" | "edgeLabels" | "nodeColors" | "groupColors" | "groupLabels";
@@ -39,21 +41,95 @@ function toggle(draft: OptionsDraft, key: ArrayKey, id: string): void {
 	put(draft, key, arr.includes(id) ? arr.filter((x) => x !== id) : [...arr, id]);
 }
 
-function colorSelect(container: HTMLElement, name: string, draft: OptionsDraft, key: ArrayKey): void {
-	const setting = new Setting(container).setName(name).setDesc("None selected = any.");
-	for (const c of CANVAS_COLORS) {
-		const chip = setting.controlEl.createEl("button", { cls: "fileclass-color-chip" });
-		if (c.id === "0") chip.addClass("fileclass-color-none");
-		else chip.setCssStyles({ backgroundColor: c.color });
-		chip.setAttribute("aria-label", c.label);
-		const sync = () => chip.toggleClass("is-selected", get(draft, key).includes(c.id));
-		sync();
-		chip.addEventListener("click", (e) => {
-			e.preventDefault();
-			toggle(draft, key, c.id);
-			sync();
-		});
+/** A canvas color value is a preset index ("0".."6") or a custom CSS value. */
+function isCustomColor(value: string): boolean {
+	return !/^[0-6]$/u.test(value);
+}
+
+/** Collects distinct custom colors used in a `.canvas` file (async, best-effort). */
+async function loadCanvasColors(
+	app: App,
+	path: string | undefined,
+	into: string[],
+	onLoaded: () => void
+): Promise<void> {
+	if (!path) return;
+	const file = app.vault.getFileByPath(path);
+	if (!file) return;
+	try {
+		const data = parseCanvas(await app.vault.read(file));
+		const seen = new Set(into);
+		for (const item of [...data.nodes, ...data.edges]) {
+			const c = item.color;
+			if (c && isCustomColor(c) && !seen.has(c)) {
+				seen.add(c);
+				into.push(c);
+			}
+		}
+		if (into.length) onLoaded();
+	} catch {
+		/* unreadable/invalid canvas — offer presets + saved colors only */
 	}
+}
+
+/**
+ * A multi-select of colors: the 6 canvas presets, plus custom colors (saved
+ * palette + those present in the referenced `.canvas`) and a "+" for an
+ * arbitrary one. Presets toggle their index; custom colors toggle their CSS
+ * value — `colorMatch` compares the raw stored value either way (#43).
+ */
+function colorSelect(
+	container: HTMLElement,
+	name: string,
+	draft: OptionsDraft,
+	key: ArrayKey,
+	app: App
+): void {
+	const setting = new Setting(container).setName(name).setDesc("None selected = any.");
+	const row = setting.controlEl.createDiv({ cls: "fileclass-color-circles" });
+	const fileColors: string[] = [];
+
+	const chip = (cls: string, label: string, bg: string | null, selected: boolean, onClick: () => void) => {
+		const el = row.createEl("button", { cls: `fileclass-color-circle${cls}`, attr: { title: label, "aria-label": label } });
+		if (bg) el.setCssStyles({ backgroundColor: bg });
+		el.toggleClass("is-selected", selected);
+		el.addEventListener("click", (e) => {
+			e.preventDefault();
+			onClick();
+		});
+		return el;
+	};
+
+	const render = () => {
+		row.empty();
+		const selected = get(draft, key);
+		for (const c of CANVAS_COLORS) {
+			chip(c.id === "0" ? " is-clear" : "", c.label, c.id === "0" ? null : c.color, selected.includes(c.id), () => {
+				toggle(draft, key, c.id);
+				render();
+			});
+		}
+		const customs = new Set<string>([...customColors(), ...fileColors, ...selected.filter(isCustomColor)]);
+		for (const hex of customs) {
+			chip("", hex, hex, selected.includes(hex), () => {
+				toggle(draft, key, hex);
+				render();
+			});
+		}
+		const add = row.createEl("label", {
+			cls: "fileclass-color-circle is-add",
+			attr: { title: "Add a color…", "aria-label": "Add a color…" },
+		});
+		setIcon(add, "plus");
+		const input = add.createEl("input", { cls: "fileclass-color-hidden", attr: { type: "color" } });
+		input.value = "#000000";
+		input.addEventListener("change", () => {
+			if (!get(draft, key).includes(input.value)) toggle(draft, key, input.value);
+			render();
+		});
+	};
+	render();
+	void loadCanvasColors(app, draft.canvasPath, fileColors, render);
 }
 
 function sideSelect(container: HTMLElement, name: string, draft: OptionsDraft, key: ArrayKey): void {
@@ -144,7 +220,7 @@ export function renderCanvasSettings(
 		});
 
 	if (hasGroups) {
-		colorSelect(container, "Group matching colors", draft, "groupColors");
+		colorSelect(container, "Group matching colors", draft, "groupColors", app);
 		labelList(container, "Group matching labels", draft, "groupLabels");
 	}
 
@@ -160,11 +236,11 @@ export function renderCanvasSettings(
 					.setValue(draft.canvasDirection ?? "bothsides")
 					.onChange((v) => (draft.canvasDirection = v as typeof draft.canvasDirection))
 			);
-		colorSelect(container, "Edge matching colors", draft, "edgeColors");
+		colorSelect(container, "Edge matching colors", draft, "edgeColors", app);
 		sideSelect(container, "Edge from side", draft, "edgeFromSides");
 		sideSelect(container, "Edge to side", draft, "edgeToSides");
 		labelList(container, "Edge matching labels", draft, "edgeLabels");
-		colorSelect(container, "Node matching colors", draft, "nodeColors");
+		colorSelect(container, "Node matching colors", draft, "nodeColors", app);
 	}
 
 	if (hasLinks) matchingFiles(container, draft, app);

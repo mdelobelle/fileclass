@@ -6,7 +6,10 @@
  * The palette comes from an extensible source registry; storage is a raw CSS
  * color scalar (the palette is a picker concern, not a storage one).
  */
-import { App, Modal } from "obsidian";
+import { App, Modal, setIcon } from "obsidian";
+
+import { isValidCssColor } from "../color";
+import { addCustomColor, customColors } from "../customPalette";
 
 export interface ColorSwatch {
 	label: string;
@@ -47,17 +50,29 @@ export interface ColorPickerOptions {
 
 const HEX6_RE = /^#[0-9a-f]{6}$/iu;
 
+/** A hidden native color input, activated by clicking its wrapping label. */
+function colorTrigger(label: HTMLElement, initialHex: string, onPick: (v: string) => void): void {
+	const input = label.createEl("input", { cls: "fileclass-color-hidden", attr: { type: "color" } });
+	input.value = HEX6_RE.test(initialHex) ? initialHex : "#000000";
+	input.addEventListener("change", () => onPick(input.value));
+}
+
 export class ColorPickerModal extends Modal {
 	constructor(app: App, private readonly opts: ColorPickerOptions) {
 		super(app);
 	}
 
 	onOpen(): void {
-		const { contentEl } = this;
-		contentEl.createEl("h3", { text: this.opts.title });
-		const source = colorSourceById(this.opts.source);
-		const current = this.opts.initial.trim().toLowerCase();
+		this.render();
+	}
 
+	private render(): void {
+		const { contentEl } = this;
+		contentEl.empty();
+		contentEl.createEl("h3", { text: this.opts.title });
+
+		const current = this.opts.initial.trim();
+		const currentLc = current.toLowerCase();
 		const row = contentEl.createDiv({ cls: "fileclass-color-circles" });
 
 		// "No color" (clear).
@@ -68,33 +83,41 @@ export class ColorPickerModal extends Modal {
 		if (!current) clear.addClass("is-selected");
 		clear.onclick = () => this.pick("");
 
-		// Palette colors.
-		for (const s of source.swatches) {
+		// Swatches in order: standard palette, saved custom colors, then the value
+		// currently stored on the note if it isn't already shown. De-duped.
+		const seen = new Set<string>();
+		const addSwatch = (value: string, label: string): void => {
+			const lc = value.toLowerCase();
+			if (seen.has(lc)) return;
+			seen.add(lc);
 			const circle = row.createEl("button", {
 				cls: "fileclass-color-circle",
-				attr: { "aria-label": `${s.label} (${s.value})`, title: `${s.label} (${s.value})` },
+				attr: { "aria-label": label, title: label },
 			});
-			circle.setCssStyles({ backgroundColor: s.value });
-			if (s.value.toLowerCase() === current) circle.addClass("is-selected");
-			circle.onclick = () => this.pick(s.value);
-		}
+			circle.setCssStyles({ backgroundColor: value });
+			if (lc === currentLc) circle.addClass("is-selected");
+			circle.onclick = () => this.pick(value);
+		};
 
-		// Custom color: a rainbow circle opening the native color dialog. The
-		// native input is kept hidden (never theme-styled) and triggered via click.
-		const native = contentEl.createEl("input", {
-			cls: "fileclass-color-hidden",
-			attr: { type: "color" },
+		for (const s of colorSourceById(this.opts.source).swatches) addSwatch(s.value, `${s.label} (${s.value})`);
+		for (const c of customColors()) addSwatch(c, c);
+		if (current && isValidCssColor(current)) addSwatch(current, current);
+
+		// "+" — pick a color and pin it to the saved palette (label opens the
+		// native dialog; stays open so the new swatch appears).
+		const add = row.createEl("label", {
+			cls: "fileclass-color-circle is-add",
+			attr: { "aria-label": "Add to my colors…", title: "Add to my colors…" },
 		});
-		native.value = HEX6_RE.test(current) ? current : "#000000";
-		native.addEventListener("change", () => this.pick(native.value));
+		setIcon(add, "plus");
+		colorTrigger(add, current, (v) => void addCustomColor(v).then(() => this.render()));
 
-		const custom = row.createEl("button", {
+		// Rainbow — pick a one-off custom color (applies, doesn't save).
+		const custom = row.createEl("label", {
 			cls: "fileclass-color-circle is-custom",
 			attr: { "aria-label": "Custom color…", title: "Custom color…" },
 		});
-		const inPalette = source.swatches.some((s) => s.value.toLowerCase() === current);
-		if (current && !inPalette) custom.addClass("is-selected");
-		custom.onclick = () => native.click();
+		colorTrigger(custom, current, (v) => this.pick(v));
 	}
 
 	private pick(value: string): void {

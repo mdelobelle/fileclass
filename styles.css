@@ -396,12 +396,26 @@
 		#fb464c
 	);
 }
+.fileclass-color-circle.is-add {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	background: transparent;
+	border-style: dashed;
+	color: var(--text-muted);
+}
+.fileclass-color-circle.is-add svg {
+	width: 16px;
+	height: 16px;
+}
+/* Hidden native color input, activated by clicking its wrapping label. Not
+   display:none (label activation needs a rendered control) and no
+   pointer-events:none. */
 .fileclass-color-hidden {
 	position: absolute;
 	width: 1px;
 	height: 1px;
 	opacity: 0;
-	pointer-events: none;
 }
 
 /* Value previews in the note-fields modal (#33/#32): color dot + icon glyph. */
@@ -425,4 +439,42 @@
 .fileclass-value-icon svg {
 	width: 1em;
 	height: 1em;
+}
+
+/* Custom-colors palette editor (Settings, #43). */
+.fileclass-settings-palette {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--size-4-2);
+	margin: var(--size-4-2) 0;
+}
+.fileclass-swatch-static {
+	position: relative;
+}
+.fileclass-swatch-remove {
+	position: absolute;
+	top: -6px;
+	right: -6px;
+	display: none;
+	align-items: center;
+	justify-content: center;
+	width: 16px;
+	height: 16px;
+	border-radius: 50%;
+	corner-shape: round;
+	background: var(--background-secondary);
+	border: 1px solid var(--background-modifier-border);
+	color: var(--text-muted);
+	cursor: pointer;
+}
+.fileclass-swatch-static:hover .fileclass-swatch-remove {
+	display: inline-flex;
+}
+.fileclass-swatch-remove:hover {
+	color: var(--text-error);
+}
+.fileclass-swatch-remove svg {
+	width: 11px;
+	height: 11px;
 }

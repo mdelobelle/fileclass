@@ -3,9 +3,10 @@
  * fileClass notes, the binding alias, and the optional global fileClass.
  * Sentence-case headings and bold literal UI labels per Obsidian guidelines.
  */
-import { App, PluginSettingTab, Setting } from "obsidian";
+import { App, PluginSettingTab, Setting, setIcon } from "obsidian";
 
 import type FileclassPlugin from "../../main";
+import { addCustomColor, removeCustomColor } from "../fields/customPalette";
 import { FolderSuggest } from "../ui/folderSuggest";
 import { normalizeFolderPath } from "./settings";
 
@@ -172,5 +173,43 @@ export class FileclassSettingTab extends PluginSettingTab {
 		);
 		indicatorToggle("Backlinks pane", "enableBacklinkIndicator");
 		indicatorToggle("Bases first column", "enableBasesIndicator");
+
+		this.renderCustomColors(containerEl);
+	}
+
+	/** A reusable palette of user colors, offered by every Color field picker. */
+	private renderCustomColors(containerEl: HTMLElement): void {
+		new Setting(containerEl).setName("Custom colors").setHeading();
+		containerEl.createEl("p", {
+			text: "Extra colors offered by the color pickers, after the standard palette.",
+			cls: "setting-item-description",
+		});
+
+		const paletteEl = containerEl.createDiv({ cls: "fileclass-settings-palette" });
+
+		const render = (): void => {
+			paletteEl.empty();
+			for (const color of this.plugin.settings.customColors) {
+				const chip = paletteEl.createDiv({
+					cls: "fileclass-color-circle fileclass-swatch-static",
+					attr: { title: color },
+				});
+				chip.setCssStyles({ backgroundColor: color });
+				const remove = chip.createSpan({ cls: "fileclass-swatch-remove", attr: { "aria-label": "Remove" } });
+				setIcon(remove, "x");
+				remove.onclick = () => void removeCustomColor(color).then(render);
+			}
+			// A <label> wrapping a hidden native color input: clicking it opens the
+			// native dialog reliably (label activation), unlike input.click().
+			const add = paletteEl.createEl("label", {
+				cls: "fileclass-color-circle is-add",
+				attr: { "aria-label": "Add color", title: "Add color" },
+			});
+			setIcon(add, "plus");
+			const input = add.createEl("input", { cls: "fileclass-color-hidden", attr: { type: "color" } });
+			input.value = "#000000";
+			input.addEventListener("change", () => void addCustomColor(input.value).then(render));
+		};
+		render();
 	}
 }

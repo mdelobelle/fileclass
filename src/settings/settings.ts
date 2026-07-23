@@ -37,6 +37,8 @@ export interface FileclassSettings {
 	enableBacklinkIndicator: boolean;
 	/** Show the indicator on links in Bases table views. */
 	enableBasesIndicator: boolean;
+	/** User-defined custom colors (CSS values), offered by every Color picker. */
+	customColors: string[];
 }
 
 export const DEFAULT_SETTINGS: FileclassSettings = {
@@ -56,6 +58,7 @@ export const DEFAULT_SETTINGS: FileclassSettings = {
 	enableInlineLinkIndicator: true,
 	enableBacklinkIndicator: true,
 	enableBasesIndicator: true,
+	customColors: [],
 };
 
 /** Normalizes a folder path to `""` or a trailing-slashed, non-leading form. */
@@ -71,5 +74,8 @@ export function coerceSettings(data: unknown): FileclassSettings {
 		...merged,
 		classFilesPath: normalizeFolderPath(merged.classFilesPath),
 		basesFolder: normalizeFolderPath(merged.basesFolder),
+		customColors: Array.isArray(merged.customColors)
+			? merged.customColors.filter((c): c is string => typeof c === "string")
+			: [],
 	};
 }

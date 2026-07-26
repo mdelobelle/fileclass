@@ -1,8 +1,12 @@
 /*
  * Generates the YAML of a `<fileClass>.base` file (ARCHITECTURE.md §11). Pure —
- * no Obsidian. A base filtered to the fileClass, with an editable
- * `fileclass-table` view listing the class's fields. Keeps it minimal and
- * deterministic (testable); users refine the base afterwards in Obsidian.
+ * no Obsidian. An editable `fileclass-table` view listing the class's fields,
+ * filtered to the fileClass **at the view level** (issue #55) so a base can
+ * hold extra views for other fileClasses without the class filter shadowing
+ * them. Bases ANDs base-level and view-level filters, so a view-level filter is
+ * equivalent for the managed view while leaving other views free. Keeps it
+ * minimal and deterministic (testable); users refine the base afterwards in
+ * Obsidian.
  */
 import { FILECLASS_TABLE_VIEW } from "./columns";
 
@@ -20,9 +24,24 @@ interface BaseView {
 	type?: unknown;
 	name?: unknown;
 	order?: unknown;
+	filters?: unknown;
 }
 interface BaseObject {
 	views?: unknown;
+}
+
+/**
+ * The single filter clause scoping a base/view to a fileClass, e.g.
+ * `fileClass == "Book"`. Shared by the create path (as a YAML line) and the
+ * sync path (inside a `{ and: [...] }` object).
+ */
+export function fileClassFilterClause(alias: string, fileClassName: string): string {
+	return `${alias} == ${JSON.stringify(fileClassName)}`;
+}
+
+/** The view-level filter object Fileclass owns on a managed view (issue #55). */
+export function fileClassViewFilter(alias: string, fileClassName: string): { and: string[] } {
+	return { and: [fileClassFilterClause(alias, fileClassName)] };
 }
 
 /** A managed (Fileclass) table view — native `table` or editable `fileclass-table`. */
@@ -63,10 +82,18 @@ export function isBaseViewSynced(base: unknown, viewName: string, fieldNames: st
  * named `viewName`), setting its `order` to exactly `file.name` + the fields.
  * Bijective — adds, removes, and reorders columns — because this view is owned
  * by Fileclass (the mirror is explicit via the fileClass's `baseFile` option).
- * Other views in the base are never touched. Mutates `base`; returns whether it
- * changed. Missing managed view is (re)created.
+ * Other views in the base are never touched, and an **existing** managed view's
+ * `filters` are left alone (issue #55: never move a legacy base-wide filter, and
+ * never clobber a user's edits). A **newly created** managed view gets the
+ * view-level fileClass filter. Mutates `base`; returns whether it changed.
  */
-export function mirrorBaseView(base: unknown, viewName: string, fieldNames: string[]): boolean {
+export function mirrorBaseView(
+	base: unknown,
+	viewName: string,
+	fieldNames: string[],
+	fileClassName: string,
+	alias: string
+): boolean {
 	const b = base as BaseObject;
 	if (!Array.isArray(b?.views)) return false; // malformed; the generator owns creation
 	const views = b.views as BaseView[];
@@ -74,7 +101,12 @@ export function mirrorBaseView(base: unknown, viewName: string, fieldNames: stri
 
 	const view = views.find((v) => isManagedTable(v, viewName));
 	if (!view) {
-		views.push({ type: FILECLASS_TABLE_VIEW, name: viewName, order: desired });
+		views.push({
+			type: FILECLASS_TABLE_VIEW,
+			name: viewName,
+			filters: fileClassViewFilter(alias, fileClassName),
+			order: desired,
+		});
 		return true;
 	}
 	const current = Array.isArray(view.order) ? view.order : [];
@@ -84,9 +116,11 @@ export function mirrorBaseView(base: unknown, viewName: string, fieldNames: stri
 }
 
 /**
- * Builds a `.base` YAML for `fileClassName`: `filters: <alias> == "name"`, and a
- * single table view (the managed view, named `viewName`, defaulting to the
- * fileClass name) listing `file.name` then the given field names.
+ * Builds a `.base` YAML for `fileClassName`: a single table view (the managed
+ * view, named `viewName`, defaulting to the fileClass name) filtered to the
+ * fileClass **at the view level** (`filters: <alias> == "name"`, issue #55) and
+ * listing `file.name` then the given field names. No base-wide filter, so extra
+ * views for other fileClasses can be added without being shadowed.
  */
 export function buildBaseYaml(
 	fileClassName: string,
@@ -95,12 +129,12 @@ export function buildBaseYaml(
 	viewName: string = fileClassName
 ): string {
 	const lines = [
-		"filters:",
-		"  and:",
-		`    - ${alias} == ${JSON.stringify(fileClassName)}`,
 		"views:",
 		`  - type: ${FILECLASS_TABLE_VIEW}`,
 		`    name: ${JSON.stringify(viewName)}`,
+		"    filters:",
+		"      and:",
+		`        - ${fileClassFilterClause(alias, fileClassName)}`,
 		"    order:",
 		"      - file.name",
 		...rootFieldNames.map((n) => `      - ${yamlScalar(n)}`),

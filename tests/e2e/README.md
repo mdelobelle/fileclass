@@ -11,7 +11,8 @@ unit suite instead (`tests/unit/`, run with `npm test`).
 |------|------|
 | `cdp.mjs` | Minimal CDP client: connect to Obsidian on `:9222`, `evaluate(fn, ...args)` in its renderer. No external npm dependency (uses Node 22's global `WebSocket`/`fetch`). |
 | `canary.mjs` | The two canary tests (run at every Obsidian upgrade): adapter fixture rows + `processFrontMatter` order preservation. |
-| `fixture-vault/` | Deterministic seed vault: `Notes/*.md` + `canary.base`. |
+| `fixture-vault/` | Deterministic seed vault: `Notes/*.md` + `canary.base` + `two-fileclasses.base`. |
+| `fixture-vault/two-fileclasses.base` | Issue #55 anchor: two views (`Book`, `Book authors`) for two fileClasses, each with a **view-level** filter and no base-wide filter — the target shape a sync/regenerate must never regress back to All-views. |
 
 ## Running the canaries
 

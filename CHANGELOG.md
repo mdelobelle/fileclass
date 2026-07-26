@@ -6,6 +6,17 @@ All notable changes to Fileclass are documented here. The format follows
 
 ## [Unreleased]
 
+### Views
+
+- **Generated bases scope the fileClass filter to the managed view, not
+  base-wide** ([#55](https://github.com/mdelobelle/fileclass/issues/55)): new
+  `.base` files put the `fileClass == "X"` filter on the managed view (Bases'
+  *"This view"*) instead of the whole base, so you can add a second view for
+  another fileClass (e.g. a `bookAuthor` view in your `book` base) without it
+  being shadowed. Migration-safe: existing bases keep their base-wide filter —
+  nothing is rewritten silently — and sync/regenerate never pushes a per-view
+  scope back to base-wide.
+
 ## [0.1.0] - 2026-07-23
 
 Seven new field types / options (from a triage of Metadata Menu's most-requested

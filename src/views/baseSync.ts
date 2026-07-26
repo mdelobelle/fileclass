@@ -94,7 +94,7 @@ export async function applyBaseSync(
 	}
 
 	const base: unknown = parseYaml(await app.vault.read(file));
-	if (mirrorBaseView(base, view, fields)) {
+	if (mirrorBaseView(base, view, fields, name, plugin.settings.fileClassAlias)) {
 		await app.vault.modify(file, stringifyYaml(base));
 	}
 	new Notice(`Fileclass: synced ${path}`);

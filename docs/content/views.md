@@ -17,11 +17,22 @@ note** → **Create a base for this fileClass**. A small dialog lets you choose:
   Bases folder**), and
 - the **view name** — the managed view (defaults to the fileClass name).
 
-It creates the base — filtered on the fileClass, with an **editable
-`fileclass-table` view** (see below) listing `file.name` and the fields — and
-records the choices on the fileClass (`baseFile`/`baseView`). Pointing at an
-**existing** base is safe: only the managed view is added or updated — your other
-views are left untouched.
+It creates the base — with an **editable `fileclass-table` view** (see below)
+listing `file.name` and the fields — and records the choices on the fileClass
+(`baseFile`/`baseView`). Pointing at an **existing** base is safe: only the
+managed view is added or updated — your other views are left untouched.
+
+The fileClass filter is written **on the managed view** (Bases' *"This view"*
+scope), not base-wide. So you can add a **second view for another fileClass** to
+the same base — e.g. a `bookAuthor` view inside your `book` base — and it shows
+its own notes instead of being shadowed by a base-wide `fileClass == "book"`
+filter. Each view carries its own filter and is free to scope itself.
+
+> **Existing generated bases** created before this change keep their base-wide
+> filter — nothing is rewritten silently. To get the per-view behavior there,
+> move the filter from *"All views"* to *"This view"* once in the Bases editor,
+> or regenerate the base. Sync never moves it for you and never pushes a
+> per-view scope back to base-wide.
 
 Once a base exists, the right-click menu on the fileClass note changes:
 

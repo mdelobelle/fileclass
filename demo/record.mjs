@@ -16,6 +16,10 @@ const beat = (ms = 900) => sleep(ms);
 const d = await connectObsidian();
 
 try {
+	// Lead-in: gives you a moment after hitting Record (QuickTime) before it starts.
+	await d.step("");
+	await beat(2500);
+
 	// 1. Open a plain note — "here's an unstructured note".
 	await d.step("A plain note — no schema yet");
 	await d.page.evaluate((name) => window.app.workspace.openLinkText(name, "", false), BOOK);

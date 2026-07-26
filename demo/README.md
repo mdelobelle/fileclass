@@ -46,27 +46,33 @@ Then size the window for recording and (optional) bump zoom with `Cmd +`.
 
 ## 3. Record + drive
 
-Start the screen capture, then run the scenario. Two options:
+The driving (`record.mjs`) is **independent of the capture** — record however you
+like, then play the scenario. `record.mjs` waits a couple of seconds on start so
+you can hit Record first.
 
-**ffmpeg (region capture, macOS avfoundation)** — list devices first:
-
-```bash
-ffmpeg -f avfoundation -list_devices true -i ""   # find your screen index
-# capture screen index 1 at 30fps into out.mp4 (Ctrl+C to stop):
-ffmpeg -f avfoundation -framerate 30 -i "1:none" -pix_fmt yuv420p demo.mp4
-```
-
-In another terminal, play the scenario:
+**QuickTime (simplest, manual)** — no setup:
+File → New Screen Recording → pick the Obsidian window/region → Record. Then run
+the scenario, and stop QuickTime when it ends:
 
 ```bash
 node record.mjs
 ```
 
-Stop ffmpeg when the scenario ends, then trim/add voice-over in any editor.
+**ffmpeg (scriptable, macOS avfoundation)** — for a fully headless capture:
 
-**OBS** (if you prefer a GUI / webcam / live overlays): start recording in OBS,
-run `node record.mjs`, stop OBS. (Optionally automate start/stop via
-`obs-websocket`.)
+```bash
+ffmpeg -f avfoundation -list_devices true -i ""   # find your screen index
+ffmpeg -f avfoundation -framerate 30 -i "1:none" -pix_fmt yuv420p demo.mp4
+```
+
+> ffmpeg needs the **Screen Recording** permission for your terminal app
+> (System Settings → Privacy & Security → Screen Recording → enable iTerm/Terminal,
+> then restart it). If that's a hassle, just use QuickTime.
+
+**OBS** (GUI / webcam / live overlays): start recording, run `node record.mjs`,
+stop. (Start/stop can be automated via `obs-websocket`.)
+
+Trim / add voice-over afterwards in any editor.
 
 ## Files
 

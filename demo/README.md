@@ -1,13 +1,15 @@
 # Fileclass onboarding-video tooling
 
-Full-auto: seed a demo vault, drive Obsidian over CDP, record the screen.
-Self-contained (its own `package.json`); not part of the plugin build.
+Seed a demo vault, drive Obsidian over CDP, record the screen. The driver types,
+sets values, and detects results; **you do the mouse clicks** (see the handoff
+model below), so the pointer moves naturally on camera. Self-contained (its own
+`package.json`); not part of the plugin build.
 
 ## Prerequisites
 
 - The plugin built once (from the repo root): `npm run build`.
-- `ffmpeg` (for recording): `brew install ffmpeg`.
 - Deps here: `cd demo && npm install`.
+- A screen recorder — QuickTime is easiest (`ffmpeg` optional, see step 3).
 
 ## 1. Seed a demo vault
 
@@ -16,8 +18,9 @@ node seed.mjs                       # defaults to ~/fileclass-demo-vault
 # or: node seed.mjs --vault /some/path/outside/any/vault
 ```
 
-Creates a fresh vault (plugin installed + enabled, `classFilesPath = Classes/`,
-a ready **Book** fileClass, plain notes in `Library/`).
+Creates a fresh vault with **only** the plugin installed + enabled. Everything
+else — the `Classes/` folder, the `classFilesPath` setting, every fileClass and
+note — is created live, on camera, by `record.mjs`.
 
 > **Important:** the vault must live **outside** any existing vault — a vault
 > nested inside another can't be opened. That's why the default is in your home
@@ -55,8 +58,20 @@ File → New Screen Recording → pick the Obsidian window/region → Record. Th
 the scenario, and stop QuickTime when it ends:
 
 ```bash
-node record.mjs
+node record.mjs        # the whole story (acts 1 → 3)
+node record.mjs 1      # act 1 only (install + configure)
+node record.mjs 2      # act 2 only (define Author + author notes)
+node record.mjs 3      # act 3 only (base table + linked Book; needs act 2 first)
 ```
+
+### You drive the clicks (handoff model)
+The driver never clicks. When the bottom caption turns **purple and ends with
+`…`**, it's your turn: do the named click — a button, a pencil ✎, a command in
+the palette, a right-click menu item, or an option in a list. The driver watches
+the DOM and resumes automatically once your click takes effect, so you set the
+pace of the mouse. (The right-click menu opens in a separate window the debug
+port can't reach, so it must be manual anyway.) There's no fake cursor — add a
+pointer in post if you want one.
 
 **ffmpeg (scriptable, macOS avfoundation)** — for a fully headless capture:
 
@@ -76,10 +91,12 @@ Trim / add voice-over afterwards in any editor.
 
 ## Files
 
-- `seed.mjs` — (re)creates the demo vault.
-- `lib/driver.mjs` — CDP connection + fake cursor + step captions + helpers.
-- `record.mjs` — the scenario (see `scenario.md`).
-- `scenario.md` — storyboard + tuning notes.
+- `seed.mjs` — (re)creates the demo vault (plugin only; guards against nuking
+  real data).
+- `lib/driver.mjs` — CDP connection, step captions, purple click-handoffs, and
+  DOM detectors.
+- `record.mjs` — the scenario, in three steps (see `scenario.md`).
+- `scenario.md` — storyboard + how the handoff model works.
 
 ## Re-running for a new release
 

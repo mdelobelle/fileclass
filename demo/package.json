@@ -1,0 +1,13 @@
+{
+  "name": "fileclass-demo",
+  "private": true,
+  "type": "module",
+  "description": "Scripted onboarding-video tooling for Fileclass (seeds a demo vault + drives Obsidian over CDP).",
+  "scripts": {
+    "seed": "node seed.mjs",
+    "record": "node record.mjs"
+  },
+  "devDependencies": {
+    "puppeteer-core": "^23.0.0"
+  }
+}

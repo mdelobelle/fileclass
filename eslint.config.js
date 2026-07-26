@@ -11,7 +11,7 @@ export default tseslint.config(
 			"docs/**",
 			"node_modules/**",
 			"tests/e2e/**",
-			"cli/**",
+			"demo/**",
 			"esbuild.config.mjs",
 			"version-bump.mjs",
 		],

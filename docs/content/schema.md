@@ -89,6 +89,29 @@ Run the command **Fileclass: add a class to this note** and pick a
 fileClass. It writes the binding into the note's frontmatter (frontmatter-only,
 via a single `processFrontMatter` write).
 
+## Creating notes with a template (Templater / Templates)
+
+Fileclass is **frontmatter-only**, so it composes cleanly with the core
+**Templates** plugin and **Templater**: keep managing the note *body* with your
+template, and let Fileclass manage the *frontmatter*.
+
+The trick to avoid running **Insert missing fields** on every new note is to
+bake the fields into the template **once**:
+
+1. Create a template note and put the binding in its frontmatter (e.g.
+   `fileClass: Book`).
+2. Open that template note and run **Fileclass: insert missing fields in current
+   file** once — it writes every field of the fileClass (empty) into the
+   template's frontmatter. (Templater can even pre-fill `fileClass:` dynamically.)
+3. New notes created from the template now start with the binding **and all the
+   fields already present** — just fill them in via the note-fields modal or the
+   Properties edit buttons. No per-note command needed.
+
+> **When the schema changes:** templates don't re-sync automatically. If you add
+> a field to the fileClass later, re-run **Insert missing fields** on the
+> template so new notes pick it up (existing notes get it the next time you run
+> the command on them).
+
 ## Editing a fileClass
 
 You can author a fileClass's own definition from the UI — no need to edit its

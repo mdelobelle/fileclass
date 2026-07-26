@@ -324,10 +324,21 @@ canvas file tracking (comes with the planned Canvas engine, §9.1).
   are resolved once per render and cached. Gated by
   `settings.enableValidationColumns` (default on).
 - `baseFileGenerator`: command "Create base for fileClass" → writes
-  `<basesFolder>/<FileClass>.base` with `filters: fileClass == "X"` (respect
-  `settings.fileClassAlias`), `order:` = the fileClass fields, one `table` view
-  using `fileclass-table` type. Never overwrite an existing file without
-  confirmation.
+  `<basesFolder>/<FileClass>.base` with one `fileclass-table` view whose
+  `order:` = the fileClass fields and whose **view-level** `filters:` is
+  `<alias> == "X"` (respect `settings.fileClassAlias`). Never overwrite an
+  existing file without confirmation.
+- **View-level fileClass filter (issue #55):** the class filter lives on the
+  managed view, not base-wide, so a base can host extra views for other
+  fileClasses (a `bookAuthor` view in the `book` base) without them being
+  shadowed. Bases ANDs base-level and view-level filters, so a view-level filter
+  is equivalent for the managed view (§3.1). Migration-safe: `buildBaseYaml`
+  emits view-level for **new** bases; `mirrorBaseView` adds the view-level filter
+  only when it **creates** the managed view, and **never touches an existing
+  view's filters** — legacy base-wide filters are preserved as-is (no silent
+  migration). Sync/regenerate never pushes a per-view scope back to base-wide.
+  Anchored by a unit test (two fileClasses, two views survive a re-sync) and the
+  e2e `two-fileclasses.base` fixture.
 - Embeds: users embed bases natively (```` ```base ````); no custom code block.
 
 ## 12. Public API + CLI/TUI

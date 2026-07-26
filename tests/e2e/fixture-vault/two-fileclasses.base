@@ -1,0 +1,18 @@
+views:
+  - type: fileclass-table
+    name: Book
+    filters:
+      and:
+        - fileClass == "Book"
+    order:
+      - file.name
+      - rating
+      - status
+  - type: table
+    name: Book authors
+    filters:
+      and:
+        - fileClass == "bookAuthor"
+    order:
+      - file.name
+      - country

@@ -22,6 +22,7 @@ import {
 } from "./src/settings/settings";
 import { FileclassSettingTab } from "./src/settings/settingsTab";
 import { AddFileClassModal } from "./src/ui/addFileClassModal";
+import { openBulkEdit } from "./src/ui/bulkEditModal";
 import { FileclassContextMenu } from "./src/ui/contextMenu";
 import { openFileClassSchema } from "./src/ui/fileClassSchemaModal";
 import { pickAndCreateBase } from "./src/views/baseFileGenerator";
@@ -169,6 +170,20 @@ export default class FileclassPlugin extends Plugin {
 			id: "create-class",
 			name: "Create a class",
 			callback: () => createFileClass(this),
+		});
+
+		this.addCommand({
+			id: "bulk-edit-field",
+			name: "Bulk edit a field",
+			checkCallback: (checking) => {
+				if (!this.index.fileClassNames.length) return false;
+				if (!checking) {
+					const active = this.app.workspace.getActiveFile();
+					const fc = active ? this.index.fileClassNameOfNote(active.path) : undefined;
+					openBulkEdit(this, fc ?? undefined);
+				}
+				return true;
+			},
 		});
 
 		this.addCommand({

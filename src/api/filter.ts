@@ -20,9 +20,12 @@ function equals(v: unknown, target: unknown): boolean {
 }
 
 function contains(v: unknown, target: unknown): boolean {
-	const t = String(target ?? "");
-	if (Array.isArray(v)) return v.map((x) => String(x)).includes(t);
-	if (typeof v === "string") return v.includes(t);
+	// Case-insensitive substring, like SQL `ILIKE '%target%'`. Applied per array
+	// element too, so a link field's `[[Comic]]` matches `comic` (MultiFile /
+	// MultiMedia store wikilinks, #56).
+	const t = String(target ?? "").toLowerCase();
+	if (Array.isArray(v)) return v.some((x) => String(x).toLowerCase().includes(t));
+	if (typeof v === "string") return v.toLowerCase().includes(t);
 	return false;
 }
 

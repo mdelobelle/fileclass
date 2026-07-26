@@ -15,7 +15,7 @@ import { TFile } from "obsidian";
 import type FileclassPlugin from "../../main";
 import { Filter, matchesFilter } from "./filter";
 import { insertMissingFields } from "../commands/insertMissingFields";
-import { getBaseRows } from "../engine/basesAdapter";
+import { getBaseFiles, getBaseRows } from "../engine/basesAdapter";
 import { isMediaType, resolveCandidates } from "../fields/candidates";
 import { formatLink } from "../fields/links";
 import { baseBindingOptions } from "../fields/options";
@@ -30,7 +30,7 @@ import { writeFieldValue } from "../io/write";
 import { Field, isRootField } from "../schema/field";
 import { fileClassBaseFile } from "../views/baseSync";
 
-export const API_VERSION = "1.0";
+export const API_VERSION = "1.1";
 
 const LINK_TYPES = new Set<string>(["File", "MultiFile", "Media", "MultiMedia"]);
 
@@ -108,6 +108,30 @@ export interface BulkResult {
 	skipped: number;
 	errors: WriteResult[];
 }
+/** Selection for a bulk edit: a fileClass, narrowed by a field condition and/or a base view. */
+export interface BulkScope {
+	fileClass: string;
+	/** Simple field condition (field/op/value). */
+	where?: Filter;
+	/** Base-view filter: only notes matched by this view are affected (needs Bases). */
+	baseFile?: string;
+	viewName?: string;
+}
+export interface BulkChange {
+	path: string;
+	from: unknown;
+	to: unknown;
+}
+/** Dry-run outcome of a bulk edit: what *would* change, without writing. */
+export interface BulkPreview {
+	/** Notes selected by the scope. */
+	total: number;
+	/** Every note that would change (path + old/new value) — the full list. */
+	changes: BulkChange[];
+	/** Notes already at the target value (no write). */
+	willSkip: number;
+	errors: WriteResult[];
+}
 export interface ListOptions {
 	columns?: string[];
 	where?: Filter;
@@ -148,6 +172,12 @@ export interface FileclassApi {
 		value: unknown,
 		where?: Filter
 	): Promise<BulkResult>;
+	/** Dry-run of a bulk edit over a scope (fileClass + optional condition/base view). */
+	previewValueWhere(scope: BulkScope, field: string, value: unknown): Promise<BulkPreview>;
+	/** Applies a bulk edit over a scope; validates per note, skips no-ops. */
+	applyValueWhere(scope: BulkScope, field: string, value: unknown): Promise<BulkResult>;
+	/** Applies to an explicit set of note paths (the previewed rows the user kept). */
+	applyValueToPaths(paths: string[], field: string, value: unknown): Promise<BulkResult>;
 }
 
 export function createFileclassApi(plugin: FileclassPlugin): FileclassApi {
@@ -187,6 +217,129 @@ export function createFileclassApi(plugin: FileclassPlugin): FileclassApi {
 	/** Allowed values for a choice field (Select/Cycle/Multi, Bases-aware); else []. */
 	const allowedFor = (file: TFile, field: Field): Promise<string[]> =>
 		hasAllowedValues(field.type) ? resolveFieldValues(plugin, field, file) : Promise.resolve([]);
+
+	// --- Bulk edit (set-where) -------------------------------------------------
+	// One per-note decision shared by preview (dry-run) and apply, so both agree.
+	type Decision =
+		| { kind: "change"; from: unknown }
+		| { kind: "skip" }
+		| { kind: "error"; message: string };
+
+	const decide = async (file: TFile, field: string, value: unknown): Promise<Decision> => {
+		const f = rootField(file, field);
+		if (!f) return { kind: "error", message: `No field "${field}".` };
+		const result = validateField(f, value, await allowedFor(file, f));
+		if (!result.ok) return { kind: "error", message: result.message ?? "Invalid value" };
+		const from = readFieldValue(app, file, f);
+		return sameStored(from, value) ? { kind: "skip" } : { kind: "change", from };
+	};
+
+	/** Notes selected by a scope: bound to the fileClass, narrowed by the field
+	 * condition and/or the base view (intersection). */
+	const selectNotesScoped = async (scope: BulkScope): Promise<TFile[]> => {
+		let notes = selectNotes(scope.fileClass, scope.where);
+		if (scope.baseFile) {
+			const files = await getBaseFiles(app, scope.baseFile, scope.viewName, null);
+			const inBase = new Set(files.map((f) => f.path));
+			notes = notes.filter((f) => inBase.has(f.path));
+		}
+		return notes;
+	};
+
+	/** Guard: a base-view filter needs Bases; refuse rather than edit unfiltered. */
+	const basesGuard = (scope: BulkScope, field: string): WriteResult | null =>
+		scope.baseFile && !plugin.basesAvailable
+			? {
+					ok: false,
+					path: scope.baseFile,
+					field,
+					message: "Bases unavailable; cannot apply the base-view filter.",
+			  }
+			: null;
+
+	const runPreview = async (
+		scope: BulkScope,
+		field: string,
+		value: unknown
+	): Promise<BulkPreview> => {
+		const guard = basesGuard(scope, field);
+		if (guard) return { total: 0, changes: [], willSkip: 0, errors: [guard] };
+		const notes = await selectNotesScoped(scope);
+		let willSkip = 0;
+		const errors: WriteResult[] = [];
+		const changes: BulkChange[] = [];
+		for (const file of notes) {
+			const d = await decide(file, field, value);
+			if (d.kind === "error") errors.push({ ok: false, path: file.path, field, message: d.message });
+			else if (d.kind === "skip") willSkip++;
+			else changes.push({ path: file.path, from: d.from, to: value });
+		}
+		return { total: notes.length, changes, willSkip, errors };
+	};
+
+	/** Applies the value to an explicit set of note paths (validated, no-ops skipped). */
+	const runApplyPaths = async (
+		paths: string[],
+		field: string,
+		value: unknown
+	): Promise<BulkResult> => {
+		let changed = 0;
+		let skipped = 0;
+		const errors: WriteResult[] = [];
+		for (const path of paths) {
+			const file = fileOrNull(path);
+			if (!file) {
+				errors.push({ ok: false, path, field, message: "No file at this path." });
+				continue;
+			}
+			const d = await decide(file, field, value);
+			if (d.kind === "error") {
+				errors.push({ ok: false, path, field, message: d.message });
+				continue;
+			}
+			if (d.kind === "skip") {
+				skipped++;
+				continue;
+			}
+			const f = rootField(file, field);
+			if (!f) continue;
+			try {
+				await writeFieldValue(app, file, f, value);
+				changed++;
+			} catch (e) {
+				errors.push({ ok: false, path, field, message: (e as Error).message });
+			}
+		}
+		return { ok: errors.length === 0, changed, skipped, errors };
+	};
+
+	const runApply = async (scope: BulkScope, field: string, value: unknown): Promise<BulkResult> => {
+		const guard = basesGuard(scope, field);
+		if (guard) return { ok: false, changed: 0, skipped: 0, errors: [guard] };
+		let changed = 0;
+		let skipped = 0;
+		const errors: WriteResult[] = [];
+		for (const file of await selectNotesScoped(scope)) {
+			const d = await decide(file, field, value);
+			if (d.kind === "error") {
+				errors.push({ ok: false, path: file.path, field, message: d.message });
+				continue;
+			}
+			if (d.kind === "skip") {
+				skipped++;
+				continue;
+			}
+			const f = rootField(file, field);
+			if (!f) continue; // decided "change" implies the field exists; defensive
+			try {
+				await writeFieldValue(app, file, f, value);
+				changed++;
+			} catch (e) {
+				errors.push({ ok: false, path: file.path, field, message: (e as Error).message });
+			}
+		}
+		return { ok: errors.length === 0, changed, skipped, errors };
+	};
 
 	const toFieldDef = (f: Field): FieldDef => ({
 		name: f.name,
@@ -407,33 +560,10 @@ export function createFileclassApi(plugin: FileclassPlugin): FileclassApi {
 			}
 		},
 
-		async setValueWhere(fileClass, field, value, where) {
-			let changed = 0;
-			let skipped = 0;
-			const errors: WriteResult[] = [];
-			for (const file of selectNotes(fileClass, where)) {
-				const f = rootField(file, field);
-				if (!f) {
-					errors.push({ ok: false, path: file.path, field, message: `No field "${field}".` });
-					continue;
-				}
-				const result = validateField(f, value, await allowedFor(file, f));
-				if (!result.ok) {
-					errors.push({ ok: false, path: file.path, field, message: result.message });
-					continue;
-				}
-				if (sameStored(readFieldValue(app, file, f), value)) {
-					skipped++; // already at the target value — no write
-					continue;
-				}
-				try {
-					await writeFieldValue(app, file, f, value);
-					changed++;
-				} catch (e) {
-					errors.push({ ok: false, path: file.path, field, message: (e as Error).message });
-				}
-			}
-			return { ok: errors.length === 0, changed, skipped, errors };
-		},
+		setValueWhere: (fileClass, field, value, where) =>
+			runApply({ fileClass, where }, field, value),
+		previewValueWhere: (scope, field, value) => runPreview(scope, field, value),
+		applyValueWhere: (scope, field, value) => runApply(scope, field, value),
+		applyValueToPaths: (paths, field, value) => runApplyPaths(paths, field, value),
 	};
 }

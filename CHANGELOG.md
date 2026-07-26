@@ -8,6 +8,16 @@ All notable changes to Fileclass are documented here. The format follows
 
 ### UI
 
+- **In-app bulk field edit** ([#56](https://github.com/mdelobelle/fileclass/issues/56)):
+  a new **Fileclass: bulk edit a field** command (and a fileClass note's
+  right-click entry) sets one field across many notes without the CLI. Pick a
+  fileClass, an optional filter (a field condition or a base view), the field and
+  a new value through its own typed input, then **preview** — a second window
+  lists every affected note (`old → new`) with a per-note toggle (on by default)
+  and an **Apply (N)** button that writes only the kept rows. Dry-run by default,
+  validated per note, no-ops skipped. Built over the proven `setValueWhere`
+  engine via new `previewValueWhere`/`applyValueToPaths` API methods (API 1.1).
+
 - **Sticky modal titles** ([#47](https://github.com/mdelobelle/fileclass/issues/47)):
   every Fileclass modal now pins its heading to the top while the body scrolls,
   so you always know which modal you're in.
@@ -44,6 +54,12 @@ All notable changes to Fileclass are documented here. The format follows
 
 ### Fixed
 
+- **`contains` filter is now a case-insensitive substring match** (`ILIKE
+  '%value%'`, [#56](https://github.com/mdelobelle/fileclass/issues/56)): across
+  the list/bulk API, CLI `set-where`, and the bulk-edit UI, `contains` tests each
+  value (and each element of a `MultiFile`/`MultiMedia` array) as a
+  case-insensitive substring — so `activities contains comic` matches a stored
+  `[[Comic]]` instead of requiring the exact, same-case wikilink.
 - **Sync no longer silently no-ops on a base open in a tab**
   ([#55](https://github.com/mdelobelle/fileclass/issues/55)): a freshly created
   `.base` left open reads as empty on disk (Bases holds its layout in memory

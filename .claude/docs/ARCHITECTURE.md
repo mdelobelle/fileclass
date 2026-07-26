@@ -355,7 +355,7 @@ round-trip verified) and a future standalone `fileclass` CLI/TUI wrapper. Not a
 one-to-one port of Metadata Menu's `plugin.api`.
 
 **API-1 (landed):** `src/api/fileclassApi.ts` → `createFileclassApi(plugin)`,
-exposed as `plugin.api` (`app.plugins.plugins.fileclass.api`, `version` "1.0").
+exposed as `plugin.api` (`app.plugins.plugins.fileclass.api`, `version` now "1.1").
 Thin wiring over the existing engine (index, `validateField`, `io/read`+`write`,
 `resolveFieldValues`, `describeField`, `insertMissingFields`), JSON in/out,
 non-interactive (`setValue` validates then writes — strict list membership, no
@@ -367,10 +367,27 @@ scope = whole vault), `setValue`, `clearValue`, `insertMissing`. Obsidian-couple
 **API-2 (landed):** `listNotes(fileClass, { columns?, where?, limit? })` and
 `setValueWhere(fileClass, field, value, where?)` — bulk over a fileClass's notes.
 The filter predicate is pure (`src/api/filter.ts`, unit-tested): `is`/`isNot`
-(string compare), `contains` (array membership / substring), `isEmpty`/
+(string compare), `contains` (case-insensitive substring, per array element), `isEmpty`/
 `isNotEmpty`. `setValueWhere` validates each write (strict), skips no-ops, and
 aggregates a `BulkResult`. Verified live via CDP (no-op and out-of-list bulk both
 wrote nothing).
+
+**API-2.1 (landed, `version` "1.1"):** `previewValueWhere(scope, field, value)`,
+`applyValueWhere(scope, field, value)`, and `applyValueToPaths(paths, field,
+value)` over a `BulkScope` (`{ fileClass, where?, baseFile?, viewName? }`). A
+single per-note `decide` (validate + no-op check) drives all three, so the
+dry-run and the writes agree. `previewValueWhere` returns a `BulkPreview` — the
+**full** `changes: {path,from,to}[]` list plus `willSkip`/`errors`, no writes; a
+base-view filter intersects the fileClass's notes with `getBaseFiles` and is
+refused (not silently unfiltered) when Bases is off. `applyValueToPaths` writes
+just the paths the user kept. `setValueWhere` delegates to `applyValueWhere`.
+`contains` is a case-insensitive substring per array element, like `ILIKE
+'%value%'` (`[[Comic]]` matches `comic`, `src/api/filter.ts`, unit-tested). The in-app **bulk edit** flow
+(`src/ui/bulkEditModal.ts`, command + fileClass right-click, §19.3) is two
+modals: a form (fileClass → filter → field → value via the field's own typed
+input, CTA Preview) then a full change list with per-note toggles (CTA Apply(N)
+→ `applyValueToPaths`). Obsidian-coupled → manual/CDP verified (the `where`
+filter stays unit-tested).
 
 **CLI/TUI (landed, separate repo):** a standalone `fileclass` binary (Node +
 React/ink) shelling out to `obsidian eval` via a small transport, over the same

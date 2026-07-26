@@ -47,7 +47,30 @@ Markdown file — in the file explorer, on a tab, or in the editor — adds:
 - **Insert missing fields**.
 - **Add fileClass**.
 
+On a **fileClass note**, the menu instead offers schema actions plus **Bulk edit
+a field of this fileClass** (see below).
+
 All actions write to frontmatter only, one `processFrontMatter` write each.
+
+## Bulk edit (set-where)
+
+**Fileclass: bulk edit a field** (command, or the fileClass note's right-click
+menu) sets one field across many notes at once — the in-app counterpart of the
+CLI's `set-where`:
+
+1. Pick the **fileClass**.
+2. Optionally **filter** which of its notes to touch — a **field condition**
+   (e.g. `status is empty`) or a **base view** (only notes the view matches;
+   needs the core Bases plugin).
+3. Pick the **field to set** and its **new value** through that field's own typed
+   input (the same picker used everywhere).
+4. **Preview** — a dry run showing how many notes would change, how many are
+   already at the value, any validation errors, and a sample of `old → new`.
+5. **Apply** — enabled only after a preview. Each note is validated; notes
+   already at the target value are skipped.
+
+> Dry-run first: nothing is written until you Apply. As always, writes go
+> straight to your vault — keep regular backups.
 
 ## Field indicator
 

@@ -514,6 +514,39 @@
 	padding: var(--size-2-3) 0 var(--size-2-1);
 	background: var(--modal-background, var(--background-primary));
 }
+/* Bulk edit modal (#56): indented sub-settings + dry-run preview box. */
+.fileclass-bulk-sub {
+	padding-left: var(--size-4-4);
+	border-top: none;
+}
+.fileclass-bulk-preview {
+	margin: var(--size-4-2) 0;
+	padding: var(--size-4-2);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	background: var(--background-secondary);
+	max-height: 40vh;
+	overflow-y: auto;
+	font-size: var(--font-ui-smaller);
+}
+.fileclass-bulk-summary {
+	font-weight: var(--font-semibold);
+	margin-bottom: var(--size-2-2);
+}
+.fileclass-bulk-sample {
+	color: var(--text-muted);
+	font-family: var(--font-monospace);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.fileclass-bulk-error {
+	color: var(--text-error);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
 /* Positioning context for the suggester's overlaid group bar (#47). */
 .fileclass-suggest-prompt {
 	position: relative;

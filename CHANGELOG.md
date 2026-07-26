@@ -8,6 +8,15 @@ All notable changes to Fileclass are documented here. The format follows
 
 ### UI
 
+- **In-app bulk field edit** ([#56](https://github.com/mdelobelle/fileclass/issues/56)):
+  a new **Fileclass: bulk edit a field** command (and a fileClass note's
+  right-click entry) sets one field across many notes without the CLI. Pick a
+  fileClass, an optional filter (a field condition or a base view), the field and
+  a new value through its own typed input, **preview** the affected notes
+  (dry-run: counts + `old → new` sample), then **apply** — validated per note,
+  no-ops skipped. Built over the proven `setValueWhere` engine via new
+  `previewValueWhere`/`applyValueWhere` API methods (API 1.1).
+
 - **Sticky modal titles** ([#47](https://github.com/mdelobelle/fileclass/issues/47)):
   every Fileclass modal now pins its heading to the top while the body scrolls,
   so you always know which modal you're in.

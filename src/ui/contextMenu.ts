@@ -12,6 +12,7 @@ import { pickAndUpdateField } from "../fields/fieldActions";
 import { pickAndCreateBase } from "../views/baseFileGenerator";
 import { fileClassBaseFile, openFileClassBase } from "../views/baseSync";
 import { AddFileClassModal } from "./addFileClassModal";
+import { openBulkEdit } from "./bulkEditModal";
 import { openFileClassSchema } from "./fileClassSchemaModal";
 import { NoteFieldsModal } from "./noteFieldsModal";
 
@@ -74,6 +75,12 @@ export class FileclassContextMenu extends Component {
 					.onClick(() => openFileClassBase(this.plugin, fcName))
 			);
 		}
+		menu.addItem((item) =>
+			item
+				.setTitle("Bulk edit a field of this fileClass")
+				.setIcon("replace")
+				.onClick(() => openBulkEdit(this.plugin, fcName))
+		);
 	}
 
 	private buildNoteMenu(menu: Menu, file: TFile): void {

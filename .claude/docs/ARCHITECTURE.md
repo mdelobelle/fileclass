@@ -355,7 +355,7 @@ round-trip verified) and a future standalone `fileclass` CLI/TUI wrapper. Not a
 one-to-one port of Metadata Menu's `plugin.api`.
 
 **API-1 (landed):** `src/api/fileclassApi.ts` → `createFileclassApi(plugin)`,
-exposed as `plugin.api` (`app.plugins.plugins.fileclass.api`, `version` "1.0").
+exposed as `plugin.api` (`app.plugins.plugins.fileclass.api`, `version` now "1.1").
 Thin wiring over the existing engine (index, `validateField`, `io/read`+`write`,
 `resolveFieldValues`, `describeField`, `insertMissingFields`), JSON in/out,
 non-interactive (`setValue` validates then writes — strict list membership, no
@@ -371,6 +371,19 @@ The filter predicate is pure (`src/api/filter.ts`, unit-tested): `is`/`isNot`
 `isNotEmpty`. `setValueWhere` validates each write (strict), skips no-ops, and
 aggregates a `BulkResult`. Verified live via CDP (no-op and out-of-list bulk both
 wrote nothing).
+
+**API-2.1 (landed, `version` "1.1"):** `previewValueWhere(scope, field, value)`
+and `applyValueWhere(scope, field, value)` over a `BulkScope`
+(`{ fileClass, where?, baseFile?, viewName? }`). A single per-note `decide`
+(validate + no-op check) drives both, so the dry-run and the write agree.
+`previewValueWhere` returns a `BulkPreview` (counts + capped `old→new` sample,
+no writes); a base-view filter intersects the fileClass's notes with
+`getBaseFiles` and is refused (not silently unfiltered) when Bases is off.
+`setValueWhere` now delegates to `applyValueWhere`. The in-app **bulk edit
+modal** (`src/ui/bulkEditModal.ts`, command + fileClass right-click, §19.3) is a
+UI over these: fileClass → filter (condition or base view) → field → value (the
+field's own typed input) → preview → apply. Obsidian-coupled → manual/CDP verified
+(the `where` filter stays unit-tested).
 
 **CLI/TUI (landed, separate repo):** a standalone `fileclass` binary (Node +
 React/ink) shelling out to `obsidian eval` via a small transport, over the same

@@ -6,6 +6,8 @@
  */
 import { App, Modal, Setting, TextComponent } from "obsidian";
 
+import { modalTitle } from "../../ui/modalTitle";
+
 import {
 	buildDuration,
 	DurationParts,
@@ -44,7 +46,7 @@ export class DurationInputModal extends Modal {
 
 	onOpen(): void {
 		const { contentEl } = this;
-		contentEl.createEl("h3", { text: this.opts.title });
+		modalTitle(contentEl, this.opts.title);
 
 		// Free-text entry: type ISO (PT1H30M) or a human form (1h 30m, 2w).
 		new Setting(contentEl)
@@ -200,7 +202,7 @@ export class CycleDurationEditorModal extends Modal {
 	private render(): void {
 		const { contentEl } = this;
 		contentEl.empty();
-		contentEl.createEl("h3", { text: this.opts.title });
+		modalTitle(contentEl, this.opts.title);
 
 		this.items.forEach((item, index) => {
 			new Setting(contentEl)

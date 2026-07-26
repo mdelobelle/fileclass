@@ -6,6 +6,8 @@
  */
 import { App, Modal, Notice, Setting, TextComponent } from "obsidian";
 
+import { modalTitle } from "../../ui/modalTitle";
+
 import { formatLocation, isValidLocation, mapUrl, parseLocation } from "../location";
 
 export interface LocationModalOptions {
@@ -25,7 +27,7 @@ export class LocationInputModal extends Modal {
 
 	onOpen(): void {
 		const { contentEl } = this;
-		contentEl.createEl("h3", { text: this.opts.title });
+		modalTitle(contentEl, this.opts.title);
 		const initial = parseLocation(this.opts.initial);
 
 		new Setting(contentEl)

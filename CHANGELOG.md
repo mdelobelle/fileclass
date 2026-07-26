@@ -6,6 +6,17 @@ All notable changes to Fileclass are documented here. The format follows
 
 ## [Unreleased]
 
+### UI
+
+- **Sticky modal titles** ([#47](https://github.com/mdelobelle/fileclass/issues/47)):
+  every Fileclass modal now pins its heading to the top while the body scrolls,
+  so you always know which modal you're in.
+- **Sticky group headers in grouped pickers** ([#47](https://github.com/mdelobelle/fileclass/issues/47)):
+  in a grouped candidate picker, the current group stays visible while you
+  scroll — a pinned section header in the multi-select list, and a sticky bar
+  naming the current group over the single-select suggester. The multi-select
+  list also gets the sticky Save footer.
+
 ### Fields & typed input
 
 - **Base-sourced candidates and values follow the base view's order**

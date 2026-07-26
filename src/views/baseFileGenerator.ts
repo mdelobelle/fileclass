@@ -6,6 +6,8 @@
  */
 import { Modal, Notice, Setting, normalizePath } from "obsidian";
 
+import { modalTitle } from "../ui/modalTitle";
+
 import type FileclassPlugin from "../../main";
 import { writeOptions } from "../schema/fileClassIo";
 import { ChoiceSuggestModal } from "../fields/input/valueModals";
@@ -25,7 +27,7 @@ class CreateBaseModal extends Modal {
 
 	onOpen(): void {
 		const { contentEl } = this;
-		contentEl.createEl("h3", { text: `Sync ${this.name} to a base` });
+		modalTitle(contentEl, `Sync ${this.name} to a base`);
 
 		new Setting(contentEl)
 			.setName("Base file")

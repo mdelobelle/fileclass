@@ -7,6 +7,8 @@
  */
 import { EventRef, Modal, Setting, setIcon, TFile } from "obsidian";
 
+import { modalTitle } from "./modalTitle";
+
 import type FileclassPlugin from "../../main";
 import { insertMissingFields } from "../commands/insertMissingFields";
 import { makeDisplayDeps } from "../fields/displayDeps";
@@ -57,7 +59,7 @@ export class NoteFieldsModal extends Modal {
 	private render(): void {
 		const { contentEl } = this;
 		contentEl.empty();
-		contentEl.createEl("h3", { text: `Fields — ${this.file.basename}` });
+		modalTitle(contentEl, `Fields — ${this.file.basename}`);
 
 		const fields = this.plugin.index.getFields(this.file);
 		const ctx: EditContext = { host: this.plugin, file: this.file, allFields: fields };

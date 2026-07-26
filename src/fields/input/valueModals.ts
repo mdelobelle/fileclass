@@ -5,6 +5,9 @@
  */
 import { App, Modal, SuggestModal, Setting, TextAreaComponent, TextComponent } from "obsidian";
 
+import { makeStickyFooter } from "../../ui/modalFooter";
+import { modalTitle } from "../../ui/modalTitle";
+
 import { DisplayGroup, groupLabel } from "../baseOrder";
 import { parseTemplate, renderTemplate } from "../inputTemplate";
 import { ValidationResult } from "../validate";
@@ -27,7 +30,7 @@ export class PromptModal extends Modal {
 
 	onOpen(): void {
 		const { contentEl } = this;
-		contentEl.createEl("h3", { text: this.opts.title });
+		modalTitle(contentEl, this.opts.title);
 		const errorEl = contentEl.createDiv();
 		errorEl.setCssStyles({ color: "var(--text-error)", minHeight: "1.2em" });
 
@@ -80,7 +83,7 @@ export class TextAreaInputModal extends Modal {
 
 	onOpen(): void {
 		const { contentEl } = this;
-		contentEl.createEl("h3", { text: this.opts.title });
+		modalTitle(contentEl, this.opts.title);
 		const errorEl = contentEl.createDiv();
 		errorEl.setCssStyles({
 			color: "var(--text-error)",
@@ -144,7 +147,7 @@ export class TemplateInputModal extends Modal {
 
 	onOpen(): void {
 		const { contentEl } = this;
-		contentEl.createEl("h3", { text: this.opts.title });
+		modalTitle(contentEl, this.opts.title);
 
 		for (const part of parseTemplate(this.opts.template)) {
 			this.values[part.name] = "";
@@ -252,7 +255,7 @@ export class MultiInputEditorModal extends Modal {
 	private render(): void {
 		const { contentEl } = this;
 		contentEl.empty();
-		contentEl.createEl("h3", { text: this.opts.title });
+		modalTitle(contentEl, this.opts.title);
 
 		this.items.forEach((item, index) => {
 			new Setting(contentEl)
@@ -310,7 +313,7 @@ export class BooleanInputModal extends Modal {
 
 	onOpen(): void {
 		const { contentEl } = this;
-		contentEl.createEl("h3", { text: this.opts.title });
+		modalTitle(contentEl, this.opts.title);
 
 		let value = this.opts.initial;
 		const submit = () => {
@@ -336,12 +339,15 @@ export class BooleanInputModal extends Modal {
 
 /**
  * Generic single-choice suggester (Select/Cycle/File/Media). With `groupOf`, it
- * prepends a header before the first item of each group in the current results
- * (#47) — headers delimit the list even as the query filters it. `groupOf`
+ * shows the source view's groups (#47): an inline header before the first item
+ * of each group (delimiters that survive filtering) plus a sticky bar over the
+ * top of the list naming the group you're currently scrolled into. `groupOf`
  * returns a group key (`null` = the keyless group) or `undefined` to skip.
  */
 export class ChoiceSuggestModal<T> extends SuggestModal<T> {
 	private results: T[] = [];
+	private groupBar?: HTMLElement;
+	private readonly onScroll = () => this.updateGroupBar();
 
 	constructor(
 		app: App,
@@ -355,9 +361,30 @@ export class ChoiceSuggestModal<T> extends SuggestModal<T> {
 		this.setPlaceholder(placeholder);
 	}
 
+	onOpen(): void {
+		super.onOpen();
+		if (!this.groupOf) return;
+		// A sticky "current group" bar overlaid on the top of the scrolling
+		// results. Lives in the prompt (a sibling of the results), so it never
+		// interferes with the suggestion items or their keyboard navigation.
+		const prompt = this.resultContainerEl.parentElement;
+		if (!prompt) return;
+		prompt.style.position = "relative";
+		this.groupBar = prompt.createDiv({ cls: "fileclass-suggest-groupbar" });
+		this.groupBar.hide();
+		this.resultContainerEl.addEventListener("scroll", this.onScroll);
+	}
+
+	onClose(): void {
+		this.resultContainerEl.removeEventListener("scroll", this.onScroll);
+		super.onClose();
+	}
+
 	getSuggestions(query: string): T[] {
 		const q = query.toLowerCase();
 		this.results = this.choices.filter((c) => this.toText(c).toLowerCase().includes(q));
+		// renderSuggestion runs after this returns; refresh the bar once it has.
+		if (this.groupOf) window.setTimeout(() => this.updateGroupBar(), 0);
 		return this.results;
 	}
 
@@ -367,19 +394,41 @@ export class ChoiceSuggestModal<T> extends SuggestModal<T> {
 			const group = this.groupOf(choice);
 			const prev = i > 0 ? this.groupOf(this.results[i - 1]) : undefined;
 			if (group !== undefined && (i <= 0 || group !== prev)) {
-				const header = el.createDiv({ text: groupLabel(group) });
-				header.setCssStyles({
-					color: "var(--text-muted)",
-					fontSize: "var(--font-ui-smaller)",
-					fontWeight: "var(--font-semibold)",
-					textTransform: "uppercase",
-					marginBottom: "var(--size-2-1)",
-				});
+				el.createDiv({ text: groupLabel(group), cls: "fileclass-group-header" });
 			}
 			el.createDiv({ text: this.toText(choice) });
 			return;
 		}
 		el.setText(this.toText(choice));
+	}
+
+	/** Names the group whose section currently sits at the top of the results. */
+	private updateGroupBar(): void {
+		const bar = this.groupBar;
+		if (!bar || !this.groupOf) return;
+		const container = this.resultContainerEl;
+		const items = container.querySelectorAll<HTMLElement>(".suggestion-item");
+		if (!items.length) {
+			bar.hide();
+			return;
+		}
+		bar.style.top = `${container.offsetTop}px`;
+		const top = container.getBoundingClientRect().top;
+		let key: string | null | undefined;
+		for (let i = 0; i < items.length && i < this.results.length; i++) {
+			if (items[i].getBoundingClientRect().top - top <= 1) key = this.groupOf(this.results[i]);
+			else break;
+		}
+		if (key === undefined) key = this.groupOf(this.results[0]);
+		if (key === undefined) {
+			bar.hide();
+			return;
+		}
+		bar.setText(groupLabel(key));
+		bar.show();
+		// Reserve the bar's height at the top of the list so it never hides the
+		// first row (the bar is overlaid, not in flow).
+		if (!container.style.paddingTop) container.style.paddingTop = `${bar.offsetHeight}px`;
 	}
 
 	onChooseSuggestion(choice: T): void {
@@ -411,7 +460,9 @@ export class MultiSelectModal extends Modal {
 
 	onOpen(): void {
 		const { contentEl } = this;
-		contentEl.createEl("h3", { text: this.opts.title });
+		const title = modalTitle(contentEl, this.opts.title);
+		// Sticky group headers park just below the sticky title — offset by its height.
+		contentEl.style.setProperty("--fc-title-h", `${title.offsetHeight}px`);
 		// Preserve allowed order, then any already-selected extras.
 		const options = [...new Set([...this.opts.allowed, ...this.opts.selected])];
 
@@ -436,7 +487,8 @@ export class MultiSelectModal extends Modal {
 			for (const v of options) this.renderToggle(contentEl, v);
 		}
 
-		new Setting(contentEl).addButton((b) =>
+		const footer = makeStickyFooter(contentEl);
+		new Setting(footer).addButton((b) =>
 			b
 				.setButtonText("Save")
 				.setCta()
@@ -457,14 +509,8 @@ export class MultiSelectModal extends Modal {
 	}
 
 	private renderGroupHeader(container: HTMLElement, label: string): void {
-		const h = container.createDiv({ text: label });
-		h.setCssStyles({
-			color: "var(--text-muted)",
-			fontSize: "var(--font-ui-smaller)",
-			fontWeight: "var(--font-semibold)",
-			textTransform: "uppercase",
-			margin: "var(--size-4-2) 0 var(--size-2-1)",
-		});
+		// Sticky so the current group stays visible while the list scrolls.
+		container.createDiv({ text: label, cls: "fileclass-group-header fileclass-group-sticky" });
 	}
 
 	onClose(): void {

@@ -9,6 +9,8 @@
  */
 import { App, Modal, Notice, Setting } from "obsidian";
 
+import { modalTitle } from "../../ui/modalTitle";
+
 import { Field } from "../../schema/field";
 import { describeField, DisplayDeps, renderObjectItem } from "../objectDisplay";
 import { cloneDraft, validateObjectDraft } from "../objectDraft";
@@ -52,7 +54,7 @@ export class ObjectFieldsEditorModal extends Modal {
 	private render(): void {
 		const { contentEl } = this;
 		contentEl.empty();
-		contentEl.createEl("h3", { text: this.opts.title });
+		modalTitle(contentEl, this.opts.title);
 
 		if (!this.opts.childFields.length) {
 			contentEl.createEl("p", { text: "This object has no fields defined." });
@@ -149,7 +151,7 @@ export class ObjectListEditorModal extends Modal {
 	private render(): void {
 		const { contentEl } = this;
 		contentEl.empty();
-		contentEl.createEl("h3", { text: this.opts.title });
+		modalTitle(contentEl, this.opts.title);
 
 		this.draft.forEach((item, index) => {
 			new Setting(contentEl)

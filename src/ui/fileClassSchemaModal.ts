@@ -7,6 +7,8 @@
  */
 import { EventRef, Modal, Notice, Setting, TFile } from "obsidian";
 
+import { modalTitle } from "./modalTitle";
+
 import type FileclassPlugin from "../../main";
 import { childPathOf, Field } from "../schema/field";
 import { parseFileClass } from "../schema/fileClass";
@@ -58,7 +60,7 @@ export class FileClassSchemaModal extends Modal {
 		const { contentEl } = this;
 		contentEl.empty();
 		const heading = this.parentPath ? `${this.name} › children` : `Schema — ${this.name}`;
-		contentEl.createEl("h3", { text: heading });
+		modalTitle(contentEl, heading);
 
 		if (!this.parentPath) {
 			new Setting(contentEl)

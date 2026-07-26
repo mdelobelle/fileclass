@@ -8,6 +8,8 @@
  */
 import { App, Modal, Setting, moment as obsidianMoment } from "obsidian";
 
+import { modalTitle } from "../../ui/modalTitle";
+
 import { Field, FieldType } from "../../schema/field";
 import { dateOptions } from "../options";
 
@@ -75,7 +77,7 @@ export class DateInputModal extends Modal {
 		const { contentEl } = this;
 		const { field } = this.opts;
 		this.insertAsLink = this.isInitialLink() || dateOptions(field).defaultInsertAsLink === true;
-		contentEl.createEl("h3", { text: `Set ${field.name}` });
+		modalTitle(contentEl, `Set ${field.name}`);
 
 		// Natural-language entry, only when the companion plugin is installed.
 		const nl = getNlDates(this.app);

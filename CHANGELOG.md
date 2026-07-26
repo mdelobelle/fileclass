@@ -6,6 +6,8 @@ All notable changes to Fileclass are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-07-26
+
 ### UI
 
 - **In-app bulk field edit** ([#56](https://github.com/mdelobelle/fileclass/issues/56)):

@@ -8,6 +8,8 @@
  */
 import { App, Modal, setIcon } from "obsidian";
 
+import { modalTitle } from "../../ui/modalTitle";
+
 import { isValidCssColor } from "../color";
 import { addCustomColor, customColors } from "../customPalette";
 
@@ -69,7 +71,7 @@ export class ColorPickerModal extends Modal {
 	private render(): void {
 		const { contentEl } = this;
 		contentEl.empty();
-		contentEl.createEl("h3", { text: this.opts.title });
+		modalTitle(contentEl, this.opts.title);
 
 		const current = this.opts.initial.trim();
 		const currentLc = current.toLowerCase();

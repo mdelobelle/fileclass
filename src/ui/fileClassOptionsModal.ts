@@ -5,6 +5,8 @@
  */
 import { ButtonComponent, Modal, Setting, TFile, debounce, normalizePath, parseYaml } from "obsidian";
 
+import { modalTitle } from "./modalTitle";
+
 import type FileclassPlugin from "../../main";
 import { isRootField } from "../schema/field";
 import { parseFileClass } from "../schema/fileClass";
@@ -46,7 +48,7 @@ export class FileClassOptionsModal extends Modal {
 
 	onOpen(): void {
 		const { contentEl } = this;
-		contentEl.createEl("h3", { text: `Options — ${this.name}` });
+		modalTitle(contentEl, `Options — ${this.name}`);
 
 		const iconSetting = new Setting(contentEl).setName("Icon").setDesc("Lucide icon name.");
 		const preview = iconSetting.controlEl.createSpan({ cls: "fileclass-icon-preview" });

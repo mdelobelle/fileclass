@@ -6,6 +6,31 @@ All notable changes to Fileclass are documented here. The format follows
 
 ## [Unreleased]
 
+### UI
+
+- **Sticky modal titles** ([#47](https://github.com/mdelobelle/fileclass/issues/47)):
+  every Fileclass modal now pins its heading to the top while the body scrolls,
+  so you always know which modal you're in.
+- **Sticky group headers in grouped pickers** ([#47](https://github.com/mdelobelle/fileclass/issues/47)):
+  in a grouped candidate picker, the current group stays visible while you
+  scroll — a pinned section header in the multi-select list, and a sticky bar
+  naming the current group over the single-select suggester. The multi-select
+  list also gets the sticky Save footer.
+
+### Fields & typed input
+
+- **Base-sourced candidates and values follow the base view's order**
+  ([#47](https://github.com/mdelobelle/fileclass/issues/47)): `File`/`MultiFile`/
+  `Media`/`MultiMedia` pickers and `Select`/`Multi` value lists sourced from a
+  `.base` now list entries in the view's own order (its `sort:`, then `groupBy`
+  flow) instead of an arbitrary vault order, so a long list is browsable and
+  matches how the base reads. A `limit:` on the source view now applies too.
+- **Grouped candidate pickers** ([#47](https://github.com/mdelobelle/fileclass/issues/47)):
+  when the source view defines a `groupBy`, the `File`/`MultiFile`/`Media`/
+  `MultiMedia` picker shows the same groups — headers in the single-select
+  suggester (they keep delimiting the list as you type) and section headers in
+  the multi-select list. The keyless group reads "(No value)".
+
 ### Views
 
 - **Generated bases scope the fileClass filter to the managed view, not

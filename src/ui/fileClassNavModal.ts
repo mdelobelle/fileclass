@@ -6,6 +6,8 @@
  */
 import { Modal, Setting } from "obsidian";
 
+import { modalTitle } from "./modalTitle";
+
 import type FileclassPlugin from "../../main";
 import { pickAndCreateBase } from "../views/baseFileGenerator";
 import { fileClassBaseFile, openFileClassBase } from "../views/baseSync";
@@ -22,7 +24,7 @@ export class FileClassNavModal extends Modal {
 
 	onOpen(): void {
 		const { contentEl } = this;
-		contentEl.createEl("h3", { text: this.name });
+		modalTitle(contentEl, this.name);
 
 		new Setting(contentEl)
 			.setName("Open fileClass settings")

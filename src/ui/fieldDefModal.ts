@@ -5,6 +5,8 @@
  */
 import { App, Modal, Notice, Setting } from "obsidian";
 
+import { modalTitle } from "./modalTitle";
+
 import { renderFieldOptionsSettings } from "../fields/input/fieldOptionsSettings";
 import { buildFieldOptions, optionsToDraft, OptionsDraft } from "../fields/optionsDraft";
 import { FIELD_TYPES, FieldOptions, FieldType } from "../schema/field";
@@ -68,7 +70,7 @@ export class FieldDefModal extends Modal {
 
 	onOpen(): void {
 		const { contentEl } = this;
-		contentEl.createEl("h3", { text: this.opts.title });
+		modalTitle(contentEl, this.opts.title);
 
 		new Setting(contentEl).setName("Name").addText((t) =>
 			t.setValue(this.name).onChange((v) => (this.name = v))

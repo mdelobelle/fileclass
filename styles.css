@@ -485,6 +485,56 @@
 	max-height: min(70vh, 100%);
 	overflow-y: auto;
 }
+
+/* Sticky modal title (#47): pin the heading to the top while the body scrolls. */
+.modal-content.fileclass-scroll-body > .fileclass-modal-title {
+	position: sticky;
+	top: 0;
+	z-index: 3;
+	margin: 0;
+	padding: var(--size-4-1) 0 var(--size-4-2);
+	background: var(--modal-background, var(--background-primary));
+}
+
+/* Group headers in base-sourced value/candidate pickers (#47). */
+.fileclass-group-header {
+	color: var(--text-muted);
+	font-size: var(--font-ui-smaller);
+	font-weight: var(--font-semibold);
+	text-transform: uppercase;
+	letter-spacing: 0.03em;
+	margin: var(--size-4-2) 0 var(--size-2-1);
+}
+/* Sticky variant (multi-select list): the current group stays under the title. */
+.fileclass-group-sticky {
+	position: sticky;
+	top: var(--fc-title-h, 0);
+	z-index: 2;
+	margin: 0;
+	padding: var(--size-2-3) 0 var(--size-2-1);
+	background: var(--modal-background, var(--background-primary));
+}
+/* Positioning context for the suggester's overlaid group bar (#47). */
+.fileclass-suggest-prompt {
+	position: relative;
+}
+/* Sticky "current group" bar overlaid on the top of the suggester results (#47).
+   pointer-events:none so the row beneath it stays clickable. */
+.fileclass-suggest-groupbar {
+	position: absolute;
+	left: 0;
+	right: 0;
+	z-index: 2;
+	padding: var(--size-2-3) var(--size-4-2);
+	color: var(--text-muted);
+	font-size: var(--font-ui-smaller);
+	font-weight: var(--font-semibold);
+	text-transform: uppercase;
+	letter-spacing: 0.03em;
+	background: var(--background-primary);
+	border-bottom: 1px solid var(--background-modifier-border);
+	pointer-events: none;
+}
 .fileclass-sticky-footer {
 	position: sticky;
 	bottom: 0;

@@ -6,6 +6,8 @@
  */
 import { App, Modal, Setting, TextComponent, getIconIds } from "obsidian";
 
+import { modalTitle } from "../../ui/modalTitle";
+
 import { normalizeIconId } from "../icon";
 import { paintIcon } from "../../ui/iconSuggest";
 
@@ -46,7 +48,7 @@ export class IconPickerModal extends Modal {
 
 	onOpen(): void {
 		const { contentEl } = this;
-		contentEl.createEl("h3", { text: this.opts.title });
+		modalTitle(contentEl, this.opts.title);
 
 		new Setting(contentEl)
 			.setName("Search")

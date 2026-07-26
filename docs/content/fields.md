@@ -98,6 +98,14 @@ list comes from a Base view** — configure the field with a `.base` file and vi
 folders. An optional `displayColumn` (a base column id such as `note.title`) sets
 the alias shown in the picker and written into the link.
 
+- Candidates appear in the **view's own order** — its `sort:` (then `groupBy`
+  flow) — so the picker matches how the base reads, instead of an arbitrary
+  order. A `limit:` on the source view also applies. The same holds for
+  `Select`/`Multi` fields sourced from a base.
+- When the source view defines a **`groupBy`**, the picker shows those **groups**:
+  headers in the single-pick suggester (they keep delimiting the list as you
+  type) and section headers in the multi-pick list. The keyless group (files with
+  no value for the grouping property) reads **(No value)**.
 - When no base is configured, or the core Bases plugin is unavailable, the picker
   gracefully falls back to **all notes** (File) or **all media files** (Media).
 - `Media`/`MultiMedia` with the `embed` option store an embed (`![[…]]`).

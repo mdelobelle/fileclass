@@ -5,6 +5,10 @@
  */
 import { App, Modal, SuggestModal, Setting, TextAreaComponent, TextComponent } from "obsidian";
 
+import { makeStickyFooter } from "../../ui/modalFooter";
+import { modalTitle } from "../../ui/modalTitle";
+
+import { DisplayGroup, groupLabel } from "../baseOrder";
 import { parseTemplate, renderTemplate } from "../inputTemplate";
 import { ValidationResult } from "../validate";
 
@@ -26,7 +30,7 @@ export class PromptModal extends Modal {
 
 	onOpen(): void {
 		const { contentEl } = this;
-		contentEl.createEl("h3", { text: this.opts.title });
+		modalTitle(contentEl, this.opts.title);
 		const errorEl = contentEl.createDiv();
 		errorEl.setCssStyles({ color: "var(--text-error)", minHeight: "1.2em" });
 
@@ -79,7 +83,7 @@ export class TextAreaInputModal extends Modal {
 
 	onOpen(): void {
 		const { contentEl } = this;
-		contentEl.createEl("h3", { text: this.opts.title });
+		modalTitle(contentEl, this.opts.title);
 		const errorEl = contentEl.createDiv();
 		errorEl.setCssStyles({
 			color: "var(--text-error)",
@@ -143,7 +147,7 @@ export class TemplateInputModal extends Modal {
 
 	onOpen(): void {
 		const { contentEl } = this;
-		contentEl.createEl("h3", { text: this.opts.title });
+		modalTitle(contentEl, this.opts.title);
 
 		for (const part of parseTemplate(this.opts.template)) {
 			this.values[part.name] = "";
@@ -251,7 +255,7 @@ export class MultiInputEditorModal extends Modal {
 	private render(): void {
 		const { contentEl } = this;
 		contentEl.empty();
-		contentEl.createEl("h3", { text: this.opts.title });
+		modalTitle(contentEl, this.opts.title);
 
 		this.items.forEach((item, index) => {
 			new Setting(contentEl)
@@ -309,7 +313,7 @@ export class BooleanInputModal extends Modal {
 
 	onOpen(): void {
 		const { contentEl } = this;
-		contentEl.createEl("h3", { text: this.opts.title });
+		modalTitle(contentEl, this.opts.title);
 
 		let value = this.opts.initial;
 		const submit = () => {
@@ -333,26 +337,98 @@ export class BooleanInputModal extends Modal {
 	}
 }
 
-/** Generic single-choice suggester (Select/Cycle/Boolean). */
+/**
+ * Generic single-choice suggester (Select/Cycle/File/Media). With `groupOf`, it
+ * shows the source view's groups (#47): an inline header before the first item
+ * of each group (delimiters that survive filtering) plus a sticky bar over the
+ * top of the list naming the group you're currently scrolled into. `groupOf`
+ * returns a group key (`null` = the keyless group) or `undefined` to skip.
+ */
 export class ChoiceSuggestModal<T> extends SuggestModal<T> {
+	private results: T[] = [];
+	private groupBar?: HTMLElement;
+	private readonly onScroll = () => this.updateGroupBar();
+
 	constructor(
 		app: App,
 		private readonly choices: T[],
 		private readonly toText: (choice: T) => string,
 		private readonly onPick: (choice: T) => void,
-		placeholder = "Select a value"
+		placeholder = "Select a value",
+		private readonly groupOf?: (choice: T) => string | null | undefined
 	) {
 		super(app);
 		this.setPlaceholder(placeholder);
 	}
 
+	onOpen(): void {
+		void super.onOpen();
+		if (!this.groupOf) return;
+		// A sticky "current group" bar overlaid on the top of the scrolling
+		// results. Lives in the prompt (a sibling of the results), so it never
+		// interferes with the suggestion items or their keyboard navigation.
+		const prompt = this.resultContainerEl.parentElement;
+		if (!prompt) return;
+		prompt.addClass("fileclass-suggest-prompt"); // position: relative for the bar
+		this.groupBar = prompt.createDiv({ cls: "fileclass-suggest-groupbar" });
+		this.groupBar.hide();
+		this.resultContainerEl.addEventListener("scroll", this.onScroll);
+	}
+
+	onClose(): void {
+		this.resultContainerEl.removeEventListener("scroll", this.onScroll);
+		super.onClose();
+	}
+
 	getSuggestions(query: string): T[] {
 		const q = query.toLowerCase();
-		return this.choices.filter((c) => this.toText(c).toLowerCase().includes(q));
+		this.results = this.choices.filter((c) => this.toText(c).toLowerCase().includes(q));
+		// renderSuggestion runs after this returns; refresh the bar once it has.
+		if (this.groupOf) window.setTimeout(() => this.updateGroupBar(), 0);
+		return this.results;
 	}
 
 	renderSuggestion(choice: T, el: HTMLElement): void {
+		if (this.groupOf) {
+			const i = this.results.indexOf(choice);
+			const group = this.groupOf(choice);
+			const prev = i > 0 ? this.groupOf(this.results[i - 1]) : undefined;
+			if (group !== undefined && (i <= 0 || group !== prev)) {
+				el.createDiv({ text: groupLabel(group), cls: "fileclass-group-header" });
+			}
+			el.createDiv({ text: this.toText(choice) });
+			return;
+		}
 		el.setText(this.toText(choice));
+	}
+
+	/** Names the group whose section currently sits at the top of the results. */
+	private updateGroupBar(): void {
+		const bar = this.groupBar;
+		if (!bar || !this.groupOf) return;
+		const container = this.resultContainerEl;
+		const items = container.querySelectorAll<HTMLElement>(".suggestion-item");
+		if (!items.length) {
+			bar.hide();
+			return;
+		}
+		bar.style.top = `${container.offsetTop}px`;
+		const top = container.getBoundingClientRect().top;
+		let key: string | null | undefined;
+		for (let i = 0; i < items.length && i < this.results.length; i++) {
+			if (items[i].getBoundingClientRect().top - top <= 1) key = this.groupOf(this.results[i]);
+			else break;
+		}
+		if (key === undefined) key = this.groupOf(this.results[0]);
+		if (key === undefined) {
+			bar.hide();
+			return;
+		}
+		bar.setText(groupLabel(key));
+		bar.show();
+		// Reserve the bar's height at the top of the list so it never hides the
+		// first row (the bar is overlaid, not in flow).
+		if (!container.style.paddingTop) container.style.paddingTop = `${bar.offsetHeight}px`;
 	}
 
 	onChooseSuggestion(choice: T): void {
@@ -365,6 +441,12 @@ export interface MultiSelectOptions {
 	allowed: string[];
 	selected: string[];
 	onSubmit: (values: string[]) => void;
+	/**
+	 * Optional group headers over `allowed` (#47), in display order. Values not
+	 * covered by a group (e.g. already-selected extras) render under a trailing
+	 * "(Other)" header.
+	 */
+	groups?: DisplayGroup[];
 }
 
 /** Toggle list for Multi fields over a constrained set of values. */
@@ -378,18 +460,35 @@ export class MultiSelectModal extends Modal {
 
 	onOpen(): void {
 		const { contentEl } = this;
-		contentEl.createEl("h3", { text: this.opts.title });
+		const title = modalTitle(contentEl, this.opts.title);
+		// Sticky group headers park just below the sticky title — offset by its height.
+		contentEl.style.setProperty("--fc-title-h", `${title.offsetHeight}px`);
 		// Preserve allowed order, then any already-selected extras.
 		const options = [...new Set([...this.opts.allowed, ...this.opts.selected])];
-		for (const value of options) {
-			new Setting(contentEl).setName(value).addToggle((t) =>
-				t.setValue(this.selected.has(value)).onChange((on) => {
-					if (on) this.selected.add(value);
-					else this.selected.delete(value);
-				})
-			);
+
+		const groups = this.opts.groups;
+		if (groups && groups.length) {
+			const rendered = new Set<string>();
+			for (const g of groups) {
+				const values = g.values.filter((v) => options.includes(v));
+				if (!values.length) continue;
+				this.renderGroupHeader(contentEl, groupLabel(g.key));
+				for (const v of values) {
+					this.renderToggle(contentEl, v);
+					rendered.add(v);
+				}
+			}
+			const extras = options.filter((v) => !rendered.has(v));
+			if (extras.length) {
+				this.renderGroupHeader(contentEl, "(Other)");
+				for (const v of extras) this.renderToggle(contentEl, v);
+			}
+		} else {
+			for (const v of options) this.renderToggle(contentEl, v);
 		}
-		new Setting(contentEl).addButton((b) =>
+
+		const footer = makeStickyFooter(contentEl);
+		new Setting(footer).addButton((b) =>
 			b
 				.setButtonText("Save")
 				.setCta()
@@ -398,6 +497,20 @@ export class MultiSelectModal extends Modal {
 					this.close();
 				})
 		);
+	}
+
+	private renderToggle(container: HTMLElement, value: string): void {
+		new Setting(container).setName(value).addToggle((t) =>
+			t.setValue(this.selected.has(value)).onChange((on) => {
+				if (on) this.selected.add(value);
+				else this.selected.delete(value);
+			})
+		);
+	}
+
+	private renderGroupHeader(container: HTMLElement, label: string): void {
+		// Sticky so the current group stays visible while the list scrolls.
+		container.createDiv({ text: label, cls: "fileclass-group-header fileclass-group-sticky" });
 	}
 
 	onClose(): void {

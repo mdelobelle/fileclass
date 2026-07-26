@@ -171,8 +171,14 @@ fileclass/
 Wave A (phase 2): `Input`, `Number`, `Boolean`, `Select`, `Multi`, `Cycle`,
 `Date`, `DateTime`, `Time`.
 Wave B (phase 2): `File`, `MultiFile`, `Media`, `MultiMedia` — candidates =
-`getBaseFiles(baseFile, viewName, currentFile.path)`; alias/display of
-suggestions may use a base formula column via `getBaseRows` values.
+`getBaseRows(baseFile, viewName, currentFile.path)`, so they follow the view's
+own order (its `sort:`/`groupBy` flow, not an arbitrary set — issue #47); the
+same rows carry the optional alias/display column. When the view groups,
+candidates are built from `result.groups` (group order, members contiguous) and
+tagged with their group key, and the pickers render group headers (single-pick
+suggester + multi-select list). `Select`/`Multi` values from a base use
+`getBaseRows` too (order only). Pure row→display/value/group mapping lives in
+`src/fields/baseOrder.ts` (unit-tested); the order itself is canary-verified.
 Wave C (phase 2): `Object`, `ObjectList` (§8).
 Wave D (post-P3): `JSON`, `YAML` — free-form nested value edited as monospace
 text, validated by the parser (`JSON.parse` / Obsidian `parseYaml`). Pure

@@ -1,17 +1,20 @@
 /*
  * Candidate resolution for link-type fields (ARCHITECTURE.md §7, Wave B). The
- * candidate set comes from a Base view via the adapter's public functions
- * (D4/§6): getBaseFiles for the files, getBaseRows for an optional display
- * column. Interactive (one scan per picker), so it calls the adapter directly
- * rather than through queryCache (which memoizes repeated reads of a base).
+ * candidate set comes from a Base view via the adapter's `getBaseRows` (D4/§6),
+ * so candidates follow the **view's own order** (its `sort:`, then `groupBy`
+ * flow) instead of an arbitrary vault order (issue #47) — and the same rows
+ * carry the optional display column. Interactive (one scan per picker), so it
+ * calls the adapter directly rather than through queryCache (which memoizes
+ * repeated reads of a base).
  *
  * Graceful degradation (§6): when no base is configured, Bases is unavailable,
  * or a scan fails, it falls back to all markdown (or media) files.
  */
 import { App, Notice, TFile } from "obsidian";
 
-import { getBaseFiles, getBaseRows } from "../engine/basesAdapter";
+import { getBaseRows } from "../engine/basesAdapter";
 import { Field, FieldType } from "../schema/field";
+import { rowDisplay } from "./baseOrder";
 import { baseBindingOptions } from "./options";
 
 /** Minimal host: the app plus the plugin's Bases-availability flag. */
@@ -23,6 +26,11 @@ export interface AdapterHost {
 export interface Candidate {
 	file: TFile;
 	display: string;
+	/**
+	 * Group key from the source view's `groupBy` (#47): a string, `null` for the
+	 * keyless "no value" group, or `undefined` when the view isn't grouped.
+	 */
+	group?: string | null;
 }
 
 const MEDIA_EXTENSIONS = new Set([
@@ -53,21 +61,25 @@ export async function resolveCandidates(
 
 	if (opts.baseFile && host.basesAvailable) {
 		try {
-			const files = await getBaseFiles(host.app, opts.baseFile, opts.viewName, currentFile.path);
-			let displayByPath: Map<string, string> | undefined;
-			if (opts.displayColumn) {
-				const result = await getBaseRows(
-					host.app,
-					opts.baseFile,
-					opts.viewName,
-					currentFile.path
-				);
-				displayByPath = new Map();
-				for (const row of result.rows) {
-					displayByPath.set(row.file.path, row.values[opts.displayColumn] ?? row.file.basename);
-				}
+			// getBaseRows yields the files in the view's display order (sort + group
+			// flow), unlike getBaseFiles' arbitrary set (#47); reuse those same rows
+			// for the optional display column. When the view groups, walk `groups`
+			// (group order, members contiguous) and tag each candidate with its key.
+			const result = await getBaseRows(host.app, opts.baseFile, opts.viewName, currentFile.path);
+			const toCandidate = (
+				row: (typeof result.rows)[number],
+				group?: string | null
+			): Candidate => ({
+				file: row.file,
+				display: rowDisplay(row, opts.displayColumn, row.file.basename),
+				group,
+			});
+			if (result.groups) {
+				const out: Candidate[] = [];
+				for (const g of result.groups) for (const row of g.rows) out.push(toCandidate(row, g.key));
+				return out;
 			}
-			return files.map((f) => ({ file: f, display: displayByPath?.get(f.path) ?? f.basename }));
+			return result.rows.map((row) => toCandidate(row));
 		} catch (err) {
 			new Notice(
 				`Fileclass: could not read base "${opts.baseFile}" (${(err as Error).message}). Showing all files.`

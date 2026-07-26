@@ -61,6 +61,11 @@ status simply flips to **Sync** and waits for you. If the declared base doesn't
 exist, **Sync** creates it. There's also a command, **Fileclass: sync this
 class to its base**.
 
+> If the base is **open in a tab** when you sync, its layout may not be on disk
+> yet (Bases keeps it in memory until the tab closes). Sync detects this and
+> offers to **close the tab first** so its state is flushed before mirroring —
+> otherwise the sync would read an empty file and do nothing.
+
 > The sync round-trips the YAML, which reformats the file and drops YAML
 > comments — fine for the plugin-managed base.
 

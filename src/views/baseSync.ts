@@ -9,7 +9,17 @@
  * base are the user's and untouched. YAML round-trips via Obsidian's
  * parseYaml/stringifyYaml (no extra dep; reformats, drops comments).
  */
-import { Notice, TFile, normalizePath, parseYaml, stringifyYaml } from "obsidian";
+import {
+	App,
+	Modal,
+	Notice,
+	Setting,
+	TFile,
+	WorkspaceLeaf,
+	normalizePath,
+	parseYaml,
+	stringifyYaml,
+} from "obsidian";
 
 import type FileclassPlugin from "../../main";
 import { isRootField } from "../schema/field";
@@ -84,20 +94,110 @@ export async function applyBaseSync(
 ): Promise<void> {
 	const app = plugin.app;
 	const fields = rootFieldNames(plugin, name);
+	const alias = plugin.settings.fileClassAlias;
 	const file = app.vault.getFileByPath(path);
 
 	if (!(file instanceof TFile)) {
 		await ensureParentFolder(plugin, path);
-		await app.vault.create(path, buildBaseYaml(name, fields, plugin.settings.fileClassAlias, view));
+		await app.vault.create(path, buildBaseYaml(name, fields, alias, view));
 		new Notice(`Fileclass: created ${path}`);
 		return;
 	}
 
+	// Edge case: a freshly created base is open in a tab whose in-memory layout
+	// hasn't been written to disk yet, so the file reads empty. Syncing would
+	// read stale content and silently no-op (and a later close would clobber our
+	// write). Offer to close it so Bases flushes its state, then continue.
+	const openLeaves = openBaseLeaves(app, file.path);
+	if (openLeaves.length) {
+		if (!(await confirmCloseOpenBase(app, file.name))) {
+			new Notice(`Fileclass: "${file.name}" is open — close it, then sync.`);
+			return;
+		}
+		await detachAndAwaitSave(app, file, openLeaves);
+	}
+
 	const base: unknown = parseYaml(await app.vault.read(file));
-	if (mirrorBaseView(base, view, fields, name, plugin.settings.fileClassAlias)) {
+	// Empty or malformed on disk (no views): initialize a full base rather than
+	// silently doing nothing.
+	if (!isBaseWithViews(base)) {
+		await app.vault.modify(file, buildBaseYaml(name, fields, alias, view));
+		new Notice(`Fileclass: initialized ${path}`);
+		return;
+	}
+	if (mirrorBaseView(base, view, fields, name, alias)) {
 		await app.vault.modify(file, stringifyYaml(base));
 	}
 	new Notice(`Fileclass: synced ${path}`);
+}
+
+/** True when the parsed base is an object carrying a `views` array. */
+function isBaseWithViews(base: unknown): boolean {
+	return (
+		typeof base === "object" &&
+		base !== null &&
+		Array.isArray((base as { views?: unknown }).views)
+	);
+}
+
+/** Leaves currently displaying the .base at `path` (any registered view type). */
+function openBaseLeaves(app: App, path: string): WorkspaceLeaf[] {
+	const leaves: WorkspaceLeaf[] = [];
+	app.workspace.iterateAllLeaves((leaf) => {
+		if (leaf.getViewState().state?.file === path) leaves.push(leaf);
+	});
+	return leaves;
+}
+
+/**
+ * Closes `leaves` and waits until the base file is (re)written to disk — closing
+ * a Bases leaf flushes its in-memory layout. Resolves on the first `modify` of
+ * the file, or after a short timeout so a no-op close can't hang the sync.
+ */
+function detachAndAwaitSave(app: App, file: TFile, leaves: WorkspaceLeaf[]): Promise<void> {
+	return new Promise((resolve) => {
+		let done = false;
+		const finish = (): void => {
+			if (done) return;
+			done = true;
+			app.vault.offref(ref);
+			window.clearTimeout(timer);
+			resolve();
+		};
+		const ref = app.vault.on("modify", (f) => {
+			if (f.path === file.path) finish();
+		});
+		const timer = window.setTimeout(finish, 1500);
+		for (const leaf of leaves) leaf.detach();
+	});
+}
+
+/** Confirms closing an open base before syncing. Resolves true on confirm. */
+function confirmCloseOpenBase(app: App, fileName: string): Promise<boolean> {
+	return new Promise((resolve) => {
+		const modal = new Modal(app);
+		modal.titleEl.setText("Base is open");
+		modal.contentEl.createEl("p", {
+			text: `"${fileName}" is open in a tab and its layout may not be saved to disk yet. Close it and sync now?`,
+		});
+		let confirmed = false;
+		new Setting(modal.contentEl)
+			.addButton((b) => b.setButtonText("Cancel").onClick(() => modal.close()))
+			.addButton((b) =>
+				b
+					.setButtonText("Close base & sync")
+					.setCta()
+					.onClick(() => {
+						confirmed = true;
+						modal.close();
+					})
+			);
+		modal.onClose = (): void => {
+			modal.contentEl.empty();
+			resolve(confirmed);
+		};
+		modal.open();
+	});
 }
 
 /**

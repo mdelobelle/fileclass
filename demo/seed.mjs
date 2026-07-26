@@ -10,6 +10,7 @@
  * enabled in the demo vault (it is by default on Obsidian 1.13+).
  */
 import { cpSync, existsSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
+import { homedir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -21,7 +22,8 @@ function arg(name, fallback) {
 	return i !== -1 && process.argv[i + 1] ? process.argv[i + 1] : fallback;
 }
 
-const vault = resolve(arg("vault", join(here, "demo-vault")));
+// Default OUTSIDE any vault — a vault nested inside another vault can't be opened.
+const vault = resolve(arg("vault", join(homedir(), "fileclass-demo-vault")));
 const dot = join(vault, ".obsidian");
 const pluginOut = join(dot, "plugins", "fileclass");
 
@@ -118,8 +120,11 @@ write(
 	`# Fileclass — quick tour\n\nA schema for your frontmatter: typed, validated properties with guided input.\n\nWe'll create a **Book** fileClass, structure the notes in \`Library/\`, and generate a table.\n`
 );
 
-console.log("Done. Launch Obsidian on this vault with remote debugging, e.g.:");
-console.log(
-	`  open -na Obsidian --args --remote-debugging-port=9222 "obsidian://open?path=${encodeURIComponent(vault)}"`
-);
-console.log("Ensure the core Bases plugin is enabled, then run: node record.mjs");
+console.log(`\nDone. Vault: ${vault}\n`);
+console.log("Next (see README.md):");
+console.log("  1. In Obsidian → Open another vault → Open folder as vault → pick the folder above (once).");
+console.log("  2. Turn off Restricted mode (trust) so the Fileclass + Bases plugins load.");
+console.log("  3. Quit Obsidian, then relaunch it with remote debugging:");
+console.log("       open -na Obsidian --args --remote-debugging-port=9222");
+console.log("     (it reopens the last vault = this one; if not, switch to it in the vault picker).");
+console.log("  4. node record.mjs");

@@ -12,21 +12,37 @@ Self-contained (its own `package.json`); not part of the plugin build.
 ## 1. Seed a demo vault
 
 ```bash
-node seed.mjs --vault ./demo-vault
+node seed.mjs                       # defaults to ~/fileclass-demo-vault
+# or: node seed.mjs --vault /some/path/outside/any/vault
 ```
 
-Creates a fresh vault with the plugin installed + enabled, `classFilesPath =
-Classes/`, a ready **Book** fileClass, and a few plain notes in `Library/`.
+Creates a fresh vault (plugin installed + enabled, `classFilesPath = Classes/`,
+a ready **Book** fileClass, plain notes in `Library/`).
 
-## 2. Launch Obsidian on it with remote debugging
+> **Important:** the vault must live **outside** any existing vault — a vault
+> nested inside another can't be opened. That's why the default is in your home
+> folder, not under the plugin.
 
-```bash
-open -na Obsidian --args --remote-debugging-port=9222 \
-  "obsidian://open?path=$(pwd)/demo-vault"
-```
+## 2. Open the vault once, then relaunch with remote debugging
 
-Then, once open: make sure the core **Bases** plugin is enabled, size the window
-for the recording, and (optional) bump zoom with `Cmd +` for legibility.
+Obsidian can't open an arbitrary folder as a vault from a URI or `open -a`, so
+register it once:
+
+1. In Obsidian: **Open another vault → Open folder as vault** → pick the seeded
+   folder (e.g. `~/fileclass-demo-vault`).
+2. **Turn off Restricted mode** (trust the vault) so the **Fileclass** and core
+   **Bases** plugins load. Confirm Bases is enabled.
+3. **Quit Obsidian completely.**
+4. Relaunch with the debug port — it reopens the last vault (this one):
+
+   ```bash
+   open -na Obsidian --args --remote-debugging-port=9222
+   ```
+
+   If it opens a different vault, just switch to the demo vault in the picker —
+   the debug port stays active on the same process.
+
+Then size the window for recording and (optional) bump zoom with `Cmd +`.
 
 ## 3. Record + drive
 

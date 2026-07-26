@@ -372,18 +372,22 @@ The filter predicate is pure (`src/api/filter.ts`, unit-tested): `is`/`isNot`
 aggregates a `BulkResult`. Verified live via CDP (no-op and out-of-list bulk both
 wrote nothing).
 
-**API-2.1 (landed, `version` "1.1"):** `previewValueWhere(scope, field, value)`
-and `applyValueWhere(scope, field, value)` over a `BulkScope`
-(`{ fileClass, where?, baseFile?, viewName? }`). A single per-note `decide`
-(validate + no-op check) drives both, so the dry-run and the write agree.
-`previewValueWhere` returns a `BulkPreview` (counts + capped `old→new` sample,
-no writes); a base-view filter intersects the fileClass's notes with
-`getBaseFiles` and is refused (not silently unfiltered) when Bases is off.
-`setValueWhere` now delegates to `applyValueWhere`. The in-app **bulk edit
-modal** (`src/ui/bulkEditModal.ts`, command + fileClass right-click, §19.3) is a
-UI over these: fileClass → filter (condition or base view) → field → value (the
-field's own typed input) → preview → apply. Obsidian-coupled → manual/CDP verified
-(the `where` filter stays unit-tested).
+**API-2.1 (landed, `version` "1.1"):** `previewValueWhere(scope, field, value)`,
+`applyValueWhere(scope, field, value)`, and `applyValueToPaths(paths, field,
+value)` over a `BulkScope` (`{ fileClass, where?, baseFile?, viewName? }`). A
+single per-note `decide` (validate + no-op check) drives all three, so the
+dry-run and the writes agree. `previewValueWhere` returns a `BulkPreview` — the
+**full** `changes: {path,from,to}[]` list plus `willSkip`/`errors`, no writes; a
+base-view filter intersects the fileClass's notes with `getBaseFiles` and is
+refused (not silently unfiltered) when Bases is off. `applyValueToPaths` writes
+just the paths the user kept. `setValueWhere` delegates to `applyValueWhere`.
+`contains` on a link field is substring-per-element (`[[comic]]` matches
+`comic`, `src/api/filter.ts`, unit-tested). The in-app **bulk edit** flow
+(`src/ui/bulkEditModal.ts`, command + fileClass right-click, §19.3) is two
+modals: a form (fileClass → filter → field → value via the field's own typed
+input, CTA Preview) then a full change list with per-note toggles (CTA Apply(N)
+→ `applyValueToPaths`). Obsidian-coupled → manual/CDP verified (the `where`
+filter stays unit-tested).
 
 **CLI/TUI (landed, separate repo):** a standalone `fileclass` binary (Node +
 React/ink) shelling out to `obsidian eval` via a small transport, over the same

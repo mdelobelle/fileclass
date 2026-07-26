@@ -1,14 +1,17 @@
 /*
  * In-app bulk field edit (#56): a set-where UI over the proven API engine
- * (`previewValueWhere`/`applyValueWhere`). Pick a fileClass, an optional filter
- * (a simple field condition or a base view), a field and a new value (through
- * the field's own typed input), preview the affected notes (dry-run), then
- * apply. Dry-run by default: Apply is only enabled after a matching preview.
+ * (`previewValueWhere`/`applyValueToPaths`). Two steps:
+ *   1. BulkEditModal — pick a fileClass, an optional filter (a field condition
+ *      or a base view), a field and a new value (through the field's own typed
+ *      input); CTA "Preview".
+ *   2. BulkPreviewModal — the full list of would-be changes, each with a toggle
+ *      (default on); CTA "Apply (N)" writes only the kept rows.
+ * Dry-run by default: nothing is written until Apply in step 2.
  */
-import { Modal, Notice, Setting, TFile } from "obsidian";
+import { App, Modal, Notice, Setting, TFile } from "obsidian";
 
 import type FileclassPlugin from "../../main";
-import { BulkPreview, BulkScope } from "../api/fileclassApi";
+import { BulkChange, BulkPreview, BulkScope } from "../api/fileclassApi";
 import { Filter, FilterOp } from "../api/filter";
 import { displayValue } from "../fields/display";
 import { EditContext, promptFieldValue } from "../fields/fieldActions";
@@ -39,7 +42,6 @@ export class BulkEditModal extends Modal {
 	private field = "";
 	private value: unknown;
 	private valueSet = false;
-	private preview?: BulkPreview;
 
 	constructor(private readonly plugin: FileclassPlugin, initialFileClass?: string) {
 		super(plugin.app);
@@ -64,11 +66,6 @@ export class BulkEditModal extends Modal {
 
 	private targetField(): Field | undefined {
 		return this.rootFields().find((f) => f.name === this.field);
-	}
-
-	/** Invalidate a stale dry-run whenever the selection changes. */
-	private invalidate(): void {
-		this.preview = undefined;
 	}
 
 	private buildScope(): BulkScope {
@@ -103,14 +100,12 @@ export class BulkEditModal extends Modal {
 				this.condField = "";
 				this.valueSet = false;
 				this.value = undefined;
-				this.invalidate();
 				this.render();
 			});
 		});
 
 		this.renderFilter(contentEl);
 		this.renderTarget(contentEl);
-		this.renderPreview(contentEl);
 		this.renderFooter(contentEl);
 	}
 
@@ -124,7 +119,6 @@ export class BulkEditModal extends Modal {
 				d.addOption("base", "Base view");
 				d.setValue(this.filterMode).onChange((v) => {
 					this.filterMode = v as FilterMode;
-					this.invalidate();
 					this.render();
 				});
 			});
@@ -134,25 +128,18 @@ export class BulkEditModal extends Modal {
 			new Setting(contentEl).setClass("fileclass-bulk-sub").setName("Where").addDropdown((d) => {
 				d.addOption("", "— field —");
 				for (const f of fields) d.addOption(f.name, f.name);
-				d.setValue(this.condField).onChange((v) => {
-					this.condField = v;
-					this.invalidate();
-				});
+				d.setValue(this.condField).onChange((v) => (this.condField = v));
 			});
 			new Setting(contentEl).setClass("fileclass-bulk-sub").setName("Condition").addDropdown((d) => {
 				for (const op of Object.keys(OP_LABELS) as FilterOp[]) d.addOption(op, OP_LABELS[op]);
 				d.setValue(this.condOp).onChange((v) => {
 					this.condOp = v as FilterOp;
-					this.invalidate();
 					this.render();
 				});
 			});
 			if (OPS_WITH_VALUE.includes(this.condOp)) {
 				new Setting(contentEl).setClass("fileclass-bulk-sub").setName("Value").addText((t) =>
-					t.setValue(this.condValue).onChange((v) => {
-						this.condValue = v;
-						this.invalidate();
-					})
+					t.setValue(this.condValue).onChange((v) => (this.condValue = v))
 				);
 			}
 		} else if (this.filterMode === "base") {
@@ -166,10 +153,7 @@ export class BulkEditModal extends Modal {
 				.setClass("fileclass-bulk-sub")
 				.setName("Base file")
 				.addText((t) => {
-					t.setValue(this.baseFile).onChange((v) => {
-						this.baseFile = v;
-						this.invalidate();
-					});
+					t.setValue(this.baseFile).onChange((v) => (this.baseFile = v));
 					new BaseFileSuggest(this.app, t.inputEl);
 				});
 			new Setting(contentEl)
@@ -177,10 +161,7 @@ export class BulkEditModal extends Modal {
 				.setName("View")
 				.setDesc("Leave empty for the base's first view.")
 				.addText((t) => {
-					t.setValue(this.viewName).onChange((v) => {
-						this.viewName = v;
-						this.invalidate();
-					});
+					t.setValue(this.viewName).onChange((v) => (this.viewName = v));
 					new BaseViewSuggest(this.app, t.inputEl, () => this.baseFile.trim());
 				});
 		}
@@ -188,19 +169,16 @@ export class BulkEditModal extends Modal {
 
 	private renderTarget(contentEl: HTMLElement): void {
 		const fields = this.rootFields();
-		new Setting(contentEl)
-			.setName("Field to set")
-			.addDropdown((d) => {
-				d.addOption("", "— field —");
-				for (const f of fields) d.addOption(f.name, `${f.name} (${f.type})`);
-				d.setValue(this.field).onChange((v) => {
-					this.field = v;
-					this.valueSet = false;
-					this.value = undefined;
-					this.invalidate();
-					this.render();
-				});
+		new Setting(contentEl).setName("Field to set").addDropdown((d) => {
+			d.addOption("", "— field —");
+			for (const f of fields) d.addOption(f.name, `${f.name} (${f.type})`);
+			d.setValue(this.field).onChange((v) => {
+				this.field = v;
+				this.valueSet = false;
+				this.value = undefined;
+				this.render();
 			});
+		});
 
 		const field = this.targetField();
 		if (!field) return;
@@ -227,7 +205,6 @@ export class BulkEditModal extends Modal {
 		void promptFieldValue(ctx, field, this.value, (v) => {
 			this.value = v;
 			this.valueSet = true;
-			this.invalidate();
 			this.render();
 		});
 	}
@@ -240,71 +217,142 @@ export class BulkEditModal extends Modal {
 		return bound ?? this.plugin.index.getFileClassFile(this.fileClass) ?? null;
 	}
 
-	private renderPreview(contentEl: HTMLElement): void {
-		const p = this.preview;
-		if (!p) return;
-		const box = contentEl.createDiv({ cls: "fileclass-bulk-preview" });
-		box.createDiv({
-			cls: "fileclass-bulk-summary",
-			text: `${p.willChange} to change · ${p.willSkip} unchanged · ${p.errors.length} error(s) · ${p.total} matched`,
-		});
-		const field = this.targetField();
-		for (const row of p.sample) {
-			const from = field ? displayValue(field, row.from) : String(row.from ?? "");
-			const to = field ? displayValue(field, row.to) : String(row.to ?? "");
-			box.createDiv({
-				cls: "fileclass-bulk-sample",
-				text: `${row.path}:  ${from || "(empty)"} → ${to || "(empty)"}`,
-			});
-		}
-		if (p.willChange > p.sample.length) {
-			box.createDiv({
-				cls: "fileclass-bulk-sample",
-				text: `…and ${p.willChange - p.sample.length} more`,
-			});
-		}
-		for (const e of p.errors.slice(0, 5)) {
-			box.createDiv({ cls: "fileclass-bulk-error", text: `${e.path}: ${e.message}` });
-		}
-	}
-
 	private renderFooter(contentEl: HTMLElement): void {
 		const footer = makeStickyFooter(contentEl);
-		const ready = !!this.targetField() && this.valueSet;
-		const canApply = !!this.preview && this.preview.willChange > 0;
-		new Setting(footer)
-			.addButton((b) =>
-				b
-					.setButtonText("Preview")
-					.setDisabled(!ready)
-					.onClick(() => void this.runPreview())
-			)
-			.addButton((b) =>
-				b
-					.setButtonText(`Apply${canApply ? ` (${this.preview?.willChange})` : ""}`)
-					.setCta()
-					.setDisabled(!canApply)
-					.onClick(() => void this.apply())
-			);
+		const field = this.targetField();
+		const ready = !!field && this.valueSet;
+		new Setting(footer).addButton((b) =>
+			b
+				.setButtonText("Preview")
+				.setCta()
+				.setDisabled(!ready)
+				.onClick(() => void this.preview())
+		);
 	}
 
-	private async runPreview(): Promise<void> {
+	private async preview(): Promise<void> {
 		const field = this.targetField();
 		if (!field || !this.valueSet) return;
-		this.preview = await this.plugin.api.previewValueWhere(this.buildScope(), field.name, this.value);
-		this.render();
+		const preview = await this.plugin.api.previewValueWhere(this.buildScope(), field.name, this.value);
+		if (!preview.changes.length) {
+			new Notice(
+				`Fileclass: nothing to change (${preview.willSkip} already set, ${preview.errors.length} error(s), ${preview.total} matched).`
+			);
+			return;
+		}
+		new BulkPreviewModal(this.app, {
+			field,
+			preview,
+			apply: (paths) => this.plugin.api.applyValueToPaths(paths, field.name, this.value),
+			onApplied: () => this.close(),
+		}).open();
+	}
+}
+
+interface BulkPreviewOptions {
+	field: Field;
+	preview: BulkPreview;
+	apply: (paths: string[]) => Promise<{ ok: boolean; changed: number; skipped: number; errors: unknown[] }>;
+	/** Closes the step-1 modal once the write succeeds. */
+	onApplied: () => void;
+}
+
+/** Step 2: the full change list with per-note toggles; Apply writes the kept rows. */
+class BulkPreviewModal extends Modal {
+	private readonly enabled: Set<string>;
+	private applyBtn?: HTMLButtonElement;
+	private countEl?: HTMLElement;
+
+	constructor(app: App, private readonly opts: BulkPreviewOptions) {
+		super(app);
+		this.enabled = new Set(opts.preview.changes.map((c) => c.path));
+	}
+
+	onOpen(): void {
+		const { contentEl } = this;
+		const { preview } = this.opts;
+		modalTitle(contentEl, "Bulk edit — preview");
+
+		this.countEl = contentEl.createDiv({ cls: "fileclass-bulk-summary" });
+		contentEl.createDiv({
+			cls: "setting-item-description",
+			text: `${preview.willSkip} already at the value · ${preview.errors.length} error(s) · ${preview.total} matched`,
+		});
+
+		// Select all / none.
+		new Setting(contentEl).setName("Include all").addToggle((t) =>
+			t.setValue(true).onChange((on) => this.toggleAll(on))
+		);
+
+		const list = contentEl.createDiv({ cls: "fileclass-bulk-list" });
+		for (const change of preview.changes) this.renderRow(list, change);
+
+		for (const e of preview.errors.slice(0, 8)) {
+			const err = e as { path: string; message?: string };
+			contentEl.createDiv({ cls: "fileclass-bulk-error", text: `${err.path}: ${err.message ?? ""}` });
+		}
+
+		const footer = makeStickyFooter(contentEl);
+		new Setting(footer)
+			.addButton((b) => b.setButtonText("Cancel").onClick(() => this.close()))
+			.addButton((b) => {
+				this.applyBtn = b.setCta().onClick(() => void this.apply()).buttonEl;
+				return b;
+			});
+		this.updateCount();
+	}
+
+	onClose(): void {
+		this.contentEl.empty();
+	}
+
+	private renderRow(list: HTMLElement, change: BulkChange): void {
+		const { field } = this.opts;
+		const row = list.createEl("label", { cls: "fileclass-bulk-row" });
+		const cb = row.createEl("input", { attr: { type: "checkbox" } });
+		cb.checked = true;
+		cb.addEventListener("change", () => {
+			if (cb.checked) this.enabled.add(change.path);
+			else this.enabled.delete(change.path);
+			this.updateCount();
+		});
+		const from = displayValue(field, change.from) || "(empty)";
+		const to = displayValue(field, change.to) || "(empty)";
+		row.createSpan({ cls: "fileclass-bulk-rowtext", text: `${change.path}:  ${from} → ${to}` });
+		row.dataset.path = change.path;
+	}
+
+	private toggleAll(on: boolean): void {
+		this.enabled.clear();
+		const boxes = this.contentEl.querySelectorAll<HTMLInputElement>(".fileclass-bulk-row input");
+		this.contentEl.querySelectorAll<HTMLElement>(".fileclass-bulk-row").forEach((row, i) => {
+			const box = boxes[i];
+			if (box) box.checked = on;
+			if (on && row.dataset.path) this.enabled.add(row.dataset.path);
+		});
+		this.updateCount();
+	}
+
+	private updateCount(): void {
+		const n = this.enabled.size;
+		if (this.countEl) this.countEl.setText(`${n} note(s) will be updated`);
+		if (this.applyBtn) {
+			this.applyBtn.setText(`Apply (${n})`);
+			this.applyBtn.toggleAttribute("disabled", n === 0);
+		}
 	}
 
 	private async apply(): Promise<void> {
-		const field = this.targetField();
-		if (!field || !this.preview || this.preview.willChange === 0) return;
-		const result = await this.plugin.api.applyValueWhere(this.buildScope(), field.name, this.value);
+		const paths = [...this.enabled];
+		if (!paths.length) return;
+		const result = await this.opts.apply(paths);
 		if (result.ok) new Notice(`Fileclass: updated ${result.changed} note(s).`);
 		else
 			new Notice(
 				`Fileclass: updated ${result.changed}, ${result.errors.length} error(s), ${result.skipped} unchanged.`
 			);
 		this.close();
+		this.opts.onApplied();
 	}
 }
 

@@ -21,7 +21,9 @@ function equals(v: unknown, target: unknown): boolean {
 
 function contains(v: unknown, target: unknown): boolean {
 	const t = String(target ?? "");
-	if (Array.isArray(v)) return v.map((x) => String(x)).includes(t);
+	// Substring per element, like the scalar case below — so a link field's
+	// `[[comic]]` matches `comic` (MultiFile/MultiMedia store wikilinks, #56).
+	if (Array.isArray(v)) return v.some((x) => String(x).includes(t));
 	if (typeof v === "string") return v.includes(t);
 	return false;
 }

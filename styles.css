@@ -519,26 +519,36 @@
 	padding-left: var(--size-4-4);
 	border-top: none;
 }
-.fileclass-bulk-preview {
+.fileclass-bulk-summary {
+	font-weight: var(--font-semibold);
+	margin-bottom: var(--size-2-1);
+}
+/* Step-2 preview: the full change list with per-note toggles. */
+.fileclass-bulk-list {
 	margin: var(--size-4-2) 0;
-	padding: var(--size-4-2);
 	border: 1px solid var(--background-modifier-border);
 	border-radius: var(--radius-s);
 	background: var(--background-secondary);
-	max-height: 40vh;
-	overflow-y: auto;
+	padding: var(--size-2-2) var(--size-4-2);
+}
+.fileclass-bulk-row {
+	display: flex;
+	align-items: center;
+	gap: var(--size-4-2);
+	padding: var(--size-2-1) 0;
+	cursor: pointer;
 	font-size: var(--font-ui-smaller);
 }
-.fileclass-bulk-summary {
-	font-weight: var(--font-semibold);
-	margin-bottom: var(--size-2-2);
+.fileclass-bulk-row input {
+	flex: 0 0 auto;
 }
-.fileclass-bulk-sample {
-	color: var(--text-muted);
-	font-family: var(--font-monospace);
-	white-space: nowrap;
+.fileclass-bulk-rowtext {
+	min-width: 0;
 	overflow: hidden;
 	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-family: var(--font-monospace);
+	color: var(--text-muted);
 }
 .fileclass-bulk-error {
 	color: var(--text-error);

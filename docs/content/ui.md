@@ -63,11 +63,12 @@ CLI's `set-where`:
    (e.g. `status is empty`) or a **base view** (only notes the view matches;
    needs the core Bases plugin).
 3. Pick the **field to set** and its **new value** through that field's own typed
-   input (the same picker used everywhere).
-4. **Preview** — a dry run showing how many notes would change, how many are
-   already at the value, any validation errors, and a sample of `old → new`.
-5. **Apply** — enabled only after a preview. Each note is validated; notes
-   already at the target value are skipped.
+   input (the same picker used everywhere), then **Preview**.
+4. A second window lists **every** note that would change (`old → new`), each with
+   a **toggle** (on by default). Turn off any you want to leave alone — the button
+   shows how many will be written, e.g. **Apply (23)**.
+5. **Apply** writes only the kept rows. Each is validated; notes already at the
+   target value are skipped.
 
 > Dry-run first: nothing is written until you Apply. As always, writes go
 > straight to your vault — keep regular backups.

@@ -117,7 +117,7 @@ export interface BulkScope {
 	baseFile?: string;
 	viewName?: string;
 }
-export interface BulkSampleRow {
+export interface BulkChange {
 	path: string;
 	from: unknown;
 	to: unknown;
@@ -126,11 +126,11 @@ export interface BulkSampleRow {
 export interface BulkPreview {
 	/** Notes selected by the scope. */
 	total: number;
-	willChange: number;
+	/** Every note that would change (path + old/new value) — the full list. */
+	changes: BulkChange[];
+	/** Notes already at the target value (no write). */
 	willSkip: number;
 	errors: WriteResult[];
-	/** First notes that would change (path + old/new value), capped for display. */
-	sample: BulkSampleRow[];
 }
 export interface ListOptions {
 	columns?: string[];
@@ -176,6 +176,8 @@ export interface FileclassApi {
 	previewValueWhere(scope: BulkScope, field: string, value: unknown): Promise<BulkPreview>;
 	/** Applies a bulk edit over a scope; validates per note, skips no-ops. */
 	applyValueWhere(scope: BulkScope, field: string, value: unknown): Promise<BulkResult>;
+	/** Applies to an explicit set of note paths (the previewed rows the user kept). */
+	applyValueToPaths(paths: string[], field: string, value: unknown): Promise<BulkResult>;
 }
 
 export function createFileclassApi(plugin: FileclassPlugin): FileclassApi {
@@ -255,29 +257,60 @@ export function createFileclassApi(plugin: FileclassPlugin): FileclassApi {
 			  }
 			: null;
 
-	const SAMPLE_LIMIT = 12;
 	const runPreview = async (
 		scope: BulkScope,
 		field: string,
 		value: unknown
 	): Promise<BulkPreview> => {
 		const guard = basesGuard(scope, field);
-		if (guard) return { total: 0, willChange: 0, willSkip: 0, errors: [guard], sample: [] };
+		if (guard) return { total: 0, changes: [], willSkip: 0, errors: [guard] };
 		const notes = await selectNotesScoped(scope);
-		let willChange = 0;
 		let willSkip = 0;
 		const errors: WriteResult[] = [];
-		const sample: BulkSampleRow[] = [];
+		const changes: BulkChange[] = [];
 		for (const file of notes) {
 			const d = await decide(file, field, value);
 			if (d.kind === "error") errors.push({ ok: false, path: file.path, field, message: d.message });
 			else if (d.kind === "skip") willSkip++;
-			else {
-				willChange++;
-				if (sample.length < SAMPLE_LIMIT) sample.push({ path: file.path, from: d.from, to: value });
+			else changes.push({ path: file.path, from: d.from, to: value });
+		}
+		return { total: notes.length, changes, willSkip, errors };
+	};
+
+	/** Applies the value to an explicit set of note paths (validated, no-ops skipped). */
+	const runApplyPaths = async (
+		paths: string[],
+		field: string,
+		value: unknown
+	): Promise<BulkResult> => {
+		let changed = 0;
+		let skipped = 0;
+		const errors: WriteResult[] = [];
+		for (const path of paths) {
+			const file = fileOrNull(path);
+			if (!file) {
+				errors.push({ ok: false, path, field, message: "No file at this path." });
+				continue;
+			}
+			const d = await decide(file, field, value);
+			if (d.kind === "error") {
+				errors.push({ ok: false, path, field, message: d.message });
+				continue;
+			}
+			if (d.kind === "skip") {
+				skipped++;
+				continue;
+			}
+			const f = rootField(file, field);
+			if (!f) continue;
+			try {
+				await writeFieldValue(app, file, f, value);
+				changed++;
+			} catch (e) {
+				errors.push({ ok: false, path, field, message: (e as Error).message });
 			}
 		}
-		return { total: notes.length, willChange, willSkip, errors, sample };
+		return { ok: errors.length === 0, changed, skipped, errors };
 	};
 
 	const runApply = async (scope: BulkScope, field: string, value: unknown): Promise<BulkResult> => {
@@ -531,5 +564,6 @@ export function createFileclassApi(plugin: FileclassPlugin): FileclassApi {
 			runApply({ fileClass, where }, field, value),
 		previewValueWhere: (scope, field, value) => runPreview(scope, field, value),
 		applyValueWhere: (scope, field, value) => runApply(scope, field, value),
+		applyValueToPaths: (paths, field, value) => runApplyPaths(paths, field, value),
 	};
 }

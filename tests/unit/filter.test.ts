@@ -32,4 +32,10 @@ describe("matchesFilter", () => {
 		expect(matchesFilter("hello world", f("contains", "world"))).toBe(true);
 		expect(matchesFilter(42, f("contains", "4"))).toBe(false); // non-string scalar → no
 	});
+	it("contains matches a substring inside array elements (link fields, #56)", () => {
+		// MultiFile/MultiMedia store wikilinks; `comic` must match `[[comic]]`.
+		expect(matchesFilter(["[[comic]]", "[[music]]"], f("contains", "comic"))).toBe(true);
+		expect(matchesFilter(["[[Activities/comic|Comic]]"], f("contains", "comic"))).toBe(true);
+		expect(matchesFilter(["[[music]]"], f("contains", "comic"))).toBe(false);
+	});
 });

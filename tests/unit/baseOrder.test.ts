@@ -6,7 +6,14 @@
  */
 import { describe, expect, it } from "vitest";
 
-import { ValueRow, distinctColumnValues, rowDisplay } from "../../src/fields/baseOrder";
+import {
+	GroupableItem,
+	ValueRow,
+	contiguousGroups,
+	distinctColumnValues,
+	groupLabel,
+	rowDisplay,
+} from "../../src/fields/baseOrder";
 
 const r = (values: Record<string, string | null>): ValueRow => ({ values });
 
@@ -34,5 +41,45 @@ describe("distinctColumnValues", () => {
 	});
 	it("returns an empty list when no row has the column", () => {
 		expect(distinctColumnValues([r({}), r({ other: "x" })], "c")).toEqual([]);
+	});
+});
+
+describe("contiguousGroups", () => {
+	const item = (display: string, group?: string | null): GroupableItem => ({ display, group });
+
+	it("returns undefined when no item is grouped (view has no groupBy)", () => {
+		expect(contiguousGroups([item("a"), item("b")])).toBeUndefined();
+	});
+
+	it("collapses group-ordered items into contiguous groups", () => {
+		const groups = contiguousGroups([
+			item("Alpha", "read"),
+			item("Gamma", "read"),
+			item("Beta", "reading"),
+		]);
+		expect(groups).toEqual([
+			{ key: "read", values: ["Alpha", "Gamma"] },
+			{ key: "reading", values: ["Beta"] },
+		]);
+	});
+
+	it("maps the keyless group to a null key", () => {
+		const groups = contiguousGroups([item("x", "read"), item("y", null)]);
+		expect(groups).toEqual([
+			{ key: "read", values: ["x"] },
+			{ key: null, values: ["y"] },
+		]);
+	});
+
+	it("starts a new run when a key repeats non-contiguously", () => {
+		const groups = contiguousGroups([item("a", "g1"), item("b", "g2"), item("c", "g1")]);
+		expect(groups?.map((g) => g.key)).toEqual(["g1", "g2", "g1"]);
+	});
+});
+
+describe("groupLabel", () => {
+	it("labels the keyless group and echoes named keys", () => {
+		expect(groupLabel(null)).toBe("(No value)");
+		expect(groupLabel("read")).toBe("read");
 	});
 });

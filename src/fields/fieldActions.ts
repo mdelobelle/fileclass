@@ -11,6 +11,7 @@ import { App, Notice, parseYaml, stringifyYaml, TFile } from "obsidian";
 import { readFieldValue } from "../io/read";
 import { writeFieldValue, writeValues } from "../io/write";
 import { childFieldsOf, Field } from "../schema/field";
+import { contiguousGroups } from "./baseOrder";
 import { AdapterHost, Candidate, isMediaType, resolveCandidates } from "./candidates";
 import { makeDisplayDeps } from "./displayDeps";
 import { describeField } from "./objectDisplay";
@@ -285,12 +286,14 @@ export async function promptFieldValue(
 		case "Media": {
 			const embed = isMediaType(field.type) && baseBindingOptions(field).embed;
 			const candidates = await resolveCandidates(ctx.host, field, file);
+			const grouped = candidates.some((c) => c.group !== undefined);
 			new ChoiceSuggestModal<Candidate>(
 				app,
 				candidates,
 				(c) => c.display,
 				(c) => onValue(formatLink(app, c.file, file.path, aliasFor(c), embed)),
-				`Set ${field.name}`
+				`Set ${field.name}`,
+				grouped ? (c) => c.group ?? null : undefined
 			).open();
 			return;
 		}
@@ -310,6 +313,7 @@ export async function promptFieldValue(
 				title: `Set ${field.name}`,
 				allowed: candidates.map((c) => c.display),
 				selected,
+				groups: contiguousGroups(candidates),
 				onSubmit: (displays) =>
 					onValue(
 						displays

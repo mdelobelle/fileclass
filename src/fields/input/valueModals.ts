@@ -5,6 +5,7 @@
  */
 import { App, Modal, SuggestModal, Setting, TextAreaComponent, TextComponent } from "obsidian";
 
+import { DisplayGroup, groupLabel } from "../baseOrder";
 import { parseTemplate, renderTemplate } from "../inputTemplate";
 import { ValidationResult } from "../validate";
 
@@ -333,14 +334,22 @@ export class BooleanInputModal extends Modal {
 	}
 }
 
-/** Generic single-choice suggester (Select/Cycle/Boolean). */
+/**
+ * Generic single-choice suggester (Select/Cycle/File/Media). With `groupOf`, it
+ * prepends a header before the first item of each group in the current results
+ * (#47) — headers delimit the list even as the query filters it. `groupOf`
+ * returns a group key (`null` = the keyless group) or `undefined` to skip.
+ */
 export class ChoiceSuggestModal<T> extends SuggestModal<T> {
+	private results: T[] = [];
+
 	constructor(
 		app: App,
 		private readonly choices: T[],
 		private readonly toText: (choice: T) => string,
 		private readonly onPick: (choice: T) => void,
-		placeholder = "Select a value"
+		placeholder = "Select a value",
+		private readonly groupOf?: (choice: T) => string | null | undefined
 	) {
 		super(app);
 		this.setPlaceholder(placeholder);
@@ -348,10 +357,28 @@ export class ChoiceSuggestModal<T> extends SuggestModal<T> {
 
 	getSuggestions(query: string): T[] {
 		const q = query.toLowerCase();
-		return this.choices.filter((c) => this.toText(c).toLowerCase().includes(q));
+		this.results = this.choices.filter((c) => this.toText(c).toLowerCase().includes(q));
+		return this.results;
 	}
 
 	renderSuggestion(choice: T, el: HTMLElement): void {
+		if (this.groupOf) {
+			const i = this.results.indexOf(choice);
+			const group = this.groupOf(choice);
+			const prev = i > 0 ? this.groupOf(this.results[i - 1]) : undefined;
+			if (group !== undefined && (i <= 0 || group !== prev)) {
+				const header = el.createDiv({ text: groupLabel(group) });
+				header.setCssStyles({
+					color: "var(--text-muted)",
+					fontSize: "var(--font-ui-smaller)",
+					fontWeight: "var(--font-semibold)",
+					textTransform: "uppercase",
+					marginBottom: "var(--size-2-1)",
+				});
+			}
+			el.createDiv({ text: this.toText(choice) });
+			return;
+		}
 		el.setText(this.toText(choice));
 	}
 
@@ -365,6 +392,12 @@ export interface MultiSelectOptions {
 	allowed: string[];
 	selected: string[];
 	onSubmit: (values: string[]) => void;
+	/**
+	 * Optional group headers over `allowed` (#47), in display order. Values not
+	 * covered by a group (e.g. already-selected extras) render under a trailing
+	 * "(Other)" header.
+	 */
+	groups?: DisplayGroup[];
 }
 
 /** Toggle list for Multi fields over a constrained set of values. */
@@ -381,14 +414,28 @@ export class MultiSelectModal extends Modal {
 		contentEl.createEl("h3", { text: this.opts.title });
 		// Preserve allowed order, then any already-selected extras.
 		const options = [...new Set([...this.opts.allowed, ...this.opts.selected])];
-		for (const value of options) {
-			new Setting(contentEl).setName(value).addToggle((t) =>
-				t.setValue(this.selected.has(value)).onChange((on) => {
-					if (on) this.selected.add(value);
-					else this.selected.delete(value);
-				})
-			);
+
+		const groups = this.opts.groups;
+		if (groups && groups.length) {
+			const rendered = new Set<string>();
+			for (const g of groups) {
+				const values = g.values.filter((v) => options.includes(v));
+				if (!values.length) continue;
+				this.renderGroupHeader(contentEl, groupLabel(g.key));
+				for (const v of values) {
+					this.renderToggle(contentEl, v);
+					rendered.add(v);
+				}
+			}
+			const extras = options.filter((v) => !rendered.has(v));
+			if (extras.length) {
+				this.renderGroupHeader(contentEl, "(Other)");
+				for (const v of extras) this.renderToggle(contentEl, v);
+			}
+		} else {
+			for (const v of options) this.renderToggle(contentEl, v);
 		}
+
 		new Setting(contentEl).addButton((b) =>
 			b
 				.setButtonText("Save")
@@ -398,6 +445,26 @@ export class MultiSelectModal extends Modal {
 					this.close();
 				})
 		);
+	}
+
+	private renderToggle(container: HTMLElement, value: string): void {
+		new Setting(container).setName(value).addToggle((t) =>
+			t.setValue(this.selected.has(value)).onChange((on) => {
+				if (on) this.selected.add(value);
+				else this.selected.delete(value);
+			})
+		);
+	}
+
+	private renderGroupHeader(container: HTMLElement, label: string): void {
+		const h = container.createDiv({ text: label });
+		h.setCssStyles({
+			color: "var(--text-muted)",
+			fontSize: "var(--font-ui-smaller)",
+			fontWeight: "var(--font-semibold)",
+			textTransform: "uppercase",
+			margin: "var(--size-4-2) 0 var(--size-2-1)",
+		});
 	}
 
 	onClose(): void {

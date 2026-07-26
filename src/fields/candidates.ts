@@ -26,6 +26,11 @@ export interface AdapterHost {
 export interface Candidate {
 	file: TFile;
 	display: string;
+	/**
+	 * Group key from the source view's `groupBy` (#47): a string, `null` for the
+	 * keyless "no value" group, or `undefined` when the view isn't grouped.
+	 */
+	group?: string | null;
 }
 
 const MEDIA_EXTENSIONS = new Set([
@@ -58,12 +63,23 @@ export async function resolveCandidates(
 		try {
 			// getBaseRows yields the files in the view's display order (sort + group
 			// flow), unlike getBaseFiles' arbitrary set (#47); reuse those same rows
-			// for the optional display column.
+			// for the optional display column. When the view groups, walk `groups`
+			// (group order, members contiguous) and tag each candidate with its key.
 			const result = await getBaseRows(host.app, opts.baseFile, opts.viewName, currentFile.path);
-			return result.rows.map((row) => ({
+			const toCandidate = (
+				row: (typeof result.rows)[number],
+				group?: string | null
+			): Candidate => ({
 				file: row.file,
 				display: rowDisplay(row, opts.displayColumn, row.file.basename),
-			}));
+				group,
+			});
+			if (result.groups) {
+				const out: Candidate[] = [];
+				for (const g of result.groups) for (const row of g.rows) out.push(toCandidate(row, g.key));
+				return out;
+			}
+			return result.rows.map((row) => toCandidate(row));
 		} catch (err) {
 			new Notice(
 				`Fileclass: could not read base "${opts.baseFile}" (${(err as Error).message}). Showing all files.`

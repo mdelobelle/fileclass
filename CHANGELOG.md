@@ -14,6 +14,11 @@ All notable changes to Fileclass are documented here. The format follows
   `.base` now list entries in the view's own order (its `sort:`, then `groupBy`
   flow) instead of an arbitrary vault order, so a long list is browsable and
   matches how the base reads. A `limit:` on the source view now applies too.
+- **Grouped candidate pickers** ([#47](https://github.com/mdelobelle/fileclass/issues/47)):
+  when the source view defines a `groupBy`, the `File`/`MultiFile`/`Media`/
+  `MultiMedia` picker shows the same groups — headers in the single-select
+  suggester (they keep delimiting the list as you type) and section headers in
+  the multi-select list. The keyless group reads "(No value)".
 
 ### Views
 

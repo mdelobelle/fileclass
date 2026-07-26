@@ -514,6 +514,10 @@
 	padding: var(--size-2-3) 0 var(--size-2-1);
 	background: var(--modal-background, var(--background-primary));
 }
+/* Positioning context for the suggester's overlaid group bar (#47). */
+.fileclass-suggest-prompt {
+	position: relative;
+}
 /* Sticky "current group" bar overlaid on the top of the suggester results (#47).
    pointer-events:none so the row beneath it stays clickable. */
 .fileclass-suggest-groupbar {

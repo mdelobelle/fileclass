@@ -362,14 +362,14 @@ export class ChoiceSuggestModal<T> extends SuggestModal<T> {
 	}
 
 	onOpen(): void {
-		super.onOpen();
+		void super.onOpen();
 		if (!this.groupOf) return;
 		// A sticky "current group" bar overlaid on the top of the scrolling
 		// results. Lives in the prompt (a sibling of the results), so it never
 		// interferes with the suggestion items or their keyboard navigation.
 		const prompt = this.resultContainerEl.parentElement;
 		if (!prompt) return;
-		prompt.style.position = "relative";
+		prompt.addClass("fileclass-suggest-prompt"); // position: relative for the bar
 		this.groupBar = prompt.createDiv({ cls: "fileclass-suggest-groupbar" });
 		this.groupBar.hide();
 		this.resultContainerEl.addEventListener("scroll", this.onScroll);

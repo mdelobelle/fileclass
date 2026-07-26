@@ -1,17 +1,20 @@
 /*
  * Candidate resolution for link-type fields (ARCHITECTURE.md §7, Wave B). The
- * candidate set comes from a Base view via the adapter's public functions
- * (D4/§6): getBaseFiles for the files, getBaseRows for an optional display
- * column. Interactive (one scan per picker), so it calls the adapter directly
- * rather than through queryCache (which memoizes repeated reads of a base).
+ * candidate set comes from a Base view via the adapter's `getBaseRows` (D4/§6),
+ * so candidates follow the **view's own order** (its `sort:`, then `groupBy`
+ * flow) instead of an arbitrary vault order (issue #47) — and the same rows
+ * carry the optional display column. Interactive (one scan per picker), so it
+ * calls the adapter directly rather than through queryCache (which memoizes
+ * repeated reads of a base).
  *
  * Graceful degradation (§6): when no base is configured, Bases is unavailable,
  * or a scan fails, it falls back to all markdown (or media) files.
  */
 import { App, Notice, TFile } from "obsidian";
 
-import { getBaseFiles, getBaseRows } from "../engine/basesAdapter";
+import { getBaseRows } from "../engine/basesAdapter";
 import { Field, FieldType } from "../schema/field";
+import { rowDisplay } from "./baseOrder";
 import { baseBindingOptions } from "./options";
 
 /** Minimal host: the app plus the plugin's Bases-availability flag. */
@@ -53,21 +56,14 @@ export async function resolveCandidates(
 
 	if (opts.baseFile && host.basesAvailable) {
 		try {
-			const files = await getBaseFiles(host.app, opts.baseFile, opts.viewName, currentFile.path);
-			let displayByPath: Map<string, string> | undefined;
-			if (opts.displayColumn) {
-				const result = await getBaseRows(
-					host.app,
-					opts.baseFile,
-					opts.viewName,
-					currentFile.path
-				);
-				displayByPath = new Map();
-				for (const row of result.rows) {
-					displayByPath.set(row.file.path, row.values[opts.displayColumn] ?? row.file.basename);
-				}
-			}
-			return files.map((f) => ({ file: f, display: displayByPath?.get(f.path) ?? f.basename }));
+			// getBaseRows yields the files in the view's display order (sort + group
+			// flow), unlike getBaseFiles' arbitrary set (#47); reuse those same rows
+			// for the optional display column.
+			const result = await getBaseRows(host.app, opts.baseFile, opts.viewName, currentFile.path);
+			return result.rows.map((row) => ({
+				file: row.file,
+				display: rowDisplay(row, opts.displayColumn, row.file.basename),
+			}));
 		} catch (err) {
 			new Notice(
 				`Fileclass: could not read base "${opts.baseFile}" (${(err as Error).message}). Showing all files.`

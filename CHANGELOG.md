@@ -6,6 +6,15 @@ All notable changes to Fileclass are documented here. The format follows
 
 ## [Unreleased]
 
+### Fields & typed input
+
+- **Base-sourced candidates and values follow the base view's order**
+  ([#47](https://github.com/mdelobelle/fileclass/issues/47)): `File`/`MultiFile`/
+  `Media`/`MultiMedia` pickers and `Select`/`Multi` value lists sourced from a
+  `.base` now list entries in the view's own order (its `sort:`, then `groupBy`
+  flow) instead of an arbitrary vault order, so a long list is browsable and
+  matches how the base reads. A `limit:` on the source view now applies too.
+
 ### Views
 
 - **Generated bases scope the fileClass filter to the managed view, not

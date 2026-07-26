@@ -1,12 +1,14 @@
 /*
  * Obsidian-side value resolution: reads a note-path or Base-view values source
  * and delegates the inline case to the pure `resolveValues` (ARCHITECTURE.md §7,
- * §20.3). Base-view sources go through the adapter (getBaseFiles) with graceful
- * degradation when Bases is unavailable.
+ * §20.3). Base-view sources go through the adapter (getBaseRows), so the allowed
+ * values follow the view's own order (#47), with graceful degradation when Bases
+ * is unavailable.
  */
 import { TFile } from "obsidian";
 
-import { getBaseFiles, getBaseRows } from "../engine/basesAdapter";
+import { getBaseRows } from "../engine/basesAdapter";
+import { distinctColumnValues } from "./baseOrder";
 import { AdapterHost } from "./candidates";
 import { Field } from "../schema/field";
 import { listOptions } from "./options";
@@ -26,23 +28,16 @@ export async function resolveFieldValues(
 	if (opts.sourceType === "ValuesFromBase") {
 		if (!opts.baseFile || !host.basesAvailable) return [];
 		try {
-			// A chosen column: its distinct non-empty values. Otherwise file names.
-			if (opts.valuesColumn) {
-				const result = await getBaseRows(
-					host.app,
-					opts.baseFile,
-					opts.viewName,
-					contextFile?.path
-				);
-				const seen = new Set<string>();
-				for (const row of result.rows) {
-					const v = row.values[opts.valuesColumn];
-					if (v != null && v !== "") seen.add(v);
-				}
-				return [...seen];
-			}
-			const files = await getBaseFiles(host.app, opts.baseFile, opts.viewName, contextFile?.path);
-			return files.map((f) => f.basename);
+			// Rows in the view's own order (#47). A chosen column: its distinct
+			// non-empty values (first occurrence wins). Otherwise the file names.
+			const result = await getBaseRows(
+				host.app,
+				opts.baseFile,
+				opts.viewName,
+				contextFile?.path
+			);
+			if (opts.valuesColumn) return distinctColumnValues(result.rows, opts.valuesColumn);
+			return result.rows.map((row) => row.file.basename);
 		} catch {
 			return [];
 		}

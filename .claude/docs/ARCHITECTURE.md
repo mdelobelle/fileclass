@@ -367,7 +367,7 @@ scope = whole vault), `setValue`, `clearValue`, `insertMissing`. Obsidian-couple
 **API-2 (landed):** `listNotes(fileClass, { columns?, where?, limit? })` and
 `setValueWhere(fileClass, field, value, where?)` — bulk over a fileClass's notes.
 The filter predicate is pure (`src/api/filter.ts`, unit-tested): `is`/`isNot`
-(string compare), `contains` (array membership / substring), `isEmpty`/
+(string compare), `contains` (case-insensitive substring, per array element), `isEmpty`/
 `isNotEmpty`. `setValueWhere` validates each write (strict), skips no-ops, and
 aggregates a `BulkResult`. Verified live via CDP (no-op and out-of-list bulk both
 wrote nothing).
@@ -381,8 +381,8 @@ dry-run and the writes agree. `previewValueWhere` returns a `BulkPreview` — th
 base-view filter intersects the fileClass's notes with `getBaseFiles` and is
 refused (not silently unfiltered) when Bases is off. `applyValueToPaths` writes
 just the paths the user kept. `setValueWhere` delegates to `applyValueWhere`.
-`contains` on a link field is substring-per-element (`[[comic]]` matches
-`comic`, `src/api/filter.ts`, unit-tested). The in-app **bulk edit** flow
+`contains` is a case-insensitive substring per array element, like `ILIKE
+'%value%'` (`[[Comic]]` matches `comic`, `src/api/filter.ts`, unit-tested). The in-app **bulk edit** flow
 (`src/ui/bulkEditModal.ts`, command + fileClass right-click, §19.3) is two
 modals: a form (fileClass → filter → field → value via the field's own typed
 input, CTA Preview) then a full change list with per-note toggles (CTA Apply(N)

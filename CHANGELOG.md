@@ -54,12 +54,12 @@ All notable changes to Fileclass are documented here. The format follows
 
 ### Fixed
 
-- **`contains` filter now matches inside link values**
-  ([#56](https://github.com/mdelobelle/fileclass/issues/56)): a `contains`
-  condition on a `MultiFile`/`MultiMedia` field (list/bulk API, CLI `set-where`,
-  and the bulk-edit UI) tests each element as a **substring** — like the scalar
-  case — so `activities contains comic` matches a stored `[[comic]]` instead of
-  requiring the exact wikilink.
+- **`contains` filter is now a case-insensitive substring match** (`ILIKE
+  '%value%'`, [#56](https://github.com/mdelobelle/fileclass/issues/56)): across
+  the list/bulk API, CLI `set-where`, and the bulk-edit UI, `contains` tests each
+  value (and each element of a `MultiFile`/`MultiMedia` array) as a
+  case-insensitive substring — so `activities contains comic` matches a stored
+  `[[Comic]]` instead of requiring the exact, same-case wikilink.
 - **Sync no longer silently no-ops on a base open in a tab**
   ([#55](https://github.com/mdelobelle/fileclass/issues/55)): a freshly created
   `.base` left open reads as empty on disk (Bases holds its layout in memory

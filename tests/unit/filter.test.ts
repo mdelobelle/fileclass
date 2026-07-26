@@ -38,4 +38,9 @@ describe("matchesFilter", () => {
 		expect(matchesFilter(["[[Activities/comic|Comic]]"], f("contains", "comic"))).toBe(true);
 		expect(matchesFilter(["[[music]]"], f("contains", "comic"))).toBe(false);
 	});
+	it("contains is case-insensitive, like ILIKE '%value%' (#56)", () => {
+		expect(matchesFilter(["[[Comic]]"], f("contains", "comic"))).toBe(true);
+		expect(matchesFilter(["[[comic]]"], f("contains", "COMIC"))).toBe(true);
+		expect(matchesFilter("Hello World", f("contains", "hello"))).toBe(true);
+	});
 });

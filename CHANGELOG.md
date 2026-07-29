@@ -6,6 +6,19 @@ All notable changes to Fileclass are documented here. The format follows
 
 ## [Unreleased]
 
+### Fields
+
+- **Number input: typing works, and it has − / + buttons.** The prompt used a
+  native `type="number"` input, which silently discards every non-numeric
+  keystroke: typing `twelve` looked like a dead field, and the field's own
+  validation never got the chance to explain itself. It is now a text input with a
+  numeric keypad hint, so what you type stays and the refusal is spelled out
+  (*"pages" must be a number*). It also gained **−** and **+** buttons, and ↑/↓
+  keys, stepping by the field's `step` (1 by default). On an empty field the first
+  click shows `Min` itself (0 when there is no minimum), so it always lands on a
+  legal value; the result is clamped to `Min`/`Max`, and a fractional step stays
+  clean (0.1 + 0.2 → 0.3).
+
 ## [0.1.1] - 2026-07-26
 
 ### UI

@@ -182,17 +182,20 @@ function openNumberPrompt(
 	current: unknown,
 	onValue: (value: unknown) => void
 ): void {
-	const { min, max, step } = numberOptions(field);
+	const bounds = numberOptions(field);
 	new PromptModal(app, {
 		title: `Set ${field.name}`,
 		initial: current == null ? "" : String(current),
 		placeholder: placeholderFor(field),
+		// Deliberately NOT type="number": that input drops non-numeric keystrokes
+		// on the floor, so "twelve" looked like a dead field instead of failing
+		// validation with a reason. A text input with a numeric keypad hint keeps
+		// what you typed, and the field's own validation explains the refusal.
 		configureInput: (el) => {
-			el.type = "number";
-			if (min != null) el.min = String(min);
-			if (max != null) el.max = String(max);
-			if (step != null) el.step = String(step);
+			el.inputMode = "decimal";
+			el.autocomplete = "off";
 		},
+		stepper: bounds,
 		validate: (v) => validateField(field, coerceInput(field, v)),
 		onSubmit: (v) => onValue(coerceInput(field, v)),
 	}).open();

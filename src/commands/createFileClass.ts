@@ -1,12 +1,14 @@
 /*
  * "Create a fileClass" command: prompt a name, capitalize it, create the
- * `<classFilesPath><Name>.md` note, and open its schema editor. A fileClass note
- * is any note under the class-files folder (the index keys it by basename).
+ * `<classFilesPath><Name>.fileclass.md` note (classFilesPath is only the default
+ * location — a fileClass is any `*.fileclass.md` note, discovered vault-wide),
+ * and open its schema editor. The index keys the class by basename.
  */
 import { Notice, TFile } from "obsidian";
 
 import type FileclassPlugin from "../../main";
 import { PromptModal } from "../fields/input/valueModals";
+import { FILECLASS_NAME_SUFFIX } from "../schema/constants";
 import { capitalize } from "../schema/field";
 import { openFileClassSchema } from "../ui/fileClassSchemaModal";
 
@@ -25,7 +27,7 @@ export function createFileClass(plugin: FileclassPlugin): void {
 }
 
 async function createNote(plugin: FileclassPlugin, raw: string): Promise<void> {
-	const name = capitalize(raw.trim());
+	const name = `${capitalize(raw.trim())}${FILECLASS_NAME_SUFFIX}`;
 	const path = `${plugin.settings.classFilesPath}${name}.md`;
 
 	if (plugin.app.vault.getFileByPath(path) instanceof TFile) {

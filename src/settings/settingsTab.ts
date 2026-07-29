@@ -20,8 +20,10 @@ export class FileclassSettingTab extends PluginSettingTab {
 		containerEl.empty();
 
 		new Setting(containerEl)
-			.setName("Class files folder")
-			.setDesc("Folder containing your fileClass notes. Notes here define schemas.")
+			.setName("Default folder for new fileClasses")
+			.setDesc(
+				"Where the “Create a fileClass” command puts new definitions. fileClasses are discovered anywhere in the vault by the .fileclass.md suffix — not limited to this folder."
+			)
 			.addText((text) => {
 				text
 					.setPlaceholder("e.g. Settings/fileClasses")

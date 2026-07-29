@@ -15,6 +15,7 @@ import { QueryCache } from "./src/engine/queryCache";
 import { createFileClass } from "./src/commands/createFileClass";
 import { insertMissingFields } from "./src/commands/insertMissingFields";
 import { pickAndUpdateField } from "./src/fields/fieldActions";
+import { isFileClassPath } from "./src/schema/constants";
 import { FileclassIndex } from "./src/schema/fileclassIndex";
 import {
 	coerceSettings,
@@ -263,10 +264,9 @@ export default class FileclassPlugin extends Plugin {
 		);
 	}
 
-	/** True when a path is (or was) a fileClass note under the class folder. */
+	/** True when a path is (or was) a fileClass note (`*.fileclass.md`, vault-wide). */
 	private affectsSchema(path: string): boolean {
-		const folder = this.settings.classFilesPath;
-		return !!folder && path.startsWith(folder) && path.endsWith(".md");
+		return isFileClassPath(path);
 	}
 
 	/** Re-runs adapter feature detection and surfaces a one-time warning. */

@@ -54,14 +54,6 @@ export function stringToBoolean(value: unknown): boolean {
 	return !!value;
 }
 
-/** Derives the fileClass name from its note path, given the class-files folder. */
-export function fileClassNameFromPath(classFilesPath: string, path: string): string | undefined {
-	if (!classFilesPath) return undefined;
-	const folder = classFilesPath.endsWith("/") ? classFilesPath : `${classFilesPath}/`;
-	if (!path.startsWith(folder) || !path.endsWith(".md")) return undefined;
-	return path.slice(folder.length, -".md".length) || undefined;
-}
-
 /**
  * fileClass name for a definition note = its basename (e.g. `Task.fileclass`),
  * folder-independent. Undefined if the file is not a fileClass note. Replaces

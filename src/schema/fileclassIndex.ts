@@ -10,15 +10,17 @@
 import { App, Events, TFile, getAllTags } from "obsidian";
 
 import { FileclassSettings } from "../settings/settings";
+import { isFileClassPath } from "./constants";
 import { Field } from "./field";
-import {
-	fileClassNameFromPath,
-	ParsedFileClass,
-	parseFileClass,
-	toStringArray,
-} from "./fileClass";
+import { fileClassNameFromFile, ParsedFileClass, parseFileClass } from "./fileClass";
 import { computeAncestors, resolveInheritedFields } from "./inheritance";
-import { FileBinding, FileClassRegistry, resolveBinding, Resolution } from "./resolver";
+import {
+	FileBinding,
+	FileClassRegistry,
+	resolveBinding,
+	resolveInnerFileClassNames,
+	Resolution,
+} from "./resolver";
 
 /** Minimal host contract (satisfied structurally by the plugin instance). */
 export interface IndexHost {
@@ -31,6 +33,7 @@ export const INDEXED_EVENT = "fileclass:indexed";
 export class FileclassIndex extends Events {
 	private byName = new Map<string, ParsedFileClass>();
 	private nameByPath = new Map<string, string>();
+	private pathByName = new Map<string, string>();
 	private ancestorsByName = new Map<string, string[]>();
 	private fieldsByName = new Map<string, Field[]>();
 	private tagBindings = new Map<string, string>();
@@ -49,18 +52,13 @@ export class FileclassIndex extends Events {
 
 	// -- rebuild --------------------------------------------------------------
 
-	/** Rescans the class-files folder and recomputes every derived map. */
+	/** Rescans every `*.fileclass.md` note vault-wide and recomputes derived maps. */
 	rebuild(): void {
 		this.clear();
-		const classFilesPath = this.host.settings.classFilesPath;
-		if (classFilesPath) {
-			const files = this.app.vault
-				.getMarkdownFiles()
-				.filter((f) => f.path.startsWith(classFilesPath));
-			for (const file of files) this.indexFileClassNote(file);
-			this.computeInheritance();
-			this.buildBindingMaps();
-		}
+		const files = this.app.vault.getMarkdownFiles().filter((f) => isFileClassPath(f.path));
+		for (const file of files) this.indexFileClassNote(file);
+		this.computeInheritance();
+		this.buildBindingMaps();
 		// Notify our own listeners and the workspace (external consumers).
 		this.trigger(INDEXED_EVENT);
 		this.app.workspace.trigger(INDEXED_EVENT);
@@ -69,6 +67,7 @@ export class FileclassIndex extends Events {
 	private clear(): void {
 		this.byName.clear();
 		this.nameByPath.clear();
+		this.pathByName.clear();
 		this.ancestorsByName.clear();
 		this.fieldsByName.clear();
 		this.tagBindings.clear();
@@ -78,12 +77,13 @@ export class FileclassIndex extends Events {
 	}
 
 	private indexFileClassNote(file: TFile): void {
-		const name = fileClassNameFromPath(this.host.settings.classFilesPath, file.path);
+		const name = fileClassNameFromFile(file);
 		if (!name) return;
 		const frontmatter = this.app.metadataCache.getFileCache(file)?.frontmatter;
 		const parsed = parseFileClass(name, frontmatter);
 		this.byName.set(name, parsed);
 		this.nameByPath.set(file.path, name);
+		this.pathByName.set(name, file.path);
 		if (parsed.errors.length) this.errors.push(...parsed.errors);
 	}
 
@@ -133,7 +133,12 @@ export class FileclassIndex extends Events {
 	bindingFor(file: TFile): FileBinding {
 		const cache = this.app.metadataCache.getFileCache(file);
 		const alias = this.host.settings.fileClassAlias;
-		const innerNames = toStringArray(cache?.frontmatter?.[alias]);
+		const innerNames = resolveInnerFileClassNames(
+			cache?.frontmatterLinks ?? [],
+			alias,
+			(link) => this.app.metadataCache.getFirstLinkpathDest(link, file.path)?.path ?? null,
+			this.nameByPath
+		);
 		const tags = (cache ? getAllTags(cache) ?? [] : []).map((t) => t.replace(/^#/, ""));
 		return { innerNames, tags, folderPath: file.parent?.path ?? "" };
 	}
@@ -195,11 +200,11 @@ export class FileclassIndex extends Events {
 		return this.nameByPath.get(path);
 	}
 
-	/** The Markdown note backing a fileClass (`<classFilesPath><name>.md`). */
+	/** The Markdown note backing a fileClass, resolved by its indexed path. */
 	getFileClassFile(name: string): TFile | null {
-		const folder = this.host.settings.classFilesPath;
-		if (!folder) return null;
-		const file = this.app.vault.getFileByPath(`${folder}${name}.md`);
+		const path = this.pathByName.get(name);
+		if (!path) return null;
+		const file = this.app.vault.getFileByPath(path);
 		return file instanceof TFile ? file : null;
 	}
 }

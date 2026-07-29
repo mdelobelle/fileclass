@@ -1,8 +1,8 @@
 /*
  * "Create a fileClass" command: prompt a name, capitalize it, create the
- * `<classFilesPath><Name>.fileclass.md` note (classFilesPath is only the default
- * location — a fileClass is any `*.fileclass.md` note, discovered vault-wide),
- * and open its schema editor. The index keys the class by basename.
+ * `<classFilesPath><Name>.fileclass` file (classFilesPath is only the default
+ * location — a fileClass is any `.fileclass` file, discovered vault-wide by
+ * extension), and open its schema editor. The index keys the class by filename.
  */
 import { Notice, TFile } from "obsidian";
 
@@ -29,8 +29,9 @@ export function createFileClass(plugin: FileclassPlugin): void {
 async function createNote(plugin: FileclassPlugin, raw: string): Promise<void> {
 	// Strip a suffix the user may have typed themselves so we never double it.
 	const typed = capitalize(raw.trim()).replace(/\.fileclass$/i, "");
+	// The name is the full filename of the non-md definition, e.g. "Book.fileclass".
 	const name = `${typed}${FILECLASS_NAME_SUFFIX}`;
-	const path = `${plugin.settings.classFilesPath}${name}.md`;
+	const path = `${plugin.settings.classFilesPath}${name}`;
 
 	if (plugin.app.vault.getFileByPath(path) instanceof TFile) {
 		new Notice(`Fileclass: "${name}" already exists.`);

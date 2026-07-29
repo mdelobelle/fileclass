@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 
-import { resolveInnerFileClassNames } from "../../src/schema/resolver";
+import { resolveExtendsName, resolveInnerFileClassNames } from "../../src/schema/resolver";
 
 const nameByPath = new Map([
 	["cls/Area.fileclass.md", "Area.fileclass"],
@@ -41,5 +41,26 @@ describe("resolveInnerFileClassNames", () => {
 		expect(resolveInnerFileClassNames(links, "fileClass", resolve, nameByPath)).toEqual([
 			"Area.fileclass",
 		]);
+	});
+});
+
+describe("resolveExtendsName", () => {
+	const has = (n: string): boolean => n === "Note.fileclass" || n === "Global.fileclass";
+	const resolveLink = (link: string): string | undefined =>
+		link === "Note.fileclass" ? "Note.fileclass" : undefined;
+
+	it("resolves a wikilink extends", () => {
+		expect(resolveExtendsName('[[Note.fileclass]]', resolveLink, has)).toBe("Note.fileclass");
+	});
+	it("resolves a bare name that already matches a registry key", () => {
+		expect(resolveExtendsName("Note.fileclass", resolveLink, has)).toBe("Note.fileclass");
+	});
+	it("resolves a bare display name by appending the .fileclass suffix", () => {
+		expect(resolveExtendsName("Note", resolveLink, has)).toBe("Note.fileclass");
+	});
+	it("returns undefined for empty or unresolvable values", () => {
+		expect(resolveExtendsName(undefined, resolveLink, has)).toBeUndefined();
+		expect(resolveExtendsName("[[Missing.fileclass]]", resolveLink, has)).toBeUndefined();
+		expect(resolveExtendsName("Nope", resolveLink, has)).toBeUndefined();
 	});
 });

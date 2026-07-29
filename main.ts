@@ -92,7 +92,7 @@ export default class FileclassPlugin extends Plugin {
 		this.app.workspace.onLayoutReady(() => {
 			this.refreshBasesAvailability();
 			this.registerFileclassTableView();
-			this.index.rebuild();
+			void this.index.rebuild();
 		});
 	}
 
@@ -242,7 +242,7 @@ export default class FileclassPlugin extends Plugin {
 
 	private registerVaultListeners(): void {
 		// Rebuild is idempotent and cheap; debounce bursts of events.
-		const scheduleRebuild = debounce(() => this.index.rebuild(), 400, true);
+		const scheduleRebuild = debounce(() => void this.index.rebuild(), 400, true);
 
 		// Full metadata settle (initial load and after edits).
 		this.registerEvent(this.app.metadataCache.on("resolved", scheduleRebuild));
@@ -264,7 +264,7 @@ export default class FileclassPlugin extends Plugin {
 		);
 	}
 
-	/** True when a path is (or was) a fileClass note (`*.fileclass.md`, vault-wide). */
+	/** True when a path is (or was) a `.fileclass` definition file (vault-wide). */
 	private affectsSchema(path: string): boolean {
 		return isFileClassPath(path);
 	}

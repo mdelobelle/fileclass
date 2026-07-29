@@ -126,3 +126,23 @@ export function resolveInnerFileClassNames(
 	}
 	return out;
 }
+
+/**
+ * Resolves a fileClass's `extends` value to a canonical registry name. Accepts a
+ * wikilink (`"[[Note.fileclass]]"`, resolved folder-independently via
+ * `resolveLinkToName`) or a bare name — matched as given, else with the
+ * `.fileclass` suffix appended (forgiving of the display-style name). Returns
+ * undefined when no parent resolves.
+ */
+export function resolveExtendsName(
+	raw: string | undefined,
+	resolveLinkToName: (link: string) => string | undefined,
+	hasName: (name: string) => boolean
+): string | undefined {
+	if (!raw) return undefined;
+	const link = raw.match(/^\[\[(.+?)\]\]$/);
+	if (link) return resolveLinkToName(link[1]);
+	if (hasName(raw)) return raw;
+	const suffixed = `${raw}.fileclass`;
+	return hasName(suffixed) ? suffixed : undefined;
+}

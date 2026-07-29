@@ -34,13 +34,24 @@ UNRESOLVED: dict[str, int] = {}
 
 
 def build_name_map(vault: Path) -> None:
-    for p in vault.rglob("*.fileclass.md"):
+    # Definitions may be pre-migration (.fileclass.md) or already migrated (.fileclass).
+    for p in list(vault.rglob("*.fileclass.md")) + list(vault.rglob("*.fileclass")):
         if "/.trash/" in f"/{p.relative_to(vault).as_posix()}":
             continue
-        base = p.name[: -len(".md")]  # e.g. "Area.fileclass"
+        base = p.name[: -len(".md")] if p.name.endswith(".fileclass.md") else p.name  # "Area.fileclass"
         FULL_NAMES.add(base)
         short = base[: -len(".fileclass")]  # e.g. "Area"
         SHORT_TO_FULL.setdefault(short, base)
+
+
+def plan_renames(vault: Path) -> list[tuple[Path, Path]]:
+    """Definition files to rename `X.fileclass.md` → `X.fileclass` (non-md format)."""
+    out: list[tuple[Path, Path]] = []
+    for p in vault.rglob("*.fileclass.md"):
+        if "/.trash/" in f"/{p.relative_to(vault).as_posix()}":
+            continue
+        out.append((p, p.with_name(p.name[: -len(".md")])))
+    return out
 
 
 def resolve_target(raw: str) -> str:
@@ -136,6 +147,12 @@ def main() -> int:
     build_name_map(vault)
     print(f"{len(FULL_NAMES)} fileClass definitions found in vault.\n")
 
+    renames = plan_renames(vault)
+    print(f"{len(renames)} definition file(s) to rename .fileclass.md → .fileclass:")
+    for src, dst in renames:
+        print(f"    {src.relative_to(vault)}  →  {dst.name}")
+    print()
+
     targets: list[tuple[Path, str, str]] = []
     for p in vault.rglob("*.md"):
         rel = p.relative_to(vault).as_posix()
@@ -175,9 +192,16 @@ def main() -> int:
         dst = backup / p.relative_to(vault)
         dst.parent.mkdir(parents=True, exist_ok=True)
         dst.write_text(old, encoding="utf-8")
+    for src, _ in renames:
+        dst = backup / src.relative_to(vault)
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        dst.write_text(src.read_text(encoding="utf-8"), encoding="utf-8")
+    # Rename definition files first, then rewrite note references.
+    for src, dst in renames:
+        src.rename(dst)
     for p, _, new in targets:
         p.write_text(new, encoding="utf-8")
-    print(f"Migrated {len(targets)} note(s). Backup: {backup}")
+    print(f"Renamed {len(renames)} definition(s); migrated {len(targets)} note(s). Backup: {backup}")
     return 0
 
 

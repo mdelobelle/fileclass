@@ -141,11 +141,16 @@ fileclass/
 
 ## 5. Schema layer
 
-- fileClass notes live under `settings.classFilesPath`. Frontmatter carries
+- **Wikilink-references fork:** fileClass definitions are non-markdown
+  `.fileclass` files discovered vault-wide (§10), not `.md` notes under
+  `classFilesPath`. Their YAML block still carries
   `fields` (list of `{name, id, type, options, path}`), `extends`, `excludes`,
-  `mapWithTag`, `tagNames`, `filesPaths`, `bookmarksGroups`, `version`, plus
-  view options. **Port the parsing semantics from Metadata Menu** (D3), do not
-  redesign. `path` encodes nesting (parent field ids joined with `____`).
+  `mapWithTag`, `tagNames`, `filesPaths`, `bookmarksGroups`, `version`, plus view
+  options — the field/option **parsing semantics are Metadata Menu's** (D3),
+  unchanged; only the container (non-md file, read via `vault.read`+`parseYaml`,
+  written via `vault.process`+`stringifyYaml` in `fileClassIo.ts` since
+  `processFrontMatter` is markdown-only) differs. `path` encodes nesting (parent
+  field ids joined with `____`).
 - Inheritance: single `extends` chain with cycle guard; `excludes` removes
   inherited fields (same as MDM `getFileClassesAncestors`).
 - Field options referencing queries change shape: anywhere MDM had
@@ -301,21 +306,27 @@ out-of-scope), scheduled **after JSON/YAML**.
 ## 10. Index
 
 Slim rewrite of MDM's `FieldIndex` keeping ONLY:
-- fileClass registry (parse every `*.fileclass.md` note **vault-wide**),
-  ancestors, fields per fileClass. **Wikilink-references fork:** discovery is by
-  the `.fileclass.md` filename suffix (`isFileClassPath`), not by
-  `classFilesPath` — a definition may live in any scope's folder. `classFilesPath`
-  is retained only as the default location for the *create* command. The registry
-  is name-keyed by basename (`Book.fileclass`); same-basename definitions collide
-  (last-in wins, logged to `errors`) — uniqueness is a naming-convention concern.
+- fileClass registry — **wikilink-references fork:** a definition is a
+  **non-markdown `.fileclass` file** (like Blueprint's `.blueprint`), discovered
+  **vault-wide** by extension (`getFiles().filter(extension === "fileclass")`), not
+  by `classFilesPath` (retained only as the default *create* location). Because
+  `.fileclass` is not markdown, its schema is **not** in `metadataCache`; the index
+  reads it via `vault.cachedRead` + `splitFileClassSource` + `parseYaml`, so
+  `rebuild()` is **async**. This deviates from D2 (metadataCache reads) for
+  *definitions* — note reads are unchanged. The registry is name-keyed by the
+  file's full name (`Book.fileclass`, which is also the wikilink target); same-named
+  definitions collide (last-in wins, logged to `errors`) — a naming-convention
+  concern. `extends` may be a wikilink (`"[[Note.fileclass]]"`) or a bare/display
+  name, resolved to a canonical name by `resolveExtendsName`.
 - file → fileClass mapping with MDM's priority order: frontmatter alias >
   tag match > path match > bookmark group match > (base-view match, replaces
   fileClassQueries) > global fileClass > preset fields. **Wikilink-references
   fork:** the frontmatter-alias binding is **wikilink-only** — `fileClass:
   "[[Book.fileclass]]"` (scalar or list), resolved via `frontmatterLinks` +
-  `getFirstLinkpathDest` (folder-independent, rename-tracking). Bare-string alias
-  values are no longer resolved. The Global-fileClass setting is matched
-  forgivingly (bare / suffixed / path) against the suffixed registry names.
+  `getFirstLinkpathDest` (folder-independent, rename-tracking; resolves the
+  non-md file by full name). Bare-string alias values are no longer resolved. The
+  Global-fileClass setting is matched forgivingly (bare / suffixed / path) against
+  the registry names.
 - rebuild on `metadataCache.on('resolved')` (debounced) and on fileClass file
   changes; `metadata-menu:indexed`-style event renamed `fileclass:indexed`.
 

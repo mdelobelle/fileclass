@@ -7,17 +7,19 @@
  * Rebuild is driven by main.ts (debounced metadataCache 'resolved' + fileClass
  * file changes). On each rebuild it fires the `fileclass:indexed` event.
  */
-import { App, Events, TFile, getAllTags } from "obsidian";
+import { App, Events, TFile, getAllTags, parseYaml } from "obsidian";
 
 import { FileclassSettings } from "../settings/settings";
-import { FILECLASS_NAME_SUFFIX, isFileClassPath } from "./constants";
+import { FILECLASS_EXTENSION, FILECLASS_NAME_SUFFIX } from "./constants";
 import { Field } from "./field";
 import { fileClassNameFromFile, ParsedFileClass, parseFileClass } from "./fileClass";
+import { splitFileClassSource } from "./fileClassSource";
 import { computeAncestors, resolveInheritedFields } from "./inheritance";
 import {
 	FileBinding,
 	FileClassRegistry,
 	resolveBinding,
+	resolveExtendsName,
 	resolveInnerFileClassNames,
 	Resolution,
 } from "./resolver";
@@ -52,11 +54,15 @@ export class FileclassIndex extends Events {
 
 	// -- rebuild --------------------------------------------------------------
 
-	/** Rescans every `*.fileclass.md` note vault-wide and recomputes derived maps. */
-	rebuild(): void {
+	/**
+	 * Rescans every `.fileclass` definition file vault-wide and recomputes derived
+	 * maps. Async because `.fileclass` files are not markdown, so their schema is
+	 * read via `vault.cachedRead` rather than the metadata cache.
+	 */
+	async rebuild(): Promise<void> {
 		this.clear();
-		const files = this.app.vault.getMarkdownFiles().filter((f) => isFileClassPath(f.path));
-		for (const file of files) this.indexFileClassNote(file);
+		const files = this.app.vault.getFiles().filter((f) => f.extension === FILECLASS_EXTENSION);
+		for (const file of files) await this.indexFileClassNote(file);
 		this.computeInheritance();
 		this.buildBindingMaps();
 		// Notify our own listeners and the workspace (external consumers).
@@ -76,18 +82,29 @@ export class FileclassIndex extends Events {
 		this.errors = [];
 	}
 
-	private indexFileClassNote(file: TFile): void {
+	private async indexFileClassNote(file: TFile): Promise<void> {
 		const name = fileClassNameFromFile(file);
 		if (!name) return;
 		// Vault-wide discovery is name-keyed (registry keys carry no folder), so two
-		// `*.fileclass.md` notes with the same basename collide; last-in wins. Surface
-		// it rather than silently shadowing (a naming-convention responsibility).
+		// same-named `.fileclass` files collide; last-in wins. Surface it rather than
+		// silently shadowing (a naming-convention responsibility).
 		const prior = this.pathByName.get(name);
 		if (prior && prior !== file.path) {
 			this.errors.push(`Duplicate fileClass "${name}": ${file.path} shadows ${prior}.`);
 		}
-		const frontmatter = this.app.metadataCache.getFileCache(file)?.frontmatter;
-		const parsed = parseFileClass(name, frontmatter);
+		// `.fileclass` is not markdown, so parse the YAML block from the raw text.
+		const raw = await this.app.vault.cachedRead(file);
+		const { frontmatter } = splitFileClassSource(raw);
+		let fm: Record<string, unknown> = {};
+		if (frontmatter.trim()) {
+			try {
+				const y: unknown = parseYaml(frontmatter);
+				if (y && typeof y === "object") fm = y as Record<string, unknown>;
+			} catch (e) {
+				this.errors.push(`Malformed YAML in ${file.path}: ${(e as Error).message}`);
+			}
+		}
+		const parsed = parseFileClass(name, fm);
 		this.byName.set(name, parsed);
 		this.nameByPath.set(file.path, name);
 		this.pathByName.set(name, file.path);
@@ -95,7 +112,25 @@ export class FileclassIndex extends Events {
 	}
 
 	private computeInheritance(): void {
-		const parentOf = (n: string) => this.byName.get(n)?.options.extends;
+		// `extends` may be a wikilink (`"[[Note.fileclass]]"`) or a bare/display
+		// name; resolve each to a canonical registry name once, up front.
+		const resolvedParent = new Map<string, string | undefined>();
+		for (const name of this.byName.keys()) {
+			const raw = this.byName.get(name)?.options.extends;
+			const sourcePath = this.pathByName.get(name) ?? "";
+			resolvedParent.set(
+				name,
+				resolveExtendsName(
+					raw,
+					(link) => {
+						const dest = this.app.metadataCache.getFirstLinkpathDest(link, sourcePath);
+						return dest ? this.nameByPath.get(dest.path) : undefined;
+					},
+					(n) => this.byName.has(n)
+				)
+			);
+		}
+		const parentOf = (n: string) => resolvedParent.get(n);
 		for (const name of this.byName.keys()) {
 			const ancestors = computeAncestors(name, parentOf);
 			this.ancestorsByName.set(name, ancestors);
@@ -230,10 +265,10 @@ export class FileclassIndex extends Events {
 			if (file instanceof TFile) return file;
 		}
 		// Not yet indexed (e.g. a class created just now, before the debounced
-		// rebuild fires) — fall back to a direct vault lookup by basename.
+		// rebuild fires) — fall back to a direct vault lookup by filename.
 		const match = this.app.vault
-			.getMarkdownFiles()
-			.find((f) => isFileClassPath(f.path) && f.basename === name);
+			.getFiles()
+			.find((f) => f.extension === FILECLASS_EXTENSION && f.name === name);
 		return match ?? null;
 	}
 }

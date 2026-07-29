@@ -55,12 +55,13 @@ export function stringToBoolean(value: unknown): boolean {
 }
 
 /**
- * fileClass name for a definition note = its basename (e.g. `Task.fileclass`),
- * folder-independent. Undefined if the file is not a fileClass note. Replaces
- * the classFilesPath-relative naming now that discovery is vault-wide.
+ * fileClass name for a definition file = its full filename (e.g. `Task.fileclass`),
+ * folder-independent. This matches the wikilink used to reference it
+ * (`[[Task.fileclass]]`), which Obsidian resolves to a non-md file by full name.
+ * Undefined if the file is not a `.fileclass` definition.
  */
-export function fileClassNameFromFile(file: { name: string; basename: string }): string | undefined {
-	return file.name.endsWith(FILECLASS_FILE_SUFFIX) ? file.basename : undefined;
+export function fileClassNameFromFile(file: { name: string }): string | undefined {
+	return file.name.endsWith(FILECLASS_FILE_SUFFIX) ? file.name : undefined;
 }
 
 /**

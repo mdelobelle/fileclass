@@ -10,15 +10,20 @@ foundation (P1); typed input, editing, and computed fields come later.
 
 ## fileClass notes
 
-A fileClass is a Markdown note whose filename ends in **`.fileclass.md`** — for
-example `Book.fileclass.md`. Its **name** is that basename (`Book.fileclass`).
-fileClass notes are discovered **anywhere in the vault**, so a definition can
-live in whatever folder its scope belongs to. The **Settings → Fileclass →
-Default folder for new fileClasses** setting only chooses where the *create*
-command puts new ones; it does not limit discovery.
+A fileClass is a **`.fileclass` file** — a non-Markdown format (like `.canvas`
+or `.base`), e.g. `Book.fileclass`. Its **name** is the full filename
+(`Book.fileclass`), which is also how notes link to it. fileClass files are
+discovered **anywhere in the vault** by their extension, so a definition can live
+in whatever folder its scope belongs to. The **Settings → Fileclass → Default
+folder for new fileClasses** setting only chooses where the *create* command puts
+new ones; it does not limit discovery.
+
+A `.fileclass` file holds the same YAML you'd otherwise put in frontmatter — a
+`---`-delimited block of `fields`/`extends`/… followed by an optional description
+body. `extends` may itself be a wikilink (`extends: "[[Note.fileclass]]"`).
 
 Create one with the command **Fileclass: create a class** — it prompts for a
-name (capitalized automatically), creates `<Name>.fileclass.md` in the default
+name (capitalized automatically), creates `<Name>.fileclass` in the default
 folder, and opens its schema editor.
 
 ```yaml

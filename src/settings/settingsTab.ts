@@ -22,7 +22,7 @@ export class FileclassSettingTab extends PluginSettingTab {
 		new Setting(containerEl)
 			.setName("Default folder for new fileClasses")
 			.setDesc(
-				"Where the “Create a fileClass” command puts new definitions. fileClasses are discovered anywhere in the vault by the .fileclass.md suffix — not limited to this folder."
+				"Where the “Create a fileClass” command puts new definitions. fileClasses are discovered anywhere in the vault by the .fileclass file extension — not limited to this folder."
 			)
 			.addText((text) => {
 				text
@@ -31,7 +31,7 @@ export class FileclassSettingTab extends PluginSettingTab {
 					.onChange(async (value) => {
 						this.plugin.settings.classFilesPath = normalizeFolderPath(value);
 						await this.plugin.saveSettings();
-						this.plugin.index.rebuild();
+						void this.plugin.index.rebuild();
 					});
 				new FolderSuggest(this.app, text.inputEl);
 			});
@@ -46,7 +46,7 @@ export class FileclassSettingTab extends PluginSettingTab {
 					.onChange(async (value) => {
 						this.plugin.settings.fileClassAlias = value.trim() || "fileClass";
 						await this.plugin.saveSettings();
-						this.plugin.index.rebuild();
+						void this.plugin.index.rebuild();
 					})
 			);
 
@@ -60,7 +60,7 @@ export class FileclassSettingTab extends PluginSettingTab {
 					.onChange(async (value) => {
 						this.plugin.settings.globalFileClass = value.trim();
 						await this.plugin.saveSettings();
-						this.plugin.index.rebuild();
+						void this.plugin.index.rebuild();
 					})
 			);
 

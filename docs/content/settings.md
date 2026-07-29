@@ -9,7 +9,7 @@ All settings live under **Settings → Fileclass**.
 
 | Setting | What it does |
 |---------|--------------|
-| **Default folder for new fileClasses** | Where the *Create a fileClass* command puts new definitions. fileClasses are discovered **anywhere** in the vault by the `.fileclass.md` filename suffix — this setting does not limit discovery. |
+| **Default folder for new fileClasses** | Where the *Create a fileClass* command puts new definitions. fileClasses are discovered **anywhere** in the vault by the `.fileclass` file extension — this setting does not limit discovery. |
 | **fileClass alias** | Frontmatter key that binds a note to its fileClass(es). Default `fileClass`. |
 | **Global fileClass** | Applied to every note that has no other binding. Leave empty to disable. |
 | **Bases folder** | Where generated `<fileClass>.base` files are written. |

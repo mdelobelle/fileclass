@@ -15,7 +15,7 @@ import { QueryCache } from "./src/engine/queryCache";
 import { createFileClass } from "./src/commands/createFileClass";
 import { insertMissingFields } from "./src/commands/insertMissingFields";
 import { pickAndUpdateField } from "./src/fields/fieldActions";
-import { isFileClassPath } from "./src/schema/constants";
+import { FILECLASS_EXTENSION, isFileClassPath } from "./src/schema/constants";
 import { FileclassIndex } from "./src/schema/fileclassIndex";
 import {
 	coerceSettings,
@@ -71,6 +71,16 @@ export default class FileclassPlugin extends Plugin {
 	async onload(): Promise<void> {
 		setPlugin(this);
 		await this.loadSettings();
+
+		// `.fileclass` is a custom, non-markdown extension. Obsidian only tracks
+		// files with a registered extension — without this, `.fileclass` files are
+		// absent from getFiles()/metadataCache/link resolution and the plugin never
+		// sees them. Open them in the markdown editor (raw YAML + body).
+		try {
+			this.registerExtensions([FILECLASS_EXTENSION], "markdown");
+		} catch (e) {
+			console.warn("Fileclass: could not register .fileclass extension", e);
+		}
 
 		this.queryCache = new QueryCache(this.app);
 		this.register(() => this.queryCache.dispose());

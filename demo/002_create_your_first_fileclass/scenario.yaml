@@ -1,0 +1,47 @@
+# Narration for take 002 — see ../SCENARIO.md for the format.
+# Starts where 001 ended: plugin enabled, Classes/ folder, setting filled.
+# Scope: create a class + ONE Input field. No Date/Select, no base, and the
+# Input `template` option stays out of frame — later takes cover those.
+title: "Fileclass — your first class"
+description: "Give three book notes a shape: a Book class with one Input field."
+doc: "schema/#fields" # deep link used in the YouTube description
+tags: "obsidian classes, note types, typed properties"
+vault_name: "Demo"
+plugin: true
+settings:
+  classFilesPath: "Classes/"
+  fileClassAlias: "fileClass"
+# Nothing to respell for this take: fileClass, Fileclass and .md are handled by
+# the shared table in lib/voice.mjs. Add a `pronounce:` map here if a step ever
+# shows a path or file name the voice would mangle.
+initial_pause: 1500
+default_pause: 900
+
+steps:
+  - title: "Three books in this vault — and nothing you can sort, filter or count"
+    pause: 1600
+  - title: "Let's give them a shape: run Create a class from the command palette"
+  - title: "Call it Book"
+    pause: 700
+  - title: "Fileclass creates the Book note and opens its schema editor"
+    pause: 1400
+  - title: "A new class has no fields yet, so add one"
+  - title: "Name it publisher"
+  - title: "Its type is Input — one line of free text"
+    pause: 1200
+  - title: "Save the schema"
+    pause: 1400
+  - title: "That's all a class is: a note listing the fields its notes can have"
+    pause: 1800
+  - title: "Open Dune, then run Add a class to this note"
+    pause: 1000
+  - title: "Pick Book, and one property called fileClass now binds the note to it"
+    pause: 1400
+  - title: "Run Insert missing fields: publisher appears, empty but declared"
+    pause: 1400
+  - title: "Click the edit button next to publisher"
+    pause: 1200
+  - title: "Type Chilton Books — Fileclass writes it into the frontmatter"
+    pause: 1400
+  - title: "One field, one class, three books ready for it 🎉"
+    pause: 2200

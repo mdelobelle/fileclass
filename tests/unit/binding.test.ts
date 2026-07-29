@@ -52,6 +52,12 @@ describe("resolveExtendsName", () => {
 	it("resolves a wikilink extends", () => {
 		expect(resolveExtendsName('[[Note.fileclass]]', resolveLink, has)).toBe("Note.fileclass");
 	});
+	it("strips a |alias and #subpath from the wikilink before resolving", () => {
+		expect(resolveExtendsName('[[Note.fileclass|Note]]', resolveLink, has)).toBe("Note.fileclass");
+		expect(resolveExtendsName('[[Note.fileclass#Heading]]', resolveLink, has)).toBe(
+			"Note.fileclass"
+		);
+	});
 	it("resolves a bare name that already matches a registry key", () => {
 		expect(resolveExtendsName("Note.fileclass", resolveLink, has)).toBe("Note.fileclass");
 	});

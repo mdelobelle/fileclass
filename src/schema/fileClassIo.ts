@@ -20,7 +20,14 @@ async function editSource(
 		const { frontmatter, body } = splitFileClassSource(raw);
 		let obj: Record<string, unknown> = {};
 		if (frontmatter.trim()) {
-			const y: unknown = parseYaml(frontmatter);
+			let y: unknown;
+			try {
+				y = parseYaml(frontmatter);
+			} catch (e) {
+				// Abort the write loudly rather than silently discarding the edit or
+				// overwriting a hand-broken definition with a partial object.
+				throw new Error(`malformed YAML in ${file.path}: ${(e as Error).message}`);
+			}
 			if (y && typeof y === "object") obj = y as Record<string, unknown>;
 		}
 		fn(obj);

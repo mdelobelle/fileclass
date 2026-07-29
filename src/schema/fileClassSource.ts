@@ -6,9 +6,10 @@
  * caller (obsidian `parseYaml`/`stringifyYaml`), keeping this module pure.
  */
 
-/** Splits raw `.fileclass` content into its frontmatter YAML and trailing body. */
+/** Splits raw `.fileclass` content into its frontmatter YAML and trailing body.
+ *  Tolerates CRLF as well as LF line endings. */
 export function splitFileClassSource(raw: string): { frontmatter: string; body: string } {
-	const m = raw.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/);
+	const m = raw.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/);
 	if (m) return { frontmatter: m[1], body: m[2] };
 	// No delimited block — treat the whole file as YAML (a pure-YAML definition).
 	return { frontmatter: raw, body: "" };

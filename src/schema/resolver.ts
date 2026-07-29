@@ -141,7 +141,11 @@ export function resolveExtendsName(
 ): string | undefined {
 	if (!raw) return undefined;
 	const link = raw.match(/^\[\[(.+?)\]\]$/);
-	if (link) return resolveLinkToName(link[1]);
+	if (link) {
+		// Strip a `#subpath` and `|alias` — getFirstLinkpathDest wants the bare linkpath.
+		const linkpath = link[1].split("|")[0].split("#")[0].trim();
+		return resolveLinkToName(linkpath);
+	}
 	if (hasName(raw)) return raw;
 	const suffixed = `${raw}.fileclass`;
 	return hasName(suffixed) ? suffixed : undefined;

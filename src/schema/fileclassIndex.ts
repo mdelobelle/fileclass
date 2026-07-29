@@ -43,6 +43,10 @@ export class FileclassIndex extends Events {
 	private bookmarkBindings = new Map<string, string>();
 	/** Aggregated non-fatal parse problems from the last rebuild. */
 	errors: string[] = [];
+	// Rebuild is async (non-md reads); serialize overlapping calls and coalesce a
+	// trailing one so `clear()` never interleaves with an in-flight population.
+	private rebuildInFlight: Promise<void> | null = null;
+	private rebuildQueued = false;
 
 	constructor(private readonly host: IndexHost) {
 		super();
@@ -57,9 +61,26 @@ export class FileclassIndex extends Events {
 	/**
 	 * Rescans every `.fileclass` definition file vault-wide and recomputes derived
 	 * maps. Async because `.fileclass` files are not markdown, so their schema is
-	 * read via `vault.cachedRead` rather than the metadata cache.
+	 * read via `vault.cachedRead` rather than the metadata cache. Overlapping calls
+	 * are serialized (and a burst coalesced to one trailing run) so a concurrent
+	 * `clear()` can never wipe an in-flight population.
 	 */
-	async rebuild(): Promise<void> {
+	rebuild(): Promise<void> {
+		if (this.rebuildInFlight) {
+			this.rebuildQueued = true;
+			return this.rebuildInFlight;
+		}
+		this.rebuildInFlight = this.runRebuild().finally(() => {
+			this.rebuildInFlight = null;
+			if (this.rebuildQueued) {
+				this.rebuildQueued = false;
+				void this.rebuild();
+			}
+		});
+		return this.rebuildInFlight;
+	}
+
+	private async runRebuild(): Promise<void> {
 		this.clear();
 		const files = this.app.vault.getFiles().filter((f) => f.extension === FILECLASS_EXTENSION);
 		for (const file of files) await this.indexFileClassNote(file);

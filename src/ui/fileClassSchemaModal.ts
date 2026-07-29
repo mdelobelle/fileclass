@@ -12,6 +12,7 @@ import { modalTitle } from "./modalTitle";
 import type FileclassPlugin from "../../main";
 import { childPathOf, Field } from "../schema/field";
 import { parseFileClass } from "../schema/fileClass";
+import { INDEXED_EVENT } from "../schema/fileclassIndex";
 import { mutateFields } from "../schema/fileClassIo";
 import {
 	addFieldDef,
@@ -40,20 +41,20 @@ export class FileClassSchemaModal extends Modal {
 
 	onOpen(): void {
 		this.render();
-		this.changeRef = this.app.metadataCache.on("changed", (f) => {
-			if (f.path === this.file.path) this.render();
-		});
+		// `.fileclass` files are not in metadataCache, so re-render when the index
+		// rebuilds (which fires after any definition file changes).
+		this.changeRef = this.plugin.index.on(INDEXED_EVENT, () => this.render());
 	}
 
 	onClose(): void {
-		if (this.changeRef) this.app.metadataCache.offref(this.changeRef);
+		if (this.changeRef) this.plugin.index.offref(this.changeRef);
 		this.contentEl.empty();
 	}
 
-	/** Fields at the current level (root or an object's children), read fresh. */
+	/** Fields at the current level (root or an object's children), from the index. */
 	private ownFields(): Field[] {
-		const fm = this.app.metadataCache.getFileCache(this.file)?.frontmatter;
-		return parseFileClass(this.name, fm).fields.filter((f) => f.path === this.parentPath);
+		const parsed = this.plugin.index.getFileClass(this.name) ?? parseFileClass(this.name, {});
+		return parsed.fields.filter((f) => f.path === this.parentPath);
 	}
 
 	private render(): void {

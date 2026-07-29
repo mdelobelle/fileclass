@@ -149,8 +149,12 @@ fileclass/
   options — the field/option **parsing semantics are Metadata Menu's** (D3),
   unchanged; only the container (non-md file, read via `vault.read`+`parseYaml`,
   written via `vault.process`+`stringifyYaml` in `fileClassIo.ts` since
-  `processFrontMatter` is markdown-only) differs. `path` encodes nesting (parent
-  field ids joined with `____`).
+  `processFrontMatter` is markdown-only) differs. **Tradeoff:** the §3.2
+  order/format-preservation guarantee does not hold for definition writes (a full
+  YAML round-trip may reflow block scalars / quoting); acceptable for a generated
+  data file. All *other* read sites (Options modal, schema modal, base-sync) read
+  the parsed definition from the **index**, not `metadataCache`. `path` encodes
+  nesting (parent field ids joined with `____`).
 - Inheritance: single `extends` chain with cycle guard; `excludes` removes
   inherited fields (same as MDM `getFileClassesAncestors`).
 - Field options referencing queries change shape: anywhere MDM had

@@ -22,6 +22,12 @@ describe("splitFileClassSource", () => {
 			body: "",
 		});
 	});
+	it("tolerates CRLF line endings", () => {
+		expect(splitFileClassSource("---\r\nfields: []\r\n---\r\n# Task\r\n")).toEqual({
+			frontmatter: "fields: []",
+			body: "# Task\r\n",
+		});
+	});
 });
 
 describe("assembleFileClassSource", () => {

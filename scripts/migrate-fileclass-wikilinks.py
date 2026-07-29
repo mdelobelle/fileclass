@@ -44,14 +44,20 @@ def build_name_map(vault: Path) -> None:
         SHORT_TO_FULL.setdefault(short, base)
 
 
-def plan_renames(vault: Path) -> list[tuple[Path, Path]]:
-    """Definition files to rename `X.fileclass.md` → `X.fileclass` (non-md format)."""
+def plan_renames(vault: Path) -> tuple[list[tuple[Path, Path]], list[Path]]:
+    """Definition files to rename `X.fileclass.md` → `X.fileclass`. Returns
+    (renames, conflicts) where conflicts already have a `.fileclass` at the target."""
     out: list[tuple[Path, Path]] = []
+    conflicts: list[Path] = []
     for p in vault.rglob("*.fileclass.md"):
         if "/.trash/" in f"/{p.relative_to(vault).as_posix()}":
             continue
-        out.append((p, p.with_name(p.name[: -len(".md")])))
-    return out
+        dst = p.with_name(p.name[: -len(".md")])
+        if dst.exists():
+            conflicts.append(dst)  # never clobber an existing non-md definition
+        else:
+            out.append((p, dst))
+    return out, conflicts
 
 
 def resolve_target(raw: str) -> str:
@@ -147,10 +153,14 @@ def main() -> int:
     build_name_map(vault)
     print(f"{len(FULL_NAMES)} fileClass definitions found in vault.\n")
 
-    renames = plan_renames(vault)
+    renames, rename_conflicts = plan_renames(vault)
     print(f"{len(renames)} definition file(s) to rename .fileclass.md → .fileclass:")
     for src, dst in renames:
         print(f"    {src.relative_to(vault)}  →  {dst.name}")
+    if rename_conflicts:
+        print("\n⚠ Rename targets that ALREADY exist (skipped — will NOT overwrite):")
+        for c in rename_conflicts:
+            print(f"    {c.relative_to(vault)}")
     print()
 
     targets: list[tuple[Path, str, str]] = []
@@ -198,6 +208,9 @@ def main() -> int:
         dst.write_text(src.read_text(encoding="utf-8"), encoding="utf-8")
     # Rename definition files first, then rewrite note references.
     for src, dst in renames:
+        if dst.exists():
+            print(f"  skip rename (target appeared): {dst.relative_to(vault)}")
+            continue
         src.rename(dst)
     for p, _, new in targets:
         p.write_text(new, encoding="utf-8")

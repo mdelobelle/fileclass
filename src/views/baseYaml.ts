@@ -32,11 +32,14 @@ interface BaseObject {
 
 /**
  * The single filter clause scoping a base/view to a fileClass, e.g.
- * `fileClass == "Book"`. Shared by the create path (as a YAML line) and the
+ * `list(fileClass).contains("Book")`. fileClass values are wikilinks (a scalar
+ * or list of Links); `list(...)` normalizes to a list and `.contains(...)`
+ * matches the linked definition by name — the idiom real vault bases use for
+ * link-valued properties. Shared by the create path (as a YAML line) and the
  * sync path (inside a `{ and: [...] }` object).
  */
 export function fileClassFilterClause(alias: string, fileClassName: string): string {
-	return `${alias} == ${JSON.stringify(fileClassName)}`;
+	return `list(${alias}).contains(${JSON.stringify(fileClassName)})`;
 }
 
 /** The view-level filter object Fileclass owns on a managed view (issue #55). */

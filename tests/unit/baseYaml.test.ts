@@ -12,7 +12,7 @@ describe("buildBaseYaml", () => {
 				'    name: "Book"',
 				"    filters:",
 				"      and:",
-				'        - fileClass == "Book"',
+				'        - list(fileClass).contains("Book")',
 				"    order:",
 				"      - file.name",
 				"      - author",
@@ -38,13 +38,13 @@ describe("buildBaseYaml", () => {
 	});
 
 	it("respects a custom alias", () => {
-		expect(buildBaseYaml("X", [], "class")).toContain('        - class == "X"');
+		expect(buildBaseYaml("X", [], "class")).toContain('        - list(class).contains("X")');
 	});
 
 	it("names the view after the managed view name when given", () => {
 		const yaml = buildBaseYaml("Article", ["author"], "fileClass", "fileclass");
 		expect(yaml).toContain('    name: "fileclass"'); // managed view name, not "Article"
-		expect(yaml).toContain('        - fileClass == "Article"'); // filter still on the class
+		expect(yaml).toContain('        - list(fileClass).contains("Article")'); // filter still on the class
 	});
 });
 
@@ -88,7 +88,7 @@ describe("mirrorBaseView", () => {
 		expect(base.views[1]).toEqual({
 			type: "fileclass-table",
 			name: "Book",
-			filters: { and: ['fileClass == "Book"'] },
+			filters: { and: ['list(fileClass).contains("Book")'] },
 			order: ["file.name", "a"],
 		});
 	});

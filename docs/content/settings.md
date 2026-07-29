@@ -5,6 +5,8 @@ weight: 60
 
 All settings live under **Settings → Fileclass**.
 
+{{< video "001" >}}
+
 ## Core
 
 | Setting | What it does |

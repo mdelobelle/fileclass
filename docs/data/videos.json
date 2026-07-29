@@ -1,0 +1,22 @@
+{
+  "001": {
+    "id": "KKG_36JGjWA",
+    "url": "https://www.youtube.com/watch?v=KKG_36JGjWA",
+    "title": "Fileclass #001 · Install and set up",
+    "subject": "Install and set up",
+    "scenario": "001_install_and_param_fileclass",
+    "doc": "settings/#core",
+    "durationSeconds": 111,
+    "privacyStatus": "public"
+  },
+  "002": {
+    "id": "1gU612KaXYg",
+    "url": "https://www.youtube.com/watch?v=1gU612KaXYg",
+    "title": "Fileclass #002 · Your first class",
+    "subject": "Your first class",
+    "scenario": "002_create_your_first_fileclass",
+    "doc": "schema/#fields",
+    "durationSeconds": 132,
+    "privacyStatus": "public"
+  }
+}

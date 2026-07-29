@@ -121,6 +121,34 @@
 
     hr { border: none; border-top: 1px solid var(--border); margin: 2.5rem 0; }
 
+    /* Demo-series links (the `video` / `video-embed` shortcodes). The card makes
+       no third-party request: a page can carry a dozen without pulling YouTube. */
+    .fc-video-card {
+      display: flex; align-items: center; gap: .9rem;
+      margin: 1.4rem 0; padding: .85rem 1rem;
+      border: 1px solid var(--border); border-radius: var(--radius);
+      background: var(--bg-soft); color: inherit; text-decoration: none;
+    }
+    .fc-video-card:hover { border-color: var(--accent); background: var(--accent-soft); }
+    .fc-video-card .txt { display: flex; flex-direction: column; min-width: 0; }
+    .fc-video-card .txt small { color: var(--fg-muted); }
+    .fc-video-card .play {
+      flex: none; width: 2.1rem; height: 2.1rem; border-radius: 50%;
+      background: var(--accent); position: relative;
+    }
+    .fc-video-card .play::after {
+      content: ""; position: absolute; top: 50%; left: 54%;
+      transform: translate(-50%, -50%);
+      border-style: solid; border-width: .38rem 0 .38rem .62rem;
+      border-color: transparent transparent transparent #fff;
+    }
+    .fc-video-embed { margin: 1.6rem 0; }
+    .fc-video-embed iframe {
+      width: 100%; aspect-ratio: 16 / 9; border: 0;
+      border-radius: var(--radius); background: #000;
+    }
+    .fc-video-embed figcaption { margin-top: .5rem; color: var(--fg-muted); font-size: .93rem; }
+
     /* Mobile: sidebar becomes a top bar */
     @media (max-width: 800px) {
       .layout { grid-template-columns: 1fr; }

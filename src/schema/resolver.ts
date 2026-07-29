@@ -101,3 +101,28 @@ export function resolveBinding(binding: FileBinding, registry: FileClassRegistry
 	}
 	return { fileClassNames: [], fields: [], source: "none" };
 }
+
+/**
+ * Resolves a note's inner fileClass names from its frontmatter LINKS
+ * (wikilink-only alias binding, ARCHITECTURE.md §10). Pure: `resolvePath`
+ * injects Obsidian's `getFirstLinkpathDest(...).path`, `nameByPath` the index's
+ * path→name map. Handles a scalar alias (`key === alias`) and list items
+ * (`key === alias.<n>`), keeps order, drops unresolved / non-fileClass links,
+ * and de-duplicates.
+ */
+export function resolveInnerFileClassNames(
+	links: readonly { key: string; link: string }[],
+	alias: string,
+	resolvePath: (link: string) => string | null,
+	nameByPath: ReadonlyMap<string, string>
+): string[] {
+	const out: string[] = [];
+	for (const l of links) {
+		if (l.key !== alias && !l.key.startsWith(`${alias}.`)) continue;
+		const path = resolvePath(l.link);
+		if (!path) continue;
+		const name = nameByPath.get(path);
+		if (name && !out.includes(name)) out.push(name);
+	}
+	return out;
+}

@@ -1,11 +1,13 @@
 /*
  * fileClass chooser (ARCHITECTURE.md §10, P1). A suggester to bind a fileClass
- * to the current note by writing its frontmatter alias. Frontmatter-only via
- * processFrontMatter (D2); a single value stays a scalar, multiple become a list.
+ * to the current note by writing a wikilink to it into the frontmatter alias.
+ * Frontmatter-only via processFrontMatter (D2); a single value stays a scalar,
+ * multiple become a list.
  */
 import { Notice, SuggestModal, TFile } from "obsidian";
 
 import type FileclassPlugin from "../../main";
+import { mergeFileClassLink } from "./fileClassLinkValue";
 
 export class AddFileClassModal extends SuggestModal<string> {
 	constructor(private readonly plugin: FileclassPlugin, private readonly file: TFile) {
@@ -31,17 +33,17 @@ export class AddFileClassModal extends SuggestModal<string> {
 
 	private async addFileClass(name: string): Promise<void> {
 		const alias = this.plugin.settings.fileClassAlias;
+		const fcFile = this.plugin.index.getFileClassFile(name);
+		if (!fcFile) {
+			new Notice(`Fileclass: "${name}" not found.`);
+			return;
+		}
+		const link = this.app.fileManager.generateMarkdownLink(fcFile, this.file.path);
 		try {
 			await this.app.fileManager.processFrontMatter(this.file, (fm) => {
 				const fmRec = fm as Record<string, unknown>;
-				const current = fmRec[alias];
-				const names: string[] = Array.isArray(current)
-					? (current as unknown[]).map((n) => String(n))
-					: typeof current === "string" && current.trim()
-						? current.split(",").map((n) => n.trim())
-						: [];
-				if (!names.includes(name)) names.push(name);
-				fmRec[alias] = names.length === 1 ? names[0] : names;
+				const links = mergeFileClassLink(fmRec[alias], link);
+				fmRec[alias] = links.length === 1 ? links[0] : links;
 			});
 		} catch (err) {
 			new Notice(`Fileclass: could not add "${name}" (${(err as Error).message}).`);

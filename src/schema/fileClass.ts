@@ -5,6 +5,7 @@
  * (dvQueryString/customRendering/customSorting) are simply ignored here and
  * never acted upon (§13 — no migration/audit tooling ships).
  */
+import { FILECLASS_FILE_SUFFIX } from "./constants";
 import { Field, parseRawField, RawField } from "./field";
 
 export interface FileClassOptions {
@@ -59,6 +60,15 @@ export function fileClassNameFromPath(classFilesPath: string, path: string): str
 	const folder = classFilesPath.endsWith("/") ? classFilesPath : `${classFilesPath}/`;
 	if (!path.startsWith(folder) || !path.endsWith(".md")) return undefined;
 	return path.slice(folder.length, -".md".length) || undefined;
+}
+
+/**
+ * fileClass name for a definition note = its basename (e.g. `Task.fileclass`),
+ * folder-independent. Undefined if the file is not a fileClass note. Replaces
+ * the classFilesPath-relative naming now that discovery is vault-wide.
+ */
+export function fileClassNameFromFile(file: { name: string; basename: string }): string | undefined {
+	return file.name.endsWith(FILECLASS_FILE_SUFFIX) ? file.basename : undefined;
 }
 
 /**

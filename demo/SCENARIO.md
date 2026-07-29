@@ -138,7 +138,27 @@ Pause conventions that have felt right on camera:
 | reveal ("the fields appear, typed") | 1600–1800   |
 | closing line                        | 2000–2200   |
 
-## 5. Build `demo-vault/` — the smallest vault that makes the story possible
+### The real budget: 60 seconds of narration
+
+Don't count steps, count **spoken seconds** — and aim for **55 to 60**.
+
+The first four takes measured like this:
+
+| take | narration | finished video |
+| ---- | --------- | -------------- |
+| 001  | 60.6 s    | 1:51           |
+| 002  | 59.9 s    | 2:12           |
+| 003  | 68.4 s    | 1:52           |
+| 004  | 63.8 s    | 2:07           |
+
+The video runs **about twice the narration**: the difference is the operator
+acting on camera, and that ratio has held on every take. So a two-minute video
+means roughly a minute of voice, and a scenario that reads as 80 seconds of
+narration is already a 2:40 video — over budget before a single click.
+
+`node voiceover.mjs NNN --preview` prints the per-line and total durations, so the
+number is known *before* recording. Over budget? Cut a step or shorten a line —
+never shave the pauses, which is what makes a take readable.
 
 - Only what the viewer sees: notes, folders, `.base` files. Two or three notes is
   usually plenty, and their content should be prose that *wants* structure (the
@@ -173,9 +193,9 @@ node voiceover.mjs NNN --preview # renders the narration: hear it, and get its l
 
 Then re-read the printed script as a viewer: does it tell one story? Does every
 line correspond to something that exists in the UI? Does the vault contain what
-step 1 claims? The preview is the honest test of the "sayable out loud" rule — a
-line that sounds wrong spoken *is* wrong. Only after that, tell the operator it's
-ready to record.
+step 1 claims? Is the narration inside its 60-second budget? The preview is the
+honest test of the "sayable out loud" rule too — a line that sounds wrong spoken
+*is* wrong. Only after that, tell the operator it's ready to record.
 
 ## Running a take (operator's side)
 

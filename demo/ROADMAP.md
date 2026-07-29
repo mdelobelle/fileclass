@@ -1,7 +1,8 @@
 # Demo series roadmap
 
 One take per atomic feature, ordered so a take only needs what earlier takes
-already showed. Every video stays under two minutes; most run about a minute.
+already showed. The budget is **60 seconds of narration**, which lands a finished
+video around two minutes — see [SCENARIO.md](SCENARIO.md#the-real-budget-60-seconds-of-narration).
 All subtitles are in English — non-English speakers turn on YouTube's captions.
 
 How to use this list: pick the next unrecorded take, propose its step list, get it
@@ -45,7 +46,7 @@ thread, and a tight smoke test of that type's input path.
 | # | Take | Feature | Vault gains | Status |
 | - | ---- | ------- | ----------- | ------ |
 | 003 | Number, and why it isn't text | `Number` (min/max/step) | `Book.pages` | ✅ [published](https://www.youtube.com/watch?v=W1KAokens_4) |
-| 004 | Select — the values you allow | `Select`, values list | `Book.genre` | |
+| 004 | Select — the values you allow | `Select`, inline values list | `Book.genre`, Tolkien typed | ✅ [published](https://www.youtube.com/watch?v=_kHMoXBNY7k) |
 | 005 | Boolean — the checkbox | `Boolean` | `Book.read` | |
 | 006 | Cycle — one click, next value | `Cycle` | `Book.status` | |
 | 007 | Date — a picker, and a display format | `Date`, default date format | `Book.published` | |

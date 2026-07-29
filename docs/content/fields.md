@@ -310,6 +310,8 @@ the marker color.
 
 ## Where allowed values come from
 
+{{< video "004" >}}
+
 `Select`, `Cycle`, and `Multi` draw their allowed values from the field's option
 source:
 

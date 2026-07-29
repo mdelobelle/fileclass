@@ -28,5 +28,15 @@
     "doc": "fields/#number-fields",
     "durationSeconds": 112,
     "privacyStatus": "public"
+  },
+  "004": {
+    "id": "_kHMoXBNY7k",
+    "url": "https://www.youtube.com/watch?v=_kHMoXBNY7k",
+    "title": "Fileclass #004 · Select: the values you allow",
+    "subject": "Select: the values you allow",
+    "scenario": "004_add_a_select_field",
+    "doc": "fields/#where-allowed-values-come-from",
+    "durationSeconds": 127,
+    "privacyStatus": "public"
   }
 }

@@ -16,7 +16,7 @@ import { dirname, join, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const here = dirname(fileURLToPath(import.meta.url));
-const pluginDir = resolve(here, ".."); // the fileclass plugin repo root
+const pluginDir = resolve(here, "../.."); // the fileclass plugin repo root
 
 function arg(name, fallback) {
 	const i = process.argv.indexOf(`--${name}`);

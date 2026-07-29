@@ -1,0 +1,28 @@
+{{/*
+  Embeds a take as a real player:  {{< video-embed "001" >}}
+
+  For the one or two places a player is worth the third-party connection — the
+  landing page, mainly. Everywhere else use `video`, which is a plain link card.
+  Data and behaviour are otherwise identical; styles live in baseof.html.
+*/}}
+{{ $key := .Get 0 }}
+{{ $all := .Site.Data.videos | default dict }}
+{{ $v := index $all $key }}
+{{ if not $v }}
+  {{ warnf "video-embed shortcode: take %q is not in data/videos.json yet" $key }}
+{{ else }}
+  {{ $mins := "" }}
+  {{ with $v.durationSeconds }}
+    {{ $secs := int . }}
+    {{ $mins = printf "%d:%02d" (div $secs 60) (mod $secs 60) }}
+  {{ end }}
+  <figure class="fc-video-embed">
+    <iframe
+      src="https://www.youtube-nocookie.com/embed/{{ $v.id }}"
+      title="{{ $v.title }}"
+      loading="lazy"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; picture-in-picture"
+      allowfullscreen></iframe>
+    <figcaption>{{ $v.subject }}{{ with $mins }} · {{ . }}{{ end }}</figcaption>
+  </figure>
+{{ end }}

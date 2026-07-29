@@ -1,0 +1,39 @@
+# Narration for take 001 — see ../SCENARIO.md for the format.
+# You perform every action; the cue chord (⌘⌃⌥⇧C) moves the subtitle on.
+title: "Fileclass — install and set up"
+description: "From an empty vault to a configured plugin, in one minute."
+doc: "settings/#core" # deep link used in the YouTube description
+tags: "obsidian setup, install plugin, community plugins"
+vault_name: "Demo"
+plugin: false # installed on camera, from the community store
+initial_pause: 1500
+default_pause: 900
+
+steps:
+  - title: "Fileclass gives your notes a schema — let's start from an empty vault"
+    pause: 1400
+  - title: "Open the settings, and go to Community plugins"
+  - title: "Community plugins are off by default: turn off Restricted mode"
+  - title: "Browse the store…"
+  - title: "…and search for “Fileclass”"
+    pause: 700
+  - title: "Install it"
+    pause: 1200
+  - title: "…and enable it"
+    pause: 1200
+  - title: "Close the store"
+    pause: 1200
+  - title: "Fileclass builds on the core Bases plugin — make sure Bases is on"
+    pause: 1200
+  - title: "Two settings and we're done. First, close the settings panel"
+  - title: "A class is just a note, so classes need a home: create a Classes folder"
+    pause: 1400
+  - title: "Open the settings again, and pick Fileclass"
+  - title: "Point “Class files folder” at Classes"
+    pause: 1400
+  - title: "A note joins a class through one property, named fileClass"
+    pause: 1200
+  - title: "Rename it if your vault already uses another key — everything else follows"
+    pause: 1500
+  - title: "That's the whole setup. Next: your first class 🎉"
+    pause: 2200

@@ -12,6 +12,10 @@ enableGitInfo = true
     pageRef = "/positioning"
     weight = 10
   [[menu.main]]
+    name = "Videos"
+    pageRef = "/videos"
+    weight = 15
+  [[menu.main]]
     name = "Schema layer"
     pageRef = "/schema"
     weight = 20

@@ -1,0 +1,206 @@
+# Authoring a demo scenario
+
+What to do when the ask is *"crée moi un scénario pour présenter `<feature>`"*.
+
+A scenario is a **narration script + a starting vault**. Nothing in it drives
+Obsidian: the operator performs every click and keystroke on camera at human
+speed, and the only thing the tooling does is put the right subtitle on screen at
+the right moment (and put the vault back afterwards). So the deliverable is two
+things: words that read like a story, and fixtures that make the story possible.
+
+```
+demo/
+  NNN_short_snake_case/
+    scenario.yaml     # the narration
+    demo-vault/       # the vault as it must look when recording starts
+```
+
+## 0. Two standing rules
+
+**Propose the steps before writing anything.** Present the numbered list of
+subtitles (with pauses) in the chat and ask for confirmation. Then:
+
+- *"modifie l'étape X"* → re-propose the scenario **from step X onwards** (steps
+  1…X-1 stay as agreed), and ask again.
+- *"reprends le scénario NNN à l'étape X"* → same thing on an existing scenario:
+  keep its steps 1…X-1, re-propose from X.
+
+Only write `scenario.yaml` + the fixture once the list is confirmed.
+
+**The demo universe is always a media library** (unless told otherwise):
+books, comics/BD, albums, articles, artists, authors, activities. Use real,
+widely-known works and people — *Dune*, *Tintin*, *Kind of Blue*, Frank Herbert,
+Miles Davis. Two reasons: the domain is neutral and instantly legible (everyone
+understands "a book has an author and a publication date"), and real titles avoid
+both placeholder mush (`John Doe`, `Note 1`, `Field A`) and the awkwardness of
+inventing a cast. Reuse the same works across takes so the series feels like one
+vault growing — a class added in `002` is the one queried in `005`.
+
+## 1. Get the feature right before writing a word
+
+The subtitles name real UI. Check the source instead of guessing:
+
+- command names → `main.ts` (`registerCommands`), shown in the palette as
+  `Fileclass: <name>`;
+- setting labels → `src/settings/settingsTab.ts` (`setName(...)`);
+- modal titles/buttons → `src/ui/*.ts`;
+- what a step actually produces → the command's implementation (e.g. adding a
+  class writes only the `fileClass` property; the fields arrive with *Insert
+  missing fields*).
+- feature background → `.claude/docs/ARCHITECTURE.md`, `docs/`, `CHANGELOG.md`.
+
+A subtitle that promises something the UI doesn't do wastes a take.
+
+## 2. Number and name the take
+
+`NNN_verb_object`, three digits, zero-padded, snake_case:
+`001_install_and_param_fileclass`, `002_create_your_first_fileclass`. Numbers are
+the running order of the series, and **each take starts where the previous one
+ended** — that continuity is what the fixture encodes.
+
+[ROADMAP.md](ROADMAP.md) holds the planned series, its number for each feature,
+and the recurring cast of the media library. Take the number from there rather
+than inventing one, and use the same works and people — a class introduced in one
+take is the one queried three takes later.
+
+## 3. Write `scenario.yaml`
+
+```yaml
+title: "Fileclass — your first class"          # shown in the terminal, and as a
+                                              #   title card with --title-card
+description: "One line: what the viewer learns."
+vault_name: "Demo"                            # folder name = vault name on screen
+plugin: true                                  # false = installed on camera
+settings:                                     # plugin data.json (needs plugin: true)
+  classFilesPath: "Classes/"
+  fileClassAlias: "fileClass"
+pronounce:                                    # spoken form of on-screen strings
+  Classes/Book.md: "Book dot M D inside the Classes folder"
+initial_pause: 1500                            # blank beat AFTER the starting cue,
+                                              #   before subtitle #1
+default_pause: 900                             # used by steps without `pause`
+
+steps:
+  - title: "Add a field: birthdate"
+  - title: "Its type is Date — not a string that looks like one"
+    pause: 1200
+  - title: "Save. The class is a note whose frontmatter lists typed fields"
+    pause: 1800
+    hold: true                                 # keep this caption during the pause
+```
+
+Keys are forgiving: `initial pause` works as well as `initial_pause`, a step may
+be a bare line (`- Save the schema`), and durations accept `1500`, `"1.5s"` or
+`"800ms"`. Quote any title containing a colon. Unknown keys are an error, on
+purpose — a typo'd key must not silently do nothing.
+
+**How a take is clocked:** the operator arms the screen recorder and cues once to
+start — nothing runs on a timer before that. `initial_pause` is the blank beat
+between that starting cue and subtitle #1.
+
+**How `pause` is spent:** subtitle N shows → the operator acts → cue chord →
+subtitle N fades out → `pause` of step N elapses on a clean screen → subtitle N+1
+fades in. So `pause` is the *breathing room after* a step, and the last step's
+pause is the beat before teardown. `hold: true` keeps the caption up during that
+beat, for the two or three moments where the words should sit on the result.
+
+## 4. Make the subtitles read like a narrative
+
+- **Every line must be sayable out loud.** It's a script, not a breadcrumb trail:
+  a voice-over should be able to read it verbatim. So no arrows, no UI paths, no
+  symbols a narrator would have to translate — `Open the Fileclass settings`, not
+  `Settings → Fileclass`; `Right-click the note and pick Add a class`, not
+  `Right-click → Fileclass → Add a class`. Say the action as a sentence, and let
+  the video show the path.
+- One idea per step, one action per step. If a step needs "and", split it.
+- Aim for ≤ 70 characters — it's a subtitle, not a paragraph. Long ones wrap and
+  cover the UI.
+- Say *why*, not just *where*: "Its type is Date — not a string that looks like
+  one" teaches; "Select Date in the dropdown" dictates.
+- Curly quotes around literal UI labels: `Point “Class files folder” at Classes`.
+- Identifiers stay exact **on screen** and get fixed **for the ear**: `fileClass`,
+  `Fileclass`, `.md`, `frontmatter` are already in the shared table in
+  `lib/voice.mjs` (`fileClass` → "file class"). A term only this take shows —
+  a path, a file name — goes in its own `pronounce:` map. Never dumb down the
+  subtitle to help the voice.
+- Present tense, no "we will", no "in this video".
+- Ellipses to carry one sentence across two steps (`Open the community store…` /
+  `…and search for Fileclass`) — that's how a series of clicks reads as prose.
+- Open with the problem, close with the payoff, and let the last step be the only
+  one with an emoji (🎉).
+
+Pause conventions that have felt right on camera:
+
+| Moment                              | pause       |
+| ----------------------------------- | ----------- |
+| plain click in a sequence           | 700–900     |
+| step whose result must be read      | 1200–1600   |
+| reveal ("the fields appear, typed") | 1600–1800   |
+| closing line                        | 2000–2200   |
+
+## 5. Build `demo-vault/` — the smallest vault that makes the story possible
+
+- Only what the viewer sees: notes, folders, `.base` files. Two or three notes is
+  usually plenty, and their content should be prose that *wants* structure (the
+  same facts buried in text, so typing them is visibly a win).
+- Media-library material, continuous with the earlier takes: the notes are books,
+  albums, comics, articles, artists, authors or activities the audience knows.
+- **Never** commit `main.js`, `manifest.json`, `styles.css` or a plugin
+  `data.json` into a fixture: set `plugin: true` and `settings:` instead, and
+  `record.mjs` installs the freshly built plugin at staging time. A stale plugin
+  copy in git is a wrong demo waiting to happen.
+- `.obsidian/appearance.json`, `core-plugins.json`, `app.json` are written with
+  video-friendly defaults unless the fixture ships its own: **light mode
+  (`moonstone`) + the Minimal theme**, 18px base font, Bases enabled. Every take
+  records light whatever the operator's system appearance is; the theme is copied
+  from `~/Obsidian-Dev/.obsidian/themes/Minimal` (or `$FILECLASS_DEMO_THEME`), so
+  no third-party CSS is committed here. Only override it in a fixture if the
+  feature being shown *is* about appearance.
+- Empty folder the story needs (e.g. `Classes/`)? Add a `.gitkeep` — Obsidian
+  hides dotfiles, so it stays invisible on camera.
+- Add `.obsidian/workspace.json` when the take must start on a specific note or
+  with a specific sidebar state; every take then opens identically.
+- The fixture is pristine and read-only: `record.mjs` copies it to
+  `~/fileclass-demos/<scenario>/<vault_name>` and wipes that copy after the take,
+  so a botched run costs nothing.
+
+## 6. Verify before handing it over
+
+```bash
+node record.mjs NNN --dry        # parses the yaml, prints the script + pauses
+node voiceover.mjs NNN --preview # renders the narration: hear it, and get its length
+```
+
+Then re-read the printed script as a viewer: does it tell one story? Does every
+line correspond to something that exists in the UI? Does the vault contain what
+step 1 claims? The preview is the honest test of the "sayable out loud" rule — a
+line that sounds wrong spoken *is* wrong. Only after that, tell the operator it's
+ready to record.
+
+## Running a take (operator's side)
+
+```bash
+node record.mjs 002              # stage, launch, narrate, reset
+node record.mjs 002 --dry        # print the script only
+node record.mjs 002 --attach     # narrate over the Obsidian already open
+node record.mjs 002 --keep       # don't reset the vault at the end
+node record.mjs 002 --title-card # show the title full-screen during the intro
+```
+
+It quits your Obsidian (asks first), stages the vault, relaunches Obsidian on it
+with `--remote-debugging-port=9222`, and waits for Enter so you can start
+QuickTime. Then **⌘⌃⌥⇧C in Obsidian** advances the narration (Enter in the
+terminal also works; `q` or Ctrl-C aborts and cleans up). At the end it quits
+Obsidian, restores your vault list and wipes the demo vault.
+
+Gotchas worth knowing:
+
+- Obsidian may ask to trust the vault / turn off Restricted mode the first time
+  it opens a staged vault. In `001` that prompt is part of the story; elsewhere,
+  accept it before cueing step 1.
+- The file right-click menu opens in its own window — fine here, since you're the
+  one clicking, and the subtitle stays visible in every window.
+- With `--keep`, Obsidian stays open on the demo vault, so *it* will mark that
+  vault as the last-opened one when you eventually quit it.
+- `demo/legacy/` holds the previous generation of this tooling (a CDP driver that
+  typed and detected DOM changes). Kept for reference; not part of this flow.

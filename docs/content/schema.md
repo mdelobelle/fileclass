@@ -44,6 +44,8 @@ view instead.
 
 ## Fields
 
+{{< video "002" >}}
+
 Each entry in `fields` is `{ name, id, type, options, path }`:
 
 - **id** — stable identifier (used for ordering and nesting).

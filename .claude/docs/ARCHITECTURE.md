@@ -301,11 +301,21 @@ out-of-scope), scheduled **after JSON/YAML**.
 ## 10. Index
 
 Slim rewrite of MDM's `FieldIndex` keeping ONLY:
-- fileClass registry (parse all notes under `classFilesPath`), ancestors, fields
-  per fileClass;
+- fileClass registry (parse every `*.fileclass.md` note **vault-wide**),
+  ancestors, fields per fileClass. **Wikilink-references fork:** discovery is by
+  the `.fileclass.md` filename suffix (`isFileClassPath`), not by
+  `classFilesPath` — a definition may live in any scope's folder. `classFilesPath`
+  is retained only as the default location for the *create* command. The registry
+  is name-keyed by basename (`Book.fileclass`); same-basename definitions collide
+  (last-in wins, logged to `errors`) — uniqueness is a naming-convention concern.
 - file → fileClass mapping with MDM's priority order: frontmatter alias >
   tag match > path match > bookmark group match > (base-view match, replaces
-  fileClassQueries) > global fileClass > preset fields;
+  fileClassQueries) > global fileClass > preset fields. **Wikilink-references
+  fork:** the frontmatter-alias binding is **wikilink-only** — `fileClass:
+  "[[Book.fileclass]]"` (scalar or list), resolved via `frontmatterLinks` +
+  `getFirstLinkpathDest` (folder-independent, rename-tracking). Bare-string alias
+  values are no longer resolved. The Global-fileClass setting is matched
+  forgivingly (bare / suffixed / path) against the suffixed registry names.
 - rebuild on `metadataCache.on('resolved')` (debounced) and on fileClass file
   changes; `metadata-menu:indexed`-style event renamed `fileclass:indexed`.
 
@@ -332,8 +342,11 @@ canvas file tracking (comes with the planned Canvas engine, §9.1).
 - `baseFileGenerator`: command "Create base for fileClass" → writes
   `<basesFolder>/<FileClass>.base` with one `fileclass-table` view whose
   `order:` = the fileClass fields and whose **view-level** `filters:` is
-  `<alias> == "X"` (respect `settings.fileClassAlias`). Never overwrite an
-  existing file without confirmation.
+  `list(<alias>).contains("X")` (respect `settings.fileClassAlias`). **Wikilink-
+  references fork:** the filter is `list(...).contains(...)` (not `<alias> ==
+  "X"`) because the alias value is now a wikilink (scalar or list of links);
+  `list()` normalizes and `.contains()` matches the linked definition by name.
+  Never overwrite an existing file without confirmation.
 - **View-level fileClass filter (issue #55):** the class filter lives on the
   managed view, not base-wide, so a base can host extra views for other
   fileClasses (a `bookAuthor` view in the `book` base) without them being

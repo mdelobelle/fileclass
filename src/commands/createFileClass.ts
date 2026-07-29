@@ -27,7 +27,9 @@ export function createFileClass(plugin: FileclassPlugin): void {
 }
 
 async function createNote(plugin: FileclassPlugin, raw: string): Promise<void> {
-	const name = `${capitalize(raw.trim())}${FILECLASS_NAME_SUFFIX}`;
+	// Strip a suffix the user may have typed themselves so we never double it.
+	const typed = capitalize(raw.trim()).replace(/\.fileclass$/i, "");
+	const name = `${typed}${FILECLASS_NAME_SUFFIX}`;
 	const path = `${plugin.settings.classFilesPath}${name}.md`;
 
 	if (plugin.app.vault.getFileByPath(path) instanceof TFile) {

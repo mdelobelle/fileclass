@@ -10,7 +10,7 @@
 import { App, Events, TFile, getAllTags } from "obsidian";
 
 import { FileclassSettings } from "../settings/settings";
-import { isFileClassPath } from "./constants";
+import { FILECLASS_NAME_SUFFIX, isFileClassPath } from "./constants";
 import { Field } from "./field";
 import { fileClassNameFromFile, ParsedFileClass, parseFileClass } from "./fileClass";
 import { computeAncestors, resolveInheritedFields } from "./inheritance";
@@ -79,6 +79,13 @@ export class FileclassIndex extends Events {
 	private indexFileClassNote(file: TFile): void {
 		const name = fileClassNameFromFile(file);
 		if (!name) return;
+		// Vault-wide discovery is name-keyed (registry keys carry no folder), so two
+		// `*.fileclass.md` notes with the same basename collide; last-in wins. Surface
+		// it rather than silently shadowing (a naming-convention responsibility).
+		const prior = this.pathByName.get(name);
+		if (prior && prior !== file.path) {
+			this.errors.push(`Duplicate fileClass "${name}": ${file.path} shadows ${prior}.`);
+		}
 		const frontmatter = this.app.metadataCache.getFileCache(file)?.frontmatter;
 		const parsed = parseFileClass(name, frontmatter);
 		this.byName.set(name, parsed);
@@ -115,9 +122,24 @@ export class FileclassIndex extends Events {
 
 	// -- registry / resolution ------------------------------------------------
 
+	/**
+	 * Resolves the Global fileClass setting to an indexed name. The setting may be
+	 * a bare name, a `.fileclass` name, or a path (legacy `classFilesPath` value);
+	 * fileClass names now carry the `.fileclass` suffix, so match forgivingly.
+	 */
+	private resolveGlobalName(): string | undefined {
+		const raw = this.host.settings.globalFileClass;
+		if (!raw) return undefined;
+		const base = (raw.split("/").pop() ?? raw).replace(/\.md$/, "");
+		for (const cand of [raw, base, `${base}${FILECLASS_NAME_SUFFIX}`]) {
+			if (this.byName.has(cand)) return cand;
+		}
+		return undefined;
+	}
+
 	/** A read-only registry view for the pure resolver. */
 	registry(): FileClassRegistry {
-		const global = this.host.settings.globalFileClass || undefined;
+		const global = this.resolveGlobalName();
 		return {
 			has: (name) => this.byName.has(name),
 			fieldsOf: (name) => this.fieldsByName.get(name) ?? [],
@@ -203,8 +225,15 @@ export class FileclassIndex extends Events {
 	/** The Markdown note backing a fileClass, resolved by its indexed path. */
 	getFileClassFile(name: string): TFile | null {
 		const path = this.pathByName.get(name);
-		if (!path) return null;
-		const file = this.app.vault.getFileByPath(path);
-		return file instanceof TFile ? file : null;
+		if (path) {
+			const file = this.app.vault.getFileByPath(path);
+			if (file instanceof TFile) return file;
+		}
+		// Not yet indexed (e.g. a class created just now, before the debounced
+		// rebuild fires) — fall back to a direct vault lookup by basename.
+		const match = this.app.vault
+			.getMarkdownFiles()
+			.find((f) => isFileClassPath(f.path) && f.basename === name);
+		return match ?? null;
 	}
 }

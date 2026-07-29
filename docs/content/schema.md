@@ -95,9 +95,8 @@ a fileClass note changes, and emits a `fileclass:indexed` event.
 ## Adding a fileClass to a note
 
 Run the command **Fileclass: add a class to this note** and pick a
-fileClass. It writes a **wikilink** to the chosen fileClass into the note's
-frontmatter (frontmatter-only, via a single `processFrontMatter` write), using
-your vault's configured link style.
+fileClass. It writes a plain `[[<name>.fileclass]]` **wikilink** into the note's
+frontmatter (frontmatter-only, via a single `processFrontMatter` write).
 
 Generated `<fileClass>.base` files filter on the linked value
 (`list(fileClass).contains("<name>")`), so a note bound by wikilink still shows

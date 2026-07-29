@@ -33,12 +33,15 @@ export class AddFileClassModal extends SuggestModal<string> {
 
 	private async addFileClass(name: string): Promise<void> {
 		const alias = this.plugin.settings.fileClassAlias;
-		const fcFile = this.plugin.index.getFileClassFile(name);
-		if (!fcFile) {
+		if (!this.plugin.index.getFileClass(name)) {
 			new Notice(`Fileclass: "${name}" not found.`);
 			return;
 		}
-		const link = this.app.fileManager.generateMarkdownLink(fcFile, this.file.path);
+		// A plain wikilink to the class by name. fileClass names are unique, so no
+		// path qualification is needed; a bare `[[name]]` is always captured in
+		// `frontmatterLinks` (the read path) and matches the generated base filter,
+		// regardless of the vault's markdown-vs-wikilink link setting.
+		const link = `[[${name}]]`;
 		try {
 			await this.app.fileManager.processFrontMatter(this.file, (fm) => {
 				const fmRec = fm as Record<string, unknown>;

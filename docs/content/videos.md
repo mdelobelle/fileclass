@@ -20,3 +20,7 @@ other. Captions are English; YouTube translates them into your language.
 ## Number, and why it isn't text
 
 {{< video "003" >}}
+
+## Select: the values you allow
+
+{{< video "004" >}}

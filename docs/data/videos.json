@@ -38,5 +38,15 @@
     "doc": "fields/#where-allowed-values-come-from",
     "durationSeconds": 127,
     "privacyStatus": "public"
+  },
+  "005": {
+    "id": "4BvyykBs-8s",
+    "url": "https://www.youtube.com/watch?v=4BvyykBs-8s",
+    "title": "Fileclass #005 · Boolean: the checkbox",
+    "subject": "Boolean: the checkbox",
+    "scenario": "005_add_a_boolean_field",
+    "doc": "fields/#available-field-types",
+    "durationSeconds": 103,
+    "privacyStatus": "public"
   }
 }

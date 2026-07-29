@@ -43,6 +43,13 @@ Empty values are always valid — a field is optional unless a constraint says
 otherwise. `Lookup` and `Formula` (computed fields) are **out of scope** for
 Fileclass — use Bases views for reverse relations and computed columns.
 
+`Boolean` is the simplest of them: no options, a switch for input, and a real
+`true`/`false` in the frontmatter, which Obsidian renders as a checkbox in its own
+properties editor. Note that an **empty** boolean is not `false` — it says nothing,
+which is why *insert missing fields* leaves it blank rather than guessing.
+
+{{< video "005" >}}
+
 ## Required fields
 
 Any field can be marked **Required** in the schema editor (the toggle sits with

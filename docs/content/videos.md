@@ -24,3 +24,7 @@ other. Captions are English; YouTube translates them into your language.
 ## Select: the values you allow
 
 {{< video "004" >}}
+
+## Boolean: the checkbox
+
+{{< video "005" >}}

@@ -1,0 +1,42 @@
+# Narration for take 005 — see ../SCENARIO.md for the format.
+# Starts where 004 ended: Book has publisher, pages and genre; Dune is complete;
+# Tolkien's book is bound to the class with genre Fantasy and its other two fields
+# still empty (that's literally what insert-missing-fields left there).
+# Scope: the Boolean type, and the difference between false and unset.
+title: "Fileclass — Boolean: the checkbox"
+description: "Say which books you've read, with a switch instead of a word."
+doc: "fields/#available-field-types" # deep link used in the description
+tags: "boolean field, checkbox, typed properties"
+vault_name: "Demo"
+plugin: true
+settings:
+  classFilesPath: "Classes/"
+  fileClassAlias: "fileClass"
+initial_pause: 1500
+default_pause: 900
+
+steps:
+  - title: "Two books typed — and no way to say which one you've read"
+    pause: 1400
+  - title: "Read or not is a yes-or-no fact: that's a Boolean"
+    pause: 1600
+  - title: "Open the Book class and add a field named read"
+    pause: 1000
+  - title: "Type Boolean — nothing to configure, it's true or false"
+    pause: 1400
+  - title: "Save the schema"
+    pause: 1200
+  - title: "Insert it in Dune"
+    pause: 1200
+  - title: "The input is a switch, not the word true"
+    pause: 1400
+  - title: "Turn it on, and the frontmatter says read: true"
+    pause: 1600
+  - title: "Obsidian shows it as a checkbox in its own properties editor"
+    pause: 1600
+  - title: "Tolkien's book is still on the pile: insert read and save it off"
+    pause: 1600
+  - title: "false means not read; an empty field would mean nothing at all"
+    pause: 1800
+  - title: "Now your vault can answer: what haven't I read yet? 🎉"
+    pause: 2200

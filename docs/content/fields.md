@@ -14,7 +14,7 @@ field types and the commands that set values. Everything is written to
 |------|--------|-------|------------|
 | **Input** | text | text prompt (or [guided template](#input-templates)) | must be scalar text |
 | **MultiInput** | list of text | list editor (add/remove/reorder; each item plain or [templated](#input-templates)) | a list of scalar text items |
-| **Number** | number | number input (spinner, `min`/`max`/`step`) | numeric; optional `min`/`max` |
+| **Number** | number | text prompt with − / + buttons stepping by `step` ([details](#number-fields)) | numeric; optional `min`/`max` |
 | **Boolean** | true/false | toggle | boolean |
 | **Select** | one value | value picker | must be an allowed value (if a list is defined) |
 | **Cycle** | one value | value picker | must be an allowed value |
@@ -58,6 +58,26 @@ empty value is reported as a violation — everywhere validation surfaces:
 
 Non-empty values keep their normal per-type validation (a number stays numeric,
 a `Select` must still be an allowed value, and so on).
+
+## Number fields
+
+{{< video "003" >}}
+
+`Number` stores a real number in the frontmatter — `pages: 412`, not `pages: "412"` —
+so a base can sort, filter and total it.
+
+Its options are **Min**, **Max** and **Step**. The input is a plain text field with
+its own **−** and **+** buttons (and the ↑/↓ keys) stepping by `step`, 1 by default:
+
+- on an **empty field the first − or + shows `Min`** itself (0 when no minimum is
+  set), whichever button you press — one click, one value the field accepts — and
+  the buttons step normally from there;
+- the value is **clamped** to `Min`/`Max`, and a fractional step stays clean —
+  stepping 0.1 by 0.2 gives 0.3, not 0.30000000000000004.
+
+Typing is never blocked: enter `twelve` and the field keeps it, then validation
+refuses the save with *"pages" must be a number*. A native number input would have
+dropped those keystrokes silently, leaving an empty field and no explanation.
 
 ## Input templates
 

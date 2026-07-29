@@ -16,3 +16,7 @@ other. Captions are English; YouTube translates them into your language.
 ## Your first class
 
 {{< video "002" >}}
+
+## Number, and why it isn't text
+
+{{< video "003" >}}

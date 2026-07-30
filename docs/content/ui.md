@@ -13,7 +13,8 @@ The **note-fields modal** is the hub for a note's fields. It lists every root
 field of the note's fileClass(es) — each row is compact, with the field's **type
 shown as a leading icon** (hover it for the type name) and its current value.
 
-Right-side actions depend on the field type:
+Right-side actions follow the [one gesture per
+type](#one-gesture-per-field-type) rule:
 
 - **Boolean** — a **toggle** flips the value directly.
 - **Cycle** — a **next** button rotates to the next allowed value.
@@ -21,6 +22,9 @@ Right-side actions depend on the field type:
   used everywhere; nested Object/ObjectList fields open the draft editor).
 - computed (Lookup) and auto-maintained (Canvas) types — no edit action.
 - **Clear** (all) — removes the field's value.
+
+**Alt-click** a toggle or a next button to open the input instead, and set an
+explicit value.
 
 Header actions: **Insert missing fields** (adds any root fields absent from the
 frontmatter) and **Add fileClass** (binds another fileClass to the note).
@@ -36,6 +40,24 @@ which field (inherited fields point at the ancestor that declares them).
 
 Open it with the command **Fileclass: manage note fields** or from a context
 menu.
+
+## One gesture per field type
+
+{{< video "006" >}}
+
+A field's type decides what a control *does*, and every surface performs the same
+gesture: the buttons in the Properties editor, a cell of the editable
+[table view](../views/#editable-table-view), and the note-fields modal.
+
+| Type | Click | Alt-click |
+| ---- | ----- | --------- |
+| `Cycle` | writes the **next allowed value** | opens the value picker |
+| `Boolean` | **flips** true/false | opens the switch |
+| everything else | opens the type's **input** | — |
+
+Before this, a `Cycle` advanced in the note-fields modal but opened a picker
+everywhere else — under a `rotate-cw` icon that promised the advance. A control's
+icon now tells you what will happen, wherever you click it.
 
 ## Context menus
 
@@ -95,9 +117,11 @@ keep working.
 ## Property editor buttons
 
 In Obsidian's native **Properties** editor, each row whose key matches an
-**editable field** of the note's fileClass gets a small **edit button between the
-key and the value**. Clicking it opens the same type-appropriate input used
-everywhere (with validation), instead of Obsidian's untyped value cell. Auto-
+**editable field** of the note's fileClass gets a small **button between the key
+and the value**, carrying the field's type icon. Clicking it performs [that type's
+gesture](#one-gesture-per-field-type) — a `Cycle` advances, a `Boolean` flips,
+everything else opens the type-appropriate input with its validation, instead of
+Obsidian's untyped value cell. **Alt-click** always opens the input. Auto-
 maintained fields (Canvas family) and computed types get no button. Toggle it
 under **Settings → Fileclass → Property editor buttons**.
 

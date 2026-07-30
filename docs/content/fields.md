@@ -17,7 +17,7 @@ field types and the commands that set values. Everything is written to
 | **Number** | number | text prompt with − / + buttons stepping by `step` ([details](#number-fields)) | numeric; optional `min`/`max` |
 | **Boolean** | true/false | toggle | boolean |
 | **Select** | one value | value picker | must be an allowed value (if a list is defined) |
-| **Cycle** | one value | value picker | must be an allowed value |
+| **Cycle** | one value | one click advances to the next value ([details](../ui/#one-gesture-per-field-type)) | must be an allowed value |
 | **Multi** | list | toggle list | each item must be allowed |
 | **Date** | date | date picker | `YYYY-MM-DD` (unless a custom format is set) |
 | **DateTime** | date+time | date-time picker | `YYYY-MM-DDTHH:mm` |

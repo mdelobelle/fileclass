@@ -198,12 +198,70 @@ Editing a date opens a **native picker** (calendar / clock) with **Today** and
 
 - **Raw text** (default) — stores the formatted date, e.g. `2026-07-16`.
 - **As link** — stores a wikilink, e.g. `[[2026-07-16]]` or, with a **Link path**
-  set, `[[Journal/2026-07-16]]`. Configure the default state (**Insert as link**)
-  and the **Link path** in the schema editor.
+  set, `[[Journal/2026-07-16]]`. Configure the default state (**Insert as link**),
+  the **Link path** and the **Link alias** in the schema editor.
 
-Set a custom **`dateFormat`** (moment.js tokens) to store any format; otherwise
-the ISO default above is used. If the **Natural Language Dates** plugin is
-installed, an extra field parses phrases like *"next friday"* into the picker.
+### Linking to a daily note
+
+The **Link path** may contain **braced moment tokens**, which follow the date — so
+a link can be filed the way daily notes usually are. Only what's inside the braces
+is formatted, which is why the literal words survive (a raw moment format would
+read the `D` of `Daily` as a day number):
+
+| Field format | Link path | Link alias | Stored value |
+| ------------ | --------- | ---------- | ------------ |
+| *(ISO)* | `Journal/` | off | `[[Journal/2026-07-30]]` |
+| `YYYY-MM-DD ddd` | `Daily/Notes/{{YYYY}}/{{MM}}/` | off | `[[Daily/Notes/2026/07/2026-07-30 Thu]]` |
+| `YYYY-MM-DD ddd` | `Daily/Notes/{{YYYY}}/{{MM}}/` | **on** | `[[Daily/Notes/2026/07/2026-07-30 Thu\|2026-07-30 Thu]]` |
+
+**Link alias** writes `[[path/date|date]]`, so the link reads as the date instead
+of its whole path. It is skipped when there is no path — `[[2026-07-30|2026-07-30]]`
+would say nothing twice.
+
+### Which format is written
+
+{{< video "007" >}}
+
+Three levels, first one wins:
+
+1. the field's own **Date format** (moment.js tokens), set in the schema editor;
+2. the plugin-wide default for that type — [**Default date format**, **Default
+   datetime format**, **Default time format**](../settings/#core). The field
+   editor names the one that applies: *"Blank uses default: DD/MM/YYYY"*;
+3. blank everywhere → the native ISO form (`YYYY-MM-DD`, `YYYY-MM-DDTHH:mm`,
+   `HH:mm`).
+
+Every input where a format is typed — the three settings and a field's own **Date
+format** — shows **what today's date looks like through it** (`now → 30/07/2026`)
+and flags what moment can't read: `YYYY-KK-007` warns that `"KK"` is not a token
+and would be written as-is (wrap literal text in `[brackets]`). The **Link path**
+gets the same treatment, previewing the whole wikilink it would write today.
+
+All three decide **what is written to the file**. Nothing reformats a date for
+display: a stored date is shown exactly as it sits in the frontmatter (an
+insert-as-link value included). The one exception is an object display template,
+which may ask for a format per token — `{{released|YYYY}}`.
+
+That is deliberate: how a date is stored in your vault is your call. Store
+`30/07/2026`, or a wikilink to a daily note, and recover ordering in a base with a
+formula (`date(...)`) when you need to sort or filter on it.
+
+### Obsidian's own property type can overwrite your format
+
+Obsidian keeps its **own** type for each property (Settings → Properties, or the
+menu on a property row). If you set a property to Obsidian's **Date** type and then
+edit it with **Obsidian's** date picker rather than Fileclass's, Obsidian writes
+its own `YYYY-MM-DD` form — whatever the field's format says, and dropping a
+wikilink value.
+
+Fileclass can't prevent that: property-type widgets are global and per-*type* in
+Obsidian, so the plugin has no way to intercept the native picker for one field
+without hijacking every date property in the vault. Keep such properties on
+Obsidian's **Text** type and edit them through Fileclass's button, which is the
+one that knows your format.
+
+If the **Natural Language Dates** plugin is installed, an extra field parses
+phrases like *"next friday"* into the picker.
 
 ## Durations & interval cycling
 

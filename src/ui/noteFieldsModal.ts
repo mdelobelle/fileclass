@@ -59,7 +59,7 @@ export class NoteFieldsModal extends Modal {
 
 		const fields = this.plugin.index.getFields(this.file);
 		const ctx: EditContext = { host: this.plugin, file: this.file, allFields: fields };
-		const deps = makeDisplayDeps(this.plugin, fields);
+		const deps = makeDisplayDeps(fields);
 		const rootFields = fields.filter((f) => isRootField(f));
 
 		if (!rootFields.length) {

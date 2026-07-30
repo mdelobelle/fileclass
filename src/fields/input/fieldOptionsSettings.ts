@@ -20,10 +20,22 @@ import { renderCanvasSettings } from "./canvasOptionsSettings";
 import { DurationInputModal } from "./durationModal";
 import { ICON_SOURCES } from "./iconPicker";
 import { COLOR_SOURCES } from "./colorPicker";
+import { DateFormatDefaults, defaultFormatFor, NO_DATE_DEFAULTS } from "../dateFormats";
+import { buildDateLink } from "../dateLink";
+import { attachFormatPreview, attachLinkPreview, formatNow } from "../../ui/dateFormatPreview";
 
 export interface FieldOptionsCtx {
 	app: App;
+	/** Plugin-wide write formats, to name the fallback under "Date format". */
+	dateDefaults?: DateFormatDefaults;
 }
+
+/** What "blank" stores when no default is set either. */
+const NATIVE_DATE_FORMATS: Partial<Record<FieldType, string>> = {
+	Date: "YYYY-MM-DD",
+	DateTime: "YYYY-MM-DD[T]HH:mm",
+	Time: "HH:mm",
+};
 
 export function renderFieldOptionsSettings(
 	container: HTMLElement,
@@ -83,26 +95,80 @@ export function renderFieldOptionsSettings(
 			return;
 		case "Date":
 		case "DateTime":
-		case "Time":
-			new Setting(container)
-				.setName("Date format")
-				.setDesc("moment.js format; blank uses the default.")
-				.addText((t) => t.setValue(draft.dateFormat ?? "").onChange((v) => (draft.dateFormat = v)));
+		case "Time": {
+			// The link preview depends on the format field too, so both refresh it.
+			let refreshLink: (() => void) | undefined;
+			{
+				// Name the default this type falls back to, so "blank" is a decision
+				// made with the value in front of you — and show what it writes today.
+				const fallback =
+					defaultFormatFor(type, ctx.dateDefaults ?? NO_DATE_DEFAULTS) ||
+					NATIVE_DATE_FORMATS[type] ||
+					"";
+				const setting = new Setting(container)
+					.setName("Date format")
+					.setDesc(`momentjs format. Blank uses default: ${fallback}`);
+				const refreshFormat = attachFormatPreview(setting, () => fallback);
+				setting.addText((t) =>
+					t
+						.setPlaceholder(fallback)
+						.setValue(draft.dateFormat ?? "")
+						.onChange((v) => {
+							draft.dateFormat = v;
+							refreshFormat(v);
+							refreshLink?.();
+						})
+				);
+				refreshFormat(draft.dateFormat ?? "");
+			}
 			new Setting(container)
 				.setName("Insert as link")
 				.setDesc("Store the date as a [[wikilink]] instead of raw text.")
 				.addToggle((t) =>
 					t.setValue(!!draft.defaultInsertAsLink).onChange((v) => (draft.defaultInsertAsLink = v))
 				);
-			new Setting(container)
-				.setName("Link path")
-				.setDesc("Optional folder prefix for the date link, e.g. Journal/.")
-				.addText((t) =>
+			{
+				const linkSetting = new Setting(container)
+					.setName("Link path")
+					.setDesc(
+						"Optional folder for the date link, e.g. Journal/. Braced tokens follow the " +
+							"date: Daily/Notes/{{YYYY}}/{{MM}}/ files each link under its year and month."
+					);
+				// The link is the one value where path, format and alias combine, so
+				// preview the whole thing rather than each part.
+				refreshLink = attachLinkPreview(linkSetting, (today) => {
+					const fmt =
+						(draft.dateFormat ?? "").trim() ||
+						defaultFormatFor(type, ctx.dateDefaults ?? NO_DATE_DEFAULTS) ||
+						NATIVE_DATE_FORMATS[type] ||
+						"YYYY-MM-DD";
+					return buildDateLink(
+						formatNow(fmt) || today,
+						today,
+						{ linkPath: draft.dateLinkPath ?? "", alias: !!draft.dateLinkAlias },
+						(_iso, token) => formatNow(token)
+					);
+				});
+				linkSetting.addText((t) =>
 					t
 						.setPlaceholder("(vault root)")
 						.setValue(draft.dateLinkPath ?? "")
-						.onChange((v) => (draft.dateLinkPath = v))
+						.onChange((v) => {
+							draft.dateLinkPath = v;
+							refreshLink?.();
+						})
 				);
+				new Setting(container)
+					.setName("Link alias")
+					.setDesc("Write [[path/date|date]], so the link reads as the date instead of its path.")
+					.addToggle((t) =>
+						t.setValue(!!draft.dateLinkAlias).onChange((v) => {
+							draft.dateLinkAlias = v;
+							refreshLink?.();
+						})
+					);
+				refreshLink();
+			}
 			if (type !== "Time") {
 				new Setting(container)
 					.setName("Next interval field")
@@ -119,6 +185,7 @@ export function renderFieldOptionsSettings(
 					);
 			}
 			return;
+		}
 		case "Select":
 		case "Cycle":
 		case "Multi":

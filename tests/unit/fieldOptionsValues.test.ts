@@ -104,9 +104,25 @@ describe("resolveNoteFile", () => {
 
 describe("dateOptions", () => {
 	it("reads format and link options", () => {
-		expect(dateOptions(make({ dateFormat: "YYYY", defaultInsertAsLink: "true" }, "Date"))).toEqual(
-			{ dateFormat: "YYYY", defaultInsertAsLink: true, dateLinkPath: undefined }
-		);
+		expect(dateOptions(make({ dateFormat: "YYYY", defaultInsertAsLink: "true" }, "Date"))).toEqual({
+			dateFormat: "YYYY",
+			defaultInsertAsLink: true,
+			dateLinkPath: undefined,
+			dateLinkAlias: false,
+		});
+	});
+
+	it("reads the templated link path and its alias", () => {
+		expect(
+			dateOptions(
+				make({ dateLinkPath: "Daily/Notes/{{YYYY}}/{{MM}}/", dateLinkAlias: true }, "Date")
+			)
+		).toEqual({
+			dateFormat: undefined,
+			defaultInsertAsLink: false,
+			dateLinkPath: "Daily/Notes/{{YYYY}}/{{MM}}/",
+			dateLinkAlias: true,
+		});
 	});
 });
 

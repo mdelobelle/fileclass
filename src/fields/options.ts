@@ -200,6 +200,8 @@ export interface DateOptions {
 	dateFormat?: string;
 	defaultInsertAsLink?: boolean;
 	dateLinkPath?: string;
+	/** Display the link as `[[path/date|date]]` instead of the bare path. */
+	dateLinkAlias?: boolean;
 	/**
 	 * Name of a Duration/CycleDuration field in the same fileClass (#30). When set,
 	 * the date editor gets a "Set next date" button advancing this date by that
@@ -215,6 +217,7 @@ export function dateOptions(field: Field): DateOptions {
 		defaultInsertAsLink:
 			o.defaultInsertAsLink === true || o.defaultInsertAsLink === "true",
 		dateLinkPath: typeof o.dateLinkPath === "string" ? o.dateLinkPath : undefined,
+		dateLinkAlias: o.dateLinkAlias === true || o.dateLinkAlias === "true",
 		nextIntervalField:
 			typeof o.nextIntervalField === "string" && o.nextIntervalField
 				? o.nextIntervalField

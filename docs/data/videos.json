@@ -58,5 +58,15 @@
     "doc": "ui/#one-gesture-per-field-type",
     "durationSeconds": 101,
     "privacyStatus": "public"
+  },
+  "007": {
+    "id": "1c2a1usAPRU",
+    "url": "https://www.youtube.com/watch?v=1c2a1usAPRU",
+    "title": "Fileclass #007 · Date: the format you store",
+    "subject": "Date: the format you store",
+    "scenario": "007_add_a_date_field",
+    "doc": "fields/#which-format-is-written",
+    "durationSeconds": 174,
+    "privacyStatus": "public"
   }
 }

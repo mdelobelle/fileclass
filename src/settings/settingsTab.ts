@@ -5,6 +5,8 @@
  */
 import { App, PluginSettingTab, Setting, setIcon } from "obsidian";
 
+import { attachFormatPreview } from "../ui/dateFormatPreview";
+
 import type FileclassPlugin from "../../main";
 import { addCustomColor, removeCustomColor } from "../fields/customPalette";
 import { FolderSuggest } from "../ui/folderSuggest";
@@ -76,20 +78,52 @@ export class FileclassSettingTab extends PluginSettingTab {
 				new FolderSuggest(this.app, text.inputEl);
 			});
 
-		new Setting(containerEl)
-			.setName("Default date display format")
-			.setDesc(
-				"moment.js format for showing Date values (e.g. LL, DD/MM/YYYY). Blank shows the stored value. Per-field object templates can override it with {{field|FORMAT}}."
-			)
-			.addText((text) =>
+		// Write formats, not display: they decide what a date field puts in the
+		// file when the field itself declares no format.
+		const dateFormatSetting = (
+			name: string,
+			desc: string,
+			nativeFormat: string,
+			get: () => string,
+			set: (value: string) => void
+		) => {
+			const setting = new Setting(containerEl).setName(name).setDesc(desc);
+			// Live output, so a format is judged on what it writes, not on its tokens.
+			const refresh = attachFormatPreview(setting, () => nativeFormat);
+			setting.addText((text) =>
 				text
-					.setPlaceholder("(stored value)")
-					.setValue(this.plugin.settings.defaultDateDisplayFormat)
+					.setPlaceholder(nativeFormat)
+					.setValue(get())
 					.onChange(async (value) => {
-						this.plugin.settings.defaultDateDisplayFormat = value.trim();
+						set(value.trim());
+						refresh(value);
 						await this.plugin.saveSettings();
 					})
 			);
+			refresh(get());
+		};
+
+		dateFormatSetting(
+			"Default date format",
+			"moment.js format a Date field is written in when it has no format of its own (e.g. DD/MM/YYYY). Blank stores the ISO form YYYY-MM-DD.",
+			"YYYY-MM-DD",
+			() => this.plugin.settings.defaultDateFormat,
+			(v) => (this.plugin.settings.defaultDateFormat = v)
+		);
+		dateFormatSetting(
+			"Default datetime format",
+			"Same, for DateTime fields. Blank stores YYYY-MM-DD[T]HH:mm.",
+			"YYYY-MM-DD[T]HH:mm",
+			() => this.plugin.settings.defaultDateTimeFormat,
+			(v) => (this.plugin.settings.defaultDateTimeFormat = v)
+		);
+		dateFormatSetting(
+			"Default time format",
+			"Same, for Time fields. Blank stores HH:mm.",
+			"HH:mm",
+			() => this.plugin.settings.defaultTimeFormat,
+			(v) => (this.plugin.settings.defaultTimeFormat = v)
+		);
 
 		new Setting(containerEl)
 			.setName("Validation columns")

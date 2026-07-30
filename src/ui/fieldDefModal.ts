@@ -8,6 +8,7 @@ import { App, Modal, Notice, Setting } from "obsidian";
 import { modalTitle } from "./modalTitle";
 
 import { renderFieldOptionsSettings } from "../fields/input/fieldOptionsSettings";
+import { DateFormatDefaults } from "../fields/dateFormats";
 import { buildFieldOptions, optionsToDraft, OptionsDraft } from "../fields/optionsDraft";
 import { FIELD_TYPES, FieldOptions, FieldType } from "../schema/field";
 import { makeStickyFooter } from "./modalFooter";
@@ -58,6 +59,8 @@ export class FieldDefModal extends Modal {
 			title: string;
 			initial?: { name: string; type: FieldType; options: FieldOptions };
 			onSubmit: (result: FieldDefResult) => void;
+			/** Plugin-wide date write formats, named under "Date format". */
+			dateDefaults?: DateFormatDefaults;
 		}
 	) {
 		super(app);
@@ -78,7 +81,10 @@ export class FieldDefModal extends Modal {
 
 		const optionsEl = contentEl.createDiv();
 		const renderOptions = () =>
-			renderFieldOptionsSettings(optionsEl, this.type, this.draft, { app: this.app });
+			renderFieldOptionsSettings(optionsEl, this.type, this.draft, {
+				app: this.app,
+				dateDefaults: this.opts.dateDefaults,
+			});
 
 		new Setting(contentEl).setName("Type").addDropdown((d) => {
 			for (const t of EDITABLE_FIELD_TYPES) d.addOption(t, TYPE_LABELS[t] ?? t);

@@ -3,6 +3,8 @@
  * settings — only what the schema layer needs. Persisted via the plugin's
  * loadData/saveData.
  */
+import { DateFormatDefaults } from "../fields/dateFormats";
+
 
 export interface FileclassSettings {
 	/** Folder holding fileClass notes, normalized to a trailing "/". */
@@ -15,8 +17,15 @@ export interface FileclassSettings {
 	basesFolder: string;
 	/** Default icon for a fileClass without an explicit `icon`. */
 	fileClassIcon: string;
-	/** Default moment.js format for displaying dates ("" = show stored value). */
-	defaultDateDisplayFormat: string;
+	/**
+	 * Default moment.js format a `Date` field is *written* in when it has no
+	 * format of its own ("" = the native ISO form). Not a display setting.
+	 */
+	defaultDateFormat: string;
+	/** Same, for `DateTime` fields ("" = YYYY-MM-DDTHH:mm). */
+	defaultDateTimeFormat: string;
+	/** Same, for `Time` fields ("" = HH:mm). */
+	defaultTimeFormat: string;
 	/** Auto-maintain Canvas/CanvasGroup/CanvasGroupLink fields from .canvas files. */
 	enableCanvasEngine: boolean;
 	/** Add computed valid/errors columns to the editable fileclass-table view. */
@@ -47,7 +56,9 @@ export const DEFAULT_SETTINGS: FileclassSettings = {
 	globalFileClass: "",
 	basesFolder: "",
 	fileClassIcon: "file-spreadsheet",
-	defaultDateDisplayFormat: "",
+	defaultDateFormat: "",
+	defaultDateTimeFormat: "",
+	defaultTimeFormat: "",
 	enableCanvasEngine: true,
 	enableValidationColumns: true,
 	enableContextMenu: true,
@@ -68,8 +79,23 @@ export function normalizeFolderPath(path: string): string {
 }
 
 /** Merges persisted data over defaults and normalizes derived values. */
+/** The per-type write formats, as the date helpers expect them. */
+export function dateFormatDefaults(settings: FileclassSettings): DateFormatDefaults {
+	return {
+		Date: settings.defaultDateFormat,
+		DateTime: settings.defaultDateTimeFormat,
+		Time: settings.defaultTimeFormat,
+	};
+}
+
 export function coerceSettings(data: unknown): FileclassSettings {
-	const merged = { ...DEFAULT_SETTINGS, ...(data as Partial<FileclassSettings> | null) };
+	const stored = (data ?? {}) as Partial<FileclassSettings> & Record<string, unknown>;
+	const merged = { ...DEFAULT_SETTINGS, ...stored };
+	// `defaultDateDisplayFormat` (<= 0.1.1) reformatted dates on screen only. Its
+	// successor decides what gets *written*, so the old value is deliberately not
+	// carried over: inheriting it would silently rewrite every new date in a
+	// human format, and lose the ordering ISO gives.
+	delete (merged as Record<string, unknown>).defaultDateDisplayFormat;
 	return {
 		...merged,
 		classFilesPath: normalizeFolderPath(merged.classFilesPath),

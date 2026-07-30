@@ -335,7 +335,7 @@ export async function promptFieldValue(
 				field,
 				childFields: childFieldsOf(ctx.allFields, field),
 				promptChild,
-				deps: makeDisplayDeps(ctx.host, ctx.allFields),
+				deps: makeDisplayDeps(ctx.allFields),
 				initial: asObjectValue(current),
 				onSave: (obj) => onValue(obj),
 			}).open();
@@ -347,7 +347,7 @@ export async function promptFieldValue(
 				field,
 				childFields: childFieldsOf(ctx.allFields, field),
 				promptChild,
-				deps: makeDisplayDeps(ctx.host, ctx.allFields),
+				deps: makeDisplayDeps(ctx.allFields),
 				initial: asListValue(current),
 				onSave: (arr) => onValue(arr),
 			}).open();
@@ -521,7 +521,7 @@ export function pickAndUpdateField(host: AdapterHost, file: TFile, fields: Field
 		new Notice("Fileclass: no editable fields apply to this note.");
 		return;
 	}
-	const deps = makeDisplayDeps(host, fields);
+	const deps = makeDisplayDeps(fields);
 	new ChoiceSuggestModal<Field>(
 		host.app,
 		editable,

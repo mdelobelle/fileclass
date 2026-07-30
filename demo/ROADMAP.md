@@ -2,7 +2,8 @@
 
 One take per atomic feature, ordered so a take only needs what earlier takes
 already showed. The budget is **60 seconds of narration**, which lands a finished
-video around two minutes — see [SCENARIO.md](SCENARIO.md#the-real-budget-60-seconds-of-narration).
+video between two and three minutes depending on how much typing it asks for — see
+[SCENARIO.md](SCENARIO.md#budget-60-seconds-of-narration-plus-the-typing-tax).
 All subtitles are in English — non-English speakers turn on YouTube's captions.
 
 How to use this list: pick the next unrecorded take, propose its step list, get it
@@ -49,7 +50,7 @@ thread, and a tight smoke test of that type's input path.
 | 004 | Select — the values you allow | `Select`, inline values list | `Book.genre`, Tolkien typed | ✅ [published](https://www.youtube.com/watch?v=_kHMoXBNY7k) |
 | 005 | Boolean — the checkbox | `Boolean` (false vs unset) | `Book.read` | ✅ [published](https://www.youtube.com/watch?v=4BvyykBs-8s) |
 | 006 | Cycle — one click, next value | `Cycle`, one gesture per type, Alt-click | `Book.ownership` | ✅ [published](https://www.youtube.com/watch?v=F6fgdtexSRQ) |
-| 007 | Date — a picker, and a display format | `Date`, default date format | `Book.published` | |
+| 007 | Date — the format you store | `Date`, picker, three-level write format, format check | `Book.published` | ✅ [published](https://www.youtube.com/watch?v=1c2a1usAPRU) |
 | 008 | DateTime and Time | `DateTime`, `Time` | `Activity` class | |
 | 009 | Duration | `Duration` | `Album` class, `Album.length` | |
 | 010 | Cycling an interval, and the next date | `CycleDuration`, set-next-date | `Book.review` | |
@@ -69,6 +70,7 @@ thread, and a tight smoke test of that type's input path.
 | # | Take | Feature | Vault gains | Status |
 | - | ---- | ------- | ----------- | ------ |
 | 016 | Templated input | `Input` template (`{{placeholder}}`) | `Book.shelf` | |
+| 016b | Dates as links to your daily notes | `Date` insert-as-link, templated `Link path`, `Link alias` | `Book.published` as a daily-note link | |
 | 017 | Pick an icon | `Icon` | `Media.icon` | |
 | 018 | Colors, and your own palette | `Color`, custom colors | `Book.genre` color | |
 | 019 | A place on a map | `Location` | `Activity.branch` | |

@@ -193,6 +193,14 @@ must **save the change in the fileClass settings** for the picker to use it.
 
 ## Date fields (Date / DateTime / Time)
 
+{{< video "008" >}}
+
+Three types for three questions: `Date` is a day, `DateTime` a **point in time** (a
+day and a clock in one value), `Time` a **time of day** with no day attached — the
+hour a door opens, every session. Each is stored in its own native form —
+`YYYY-MM-DD`, `YYYY-MM-DD[T]HH:mm`, `HH:mm` — and has its own default write format in
+the settings.
+
 Editing a date opens a **native picker** (calendar / clock) with **Today** and
 **Clear** buttons, plus a **link toggle**:
 

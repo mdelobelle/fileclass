@@ -64,6 +64,26 @@ async function teardown() {
 	if (quitTheirs) relaunchObsidian();
 }
 
+/**
+ * Waits for the plugin to be loaded. A freshly staged vault opens its workspace
+ * before its community plugins, and Obsidian may hold them behind a trust prompt —
+ * so this is a real wait, not a courtesy sleep, and its failure is actionable.
+ */
+async function waitForPlugin(stage, { timeout = 25000 } = {}) {
+	const start = Date.now();
+	while (Date.now() - start < timeout) {
+		const state = await stage.appPage
+			.evaluate(() => ({
+				loaded: !!window.app.plugins.plugins.fileclass,
+				enabled: [...(window.app.plugins.enabledPlugins ?? [])],
+			}))
+			.catch(() => ({ loaded: false, enabled: [] }));
+		if (state.loaded) return true;
+		await sleep(500);
+	}
+	return false;
+}
+
 /** Everything the app can tell us about the staged vault, in one round trip. */
 async function inspect(stage) {
 	// The settings pane is DOM-only, so it has to be open to read its labels.
@@ -89,6 +109,7 @@ async function inspect(stage) {
 	const facts = await stage.appPage.evaluate(() => {
 		const app = window.app;
 		const p = app.plugins.plugins.fileclass;
+		if (!p) return { version: null, basesAvailable: false, classNames: [], commands: [], notes: [] };
 		const commands = Object.values(app.commands.commands)
 			.filter((c) => c.id.startsWith("fileclass:"))
 			.map((c) => c.name.replace(/^Fileclass:\s*/, ""));
@@ -190,7 +211,20 @@ async function main() {
 
 	const stage = await connect(port);
 	if (!attach) await stage.waitForVault(vaultPath);
-	await sleep(600); // let the index settle after load
+	if (!(await waitForPlugin(stage))) {
+		console.log(
+			warn("\nFileclass isn't loaded in that vault.") +
+				"\nObsidian is most likely asking to trust it (community plugins stay off until you\n" +
+				"do), or Restricted mode is on. Accept it in the window, then press Enter here."
+		);
+		const rl = createInterface({ input: process.stdin, output: process.stdout });
+		await rl.question("");
+		rl.close();
+		if (!(await waitForPlugin(stage, { timeout: 8000 }))) {
+			throw new Error("Fileclass still isn't loaded — nothing to check against.");
+		}
+	}
+	await sleep(800); // let the index settle once the plugin is up
 	report(await inspect(stage));
 	stage.disconnect();
 

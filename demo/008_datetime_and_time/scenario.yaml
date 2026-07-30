@@ -1,0 +1,46 @@
+# Narration for take 008 — see ../SCENARIO.md for the format.
+# Starts where 007 ended: Book has six fields including published (Date, no format
+# of its own), Dune is complete. Scope: DateTime vs Time — what each one *is*, and
+# the input each one gets. No format typing: 007 showed that, and typing is what
+# makes a take run long.
+title: "Fileclass — DateTime and Time"
+description: "A point in time, and a time of day: two types, two inputs."
+doc: "fields/#date-fields-date--datetime--time" # deep link used in the description
+tags: "datetime field, time field, date picker"
+vault_name: "Demo"
+plugin: true
+settings:
+  classFilesPath: "Classes/"
+  fileClassAlias: "fileClass"
+initial_pause: 1500
+default_pause: 900
+
+steps:
+  - title: "A reading group note, its next session buried in a sentence"
+    pause: 1600
+  - title: "Not a Book — an Activity, so it needs its own class"
+    pause: 1600
+  - title: "Create a class named Activity"
+    pause: 1000
+  - title: "Add a field: starts, type DateTime"
+    pause: 1200
+  - title: "A DateTime is one value: a date and a clock together"
+    pause: 1800
+  - title: "Add another: doors, type Time"
+    pause: 1200
+  - title: "A Time has no date: the hour the doors open, every session"
+    pause: 1800
+  - title: "Save, bind the note to Activity, insert its fields"
+    pause: 1400
+  - title: "The DateTime input is a calendar and a clock"
+    pause: 1400
+  - title: "Pick the tenth of September, at seven in the evening"
+    pause: 1400
+  - title: "The Time input is just a clock, and it won't ask for seconds"
+    pause: 1600
+  - title: "Half past six"
+    pause: 1000
+  - title: "Both stored ISO, each type with its own default"
+    pause: 1800
+  - title: "A point in time, a time of day, and the vault knows which 🎉"
+    pause: 2200

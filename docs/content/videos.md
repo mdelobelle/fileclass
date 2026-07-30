@@ -36,3 +36,7 @@ other. Captions are English; YouTube translates them into your language.
 ## Date: the format you store
 
 {{< video "007" >}}
+
+## DateTime and Time
+
+{{< video "008" >}}

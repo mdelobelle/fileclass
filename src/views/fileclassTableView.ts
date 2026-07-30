@@ -14,7 +14,7 @@ import { Component, TFile } from "obsidian";
 
 import type FileclassPlugin from "../../main";
 import { registerFileclassView } from "../engine/basesAdapter";
-import { EditContext, updateField } from "../fields/fieldActions";
+import { EditContext, runControlAction } from "../fields/fieldActions";
 import { isInputSupported } from "../fields/support";
 import { hasAllowedValues, validateField } from "../fields/validate";
 import { resolveFieldValues } from "../fields/valuesIo";
@@ -162,7 +162,7 @@ class FileclassTableView extends Component {
 		cell.addClass("fileclass-editable");
 		cell.addEventListener("click", (e) => {
 			e.stopPropagation();
-			this.editCell(entry.file, field);
+			this.editCell(entry.file, field, e.altKey);
 		});
 	}
 
@@ -202,14 +202,16 @@ class FileclassTableView extends Component {
 			.find((f) => f.name === name && isRootField(f) && isInputSupported(f.type));
 	}
 
-	private editCell(file: TFile, field: Field): void {
+	private editCell(file: TFile, field: Field, alt = false): void {
 		const ctx: EditContext = {
 			host: this.plugin,
 			file,
 			allFields: this.plugin.index.getFields(file),
 		};
+		// The gesture is the type's, the same one the Properties buttons and the
+		// note-fields modal perform (controlAction.ts); Alt-click opens the input.
 		// Writes via processFrontMatter → Bases re-runs the query → onDataUpdated.
-		void updateField(ctx, field);
+		void runControlAction(ctx, field, { alt });
 	}
 }
 

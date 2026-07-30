@@ -48,7 +48,7 @@ thread, and a tight smoke test of that type's input path.
 | 003 | Number, and why it isn't text | `Number` (min/max/step) | `Book.pages` | ✅ [published](https://www.youtube.com/watch?v=W1KAokens_4) |
 | 004 | Select — the values you allow | `Select`, inline values list | `Book.genre`, Tolkien typed | ✅ [published](https://www.youtube.com/watch?v=_kHMoXBNY7k) |
 | 005 | Boolean — the checkbox | `Boolean` (false vs unset) | `Book.read` | ✅ [published](https://www.youtube.com/watch?v=4BvyykBs-8s) |
-| 006 | Cycle — one click, next value | `Cycle` | `Book.status` | |
+| 006 | Cycle — one click, next value | `Cycle`, one gesture per type, Alt-click | `Book.ownership` | ✅ [published](https://www.youtube.com/watch?v=F6fgdtexSRQ) |
 | 007 | Date — a picker, and a display format | `Date`, default date format | `Book.published` | |
 | 008 | DateTime and Time | `DateTime`, `Time` | `Activity` class | |
 | 009 | Duration | `Duration` | `Album` class, `Album.length` | |

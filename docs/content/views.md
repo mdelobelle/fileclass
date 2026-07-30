@@ -72,9 +72,11 @@ class to its base**.
 ## Editable table view
 
 Fileclass registers a Bases view type, **`fileclass-table`**, that renders like a
-table but lets you **edit cells in place**: clicking a `note.<field>` cell opens
-the field's typed input (the same one used everywhere) and writes the value —
-`file.*` and `formula.*` cells stay read-only.
+table but lets you **edit cells in place**: clicking a `note.<field>` cell performs
+[that type's gesture](../ui/#one-gesture-per-field-type) — a `Cycle` advances, a
+`Boolean` flips, everything else opens the field's typed input (the same one used
+everywhere). **Alt-click** always opens the input. `file.*` and `formula.*` cells
+stay read-only.
 
 Generated bases use it by default. In any other base, set a view's `type` to
 `fileclass-table` to get the same editing (the managed view keeps working with

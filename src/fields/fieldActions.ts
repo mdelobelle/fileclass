@@ -13,6 +13,7 @@ import { writeFieldValue, writeValues } from "../io/write";
 import { childFieldsOf, Field } from "../schema/field";
 import { contiguousGroups } from "./baseOrder";
 import { AdapterHost, Candidate, isMediaType, resolveCandidates } from "./candidates";
+import { controlActionFor } from "./controlAction";
 import { makeDisplayDeps } from "./displayDeps";
 import { describeField } from "./objectDisplay";
 import {
@@ -477,6 +478,27 @@ export async function toggleBooleanField(ctx: EditContext, field: Field): Promis
 	const current = readFieldValue(ctx.host.app, ctx.file, field);
 	const next = !(current === true || current === "true");
 	await commit(ctx.host.app, ctx.file, field, next);
+}
+
+/**
+ * The gesture a control surface performs on a field — the same one everywhere,
+ * decided by the type (see controlAction.ts). `alt` requests the type's input
+ * instead, so a Cycle or Boolean can still be set to an explicit value.
+ */
+export async function runControlAction(
+	ctx: EditContext,
+	field: Field,
+	{ alt = false }: { alt?: boolean } = {}
+): Promise<void> {
+	if (alt) return updateField(ctx, field);
+	switch (controlActionFor(field.type)) {
+		case "cycle":
+			return cycleField(ctx, field);
+		case "toggle":
+			return toggleBooleanField(ctx, field);
+		default:
+			return updateField(ctx, field);
+	}
 }
 
 /** Cycles a Cycle field to its next allowed value and writes it (single write). */

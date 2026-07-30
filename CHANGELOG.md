@@ -6,6 +6,18 @@ All notable changes to Fileclass are documented here. The format follows
 
 ## [Unreleased]
 
+### UI
+
+- **One gesture per field type, on every control.** A `Cycle` advanced to its next
+  value in the note-fields modal but opened a value picker everywhere else — in the
+  Properties editor and in editable table cells — under a `rotate-cw` icon that
+  promised the advance. The gesture is now decided by the type alone and shared by
+  all three surfaces: `Cycle` writes the next allowed value, `Boolean` flips, every
+  other type opens its typed input. **Alt-click** opens the input wherever the
+  gesture writes a value directly, so an explicit choice is always one modifier
+  away. The button's label names what it will do ("Next value", "Toggle", "Edit")
+  instead of a generic *Edit*.
+
 ### Fields
 
 - **Number input: typing works, and it has − / + buttons.** The prompt used a

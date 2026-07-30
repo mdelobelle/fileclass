@@ -48,5 +48,15 @@
     "doc": "fields/#available-field-types",
     "durationSeconds": 103,
     "privacyStatus": "public"
+  },
+  "006": {
+    "id": "F6fgdtexSRQ",
+    "url": "https://www.youtube.com/watch?v=F6fgdtexSRQ",
+    "title": "Fileclass #006 · Cycle: one click, next value",
+    "subject": "Cycle: one click, next value",
+    "scenario": "006_cycle_through_values",
+    "doc": "ui/#one-gesture-per-field-type",
+    "durationSeconds": 101,
+    "privacyStatus": "public"
   }
 }

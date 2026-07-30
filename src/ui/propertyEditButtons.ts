@@ -1,9 +1,11 @@
 /*
  * Edit buttons in Obsidian's native Properties editor (ARCHITECTURE.md §19.6).
  * For each property row whose key is an editable field of the note's fileClass,
- * injects a small pencil between the key and the value that opens Fileclass's
- * typed input (updateField) — so users get validation/guided input from the
- * properties panel, like Metadata Menu.
+ * injects a small button between the key and the value that performs the type's
+ * gesture (runControlAction): a Cycle advances, a Boolean flips, everything else
+ * opens Fileclass's typed input — so users get validation/guided input from the
+ * properties panel, like Metadata Menu. Alt-click always opens the input, which is
+ * how a Cycle or Boolean is set to an explicit value.
  *
  * Another fragile DOM-injection boundary (like the indicators, §19.4): isolated
  * here, behind a setting, dedup-guarded, best-effort, removed on unload. Core
@@ -12,7 +14,8 @@
 import { Component, TFile, debounce, setIcon } from "obsidian";
 
 import type FileclassPlugin from "../../main";
-import { EditContext, updateField } from "../fields/fieldActions";
+import { controlActionFor, controlLabel } from "../fields/controlAction";
+import { EditContext, runControlAction } from "../fields/fieldActions";
 import { isInputSupported } from "../fields/support";
 import { fieldTypeIcon } from "../fields/typeIcons";
 import { Field, isRootField } from "../schema/field";
@@ -134,7 +137,11 @@ export class PropertyEditButtons extends Component {
 	private makeButton(file: TFile, field: Field, key: string): HTMLElement {
 		const btn = createSpan({ cls: `${BTN_CLASS} clickable-icon` });
 		btn.dataset.fcKey = key;
-		btn.setAttribute("aria-label", `Edit "${field.name}" — ${field.type} (Fileclass)`);
+		// The label names the gesture this type performs, not a generic "edit":
+		// a Cycle advances and a Boolean flips, here as in every other surface.
+		const { verb, alt } = controlLabel(controlActionFor(field.type));
+		const hint = alt ? " (Alt-click to pick a value)" : "";
+		btn.setAttribute("aria-label", `${verb} "${field.name}" — ${field.type} (Fileclass)${hint}`);
 		setIcon(btn, fieldTypeIcon(field.type));
 		btn.addEventListener("click", (e) => {
 			e.preventDefault();
@@ -144,7 +151,7 @@ export class PropertyEditButtons extends Component {
 				file,
 				allFields: this.plugin.index.getFields(file),
 			};
-			void updateField(ctx, field);
+			void runControlAction(ctx, field, { alt: e.altKey });
 		});
 		return btn;
 	}

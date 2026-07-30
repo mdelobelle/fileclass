@@ -58,6 +58,11 @@ A subtitle that promises something the UI doesn't do wastes a take.
 the running order of the series, and **each take starts where the previous one
 ended** — that continuity is what the fixture encodes.
 
+A take may take a **letter suffix** — `016b_` — when it belongs *beside* another
+rather than at the end of the series: a facet of the same feature, found after the
+numbers were handed out. It sorts between 016 and 017 everywhere (the series list,
+the video data, the roadmap), and its YouTube title reads `Fileclass #016b`.
+
 [ROADMAP.md](ROADMAP.md) holds the planned series, its number for each feature,
 and the recurring cast of the media library. Take the number from there rather
 than inventing one, and use the same works and people — a class introduced in one
@@ -138,27 +143,45 @@ Pause conventions that have felt right on camera:
 | reveal ("the fields appear, typed") | 1600–1800   |
 | closing line                        | 2000–2200   |
 
-### The real budget: 60 seconds of narration
+### Budget: 60 seconds of narration, plus the typing tax
 
-Don't count steps, count **spoken seconds** — and aim for **55 to 60**.
+Don't count steps, count **spoken seconds** — aim for **55 to 60** — then count how
+many steps ask the operator to **type**.
 
-The first four takes measured like this:
+| take | narration | finished video | ratio | typing steps |
+| ---- | --------- | -------------- | ----- | ------------ |
+| 001  | 60.6 s    | 1:51           | ×1.83 | 1 |
+| 002  | 59.9 s    | 2:12           | ×2.20 | 2 |
+| 003  | 68.4 s    | 1:52           | ×1.64 | 2 |
+| 004  | 63.8 s    | 2:07           | ×1.99 | 3 |
+| 005  | 50.1 s    | 1:43           | ×2.06 | 1 |
+| 006  | 58.3 s    | 1:41           | ×1.73 | 1 |
+| 007  | 60.8 s    | 2:54           | ×2.86 | 5 |
 
-| take | narration | finished video |
-| ---- | --------- | -------------- |
-| 001  | 60.6 s    | 1:51           |
-| 002  | 59.9 s    | 2:12           |
-| 003  | 68.4 s    | 1:52           |
-| 004  | 63.8 s    | 2:07           |
+Six click-driven takes landed between ×1.64 and ×2.20 of their narration. Take 007
+respected the narration budget to the second and still ran a minute longer: it was
+the first take **dominated by typing** — a format, a wrong format, three settings —
+and typing is slow to watch. Roughly, a step that types costs **4–6 s of video**
+beyond its narration; a step that clicks costs 1–2 s.
 
-The video runs **about twice the narration**: the difference is the operator
-acting on camera, and that ratio has held on every take. So a two-minute video
-means roughly a minute of voice, and a scenario that reads as 80 seconds of
-narration is already a 2:40 video — over budget before a single click.
+So use both numbers:
 
-`node voiceover.mjs NNN --preview` prints the per-line and total durations, so the
-number is known *before* recording. Over budget? Cut a step or shorten a line —
-never shave the pauses, which is what makes a take readable.
+- **narration** 55–60 s, checked with `node voiceover.mjs NNN --preview`;
+- **typing steps**: two or three is comfortable. Five means a ~3-minute video.
+
+Three minutes is fine when every step teaches something — a viewer who finds it slow
+plays it at 1.5×. What is *not* fine is padding: a step that shows nothing new costs
+the same seconds and teaches nothing. So when a take needs five typing steps, first
+ask whether it is really one feature (007 could have been two: the picker, then the
+formats). If it is one, let it run long rather than cutting the part that explains
+why.
+
+Over budget with every step earning its place? Shorten the **words**: the
+`pronounce:` map exists so a subtitle can keep `1965-08-01` on screen while the voice
+says "ISO". Or merge two steps into one idea. Never shave the pauses — those are what
+make a take readable.
+
+## 5. Build `demo-vault/` — the smallest vault that makes the story possible
 
 - Only what the viewer sees: notes, folders, `.base` files. Two or three notes is
   usually plenty, and their content should be prose that *wants* structure (the
@@ -193,7 +216,8 @@ node voiceover.mjs NNN --preview # renders the narration: hear it, and get its l
 
 Then re-read the printed script as a viewer: does it tell one story? Does every
 line correspond to something that exists in the UI? Does the vault contain what
-step 1 claims? Is the narration inside its 60-second budget? The preview is the
+step 1 claims? Is the narration inside its 60-second budget, and how many steps
+ask for typing? The preview is the
 honest test of the "sayable out loud" rule too — a line that sounds wrong spoken
 *is* wrong. Only after that, tell the operator it's ready to record.
 

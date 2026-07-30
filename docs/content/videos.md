@@ -32,3 +32,7 @@ other. Captions are English; YouTube translates them into your language.
 ## Cycle: one click, next value
 
 {{< video "006" >}}
+
+## Date: the format you store
+
+{{< video "007" >}}

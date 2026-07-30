@@ -181,7 +181,9 @@ export function parseScenario(text, source = "scenario.yaml") {
  */
 export function resolveScenarioDir(demoDir, id) {
 	const dirs = readdirSync(demoDir, { withFileTypes: true })
-		.filter((e) => e.isDirectory() && /^\d{3}_/.test(e.name))
+		// `016b_` is allowed: a take that belongs next to 016, not at the end of the
+		// series. Sorting keeps 016 before 016b before 017.
+		.filter((e) => e.isDirectory() && /^\d{3}[a-z]?_/.test(e.name))
 		.map((e) => e.name)
 		.sort();
 	if (!id) {

@@ -64,7 +64,7 @@ const BASE_TAGS = [
 
 /** `Fileclass #003 · Number, and why it isn't text` (YouTube caps titles at 100). */
 function youtubeTitle(scenario) {
-	const number = scenario.id.slice(0, 3);
+	const number = scenario.id.match(/^\d{3}[a-z]?/)?.[0] ?? scenario.id.slice(0, 3);
 	const subject = scenario.title.replace(/^\s*fileclass\s*[—–-]\s*/i, "").trim();
 	const title = `Fileclass #${number} · ${subject.charAt(0).toUpperCase()}${subject.slice(1)}`;
 	return title.length > 100 ? `${title.slice(0, 97)}…` : title;

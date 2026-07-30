@@ -76,7 +76,7 @@ export async function publishedVideos() {
 		} catch {
 			continue; // the scenario folder was renamed or removed
 		}
-		videos[scenario.id.slice(0, 3)] = {
+		videos[scenario.id.match(/^\d{3}[a-z]?/)[0]] = {
 			id: meta.result.videoId,
 			url: meta.result.url,
 			title: meta.title,
@@ -121,7 +121,7 @@ function roadmapWithStatus(text, videos) {
 	return text
 		.split("\n")
 		.map((line) => {
-			const m = line.match(/^\|\s*(\d{3})\s*\|/);
+			const m = line.match(/^\|\s*(\d{3}[a-z]?)\s*\|/);
 			if (!m) return line;
 			const v = videos[m[1]];
 			if (!v) return line;

@@ -23,10 +23,9 @@ function addressSchema(objOptions: Record<string, unknown> = {}): { obj: Field; 
 }
 
 // formatMoment stub: encodes value + chosen output format so we can assert it.
-function deps(all: Field[], defaultDateFormat = ""): DisplayDeps {
+function deps(all: Field[]): DisplayDeps {
 	return {
 		allFields: all,
-		defaultDateFormat,
 		formatMoment: (value, _parse, out) => `${value}@${out}`,
 	};
 }
@@ -56,19 +55,21 @@ describe("describeField — dates", () => {
 		expect(renderObjectItem(obj, { start: "2026-07-16" }, deps(all))).toBe("2026-07-16@YYYY");
 	});
 
-	it("uses the plugin default date format when no override", () => {
+	it("shows a date as it is stored — display never reformats it", () => {
+		// The write format is the user's choice; nothing reformats it on screen.
 		const f = field("d", "Date");
-		expect(describeField(f, "2026-07-16", deps([f], "DD/MM/YYYY"))).toBe("2026-07-16@DD/MM/YYYY");
+		expect(describeField(f, "2026-07-16", deps([f]))).toBe("2026-07-16");
+		expect(describeField(f, "16/07/2026", deps([f]))).toBe("16/07/2026");
 	});
 
-	it("shows the stored value when no format is configured", () => {
-		const f = field("d", "Date");
-		expect(describeField(f, "2026-07-16", deps([f], ""))).toBe("2026-07-16");
+	it("shows a date stored with a custom format as stored", () => {
+		const f = field("d", "Date", { dateFormat: "DD/MM/YYYY" });
+		expect(describeField(f, "16/07/2026", deps([f]))).toBe("16/07/2026");
 	});
 
 	it("shows an insert-as-link date verbatim", () => {
 		const f = field("d", "Date");
-		expect(describeField(f, "[[2026-07-16]]", deps([f], "YYYY"))).toBe("[[2026-07-16]]");
+		expect(describeField(f, "[[2026-07-16]]", deps([f]))).toBe("[[2026-07-16]]");
 	});
 });
 

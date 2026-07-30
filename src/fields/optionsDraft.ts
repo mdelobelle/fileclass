@@ -26,6 +26,7 @@ export interface OptionsDraft {
 	dateFormat?: string;
 	defaultInsertAsLink?: boolean;
 	dateLinkPath?: string;
+	dateLinkAlias?: boolean;
 	/** Date/DateTime: name of a Duration/CycleDuration field for "Set next date". */
 	nextIntervalField?: string;
 	// Input
@@ -139,6 +140,7 @@ export function optionsToDraft(type: FieldType, options: FieldOptions): OptionsD
 				dateFormat: typeof o.dateFormat === "string" ? o.dateFormat : "",
 				defaultInsertAsLink: o.defaultInsertAsLink === true || o.defaultInsertAsLink === "true",
 				dateLinkPath: typeof o.dateLinkPath === "string" ? o.dateLinkPath : "",
+				dateLinkAlias: o.dateLinkAlias === true || o.dateLinkAlias === "true",
 				nextIntervalField: typeof o.nextIntervalField === "string" ? o.nextIntervalField : "",
 			};
 		case "Object":
@@ -257,6 +259,7 @@ export function buildFieldOptions(type: FieldType, draft: OptionsDraft): FieldOp
 			if (draft.dateFormat?.trim()) o.dateFormat = draft.dateFormat.trim();
 			if (draft.defaultInsertAsLink) o.defaultInsertAsLink = true;
 			if (draft.dateLinkPath?.trim()) o.dateLinkPath = draft.dateLinkPath.trim();
+			if (draft.dateLinkAlias) o.dateLinkAlias = true;
 			if (type !== "Time" && draft.nextIntervalField?.trim()) {
 				o.nextIntervalField = draft.nextIntervalField.trim();
 			}

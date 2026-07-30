@@ -98,6 +98,7 @@ describe("Date options", () => {
 			dateFormat: "YYYY",
 			defaultInsertAsLink: true,
 			dateLinkPath: "Journal/",
+			dateLinkAlias: false,
 			nextIntervalField: "",
 		});
 		expect(buildFieldOptions("DateTime", draft)).toEqual({
@@ -113,9 +114,21 @@ describe("Date options", () => {
 			dateFormat: "YYYY",
 			defaultInsertAsLink: false,
 			dateLinkPath: "",
+			dateLinkAlias: false,
 			nextIntervalField: "",
 		});
 		expect(buildFieldOptions("Date", draft)).toEqual({ dateFormat: "YYYY" });
+	});
+
+	it("round-trips the link alias, and omits it when off", () => {
+		const on = optionsToDraft("Date", { dateLinkPath: "J/{{YYYY}}/", dateLinkAlias: true });
+		expect(on.dateLinkAlias).toBe(true);
+		expect(buildFieldOptions("Date", on)).toEqual({
+			dateLinkPath: "J/{{YYYY}}/",
+			dateLinkAlias: true,
+		});
+		const off = optionsToDraft("Date", { dateLinkPath: "J/" });
+		expect(buildFieldOptions("Date", off)).toEqual({ dateLinkPath: "J/" });
 	});
 });
 

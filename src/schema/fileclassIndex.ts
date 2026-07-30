@@ -9,7 +9,8 @@
  */
 import { App, Events, TFile, getAllTags } from "obsidian";
 
-import { FileclassSettings } from "../settings/settings";
+import { dateFormatDefaults, FileclassSettings } from "../settings/settings";
+import { withDefaultDateFormats } from "../fields/dateFormats";
 import { Field } from "./field";
 import {
 	fileClassNameFromPath,
@@ -140,7 +141,12 @@ export class FileclassIndex extends Events {
 
 	/** Full binding resolution for a note (fileClasses + merged fields). */
 	resolve(file: TFile): Resolution {
-		return resolveBinding(this.bindingFor(file), this.registry());
+		const resolution = resolveBinding(this.bindingFor(file), this.registry());
+		// Fold the plugin-wide write format into date fields that declare none, so
+		// every consumer (input, validation, display parsing) sees one effective
+		// format. No-op — the same array — when the defaults are blank.
+		const fields = withDefaultDateFormats(resolution.fields, dateFormatDefaults(this.host.settings));
+		return fields === resolution.fields ? resolution : { ...resolution, fields };
 	}
 
 	getFileClasses(file: TFile): string[] {

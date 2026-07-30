@@ -12,6 +12,7 @@ import { modalTitle } from "./modalTitle";
 import type FileclassPlugin from "../../main";
 import { childPathOf, Field } from "../schema/field";
 import { parseFileClass } from "../schema/fileClass";
+import { dateFormatDefaults } from "../settings/settings";
 import { mutateFields } from "../schema/fileClassIo";
 import {
 	addFieldDef,
@@ -122,6 +123,7 @@ export class FileClassSchemaModal extends Modal {
 	private addField(): void {
 		new FieldDefModal(this.app, {
 			title: "Add field",
+			dateDefaults: dateFormatDefaults(this.plugin.settings),
 			onSubmit: (r) =>
 				void mutateFields(this.app, this.file, (fields) =>
 					addFieldDef(
@@ -136,6 +138,7 @@ export class FileClassSchemaModal extends Modal {
 	private editField(field: Field): void {
 		new FieldDefModal(this.app, {
 			title: "Edit field",
+			dateDefaults: dateFormatDefaults(this.plugin.settings),
 			initial: { name: field.name, type: field.type, options: field.options },
 			onSubmit: (r) =>
 				void mutateFields(this.app, this.file, (fields) =>

@@ -19,8 +19,6 @@ import { dateOptions } from "./options";
 export interface DisplayDeps {
 	/** All resolved fields, so nested children can be resolved by path. */
 	allFields: Field[];
-	/** Plugin-wide default moment.js format for dates; "" = show stored value. */
-	defaultDateFormat: string;
 	/** Formats `value` (parsed with `parseFormat`) as `outFormat`; "" if invalid. */
 	formatMoment: (value: string, parseFormat: string, outFormat: string) => string;
 }
@@ -101,8 +99,11 @@ function formatDate(
 	const raw = String(value);
 	// Insert-as-link dates are stored as wikilinks — show them verbatim.
 	if (/^!?\[\[.*\]\]$/.test(raw.trim())) return raw;
-	const outFormat = override ?? deps.defaultDateFormat;
-	if (!outFormat) return raw; // no display format configured → stored value
+	// Dates are shown as they are stored: how a date is written is the user's
+	// choice (§ Date fields), so nothing reformats it here. An object display
+	// template may still ask for a format explicitly — {{released|YYYY}}.
+	if (!override) return raw;
+	const outFormat = override;
 	const parseFormat = dateOptions(field).dateFormat || NATIVE_DATE_FORMAT[field.type] || "YYYY-MM-DD";
 	return deps.formatMoment(raw, parseFormat, outFormat) || raw;
 }

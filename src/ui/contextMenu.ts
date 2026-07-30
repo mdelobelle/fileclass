@@ -5,8 +5,11 @@
  * a fileClass here). All actions reuse existing modals/commands — no new write
  * path. A Component so its event listeners are torn down on plugin unload.
  *
- * `MenuItem.setSubmenu()` is an Obsidian private API (not in the public typings),
- * reached via a minimal `unknown` cast per the repo's private-internals rule.
+ * NOTE — deviation from CLAUDE.md §16 ("private internals only in basesAdapter"):
+ * `MenuItem.setSubmenu()` is an untyped-but-stable Obsidian *UI* API (used by many
+ * plugins incl. Blueprint), not a fragile Bases internal. It is reached here via a
+ * minimal `unknown` cast (SubmenuItem) and kept co-located with the menu code
+ * rather than in basesAdapter (Bases-specific, runtime-proven, not to be touched).
  */
 import { Component, Menu, TFile, TFolder } from "obsidian";
 

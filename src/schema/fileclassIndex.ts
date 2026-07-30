@@ -33,6 +33,14 @@ export interface IndexHost {
 
 export const INDEXED_EVENT = "fileclass:indexed";
 
+/** A definition file read during rebuild's async phase, before the sync swap. */
+interface ReadFileClass {
+	file: TFile;
+	name: string;
+	parsed: ParsedFileClass;
+	ioError?: string;
+}
+
 export class FileclassIndex extends Events {
 	private byName = new Map<string, ParsedFileClass>();
 	private nameByPath = new Map<string, string>();
@@ -82,9 +90,29 @@ export class FileclassIndex extends Events {
 	}
 
 	private async runRebuild(): Promise<void> {
-		this.clear();
 		const files = this.app.vault.getFiles().filter((f) => f.extension === FILECLASS_EXTENSION);
-		for (const file of files) await this.indexFileClassNote(file);
+		// Async READ phase — read every definition into locals without touching
+		// shared state, so readers keep seeing the previous *complete* index.
+		const results: ReadFileClass[] = [];
+		for (const file of files) {
+			const r = await this.readFileClassNote(file);
+			if (r) results.push(r);
+		}
+		// Synchronous SWAP phase — no await here, so the index is never observed
+		// cleared or half-populated: readers see either the old or the new complete
+		// state (fixes blank-during-rebuild reads in the editors and base lookups).
+		this.clear();
+		for (const { file, name, parsed, ioError } of results) {
+			const prior = this.pathByName.get(name);
+			if (prior && prior !== file.path) {
+				this.errors.push(`Duplicate fileClass "${name}": ${file.path} shadows ${prior}.`);
+			}
+			this.byName.set(name, parsed);
+			this.nameByPath.set(file.path, name);
+			this.pathByName.set(name, file.path);
+			if (ioError) this.errors.push(ioError);
+			if (parsed.errors.length) this.errors.push(...parsed.errors);
+		}
 		this.computeInheritance();
 		this.buildBindingMaps();
 		// Notify our own listeners and the workspace (external consumers).
@@ -104,33 +132,26 @@ export class FileclassIndex extends Events {
 		this.errors = [];
 	}
 
-	private async indexFileClassNote(file: TFile): Promise<void> {
+	/** Reads and parses one `.fileclass` file (no shared-state mutation). Returns
+	 *  null for a non-fileClass file. Naming is vault-wide name-keyed, so same-named
+	 *  files collide (surfaced during the swap phase). */
+	private async readFileClassNote(file: TFile): Promise<ReadFileClass | null> {
 		const name = fileClassNameFromFile(file);
-		if (!name) return;
-		// Vault-wide discovery is name-keyed (registry keys carry no folder), so two
-		// same-named `.fileclass` files collide; last-in wins. Surface it rather than
-		// silently shadowing (a naming-convention responsibility).
-		const prior = this.pathByName.get(name);
-		if (prior && prior !== file.path) {
-			this.errors.push(`Duplicate fileClass "${name}": ${file.path} shadows ${prior}.`);
-		}
+		if (!name) return null;
 		// `.fileclass` is not markdown, so parse the YAML block from the raw text.
 		const raw = await this.app.vault.cachedRead(file);
 		const { frontmatter } = splitFileClassSource(raw);
 		let fm: Record<string, unknown> = {};
+		let ioError: string | undefined;
 		if (frontmatter.trim()) {
 			try {
 				const y: unknown = parseYaml(frontmatter);
 				if (y && typeof y === "object") fm = y as Record<string, unknown>;
 			} catch (e) {
-				this.errors.push(`Malformed YAML in ${file.path}: ${(e as Error).message}`);
+				ioError = `Malformed YAML in ${file.path}: ${(e as Error).message}`;
 			}
 		}
-		const parsed = parseFileClass(name, fm);
-		this.byName.set(name, parsed);
-		this.nameByPath.set(file.path, name);
-		this.pathByName.set(name, file.path);
-		if (parsed.errors.length) this.errors.push(...parsed.errors);
+		return { file, name, parsed: parseFileClass(name, fm), ioError };
 	}
 
 	private computeInheritance(): void {

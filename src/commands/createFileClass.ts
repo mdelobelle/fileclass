@@ -41,7 +41,9 @@ async function createNote(plugin: FileclassPlugin, folder: string, raw: string):
 	const dir = !folder || folder === "/" ? "" : folder.endsWith("/") ? folder : `${folder}/`;
 	const path = `${dir}${name}`;
 
-	if (plugin.app.vault.getFileByPath(path) instanceof TFile) {
+	// fileClass names are vault-wide (name-keyed), so refuse a same-named class in
+	// any folder — not just this path — and open the existing one instead.
+	if (plugin.index.getFileClass(name) || plugin.app.vault.getFileByPath(path) instanceof TFile) {
 		new Notice(`Fileclass: "${name}" already exists.`);
 		openFileClassSchema(plugin, name);
 		return;

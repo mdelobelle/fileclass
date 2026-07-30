@@ -28,6 +28,8 @@ import { FileClassOptionsModal } from "./fileClassOptionsModal";
 
 export class FileClassSchemaModal extends Modal {
 	private changeRef?: EventRef;
+	/** Signature of the rendered fields, to skip re-renders on unrelated rebuilds. */
+	private lastSig = "";
 
 	constructor(
 		private readonly plugin: FileclassPlugin,
@@ -40,10 +42,22 @@ export class FileClassSchemaModal extends Modal {
 	}
 
 	onOpen(): void {
+		this.lastSig = this.fieldsSignature();
 		this.render();
 		// `.fileclass` files are not in metadataCache, so re-render when the index
-		// rebuilds (which fires after any definition file changes).
-		this.changeRef = this.plugin.index.on(INDEXED_EVENT, () => this.render());
+		// rebuilds — but INDEXED_EVENT fires vault-wide, so only re-render when *this*
+		// definition's own fields actually changed (avoids churn on unrelated edits).
+		this.changeRef = this.plugin.index.on(INDEXED_EVENT, () => {
+			const sig = this.fieldsSignature();
+			if (sig !== this.lastSig) {
+				this.lastSig = sig;
+				this.render();
+			}
+		});
+	}
+
+	private fieldsSignature(): string {
+		return JSON.stringify(this.ownFields());
 	}
 
 	onClose(): void {

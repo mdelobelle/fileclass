@@ -10,6 +10,7 @@ a human's.
 demo/
   record.mjs                        # node record.mjs 001      — run a take
   voiceover.mjs                     # node voiceover.mjs 001   — hear / build the narration
+  smoke.mjs                         # node smoke.mjs 001      — check a script against the app
   publish.mjs                       # node publish.mjs 001 …   — package + upload
   sync-docs.mjs                     # node sync-docs.mjs       — videos back into the docs
   lib/                              # scenarios, vault staging, subtitles, voice, YouTube
@@ -59,6 +60,21 @@ it), `--title-card` (show the title full-screen during the intro), `--speak`
 Every take journals when each subtitle appeared, in
 `~/fileclass-demos/takes/<scenario>-<stamp>.json` — that's what the voice-over
 uses.
+
+## Smoke-test a scenario before recording
+
+```bash
+node smoke.mjs 007          # stage, launch, report, and stay open
+node smoke.mjs 007 --close  # just the report
+```
+
+Stages the take's vault, opens it in a real Obsidian and reports what the script
+promises against what the app exposes: the plugin version and indexed classes, each
+note as the take will find it (class, frontmatter keys, fields not yet inserted),
+and — per step — the commands, settings and field types it names. A step that says to
+*run* something without naming a known command, or to *set* something in the settings
+without naming one, is flagged. Obsidian stays open so the critical gestures can be
+tried by hand before you hit Record.
 
 ## Voice-over
 

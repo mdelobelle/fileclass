@@ -36,12 +36,13 @@ import { homedir } from "node:os";
 import { cuesFromTake, toSrt } from "./lib/captions.mjs";
 import { loadScenario } from "./lib/scenario.mjs";
 import { syncDocs } from "./sync-docs.mjs";
-import { latestTakeLog, takesDir } from "./lib/stage.mjs";
+import { latestTakeLog, pluginVersion, takesDir } from "./lib/stage.mjs";
 import { buildVoiceTrack, syncShift } from "./lib/track.mjs";
 import { DEFAULT_RATE, hasFfmpeg, mux, resolveVoice } from "./lib/voice.mjs";
 import * as yt from "./lib/youtube.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
+const pluginDir = resolve(here, "..");
 const flag = (name) => process.argv.includes(`--${name}`);
 const opt = (name, fallback) => {
 	const i = process.argv.indexOf(`--${name}`);
@@ -96,7 +97,7 @@ function chapters(cues, durationMs) {
 	return [{ at: "0:00", text: spaced[0].text }, ...spaced.slice(1).map((c) => ({ at: clock(c.startMs), text: c.text }))];
 }
 
-function description(scenario, cues, links, durationMs) {
+function description(scenario, cues, links, durationMs, pluginVersion) {
 	const marks = chapters(cues, durationMs);
 	const parts = [scenario.description || scenario.title, ""];
 	parts.push("In this minute:");
@@ -108,6 +109,9 @@ function description(scenario, cues, links, durationMs) {
 	parts.push("");
 	if (links.doc) parts.push(`Docs: ${links.doc}`);
 	if (links.playlist) parts.push(`The whole series: ${links.playlist}`);
+	// Last line: the build this was recorded against. The series outlives releases,
+	// and a viewer deserves to know how old what they're watching is.
+	if (pluginVersion) parts.push("", `Recorded with Fileclass ${pluginVersion}.`);
 	const text = parts.join("\n");
 	return text.length > 4900 ? `${text.slice(0, 4900)}…` : text;
 }
@@ -237,6 +241,9 @@ async function main() {
 		);
 	}
 
+	// The take log carries the version it recorded against; fall back to the build
+	// on disk for takes journalled before this was stamped.
+	const recordedWith = take.pluginVersion ?? (scenario.plugin ? pluginVersion(pluginDir) : null);
 	const stamp = basename(takePath).replace(/\.json$/, "");
 	const outDir = join(homedir(), "fileclass-demos", "releases", stamp);
 	mkdirSync(outDir, { recursive: true });
@@ -286,11 +293,12 @@ async function main() {
 	const meta = {
 		scenario: scenario.id,
 		title: youtubeTitle(scenario),
-		description: description(scenario, cues, { doc: docUrl, playlist: "" }, take.endedAt),
+		description: description(scenario, cues, { doc: docUrl, playlist: "" }, take.endedAt, recordedWith),
 		tags: [...new Set([...BASE_TAGS, ...scenario.tags])],
 		categoryId: cfg.categoryId,
 		privacyStatus: visibility,
 		language: cfg.language,
+		recordedWith,
 		files: { video: finalVideo, captions: srt },
 		take: takePath,
 		...(previous?.result ? { result: previous.result } : {}),
@@ -315,7 +323,8 @@ async function main() {
 		scenario,
 		cues,
 		{ doc: docUrl, playlist: yt.playlistUrl(playlistId) },
-		take.endedAt
+		take.endedAt,
+		recordedWith
 	);
 
 	let lastPct = -1;

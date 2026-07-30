@@ -6,6 +6,7 @@
   "scripts": {
     "record": "node record.mjs",
     "voiceover": "node voiceover.mjs",
+    "smoke": "node smoke.mjs",
     "publish": "node publish.mjs",
     "sync-docs": "node sync-docs.mjs"
   },

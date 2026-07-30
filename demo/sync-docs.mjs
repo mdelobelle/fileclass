@@ -84,6 +84,7 @@ export async function publishedVideos() {
 			scenario: scenario.id,
 			doc: scenario.doc || "",
 			durationSeconds: await duration(dir, meta),
+			recordedWith: meta.recordedWith ?? null,
 			privacyStatus: meta.result.privacyStatus ?? "unknown",
 		};
 	}

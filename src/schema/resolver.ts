@@ -101,3 +101,52 @@ export function resolveBinding(binding: FileBinding, registry: FileClassRegistry
 	}
 	return { fileClassNames: [], fields: [], source: "none" };
 }
+
+/**
+ * Resolves a note's inner fileClass names from its frontmatter LINKS
+ * (wikilink-only alias binding, ARCHITECTURE.md §10). Pure: `resolvePath`
+ * injects Obsidian's `getFirstLinkpathDest(...).path`, `nameByPath` the index's
+ * path→name map. Handles a scalar alias (`key === alias`) and list items
+ * (`key === alias.<n>`), keeps order, drops unresolved / non-fileClass links,
+ * and de-duplicates.
+ */
+export function resolveInnerFileClassNames(
+	links: readonly { key: string; link: string }[],
+	alias: string,
+	resolvePath: (link: string) => string | null,
+	nameByPath: ReadonlyMap<string, string>
+): string[] {
+	const out: string[] = [];
+	for (const l of links) {
+		if (l.key !== alias && !l.key.startsWith(`${alias}.`)) continue;
+		const path = resolvePath(l.link);
+		if (!path) continue;
+		const name = nameByPath.get(path);
+		if (name && !out.includes(name)) out.push(name);
+	}
+	return out;
+}
+
+/**
+ * Resolves a fileClass's `extends` value to a canonical registry name. Accepts a
+ * wikilink (`"[[Note.fileclass]]"`, resolved folder-independently via
+ * `resolveLinkToName`) or a bare name — matched as given, else with the
+ * `.fileclass` suffix appended (forgiving of the display-style name). Returns
+ * undefined when no parent resolves.
+ */
+export function resolveExtendsName(
+	raw: string | undefined,
+	resolveLinkToName: (link: string) => string | undefined,
+	hasName: (name: string) => boolean
+): string | undefined {
+	if (!raw) return undefined;
+	const link = raw.match(/^\[\[(.+?)\]\]$/);
+	if (link) {
+		// Strip a `#subpath` and `|alias` — getFirstLinkpathDest wants the bare linkpath.
+		const linkpath = link[1].split("|")[0].split("#")[0].trim();
+		return resolveLinkToName(linkpath);
+	}
+	if (hasName(raw)) return raw;
+	const suffixed = `${raw}.fileclass`;
+	return hasName(suffixed) ? suffixed : undefined;
+}

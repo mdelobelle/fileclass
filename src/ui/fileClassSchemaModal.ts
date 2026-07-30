@@ -12,6 +12,7 @@ import { modalTitle } from "./modalTitle";
 import type FileclassPlugin from "../../main";
 import { childPathOf, Field } from "../schema/field";
 import { parseFileClass } from "../schema/fileClass";
+import { INDEXED_EVENT } from "../schema/fileclassIndex";
 import { mutateFields } from "../schema/fileClassIo";
 import {
 	addFieldDef,
@@ -27,6 +28,8 @@ import { FileClassOptionsModal } from "./fileClassOptionsModal";
 
 export class FileClassSchemaModal extends Modal {
 	private changeRef?: EventRef;
+	/** Signature of the rendered fields, to skip re-renders on unrelated rebuilds. */
+	private lastSig = "";
 
 	constructor(
 		private readonly plugin: FileclassPlugin,
@@ -39,21 +42,33 @@ export class FileClassSchemaModal extends Modal {
 	}
 
 	onOpen(): void {
+		this.lastSig = this.fieldsSignature();
 		this.render();
-		this.changeRef = this.app.metadataCache.on("changed", (f) => {
-			if (f.path === this.file.path) this.render();
+		// `.fileclass` files are not in metadataCache, so re-render when the index
+		// rebuilds — but INDEXED_EVENT fires vault-wide, so only re-render when *this*
+		// definition's own fields actually changed (avoids churn on unrelated edits).
+		this.changeRef = this.plugin.index.on(INDEXED_EVENT, () => {
+			const sig = this.fieldsSignature();
+			if (sig !== this.lastSig) {
+				this.lastSig = sig;
+				this.render();
+			}
 		});
 	}
 
+	private fieldsSignature(): string {
+		return JSON.stringify(this.ownFields());
+	}
+
 	onClose(): void {
-		if (this.changeRef) this.app.metadataCache.offref(this.changeRef);
+		if (this.changeRef) this.plugin.index.offref(this.changeRef);
 		this.contentEl.empty();
 	}
 
-	/** Fields at the current level (root or an object's children), read fresh. */
+	/** Fields at the current level (root or an object's children), from the index. */
 	private ownFields(): Field[] {
-		const fm = this.app.metadataCache.getFileCache(this.file)?.frontmatter;
-		return parseFileClass(this.name, fm).fields.filter((f) => f.path === this.parentPath);
+		const parsed = this.plugin.index.getFileClass(this.name) ?? parseFileClass(this.name, {});
+		return parsed.fields.filter((f) => f.path === this.parentPath);
 	}
 
 	private render(): void {

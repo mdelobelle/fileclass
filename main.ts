@@ -15,6 +15,7 @@ import { QueryCache } from "./src/engine/queryCache";
 import { createFileClass } from "./src/commands/createFileClass";
 import { insertMissingFields } from "./src/commands/insertMissingFields";
 import { pickAndUpdateField } from "./src/fields/fieldActions";
+import { FILECLASS_EXTENSION, isFileClassPath } from "./src/schema/constants";
 import { FileclassIndex } from "./src/schema/fileclassIndex";
 import {
 	coerceSettings,
@@ -71,6 +72,16 @@ export default class FileclassPlugin extends Plugin {
 		setPlugin(this);
 		await this.loadSettings();
 
+		// `.fileclass` is a custom, non-markdown extension. Obsidian only tracks
+		// files with a registered extension — without this, `.fileclass` files are
+		// absent from getFiles()/metadataCache/link resolution and the plugin never
+		// sees them. Open them in the markdown editor (raw YAML + body).
+		try {
+			this.registerExtensions([FILECLASS_EXTENSION], "markdown");
+		} catch (e) {
+			console.warn("Fileclass: could not register .fileclass extension", e);
+		}
+
 		this.queryCache = new QueryCache(this.app);
 		this.register(() => this.queryCache.dispose());
 
@@ -91,7 +102,7 @@ export default class FileclassPlugin extends Plugin {
 		this.app.workspace.onLayoutReady(() => {
 			this.refreshBasesAvailability();
 			this.registerFileclassTableView();
-			this.index.rebuild();
+			void this.index.rebuild();
 		});
 	}
 
@@ -241,7 +252,7 @@ export default class FileclassPlugin extends Plugin {
 
 	private registerVaultListeners(): void {
 		// Rebuild is idempotent and cheap; debounce bursts of events.
-		const scheduleRebuild = debounce(() => this.index.rebuild(), 400, true);
+		const scheduleRebuild = debounce(() => void this.index.rebuild(), 400, true);
 
 		// Full metadata settle (initial load and after edits).
 		this.registerEvent(this.app.metadataCache.on("resolved", scheduleRebuild));
@@ -263,10 +274,9 @@ export default class FileclassPlugin extends Plugin {
 		);
 	}
 
-	/** True when a path is (or was) a fileClass note under the class folder. */
+	/** True when a path is (or was) a `.fileclass` definition file (vault-wide). */
 	private affectsSchema(path: string): boolean {
-		const folder = this.settings.classFilesPath;
-		return !!folder && path.startsWith(folder) && path.endsWith(".md");
+		return isFileClassPath(path);
 	}
 
 	/** Re-runs adapter feature detection and surfaces a one-time warning. */

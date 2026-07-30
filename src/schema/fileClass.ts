@@ -5,6 +5,7 @@
  * (dvQueryString/customRendering/customSorting) are simply ignored here and
  * never acted upon (§13 — no migration/audit tooling ships).
  */
+import { FILECLASS_FILE_SUFFIX } from "./constants";
 import { Field, parseRawField, RawField } from "./field";
 
 export interface FileClassOptions {
@@ -53,12 +54,14 @@ export function stringToBoolean(value: unknown): boolean {
 	return !!value;
 }
 
-/** Derives the fileClass name from its note path, given the class-files folder. */
-export function fileClassNameFromPath(classFilesPath: string, path: string): string | undefined {
-	if (!classFilesPath) return undefined;
-	const folder = classFilesPath.endsWith("/") ? classFilesPath : `${classFilesPath}/`;
-	if (!path.startsWith(folder) || !path.endsWith(".md")) return undefined;
-	return path.slice(folder.length, -".md".length) || undefined;
+/**
+ * fileClass name for a definition file = its full filename (e.g. `Task.fileclass`),
+ * folder-independent. This matches the wikilink used to reference it
+ * (`[[Task.fileclass]]`), which Obsidian resolves to a non-md file by full name.
+ * Undefined if the file is not a `.fileclass` definition.
+ */
+export function fileClassNameFromFile(file: { name: string }): string | undefined {
+	return file.name.endsWith(FILECLASS_FILE_SUFFIX) ? file.name : undefined;
 }
 
 /**

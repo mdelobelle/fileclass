@@ -1,22 +1,49 @@
 /*
  * Obsidian write layer for the fileClass schema editor (ARCHITECTURE.md §20).
- * Every mutation is a single processFrontMatter write on the fileClass note
- * (D2/D5); the pure transforms live in fileClassWrite.ts.
+ * `.fileclass` files are not markdown, so `processFrontMatter` cannot be used;
+ * each mutation reads the file, parses its YAML block, applies the change, and
+ * writes it back in one `vault.process` (preserving the trailing body verbatim).
+ * Pure transforms live in fileClassWrite.ts; split/assemble in fileClassSource.ts.
  */
-import { App, TFile } from "obsidian";
+import { App, TFile, parseYaml, stringifyYaml } from "obsidian";
 
+import { assembleFileClassSource, splitFileClassSource } from "./fileClassSource";
 import { RawFieldEntry } from "./fileClassWrite";
 
-/** Applies a mutation to the note's `fields[]` array in one write. */
+/** Reads, mutates, and rewrites a `.fileclass` file's YAML in one atomic write. */
+async function editSource(
+	app: App,
+	file: TFile,
+	fn: (obj: Record<string, unknown>) => void
+): Promise<void> {
+	await app.vault.process(file, (raw) => {
+		const { frontmatter, body } = splitFileClassSource(raw);
+		let obj: Record<string, unknown> = {};
+		if (frontmatter.trim()) {
+			let y: unknown;
+			try {
+				y = parseYaml(frontmatter);
+			} catch (e) {
+				// Abort the write loudly rather than silently discarding the edit or
+				// overwriting a hand-broken definition with a partial object.
+				throw new Error(`malformed YAML in ${file.path}: ${(e as Error).message}`);
+			}
+			if (y && typeof y === "object") obj = y as Record<string, unknown>;
+		}
+		fn(obj);
+		return assembleFileClassSource(stringifyYaml(obj), body);
+	});
+}
+
+/** Applies a mutation to the definition's `fields[]` array in one write. */
 export async function mutateFields(
 	app: App,
 	file: TFile,
 	fn: (fields: RawFieldEntry[]) => void
 ): Promise<void> {
-	await app.fileManager.processFrontMatter(file, (fm) => {
-		const rec = fm as Record<string, unknown>;
-		if (!Array.isArray(rec.fields)) rec.fields = [];
-		fn(rec.fields as RawFieldEntry[]);
+	await editSource(app, file, (obj) => {
+		if (!Array.isArray(obj.fields)) obj.fields = [];
+		fn(obj.fields as RawFieldEntry[]);
 	});
 }
 
@@ -26,7 +53,7 @@ export async function writeOptions(
 	file: TFile,
 	updates: Record<string, unknown>
 ): Promise<void> {
-	await app.fileManager.processFrontMatter(file, (fm) => {
-		Object.assign(fm as Record<string, unknown>, updates);
+	await editSource(app, file, (obj) => {
+		Object.assign(obj, updates);
 	});
 }

@@ -31,7 +31,10 @@ export class FileClassOptionsModal extends Modal {
 		private readonly file: TFile
 	) {
 		super(plugin.app);
-		const parsed = parseFileClass(name, this.app.metadataCache.getFileCache(file)?.frontmatter);
+		// `.fileclass` files are not in metadataCache; read the parsed definition
+		// from the index (kept fresh by rebuild). Reading blank here would make Save
+		// clobber the real options.
+		const parsed = plugin.index.getFileClass(name) ?? parseFileClass(name, {});
 		const o = parsed.options;
 		this.opts = {
 			icon: o.icon,

@@ -1,11 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import {
-	fileClassNameFromPath,
-	parseFileClass,
-	stringToBoolean,
-	toStringArray,
-} from "../../src/schema/fileClass";
+import { parseFileClass, stringToBoolean, toStringArray } from "../../src/schema/fileClass";
 
 describe("toStringArray", () => {
 	it("accepts arrays, comma strings, and nothing", () => {
@@ -22,21 +17,6 @@ describe("stringToBoolean", () => {
 		expect(stringToBoolean("true")).toBe(true);
 		expect(stringToBoolean("false")).toBe(false);
 		expect(stringToBoolean(undefined)).toBe(false);
-	});
-});
-
-describe("fileClassNameFromPath", () => {
-	it("extracts the name under the class folder", () => {
-		expect(fileClassNameFromPath("Settings/fileClasses/", "Settings/fileClasses/Book.md")).toBe(
-			"Book"
-		);
-	});
-	it("returns undefined outside the folder or for non-md", () => {
-		expect(fileClassNameFromPath("Settings/fileClasses/", "Notes/Book.md")).toBeUndefined();
-		expect(
-			fileClassNameFromPath("Settings/fileClasses/", "Settings/fileClasses/Book.base")
-		).toBeUndefined();
-		expect(fileClassNameFromPath("", "anything.md")).toBeUndefined();
 	});
 });
 

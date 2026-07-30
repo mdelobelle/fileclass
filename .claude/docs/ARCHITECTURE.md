@@ -141,11 +141,20 @@ fileclass/
 
 ## 5. Schema layer
 
-- fileClass notes live under `settings.classFilesPath`. Frontmatter carries
+- **Wikilink-references fork:** fileClass definitions are non-markdown
+  `.fileclass` files discovered vault-wide (§10), not `.md` notes under
+  `classFilesPath`. Their YAML block still carries
   `fields` (list of `{name, id, type, options, path}`), `extends`, `excludes`,
-  `mapWithTag`, `tagNames`, `filesPaths`, `bookmarksGroups`, `version`, plus
-  view options. **Port the parsing semantics from Metadata Menu** (D3), do not
-  redesign. `path` encodes nesting (parent field ids joined with `____`).
+  `mapWithTag`, `tagNames`, `filesPaths`, `bookmarksGroups`, `version`, plus view
+  options — the field/option **parsing semantics are Metadata Menu's** (D3),
+  unchanged; only the container (non-md file, read via `vault.read`+`parseYaml`,
+  written via `vault.process`+`stringifyYaml` in `fileClassIo.ts` since
+  `processFrontMatter` is markdown-only) differs. **Tradeoff:** the §3.2
+  order/format-preservation guarantee does not hold for definition writes (a full
+  YAML round-trip may reflow block scalars / quoting); acceptable for a generated
+  data file. All *other* read sites (Options modal, schema modal, base-sync) read
+  the parsed definition from the **index**, not `metadataCache`. `path` encodes
+  nesting (parent field ids joined with `____`).
 - Inheritance: single `extends` chain with cycle guard; `excludes` removes
   inherited fields (same as MDM `getFileClassesAncestors`).
 - Field options referencing queries change shape: anywhere MDM had
@@ -301,11 +310,28 @@ out-of-scope), scheduled **after JSON/YAML**.
 ## 10. Index
 
 Slim rewrite of MDM's `FieldIndex` keeping ONLY:
-- fileClass registry (parse all notes under `classFilesPath`), ancestors, fields
-  per fileClass;
+- fileClass registry — **wikilink-references fork:** a definition is a
+  **non-markdown `.fileclass` file** (like Blueprint's `.blueprint`), discovered
+  **vault-wide** by extension (`getFiles().filter(extension === "fileclass")`), not
+  by `classFilesPath` (that setting is removed — the create command uses the
+  active file's folder, and a folder right-click creates one in place). Because
+  `.fileclass` is not markdown, its schema is **not** in `metadataCache`; the index
+  reads it via `vault.cachedRead` + `splitFileClassSource` + `parseYaml`, so
+  `rebuild()` is **async**. This deviates from D2 (metadataCache reads) for
+  *definitions* — note reads are unchanged. The registry is name-keyed by the
+  file's full name (`Book.fileclass`, which is also the wikilink target); same-named
+  definitions collide (last-in wins, logged to `errors`) — a naming-convention
+  concern. `extends` may be a wikilink (`"[[Note.fileclass]]"`) or a bare/display
+  name, resolved to a canonical name by `resolveExtendsName`.
 - file → fileClass mapping with MDM's priority order: frontmatter alias >
   tag match > path match > bookmark group match > (base-view match, replaces
-  fileClassQueries) > global fileClass > preset fields;
+  fileClassQueries) > global fileClass > preset fields. **Wikilink-references
+  fork:** the frontmatter-alias binding is **wikilink-only** — `fileClass:
+  "[[Book.fileclass]]"` (scalar or list), resolved via `frontmatterLinks` +
+  `getFirstLinkpathDest` (folder-independent, rename-tracking; resolves the
+  non-md file by full name). Bare-string alias values are no longer resolved. The
+  Global-fileClass setting is matched forgivingly (bare / suffixed / path) against
+  the registry names.
 - rebuild on `metadataCache.on('resolved')` (debounced) and on fileClass file
   changes; `metadata-menu:indexed`-style event renamed `fileclass:indexed`.
 
@@ -332,8 +358,11 @@ canvas file tracking (comes with the planned Canvas engine, §9.1).
 - `baseFileGenerator`: command "Create base for fileClass" → writes
   `<basesFolder>/<FileClass>.base` with one `fileclass-table` view whose
   `order:` = the fileClass fields and whose **view-level** `filters:` is
-  `<alias> == "X"` (respect `settings.fileClassAlias`). Never overwrite an
-  existing file without confirmation.
+  `list(<alias>).contains("X")` (respect `settings.fileClassAlias`). **Wikilink-
+  references fork:** the filter is `list(...).contains(...)` (not `<alias> ==
+  "X"`) because the alias value is now a wikilink (scalar or list of links);
+  `list()` normalizes and `.contains()` matches the linked definition by name.
+  Never overwrite an existing file without confirmation.
 - **View-level fileClass filter (issue #55):** the class filter lives on the
   managed view, not base-wide, so a base can host extra views for other
   fileClasses (a `bookAuthor` view in the `book` base) without them being

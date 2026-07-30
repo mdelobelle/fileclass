@@ -9,7 +9,6 @@ All settings live under **Settings → Fileclass**.
 
 | Setting | What it does |
 |---------|--------------|
-| **Class files folder** | Folder holding your fileClass notes. Any note here defines a fileClass (its name = the filename). |
 | **fileClass alias** | Frontmatter key that binds a note to its fileClass(es). Default `fileClass`. |
 | **Global fileClass** | Applied to every note that has no other binding. Leave empty to disable. |
 | **Bases folder** | Where generated `<fileClass>.base` files are written. |

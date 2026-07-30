@@ -212,14 +212,32 @@ make a take readable.
 ```bash
 node record.mjs NNN --dry        # parses the yaml, prints the script + pauses
 node voiceover.mjs NNN --preview # renders the narration: hear it, and get its length
+node smoke.mjs NNN               # opens the staged vault and checks the script against it
 ```
 
-Then re-read the printed script as a viewer: does it tell one story? Does every
-line correspond to something that exists in the UI? Does the vault contain what
-step 1 claims? Is the narration inside its 60-second budget, and how many steps
-ask for typing? The preview is the
-honest test of the "sayable out loud" rule too — a line that sounds wrong spoken
-*is* wrong. Only after that, tell the operator it's ready to record.
+Then re-read the printed script as a viewer: does it tell one story? Is the
+narration inside its 60-second budget, and how many steps ask for typing? The
+preview is the honest test of the "sayable out loud" rule too — a line that sounds
+wrong spoken *is* wrong.
+
+**`smoke.mjs` answers the question you can't answer by reading**: does the UI still
+match the words? It stages the vault, opens it in a real Obsidian, and reports
+
+- the plugin version, whether Bases is available, the classes indexed;
+- each note as the take will find it — its class, its frontmatter keys, and which
+  declared fields are not inserted yet (a fixture typo shows up here);
+- for every step, the **commands, settings and field types it names** that the app
+  actually exposes — and a warning when a step says to *run* something without
+  naming a known command, or to *set* something in the settings without naming a
+  setting of that pane.
+
+That last check is the one that earns its keep: a subtitle naming a command whose
+name has drifted reads fine on paper and fails on camera. Take 003 was recorded
+against an input that silently refused what its own script asked the viewer to type.
+
+Obsidian stays open on the staged vault afterwards, so the two or three gestures the
+take depends on can be tried by hand before Record. Only after that, tell the
+operator it's ready to record.
 
 ## Running a take (operator's side)
 

@@ -27,7 +27,7 @@
     <span class="play" aria-hidden="true"></span>
     <span class="txt">
       <strong>Watch: {{ $v.subject }}</strong>
-      <small>Fileclass #{{ $key }}{{ with $mins }} · {{ . }}{{ end }} · on YouTube</small>
+      <small>Fileclass #{{ $key }}{{ with $mins }} · {{ . }}{{ end }}{{ with $v.recordedWith }} · recorded with {{ . }}{{ end }} · on YouTube</small>
     </span>
   </a>
 {{ end }}

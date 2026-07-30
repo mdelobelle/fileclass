@@ -89,6 +89,17 @@ function refuse(msg) {
 	throw new Error(`Refusing to run: ${msg}`);
 }
 
+/** Version of the plugin build in `pluginDir` — what a take records against. */
+export function pluginVersion(pluginDir) {
+	const manifest = join(pluginDir, "manifest.json");
+	if (!existsSync(manifest)) return null;
+	try {
+		return JSON.parse(readFileSync(manifest, "utf8")).version ?? null;
+	} catch {
+		return null;
+	}
+}
+
 /** Absolute path of the vault a scenario runs in (id keeps takes separate). */
 export function runVaultPath(scenario) {
 	return join(RUNS_DIR, scenario.id, scenario.vaultName);

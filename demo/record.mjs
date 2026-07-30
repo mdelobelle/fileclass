@@ -29,6 +29,7 @@ import {
 	captureVaultRegistry,
 	launchObsidian,
 	obsidianPids,
+	pluginVersion,
 	quitObsidian,
 	relaunchObsidian,
 	runVaultPath,
@@ -185,7 +186,16 @@ async function main() {
 	// is what lets voiceover.mjs land each line on the right frame.
 	const t0 = Date.now();
 	const at = () => Date.now() - t0;
-	const log = { scenario: scenario.id, title: scenario.title, voice, rate, steps: [] };
+	// The version the take records against: what the fixture installed, or null
+	// when the plugin is installed from the store on camera (take 001).
+	const log = {
+		scenario: scenario.id,
+		title: scenario.title,
+		pluginVersion: scenario.plugin ? pluginVersion(pluginDir) : null,
+		voice,
+		rate,
+		steps: [],
+	};
 
 	if (titleCard) {
 		await stage.show(scenario.title, { title: true });

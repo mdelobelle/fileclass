@@ -140,6 +140,15 @@ is reported with the `--finish` command to retry it, and the URL is printed anyw
 
 Nothing is deleted between takes, so an older release stays reproducible.
 
+## The version a take was recorded against
+
+The description ends with **"Recorded with Fileclass X.Y.Z"** — the version the
+fixture installed, journalled by `record.mjs` and carried into `youtube.json` and the
+doc card. The series will outlive several releases; a viewer deserves to know how old
+what they are watching is, and you deserve to know which takes to re-shoot after a UI
+change. Take 001 has no stamp: it installs the plugin from the community store on
+camera, so the build is whatever the store served that day.
+
 ## Why a caption track when the subtitles are burned in
 
 The burned-in bar is what makes a video readable with the sound off and captions

@@ -28,3 +28,7 @@ other. Captions are English; YouTube translates them into your language.
 ## Boolean: the checkbox
 
 {{< video "005" >}}
+
+## Cycle: one click, next value
+
+{{< video "006" >}}

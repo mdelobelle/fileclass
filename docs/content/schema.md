@@ -14,17 +14,18 @@ A fileClass is a **`.fileclass` file** — a non-Markdown format (like `.canvas`
 or `.base`), e.g. `Book.fileclass`. Its **name** is the full filename
 (`Book.fileclass`), which is also how notes link to it. fileClass files are
 discovered **anywhere in the vault** by their extension, so a definition can live
-in whatever folder its scope belongs to. The **Settings → Fileclass → Default
-folder for new fileClasses** setting only chooses where the *create* command puts
-new ones; it does not limit discovery.
+in whatever folder its scope belongs to. There is no "class files folder" — put a
+`.fileclass` file wherever it belongs.
 
 A `.fileclass` file holds the same YAML you'd otherwise put in frontmatter — a
 `---`-delimited block of `fields`/`extends`/… followed by an optional description
 body. `extends` may itself be a wikilink (`extends: "[[Note.fileclass]]"`).
 
-Create one with the command **Fileclass: create a class** — it prompts for a
-name (capitalized automatically), creates `<Name>.fileclass` in the default
-folder, and opens its schema editor.
+**Create one** either way, then edit its schema in the modal that opens:
+- the command **Fileclass: create a class** — makes `<Name>.fileclass` in the
+  active file's folder (or the vault root); or
+- **right-click a folder → Fileclass → New fileClass here** — makes it in that
+  folder.
 
 ```yaml
 ---

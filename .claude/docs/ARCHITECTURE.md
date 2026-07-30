@@ -313,7 +313,8 @@ Slim rewrite of MDM's `FieldIndex` keeping ONLY:
 - fileClass registry — **wikilink-references fork:** a definition is a
   **non-markdown `.fileclass` file** (like Blueprint's `.blueprint`), discovered
   **vault-wide** by extension (`getFiles().filter(extension === "fileclass")`), not
-  by `classFilesPath` (retained only as the default *create* location). Because
+  by `classFilesPath` (that setting is removed — the create command uses the
+  active file's folder, and a folder right-click creates one in place). Because
   `.fileclass` is not markdown, its schema is **not** in `metadataCache`; the index
   reads it via `vault.cachedRead` + `splitFileClassSource` + `parseYaml`, so
   `rebuild()` is **async**. This deviates from D2 (metadataCache reads) for

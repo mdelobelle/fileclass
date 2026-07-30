@@ -1,8 +1,9 @@
 /*
  * FileclassIndex (ARCHITECTURE.md §10). The slim successor of Metadata Menu's
- * FieldIndex, keeping only: the fileClass registry (parsed notes under
- * classFilesPath), ancestors, resolved fields per class, and the file→fileClass
- * binding maps. Frontmatter-only reads (D2); no dataview, no IndexedDB.
+ * FieldIndex, keeping only: the fileClass registry (every `.fileclass` file
+ * vault-wide), ancestors, resolved fields per class, and the file→fileClass
+ * binding maps. `.fileclass` files are read via vault.cachedRead + parseYaml
+ * (not markdown, so not in metadataCache); no dataview, no IndexedDB.
  *
  * Rebuild is driven by main.ts (debounced metadataCache 'resolved' + fileClass
  * file changes). On each rebuild it fires the `fileclass:indexed` event.

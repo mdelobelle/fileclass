@@ -1,8 +1,9 @@
 /*
- * "Create a fileClass" command: prompt a name, capitalize it, create the
- * `<classFilesPath><Name>.fileclass` file (classFilesPath is only the default
- * location — a fileClass is any `.fileclass` file, discovered vault-wide by
- * extension), and open its schema editor. The index keys the class by filename.
+ * "Create a fileClass" flows: prompt a name, capitalize it, create the
+ * `<folder>/<Name>.fileclass` file, and open its schema editor. A fileClass is any
+ * `.fileclass` file, discovered vault-wide by extension, so it can live anywhere:
+ * the command creates it in the active file's folder, and the folder right-click
+ * menu creates it in that folder. The index keys the class by filename.
  */
 import { Notice, TFile } from "obsidian";
 
@@ -12,26 +13,33 @@ import { FILECLASS_NAME_SUFFIX } from "../schema/constants";
 import { capitalize } from "../schema/field";
 import { openFileClassSchema } from "../ui/fileClassSchemaModal";
 
+/** Command: create a fileClass in the active file's folder (or the vault root). */
 export function createFileClass(plugin: FileclassPlugin): void {
-	const folder = plugin.settings.classFilesPath;
-	if (!folder) {
-		new Notice("Fileclass: set the class files folder in settings first.");
-		return;
-	}
+	const folder = plugin.app.workspace.getActiveFile()?.parent?.path ?? "";
+	promptAndCreate(plugin, folder);
+}
+
+/** Folder right-click: create a fileClass in the given folder. */
+export function createFileClassInFolder(plugin: FileclassPlugin, folderPath: string): void {
+	promptAndCreate(plugin, folderPath);
+}
+
+function promptAndCreate(plugin: FileclassPlugin, folder: string): void {
 	new PromptModal(plugin.app, {
 		title: "Create a fileClass",
 		placeholder: "fileClass name",
 		validate: (v) => (v.trim() ? { ok: true } : { ok: false, message: "A name is required." }),
-		onSubmit: (raw) => void createNote(plugin, raw),
+		onSubmit: (raw) => void createNote(plugin, folder, raw),
 	}).open();
 }
 
-async function createNote(plugin: FileclassPlugin, raw: string): Promise<void> {
+async function createNote(plugin: FileclassPlugin, folder: string, raw: string): Promise<void> {
 	// Strip a suffix the user may have typed themselves so we never double it.
 	const typed = capitalize(raw.trim()).replace(/\.fileclass$/i, "");
 	// The name is the full filename of the non-md definition, e.g. "Book.fileclass".
 	const name = `${typed}${FILECLASS_NAME_SUFFIX}`;
-	const path = `${plugin.settings.classFilesPath}${name}`;
+	const dir = !folder || folder === "/" ? "" : folder.endsWith("/") ? folder : `${folder}/`;
+	const path = `${dir}${name}`;
 
 	if (plugin.app.vault.getFileByPath(path) instanceof TFile) {
 		new Notice(`Fileclass: "${name}" already exists.`);

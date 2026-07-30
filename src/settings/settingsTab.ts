@@ -20,23 +20,6 @@ export class FileclassSettingTab extends PluginSettingTab {
 		containerEl.empty();
 
 		new Setting(containerEl)
-			.setName("Default folder for new fileClasses")
-			.setDesc(
-				"Where the “Create a fileClass” command puts new definitions. fileClasses are discovered anywhere in the vault by the .fileclass file extension — not limited to this folder."
-			)
-			.addText((text) => {
-				text
-					.setPlaceholder("e.g. Settings/fileClasses")
-					.setValue(this.plugin.settings.classFilesPath)
-					.onChange(async (value) => {
-						this.plugin.settings.classFilesPath = normalizeFolderPath(value);
-						await this.plugin.saveSettings();
-						void this.plugin.index.rebuild();
-					});
-				new FolderSuggest(this.app, text.inputEl);
-			});
-
-		new Setting(containerEl)
 			.setName("fileClass alias")
 			.setDesc("Frontmatter key that binds a note to its fileClass(es).")
 			.addText((text) =>

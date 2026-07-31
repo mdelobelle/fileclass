@@ -156,6 +156,41 @@
 	color: var(--text-normal);
 }
 
+/*
+ * Lists of like rows — a values list, duration presets — read as one block, not
+ * as a stack of unrelated settings: no separator between rows, a tight rhythm,
+ * and a single cushion closing the group.
+ *
+ * This also repairs a spacing bug. Obsidian collapses the padding of a
+ * `.setting-item` that is first or last *in its parent* (app.css, guarded by
+ * `:where(:not(.setting-group *))`). Rows rendered inside a wrapper div are last
+ * in that wrapper, not in the modal, so the final input ended up glued to the
+ * separator below it. The `.setting-group` escape hatch fixes the collapse but
+ * pulls in the theme's group padding and radius, which indents the rows — hence
+ * these rules, whose selectors mirror the specificity of the ones they counter.
+ */
+.modal:not(.mod-settings) .fileclass-setting-list > .setting-item:not(.setting-item-heading) {
+	border-top: none;
+	padding: var(--size-4-1) 0;
+	margin-bottom: 0;
+}
+.fileclass-setting-list {
+	padding-bottom: var(--size-4-4);
+}
+/* The "Add …" row closes the block, so it carries no separator either. */
+.modal:not(.mod-settings) .setting-item.fileclass-list-add:not(.setting-item-heading) {
+	border-top: none;
+	padding-top: 0;
+	padding-bottom: var(--size-4-4);
+}
+/* Same collapse, one level up: the last of a field's type options sat against the
+ * separator that starts the next row. */
+.modal:not(.mod-settings)
+	.fileclass-field-options
+	> .setting-item:not(.setting-item-heading):last-child {
+	padding-bottom: var(--size-4-4);
+}
+
 /* Canvas field filters: color/side chips + label chip list. */
 .fileclass-color-chip,
 .fileclass-side-chip {

@@ -69,6 +69,29 @@ Before this, a `Cycle` advanced in the note-fields modal but opened a picker
 everywhere else — under a `rotate-cw` icon that promised the advance. A control's
 icon now tells you what will happen, wherever you click it.
 
+## Adding list values from the keyboard
+
+Every editor that builds a list — a `Select`/`Cycle`/`Multi` **values list**,
+**duration presets**, the items of a `MultiInput` or a `CycleDuration` — chains
+without the mouse:
+
+- **Add value** (or *Add preset* / *Add item*) puts the caret straight in the new
+  row's input.
+- **Enter** hands focus back to that Add button.
+
+So a list is typed as `Add`, text, <kbd>Enter</kbd>, <kbd>Enter</kbd>, text,
+<kbd>Enter</kbd>… and you decide when to stop, because focus rests on the button
+rather than opening a row you didn't ask for. Rows entered through their own modal
+(a duration, a templated item) behave the same: the modal opens focused, Enter
+saves it, and focus returns to the Add button.
+
+**<kbd>Alt</kbd>+<kbd>Enter</kbd> runs the modal's primary action** — *Save*, *Add
+field*, *Apply* — from wherever the caret is, so finishing a form never needs a
+Tab hunt or the mouse. It reads the same way as Alt everywhere else in the plugin:
+the gesture the plain key doesn't do. Plain <kbd>Enter</kbd> keeps its local
+meaning (submit this input, or move to the Add button); only Fileclass's own
+modals answer the chord.
+
 ## Context menus
 
 When **Context menu entries** is enabled (Settings → Fileclass), right-clicking a

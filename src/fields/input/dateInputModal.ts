@@ -148,7 +148,7 @@ export class DateInputModal extends Modal {
 		}
 
 		this.inputEl.addEventListener("keydown", (e) => {
-			if (e.key === "Enter") {
+			if (e.key === "Enter" && !e.altKey && !e.ctrlKey && !e.metaKey) {
 				e.preventDefault();
 				this.submit();
 			}

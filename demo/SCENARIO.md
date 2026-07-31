@@ -255,6 +255,7 @@ node record.mjs 002 --dry        # print the script only
 node record.mjs 002 --attach     # narrate over the Obsidian already open
 node record.mjs 002 --keep       # don't reset the vault at the end
 node record.mjs 002 --title-card # show the title full-screen during the intro
+node record.mjs 002 --no-keys    # hide the pressed-keys badge
 ```
 
 It quits your Obsidian (asks first), stages the vault, relaunches Obsidian on it
@@ -262,6 +263,17 @@ with `--remote-debugging-port=9222`, and waits for Enter so you can start
 QuickTime. Then **⌘⌃⌥⇧C in Obsidian** advances the narration (Enter in the
 terminal also works; `q` or Ctrl-C aborts and cleans up). At the end it quits
 Obsidian, restores your vault list and wipes the demo vault.
+
+**Keys you press show up on screen.** A badge under the caption names the special
+keys as they happen — `⏎`, `⌥⏎`, `⇥`, `⎋`, and `⏎ ×3` when you chain the same one —
+so a keyboard gesture is legible in the recording. What it deliberately never
+shows: the text you type (the viewer reads the value in the field), and the cue
+chord (pressing it clears the badge instead). A modifier held on its own appears
+after a beat, which is how an Alt-click reveal reads on camera. `--no-keys` turns
+the whole thing off.
+
+Because the badge names the key, a subtitle shouldn't: write what the gesture
+*means* ("save it", "one click sets the next date"), not which key you hit.
 
 Gotchas worth knowing:
 

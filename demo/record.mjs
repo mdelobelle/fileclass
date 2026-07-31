@@ -7,6 +7,7 @@
  *   node record.mjs 002 --keep     # leave the vault as you left it (inspect it)
  *   node record.mjs 002 --attach   # don't touch the vault/app, just narrate
  *   node record.mjs 002 --dry      # print the script + pauses, run nothing
+ *   node record.mjs 002 --no-keys  # hide the pressed-keys badge under the caption
  *
  * How a take goes:
  *   1. it stages ~/fileclass-demos/<scenario>/<vault> from the scenario fixture,
@@ -163,7 +164,7 @@ async function main() {
 		launched = true;
 	}
 
-	stage = await connect(port);
+	stage = await connect(port, { showKeys: !flag("no-keys") });
 	if (attach) {
 		const v = await stage.vault();
 		console.log(dim(`Attached to "${v?.name}" (${v?.path})`));

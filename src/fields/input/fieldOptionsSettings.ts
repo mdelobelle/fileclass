@@ -24,6 +24,7 @@ import { COLOR_SOURCES } from "./colorPicker";
 import { DateFormatDefaults, defaultFormatFor, NO_DATE_DEFAULTS } from "../dateFormats";
 import { buildDateLink } from "../dateLink";
 import { attachFormatPreview, attachLinkPreview, formatNow } from "../../ui/dateFormatPreview";
+import { chainRowInput, returnFocusTo } from "../../ui/listKeyboard";
 
 export interface FieldOptionsCtx {
 	app: App;
@@ -277,7 +278,7 @@ function renderDurationPresets(container: HTMLElement, draft: OptionsDraft, app:
 	if (!draft.durationPresets) draft.durationPresets = [];
 	const presets = draft.durationPresets;
 
-	const listEl = container.createDiv();
+	const listEl = container.createDiv({ cls: "fileclass-setting-list" });
 	const rebuild = () => {
 		listEl.empty();
 		presets.forEach((p, i) => {
@@ -325,6 +326,7 @@ function renderDurationPresets(container: HTMLElement, draft: OptionsDraft, app:
 							presets.push(v);
 							rebuild();
 						}
+						returnFocusTo(b.buttonEl);
 					},
 				}).open()
 			)
@@ -424,12 +426,18 @@ function renderInlineValues(container: HTMLElement, draft: OptionsDraft): void {
 	if (!draft.values) draft.values = [];
 	const values = draft.values;
 
-	const listEl = container.createDiv();
-	const rebuild = () => {
+	const listEl = container.createDiv({ cls: "fileclass-setting-list" });
+	// Resolved on Enter, not here: the button renders below the rows.
+	let addButton: HTMLElement | undefined;
+	/** `focusIndex` is the row just added — its input takes the caret. */
+	const rebuild = (focusIndex = -1) => {
 		listEl.empty();
 		values.forEach((val, i) => {
 			new Setting(listEl)
-				.addText((t) => t.setValue(val).onChange((v) => (values[i] = v)))
+				.addText((t) => {
+					t.setValue(val).onChange((v) => (values[i] = v));
+					chainRowInput(t.inputEl, () => addButton, i === focusIndex);
+				})
 				.addExtraButton((b) =>
 					b
 						.setIcon("trash")
@@ -441,12 +449,14 @@ function renderInlineValues(container: HTMLElement, draft: OptionsDraft): void {
 				);
 		});
 	};
+
 	rebuild();
 
-	new Setting(container).addButton((b) =>
+	new Setting(container).setClass("fileclass-list-add").addButton((b) => {
+		addButton = b.buttonEl;
 		b.setButtonText("Add value").onClick(() => {
 			values.push("");
-			rebuild();
-		})
-	);
+			rebuild(values.length - 1);
+		});
+	});
 }

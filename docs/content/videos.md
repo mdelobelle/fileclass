@@ -52,3 +52,7 @@ other. Captions are English; YouTube translates them into your language.
 ## Set next date
 
 {{< video "010b" >}}
+
+## Several values in one field
+
+{{< video "011" >}}

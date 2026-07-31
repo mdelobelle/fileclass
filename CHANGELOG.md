@@ -8,6 +8,22 @@ All notable changes to Fileclass are documented here. The format follows
 
 ### UI
 
+- **Alt+Enter runs a modal's primary action** — *Save*, *Add field*, *Apply* —
+  wherever the focus is, so a form filled from the keyboard is submitted from the
+  keyboard. Fileclass's own modals only; Obsidian's are untouched.
+
+- **Values lists read as one block.** The rows of a values list or of duration
+  presets no longer carry a separator between them, and the last input is no longer
+  glued to the line below it: Obsidian collapses the padding of a `.setting-item`
+  that is first or last *in its parent*, which fired inside the wrapper div holding
+  those rows. Same repair for the last of a field's type options.
+
+- **List editors chain from the keyboard.** Adding a value, a duration preset or a
+  list item now puts the caret in the new row, and Enter hands focus back to the
+  Add button — so a values list is typed `Add`, text, Enter, Enter, text, Enter
+  instead of one mouse trip per row. The duration input also accepts **Enter to
+  save**, which it didn't: the chain used to stop there.
+
 - **Alt-click a date to advance it.** A `Date`/`DateTime` field with a *Next
   interval field* now takes its **Set next date** action straight from any control
   — Properties button, note-fields modal, table cell — without opening the picker.

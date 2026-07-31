@@ -43,6 +43,17 @@ Empty values are always valid — a field is optional unless a constraint says
 otherwise. `Lookup` and `Formula` (computed fields) are **out of scope** for
 Fileclass — use Bases views for reverse relations and computed columns.
 
+### One value or several
+
+Four of those types hold a **list** rather than a scalar, and they split by who
+decides what may go in it. `Multi` offers the values the class allows, as a switch
+each — and stores them **in the order the class declares**, not the order you
+picked them. `MultiInput` takes a list nobody can enumerate in advance: you type
+each item, reorder them, and blank rows are dropped on save. Either way the
+frontmatter gets a plain YAML list, so a base can filter on it.
+
+{{< video "011" >}}
+
 `Boolean` is the simplest of them: no options, a switch for input, and a real
 `true`/`false` in the frontmatter, which Obsidian renders as a checkbox in its own
 properties editor. Note that an **empty** boolean is not `false` — it says nothing,

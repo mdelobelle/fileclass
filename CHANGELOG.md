@@ -8,6 +8,35 @@ All notable changes to Fileclass are documented here. The format follows
 
 ### UI
 
+- **Focus rings are no longer clipped** in Fileclass's modals. Their bodies scroll,
+  which clips sideways too, and a switch at the right edge sat flush against it —
+  the ring of a keyboard-focused toggle was cut off. The bodies now carry
+  horizontal padding.
+- **Unselect all, and a "only ticked" filter**, for the other half of a long list:
+  finding a value was the filter box, undoing a dozen was still one click each. The
+  icon at the end of the filter row narrows the list to what is ticked; the footer
+  button clears everything and names the count, since it also clears what the filter
+  hides.
+- **A filter box at the top of every multi-select**, focused on open, so hundreds
+  of values are narrowed by typing instead of scrolling. Enter flips the first
+  match and clears the box, chaining type-Enter-type-Enter. Filtering is display
+  only: a value ticked while hidden is still saved.
+- **A picker over hundreds of values scrolls and hovers smoothly.** No virtual
+  list: `content-visibility` lets the engine skip off-screen rows, so selection,
+  pre-ticked state and find-in-page keep working on real DOM. Measured on a
+  500-value list — a style recalc of the picker, which every hover pays, went from
+  24-43 ms to 8-13 ms, and the worst scroll frame from 90 ms to 9 ms.
+
+- **A multi-select row toggles wherever you click it**, not only on the switch —
+  which is a small target in a column of them, while the label is where the eye
+  already is. The hovered row is banded so the label and its switch read as one
+  target. Applies to every `Multi`, `MultiFile` and `MultiMedia` picker.
+- **Fixed: the View and Display-column suggesters stayed open** after you chose a
+  value, while Base file closed properly. Selecting fires an `input` event so the
+  setting picks the value up, and that event re-queries the suggestions: a
+  synchronous source resolves before the popover closes, an awaited one resolves
+  after and reopened it.
+
 - **Reach a class's schema from a note bound to it** (#23). The `fileClass` row of
   the Properties editor gets a wrench per class — inside the pill when Obsidian
   types the property as a list, in the icon column when it types it as text — and

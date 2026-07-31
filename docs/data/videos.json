@@ -141,5 +141,16 @@
     "durationSeconds": 95,
     "recordedWith": "0.1.1",
     "privacyStatus": "public"
+  },
+  "013": {
+    "id": "t7avhsV-ZXk",
+    "url": "https://www.youtube.com/watch?v=t7avhsV-ZXk",
+    "title": "Fileclass #013 · Several links in one field",
+    "subject": "Several links in one field",
+    "scenario": "013_several_links",
+    "doc": "fields/#link-fields-file--media",
+    "durationSeconds": 111,
+    "recordedWith": "0.1.1",
+    "privacyStatus": "public"
   }
 }

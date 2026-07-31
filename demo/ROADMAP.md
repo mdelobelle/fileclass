@@ -62,7 +62,7 @@ thread, and a tight smoke test of that type's input path.
 | # | Take | Feature | Vault gains | Status |
 | - | ---- | ------- | ----------- | ------ |
 | 012 | Link a note to another note | `File` (candidates from a base) | `Author` class + notes, `Authors.base` | ✅ [published](https://www.youtube.com/watch?v=orwUfnJCWT4) |
-| 013 | Translators, illustrators, several links | `MultiFile` | `Comic.contributors` | |
+| 013 | Translators, illustrators, several links | `MultiFile`, filter box | `Comic` class, Tintin typed, `Comic.contributors`, 15 people | ✅ [published](https://www.youtube.com/watch?v=t7avhsV-ZXk) |
 | 014 | Covers and attachments | `Media`, `MultiMedia` | `Book.cover` | |
 | 015 | Candidates that depend on another field | conditional candidates | `Comic.series` | |
 

@@ -60,3 +60,7 @@ other. Captions are English; YouTube translates them into your language.
 ## Link a note to another note
 
 {{< video "012" >}}
+
+## Several links in one field
+
+{{< video "013" >}}

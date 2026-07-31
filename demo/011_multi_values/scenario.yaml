@@ -1,0 +1,52 @@
+# Narration for take 011 — see ../SCENARIO.md for the format.
+# Starts where 010b ended: Book declares `review`, Atomic Habits is three clicks
+# into its schedule. Scope: `Multi` and `MultiInput` — a list of values you allow
+# against a list you can't predict. Templates stay out; they are take 016.
+#
+# Two facts the script leans on, both read from valueModals.ts rather than assumed:
+#  - Multi submits `options.filter(...)`, and `options` follows the class's declared
+#    order — hence step 5's "Religion, then Ecology" and step 6's claim. Clicking in
+#    the wrong order is what makes that step a demonstration instead of an assertion.
+#  - MultiInput saves `map(trim).filter(!== "")`, so blank rows cost nothing.
+#
+# Staging note for step 4: Dune is now missing three of Book's fields (next
+# interval, review, themes), so *Insert missing fields* — the command or the new
+# Properties button — would add all three. Insert `themes` by editing it from the
+# note-fields modal, which writes the key on save, and the take stays on subject.
+title: "Fileclass — Several values in one field"
+description: "A list of values you allow, and a list nobody can predict."
+doc: "fields/#available-field-types" # deep link used in the description
+tags: "multi, multiinput, list values"
+vault_name: "Demo"
+plugin: true
+settings:
+  classFilesPath: "Classes/"
+  fileClassAlias: "fileClass"
+initial_pause: 1500
+default_pause: 900
+
+steps:
+  - title: "Dune has one genre, but it has several themes"
+    pause: 1600
+  - title: "Add a field named themes, type Multi"
+    pause: 1400
+  - title: "Its allowed values are declared like a Select's: Ecology, Politics, Religion"
+    pause: 1800
+  - title: "Save, insert it, and open themes on Dune"
+    pause: 1400
+  - title: "Every allowed value gets a switch — turn on Religion, then Ecology"
+    pause: 1800
+  - title: "Stored in the order the class declares, not the order you clicked"
+    pause: 1900
+  - title: "Now its awards: a list nobody can declare in advance"
+    pause: 1800
+  - title: "Add a field named awards, type Multi input"
+    pause: 1400
+  - title: "No allowed values here — you type each item, and reorder them at will"
+    pause: 1800
+  - title: "Hugo 1966, then Nebula 1965"
+    pause: 1500
+  - title: "The same YAML list on disk; what differs is who decides the values"
+    pause: 1900
+  - title: "A closed list, and an open one 🎉"
+    pause: 2200

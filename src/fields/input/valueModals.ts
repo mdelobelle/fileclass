@@ -7,6 +7,7 @@ import { App, Modal, SuggestModal, Setting, TextAreaComponent, TextComponent } f
 
 import { makeStickyFooter } from "../../ui/modalFooter";
 import { modalTitle } from "../../ui/modalTitle";
+import { returnFocusTo } from "../../ui/listKeyboard";
 
 import { DisplayGroup, groupLabel } from "../baseOrder";
 import { parseTemplate, renderTemplate } from "../inputTemplate";
@@ -69,7 +70,7 @@ export class PromptModal extends Modal {
 		};
 
 		input.inputEl.addEventListener("keydown", (e) => {
-			if (e.key === "Enter") {
+			if (e.key === "Enter" && !e.altKey && !e.ctrlKey && !e.metaKey) {
 				e.preventDefault();
 				submit();
 			}
@@ -261,6 +262,8 @@ export interface MultiInputOptions {
  */
 export class MultiInputEditorModal extends Modal {
 	private readonly items: string[];
+	/** Set when a row was added from the keyboard: the next render focuses Add. */
+	private focusAddOnRender = false;
 
 	constructor(app: App, private readonly opts: MultiInputOptions) {
 		super(app);
@@ -271,10 +274,11 @@ export class MultiInputEditorModal extends Modal {
 		this.render();
 	}
 
-	private editItem(index: number): void {
+	private editItem(index: number, chain = false): void {
 		const current = this.items[index] ?? "";
 		const onValue = (value: string) => {
 			this.items[index] = value;
+			this.focusAddOnRender = chain;
 			this.render();
 		};
 		const title = `${this.opts.title} — item ${index + 1}`;
@@ -325,12 +329,17 @@ export class MultiInputEditorModal extends Modal {
 		});
 
 		new Setting(contentEl)
-			.addButton((b) =>
+			.addButton((b) => {
 				b.setButtonText("Add item").onClick(() => {
 					this.items.push("");
-					this.editItem(this.items.length - 1);
-				})
-			)
+					this.editItem(this.items.length - 1, true);
+				});
+				// This render replaced the button that was clicked; focus the new one.
+				if (this.focusAddOnRender) {
+					this.focusAddOnRender = false;
+					returnFocusTo(b.buttonEl);
+				}
+			})
 			.addButton((b) =>
 				b
 					.setButtonText("Save")

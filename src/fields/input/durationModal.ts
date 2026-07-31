@@ -7,6 +7,7 @@
 import { App, Modal, Setting, TextComponent } from "obsidian";
 
 import { modalTitle } from "../../ui/modalTitle";
+import { returnFocusTo } from "../../ui/listKeyboard";
 
 import {
 	buildDuration,
@@ -56,6 +57,13 @@ export class DurationInputModal extends Modal {
 				this.freeText = t;
 				t.setPlaceholder("1h 30m").setValue(buildDuration(this.parts));
 				t.onChange((v) => this.onFreeText(v));
+				// Enter saves, as in every other single-field input — without it the
+				// keyboard chain for adding presets stopped here and needed the mouse.
+				t.inputEl.addEventListener("keydown", (e) => {
+					if (e.key !== "Enter" || e.altKey || e.ctrlKey || e.metaKey) return;
+					e.preventDefault();
+					this.submit();
+				});
 				window.setTimeout(() => t.inputEl.focus(), 0);
 			});
 		this.errorEl = contentEl.createDiv({ cls: "setting-item-description" });
@@ -170,6 +178,8 @@ export interface CycleDurationModalOptions {
  */
 export class CycleDurationEditorModal extends Modal {
 	private readonly items: string[];
+	/** Set when a row was added from the keyboard: the next render focuses Add. */
+	private focusAddOnRender = false;
 
 	constructor(app: App, private readonly opts: CycleDurationModalOptions) {
 		super(app);
@@ -180,13 +190,14 @@ export class CycleDurationEditorModal extends Modal {
 		this.render();
 	}
 
-	private editItem(index: number): void {
+	private editItem(index: number, chain = false): void {
 		new DurationInputModal(this.app, {
 			title: `${this.opts.title} — item ${index + 1}`,
 			initial: this.items[index] ?? "",
 			presets: this.opts.presets,
 			onSubmit: (v) => {
 				this.items[index] = v;
+				this.focusAddOnRender = chain;
 				this.render();
 			},
 		}).open();
@@ -240,12 +251,17 @@ export class CycleDurationEditorModal extends Modal {
 		}
 
 		new Setting(contentEl)
-			.addButton((b) =>
+			.addButton((b) => {
 				b.setButtonText(presets.length ? "Add custom" : "Add duration").onClick(() => {
 					this.items.push("");
-					this.editItem(this.items.length - 1);
-				})
-			)
+					this.editItem(this.items.length - 1, true);
+				});
+				// This render replaced the button that was clicked; focus the new one.
+				if (this.focusAddOnRender) {
+					this.focusAddOnRender = false;
+					returnFocusTo(b.buttonEl);
+				}
+			})
 			.addButton((b) =>
 				b
 					.setButtonText("Save")

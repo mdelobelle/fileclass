@@ -119,5 +119,16 @@
     "durationSeconds": 106,
     "recordedWith": "0.1.1",
     "privacyStatus": "public"
+  },
+  "011": {
+    "id": "g0FilbQ8N3w",
+    "url": "https://www.youtube.com/watch?v=g0FilbQ8N3w",
+    "title": "Fileclass #011 · Several values in one field",
+    "subject": "Several values in one field",
+    "scenario": "011_multi_values",
+    "doc": "fields/#available-field-types",
+    "durationSeconds": 114,
+    "recordedWith": "0.1.1",
+    "privacyStatus": "public"
   }
 }

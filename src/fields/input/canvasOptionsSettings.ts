@@ -174,7 +174,7 @@ function labelList(container: HTMLElement, name: string, draft: OptionsDraft, ke
 		input = t.inputEl;
 		t.setPlaceholder("label");
 		t.inputEl.addEventListener("keydown", (e) => {
-			if (e.key === "Enter") {
+			if (e.key === "Enter" && !e.altKey && !e.ctrlKey && !e.metaKey) {
 				e.preventDefault();
 				add();
 			}

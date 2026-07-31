@@ -84,7 +84,7 @@ export class FieldDefModal extends Modal {
 			t.setValue(this.name).onChange((v) => (this.name = v))
 		);
 
-		const optionsEl = contentEl.createDiv();
+		const optionsEl = contentEl.createDiv({ cls: "fileclass-field-options" });
 		const renderOptions = () =>
 			renderFieldOptionsSettings(optionsEl, this.type, this.draft, {
 				app: this.app,

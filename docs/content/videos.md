@@ -48,3 +48,7 @@ other. Captions are English; YouTube translates them into your language.
 ## CycleDuration: a sequence, not a duration
 
 {{< video "010" >}}
+
+## Set next date
+
+{{< video "010b" >}}

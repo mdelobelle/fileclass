@@ -310,22 +310,44 @@ them, all three, or the same one twice.
 
 ### Set next date (spaced repetition)
 
+{{< video "010b" >}}
+
 This is how you schedule a date that moves forward by your own sequence of
 intervals (spaced repetition, recurring reviews, chores):
 
 1. Add a **`CycleDuration`** field (e.g. `next interval`) and enter your intervals
    in order — say `1 day`, `1 week`, `2 weeks`, `5 weeks`.
-2. On a **`Date`** (or `DateTime`) field (e.g. `next session`), set its **Next
-   interval field** option to that CycleDuration field's name.
+2. On a **`Date`** (or `DateTime`) field (e.g. `next session`), open its **Next
+   interval field** option and pick that field. The dropdown lists the
+   `Duration` and `CycleDuration` fields of the fileClass — its own and its
+   inherited ones — so there is no name to remember and no incompatible type to
+   choose by mistake. Leave it on `(none)` for a plain date.
 3. Editing the date now shows a **Set next date** button. One click:
-   - computes `current date + first interval`,
+   - computes `current date + first interval` — from the date already stored,
+     falling back to today when the field is empty,
    - writes it to the date field, and
    - **rotates** the interval list so the next click uses the following interval,
      wrapping back to the first after the last.
 
+   The picker closes on success, so each step of the schedule is one deliberate
+   gesture.
+4. Or skip the picker: **Alt-click the date's control** — in the Properties
+   editor, the note-fields modal or a table cell — and it advances straight away.
+   Holding Alt over the control shows the date it would write.
+
 So repeatedly clicking `next session` walks the date through `+1d`, `+1w`, `+2w`,
 `+5w`, then `+1d` again. Pointing the option at a plain **`Duration`** field
 instead gives a fixed interval (added every time, no rotation).
+
+Whichever route you take, the date is stored **exactly as the picker would store
+it**: the field's own `dateFormat`, and its link shape when the field defaults to
+links or already holds one — so a `[[Daily/Notes/2026/10/2026-10-29 Thu|…]]` stays
+a link instead of collapsing to a bare date.
+
+If the option was set and the interval field has since been renamed, retyped or
+removed, the dropdown keeps that name and marks it `(not found)`: the stored
+value isn't dropped behind your back, and the missing **Set next date** button
+now has a visible reason.
 
 It is a **manual, one-shot action** — no automatic recomputation and nothing
 touches other notes, so it stays within Fileclass's guided-input scope (computed

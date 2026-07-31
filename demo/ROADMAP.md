@@ -54,7 +54,7 @@ thread, and a tight smoke test of that type's input path.
 | 008 | DateTime and Time | `DateTime`, `Time` (a point in time vs a time of day) | `Activity` class, `Reading group` note | ✅ [published](https://www.youtube.com/watch?v=bInkg1jLOmM) |
 | 009 | Duration | `Duration` (words, spinners, ISO on disk) | `Album` class, `Kind of Blue` note | ✅ [published](https://www.youtube.com/watch?v=G3mUhJ1Ywuc) |
 | 010 | CycleDuration: a sequence, not a duration | `CycleDuration`, `Duration` presets | `Atomic Habits` note, `Book.next interval` | ✅ [published](https://www.youtube.com/watch?v=lhrJ2a5pFRY) |
-| 010b | Set next date | the `Next interval field` option, and the rotation it drives | `Book.review` | |
+| 010b | Set next date | the `Next interval field` option, and the rotation it drives | `Book.review` | ✅ [published](https://www.youtube.com/watch?v=45_n091aKkM) |
 | 011 | Several values in one field | `Multi`, `MultiInput` | `Book.themes` | |
 
 ## Arc 3 — fields that point at notes

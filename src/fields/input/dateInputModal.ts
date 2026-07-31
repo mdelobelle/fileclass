@@ -11,7 +11,12 @@ import { App, Modal, Setting, moment as obsidianMoment } from "obsidian";
 import { modalTitle } from "../../ui/modalTitle";
 
 import { Field, FieldType } from "../../schema/field";
-import { buildDateLink } from "../dateLink";
+import {
+	dateTextOf,
+	isDateLink,
+	nativeDateFormat,
+	storedDateValue,
+} from "../dateValue";
 import { dateOptions } from "../options";
 
 /** Obsidian re-exports the callable moment fn but types it as a namespace. */
@@ -41,12 +46,6 @@ const NATIVE_TYPE: Partial<Record<FieldType, string>> = {
 	DateTime: "datetime-local",
 	Time: "time",
 };
-const NATIVE_FORMAT: Partial<Record<FieldType, string>> = {
-	Date: "YYYY-MM-DD",
-	DateTime: "YYYY-MM-DD[T]HH:mm",
-	Time: "HH:mm",
-};
-
 export class DateInputModal extends Modal {
 	private inputEl!: HTMLInputElement;
 	/** Store the date as a `[[wikilink]]` (like MDM's "insert as link"). */
@@ -71,7 +70,7 @@ export class DateInputModal extends Modal {
 	}
 
 	private get nativeFormat(): string {
-		return NATIVE_FORMAT[this.opts.field.type] ?? "YYYY-MM-DD";
+		return nativeDateFormat(this.opts.field.type);
 	}
 
 	onOpen(): void {
@@ -157,21 +156,12 @@ export class DateInputModal extends Modal {
 	}
 
 	private isInitialLink(): boolean {
-		return /^!?\[\[.*\]\]$/.test(this.opts.initial.trim());
-	}
-
-	/** The date text inside the initial value (unwrapping a `[[link]]` if any). */
-	private initialDateText(): string {
-		const raw = this.opts.initial.trim();
-		const m = raw.match(/^!?\[\[([^\]|#]+)(?:[#|][^\]]*)?\]\]$/);
-		if (!m) return raw;
-		// Keep only the basename of the link target (drop any path prefix).
-		return m[1].split("/").pop() ?? m[1];
+		return isDateLink(this.opts.initial);
 	}
 
 	/** Fills the native input from the current value (parsed via its format). */
 	private prefill(): void {
-		const text = this.initialDateText();
+		const text = dateTextOf(this.opts.initial);
 		if (!text) return;
 		const customFmt = dateOptions(this.opts.field).dateFormat;
 		const parsed = customFmt ? moment(text, customFmt) : moment(text, this.nativeFormat);
@@ -185,26 +175,16 @@ export class DateInputModal extends Modal {
 			this.close();
 			return;
 		}
-		const customFmt = dateOptions(this.opts.field).dateFormat;
-		// Default formats: the native value is already the stored form.
-		const date = customFmt ? moment(raw, this.nativeFormat).format(customFmt) : raw;
-		this.opts.onSubmit(this.insertAsLink ? this.wrapAsLink(date, raw) : date);
-		this.close();
-	}
-
-	/**
-	 * Wraps the date as a wikilink. `iso` is the native (unformatted) value, used
-	 * to expand the `{{YYYY}}`-style tokens of the link path — the link's folder
-	 * can therefore follow the date, as daily notes are usually filed.
-	 */
-	private wrapAsLink(date: string, iso: string): string {
-		const { dateLinkPath, dateLinkAlias } = dateOptions(this.opts.field);
-		return buildDateLink(
-			date,
-			iso,
-			{ linkPath: dateLinkPath, alias: dateLinkAlias },
-			(value, fmt) => moment(value, this.nativeFormat).format(fmt)
+		const { dateFormat, dateLinkPath, dateLinkAlias } = dateOptions(this.opts.field);
+		this.opts.onSubmit(
+			storedDateValue(
+				raw,
+				{ dateFormat, linkPath: dateLinkPath, alias: dateLinkAlias },
+				this.insertAsLink,
+				(value, fmt) => moment(value, this.nativeFormat).format(fmt)
+			)
 		);
+		this.close();
 	}
 
 	onClose(): void {

@@ -14,7 +14,12 @@ import type FileclassPlugin from "../../main";
 import { insertMissingFields } from "../commands/insertMissingFields";
 import { makeDisplayDeps } from "../fields/displayDeps";
 import { controlActionFor, controlLabel } from "../fields/controlAction";
-import { clearField, EditContext, runControlAction } from "../fields/fieldActions";
+import {
+	clearField,
+	EditContext,
+	nextDateActionFor,
+	runControlAction,
+} from "../fields/fieldActions";
 import { describeField, DisplayDeps } from "../fields/objectDisplay";
 import { isInputSupported } from "../fields/support";
 import { fieldTypeIcon } from "../fields/typeIcons";
@@ -23,6 +28,7 @@ import { readFieldValue } from "../io/read";
 import { Field, isRootField } from "../schema/field";
 import { AddFileClassModal } from "./addFileClassModal";
 import { openFileClassSchema } from "./fileClassSchemaModal";
+import { attachAltAffordance } from "./altAffordance";
 import { makeValuePreview } from "./valuePreview";
 import { makeIndicatorIcon, MODAL_SCOPE, navIndicatorFile } from "./indicator/indicatorDom";
 import { renderValueWithLinks } from "./valueLinks";
@@ -153,8 +159,24 @@ export class NoteFieldsModal extends Modal {
 		if (isInputSupported(field.type)) {
 			const action = controlActionFor(field.type);
 			const { icon, verb, alt } = controlLabel(action);
+			// Same rule as the Properties buttons: a date with an interval sequence
+			// advances on Alt-click, and shows the date it would write.
+			const hasNextDate = !!nextDateActionFor(ctx, field);
+			const tooltip = hasNextDate
+				? `${verb} (Alt-click to set the next date)`
+				: alt
+					? `${verb} (Alt-click to pick a value)`
+					: verb;
 			setting.addExtraButton((b) => {
-				b.setIcon(icon).setTooltip(alt ? `${verb} (Alt-click to pick a value)` : verb);
+				b.setIcon(icon).setTooltip(tooltip);
+				if (hasNextDate) {
+					attachAltAffordance(b.extraSettingsEl, { icon, label: tooltip }, () => {
+						const next = nextDateActionFor(ctx, field);
+						return next
+							? { icon: "skip-forward", label: `Set to ${next.next} (+${next.interval})` }
+							: null;
+					});
+				}
 				// Not `.onClick()`: it drops the event, and the modifier is the point.
 				b.extraSettingsEl.addEventListener("click", (e) => {
 					void runControlAction(ctx, field, { alt: e.altKey });

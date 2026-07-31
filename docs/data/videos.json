@@ -130,5 +130,16 @@
     "durationSeconds": 114,
     "recordedWith": "0.1.1",
     "privacyStatus": "public"
+  },
+  "012": {
+    "id": "orwUfnJCWT4",
+    "url": "https://www.youtube.com/watch?v=orwUfnJCWT4",
+    "title": "Fileclass #012 · Link a note to another note",
+    "subject": "Link a note to another note",
+    "scenario": "012_link_a_note",
+    "doc": "fields/#link-fields-file--media",
+    "durationSeconds": 95,
+    "recordedWith": "0.1.1",
+    "privacyStatus": "public"
   }
 }

@@ -130,6 +130,8 @@ when several values share one shape — e.g. a list of repository URLs from a
 
 ## Link fields (File / Media)
 
+{{< video "012" >}}
+
 `File`, `MultiFile`, `Media`, and `MultiMedia` store wikilinks. Their **candidate
 list comes from a Base view** — configure the field with a `.base` file and view
 (`baseFile` + `viewName`); this replaces Metadata Menu's Dataview query and Media

@@ -36,6 +36,8 @@ export interface FileclassSettings {
 	insertFieldsOnBind: boolean;
 	/** Show an edit button on matching rows of the native Properties editor. */
 	enablePropertyEditButtons: boolean;
+	/** Show "Add a class" / "Insert missing fields" next to "Add property". */
+	enablePropertyActionButtons: boolean;
 	/** Show the field indicator icon in the tab header. */
 	enableTabHeaderIndicator: boolean;
 	/** Show the field indicator icon in the file explorer. */
@@ -66,6 +68,7 @@ export const DEFAULT_SETTINGS: FileclassSettings = {
 	enableContextMenu: true,
 	insertFieldsOnBind: true,
 	enablePropertyEditButtons: true,
+	enablePropertyActionButtons: true,
 	enableTabHeaderIndicator: true,
 	enableFileExplorerIndicator: true,
 	enableBookmarksIndicator: true,

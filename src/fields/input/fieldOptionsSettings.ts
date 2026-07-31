@@ -7,7 +7,8 @@
  */
 import { App, Setting } from "obsidian";
 
-import { FieldType } from "../../schema/field";
+import { Field, FieldType } from "../../schema/field";
+import { intervalFieldChoices, isIntervalField } from "../intervalChoices";
 import {
 	BaseColumnSuggest,
 	BaseFileSuggest,
@@ -28,6 +29,11 @@ export interface FieldOptionsCtx {
 	app: App;
 	/** Plugin-wide write formats, to name the fallback under "Date format". */
 	dateDefaults?: DateFormatDefaults;
+	/**
+	 * The fileClass's resolved fields (own and inherited), so "Next interval
+	 * field" can offer the compatible ones instead of asking for a name.
+	 */
+	classFields?: readonly Pick<Field, "name" | "type">[];
 }
 
 /** What "blank" stores when no default is set either. */
@@ -170,19 +176,27 @@ export function renderFieldOptionsSettings(
 				refreshLink();
 			}
 			if (type !== "Time") {
+				const classFields = ctx.classFields ?? [];
+				const choices = intervalFieldChoices(classFields, draft.nextIntervalField);
+				const none = !classFields.some((f) => isIntervalField(f));
 				new Setting(container)
 					.setName("Next interval field")
 					.setDesc(
-						"Optional. Name of a Duration or CycleDuration field in this fileClass. Adds a " +
-							'"Set next date" button that advances this date by that interval (and cycles ' +
-							"a CycleDuration list to its next value)."
+						'Optional. Adds a "Set next date" button that advances this date by the ' +
+							"interval held in another field (and cycles a CycleDuration list to its " +
+							"next value). " +
+							(none
+								? "This fileClass has no Duration or CycleDuration field yet — add one, then come back."
+								: "Only Duration and CycleDuration fields can drive it.")
 					)
-					.addText((t) =>
-						t
-							.setPlaceholder("(none)")
-							.setValue(draft.nextIntervalField ?? "")
-							.onChange((v) => (draft.nextIntervalField = v))
-					);
+					.addDropdown((d) => {
+						for (const c of choices) d.addOption(c.value, c.label);
+						// A stored name the dropdown had to keep (see intervalChoices)
+						// stays selected; setValue on an absent option would blank it.
+						d.setValue(draft.nextIntervalField ?? "").onChange(
+							(v) => (draft.nextIntervalField = v)
+						);
+					});
 			}
 			return;
 		}

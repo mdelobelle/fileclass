@@ -123,6 +123,39 @@
 	height: 15px;
 }
 
+/*
+ * Section actions beside the native "Add property". That button is inline-flex
+ * with a top margin of its own, so the wrapper matches it and the row reads as
+ * one line of buttons; it wraps on a narrow pane instead of overflowing.
+ */
+/*
+ * Mirrors what Obsidian declares on .metadata-add-button — metadata label font
+ * (`.text-icon-button` alone would give --font-ui-small, a size smaller) and the
+ * same 0.5em top margin, which resolves against that font. Variables, not the
+ * numbers they currently evaluate to, so the row stays on one baseline when a
+ * theme or the user changes the metadata font.
+ */
+.metadata-content > .fileclass-prop-actions {
+	display: inline-flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--size-4-1);
+	font-size: var(--metadata-label-font-size);
+	font-family: var(--metadata-label-font);
+	margin: 0.5em 0 0 var(--size-4-2);
+	vertical-align: top;
+}
+.metadata-container .fileclass-prop-action {
+	font-size: var(--metadata-label-font-size);
+	font-family: var(--metadata-label-font);
+	padding-inline-start: var(--size-2-3);
+	cursor: pointer;
+	color: var(--text-muted);
+}
+.metadata-container .fileclass-prop-action:hover {
+	color: var(--text-normal);
+}
+
 /* Canvas field filters: color/side chips + label chip list. */
 .fileclass-color-chip,
 .fileclass-side-chip {

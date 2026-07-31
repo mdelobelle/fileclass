@@ -182,6 +182,19 @@ export class FileclassSettingTab extends PluginSettingTab {
 				})
 			);
 
+		new Setting(containerEl)
+			.setName("Property section actions")
+			.setDesc(
+				'Show "Add a class" next to "Add property", and "Insert missing fields" when the note is missing some.'
+			)
+			.addToggle((toggle) =>
+				toggle.setValue(this.plugin.settings.enablePropertyActionButtons).onChange(async (value) => {
+					this.plugin.settings.enablePropertyActionButtons = value;
+					await this.plugin.saveSettings();
+					this.plugin.propertyButtons.refreshNow();
+				})
+			);
+
 		new Setting(containerEl).setName("Indicators").setHeading();
 		containerEl.createEl("p", {
 			text: "A clickable icon next to a note's name opens its fields.",

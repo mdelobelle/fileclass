@@ -6,10 +6,11 @@
  */
 import { App, Notice, TFile } from "obsidian";
 
+import { missingRootFields } from "../fields/missingFields";
 import { defaultValueFor } from "../fields/support";
 import { hasFieldKey } from "../io/read";
 import { ValueWrite, writeValues } from "../io/write";
-import { Field, isRootField } from "../schema/field";
+import { Field } from "../schema/field";
 
 /** Returns the number of fields inserted. */
 export async function insertMissingFields(
@@ -23,15 +24,11 @@ export async function insertMissingFields(
 	 */
 	{ silent = false }: { silent?: boolean } = {}
 ): Promise<number> {
-	const missing = fields.filter((f) => isRootField(f) && !hasFieldKey(app, file, f));
-	// De-duplicate by name (a note may bind several fileClasses sharing a field).
-	const seen = new Set<string>();
-	const writes: ValueWrite[] = [];
-	for (const field of missing) {
-		if (seen.has(field.name)) continue;
-		seen.add(field.name);
-		writes.push({ namePath: [field.name], value: defaultValueFor(field) });
-	}
+	const missing = missingRootFields(fields, (f) => hasFieldKey(app, file, f));
+	const writes: ValueWrite[] = missing.map((field) => ({
+		namePath: [field.name],
+		value: defaultValueFor(field),
+	}));
 
 	if (!writes.length) {
 		if (!silent) new Notice("Fileclass: no missing fields to insert.");

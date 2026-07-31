@@ -24,7 +24,8 @@ type](#one-gesture-per-field-type) rule:
 - **Clear** (all) — removes the field's value.
 
 **Alt-click** a toggle or a next button to open the input instead, and set an
-explicit value.
+explicit value — and on a date wired to an interval sequence, Alt-click advances
+it instead of opening the picker.
 
 Header actions: **Insert missing fields** (adds any root fields absent from the
 frontmatter) and **Add fileClass** (binds another fileClass to the note).
@@ -55,7 +56,14 @@ gesture: the buttons in the Properties editor, a cell of the editable
 | ---- | ----- | --------- |
 | `Cycle` | writes the **next allowed value** | opens the value picker |
 | `Boolean` | **flips** true/false | opens the switch |
+| `Date`/`DateTime` with a [next interval](../fields/#set-next-date-spaced-repetition) | opens the picker | writes the **next date** |
 | everything else | opens the type's **input** | — |
+
+Alt is always "the gesture the click doesn't do". For a `Cycle` the click writes,
+so Alt opens the picker; for a date it is the other way round. While you hold Alt
+over a date's control, its calendar icon becomes a **skip-forward** and its
+tooltip names the date it would write (`Set "review" to 2026-10-29 (+90d)`) — the
+value is read at that moment, so it is never a stale promise.
 
 Before this, a `Cycle` advanced in the note-fields modal but opened a picker
 everywhere else — under a `rotate-cw` icon that promised the advance. A control's
@@ -135,3 +143,26 @@ under **Settings → Fileclass → Property editor buttons**.
 Like the indicators, this is a best-effort DOM decoration (Obsidian exposes no
 API for it): if the properties DOM changes, the buttons simply stop appearing and
 everything else keeps working.
+
+## Property section actions
+
+Next to Obsidian's **+ Add property**, on the same line, Fileclass adds:
+
+- **+ Add a class** — opens the fileClass picker, the same one as the command and
+  the context menu. Always available, whether the note already has a class or not
+  (a note may bind several).
+- **+ Insert *N* missing fields** — appears **only when the note is missing
+  some**, names how many, and lists them in its tooltip. Clicking inserts them
+  all with empty values, in one write.
+
+The second button's absence is the useful half of the design: when it isn't
+there, the note is complete. It is never a button whose only outcome is "nothing
+to insert" — which, since binding a class inserts its fields automatically
+(*Insert fields when adding a class*, on by default), is what it would show most
+of the time.
+
+Both buttons sit in the properties section, so they follow Obsidian's own rule
+for showing it: a note with **no frontmatter at all** displays no properties
+section, and therefore no buttons — use the command palette, the right-click menu
+or the [field indicator](#field-indicator) to bind the first class. Toggle the
+pair under **Settings → Fileclass → Property section actions**.

@@ -6,7 +6,7 @@
  * wraps it to perform the single frontmatter write. Values flow up to the
  * top-level (root) field, so a nested object subtree is written in one call.
  */
-import { App, Notice, parseYaml, stringifyYaml, TFile } from "obsidian";
+import { App, moment as obsidianMoment, Notice, parseYaml, stringifyYaml, TFile } from "obsidian";
 
 import { readFieldValue } from "../io/read";
 import { writeFieldValue, writeValues } from "../io/write";
@@ -27,6 +27,7 @@ import { LocationInputModal } from "./input/locationModal";
 import { IconPickerModal } from "./input/iconPicker";
 import { ColorPickerModal } from "./input/colorPicker";
 import { addDuration, formatDuration } from "./duration";
+import { dateTextOf, isDateLink, nativeDateFormat, storedDateValue } from "./dateValue";
 import {
 	BooleanInputModal,
 	ChoiceSuggestModal,
@@ -57,6 +58,13 @@ import { editableRootFields, TEXT_INPUT_TYPES } from "./support";
 import { resolveFieldValues } from "./valuesIo";
 import { validateField } from "./validate";
 
+/** Obsidian re-exports the callable moment fn but types it as a namespace. */
+interface MomentLike {
+	isValid(): boolean;
+	format(fmt: string): string;
+}
+const momentFn = obsidianMoment as unknown as (input?: string, format?: string) => MomentLike;
+
 /** Everything an edit needs: the host, the target note, and its resolved fields. */
 export interface EditContext {
 	host: AdapterHost;
@@ -74,7 +82,14 @@ export interface EditContext {
 function nextDateProvider(
 	ctx: EditContext,
 	dateField: Field
-): { label: string; apply: (currentIso: string) => Promise<boolean> } | undefined {
+):
+	| {
+			label: string;
+			apply: (currentIso: string) => Promise<boolean>;
+			/** The date advancing from `baseIso` would show, without writing. */
+			preview: (baseIso: string) => string | null;
+	  }
+	| undefined {
 	const name = dateOptions(dateField).nextIntervalField;
 	if (!name) return undefined;
 	const interval = ctx.allFields.find(
@@ -93,27 +108,62 @@ function nextDateProvider(
 	if (!head || !head.trim()) return undefined;
 	const label = formatDuration(head) || head;
 
-	const apply = async (currentIso: string): Promise<boolean> => {
+	const { dateFormat, dateLinkPath, dateLinkAlias, defaultInsertAsLink } =
+		dateOptions(dateField);
+	/** Links are kept: the field's default, or the shape the value already has. */
+	const asLink = (): boolean => {
+		const stored = readFieldValue(app, ctx.file, dateField);
+		return defaultInsertAsLink === true || isDateLink(stored == null ? "" : String(stored));
+	};
+
+	const format = (v: string, fmt: string): string =>
+		momentFn(v, nativeDateFormat(dateField.type)).format(fmt);
+
+	/**
+	 * What advancing from `baseIso` would produce, without writing: the date as
+	 * the field displays it, and the exact value to store. Shared by the tooltip
+	 * (Alt-hover) and the write, so what is promised is what lands.
+	 */
+	const compute = (
+		baseIso: string
+	): { list: string[]; current: string; date: string; value: string } | null => {
 		const list = listOf();
 		const current = list[0];
-		if (!current) {
-			new Notice(`Fileclass: "${interval.name}" has no interval to apply.`);
-			return false;
-		}
-		const nextDate = addDuration(currentIso, current);
-		if (!nextDate) {
-			new Notice(`Fileclass: could not compute the next date from "${current}".`);
+		if (!current) return null;
+		const nextDate = addDuration(baseIso, current);
+		if (!nextDate) return null;
+		const options = { dateFormat, linkPath: dateLinkPath, alias: dateLinkAlias };
+		return {
+			list,
+			current,
+			date: storedDateValue(nextDate, { dateFormat }, false, format),
+			// Stored the way the picker's Save would: the field's own format, and its
+			// link shape when the field is set to links or already holds one. A bare
+			// ISO date here would silently change the note's shape.
+			value: storedDateValue(nextDate, options, asLink(), format),
+		};
+	};
+
+	const apply = async (currentIso: string): Promise<boolean> => {
+		const next = compute(currentIso);
+		if (!next) {
+			new Notice(
+				`Fileclass: could not compute the next date for "${dateField.name}" from "${interval.name}".`
+			);
 			return false;
 		}
 		const writes: { namePath: string[]; value: unknown }[] = [
-			{ namePath: [dateField.name], value: nextDate },
+			{ namePath: [dateField.name], value: next.value },
 		];
-		if (interval.type === "CycleDuration" && list.length > 1) {
-			writes.push({ namePath: [interval.name], value: [...list.slice(1), current] });
+		if (interval.type === "CycleDuration" && next.list.length > 1) {
+			writes.push({
+				namePath: [interval.name],
+				value: [...next.list.slice(1), next.current],
+			});
 		}
 		try {
 			await writeValues(app, ctx.file, writes);
-			new Notice(`Fileclass: ${dateField.name} → ${nextDate}`);
+			new Notice(`Fileclass: ${dateField.name} → ${next.value}`);
 			return true;
 		} catch (err) {
 			new Notice(`Fileclass: could not set the next date (${(err as Error).message}).`);
@@ -121,7 +171,50 @@ function nextDateProvider(
 		}
 	};
 
-	return { label, apply };
+	return { label, apply, preview: (baseIso: string) => compute(baseIso)?.date ?? null };
+}
+
+/** The date a control would advance from: its current value, else today. */
+function baseNativeDate(ctx: EditContext, field: Field): string {
+	const native = nativeDateFormat(field.type);
+	const stored = readFieldValue(ctx.host.app, ctx.file, field);
+	const text = dateTextOf(stored == null ? "" : String(stored));
+	if (text) {
+		const parsed = momentFn(text, dateOptions(field).dateFormat || native);
+		if (parsed.isValid()) return parsed.format(native);
+	}
+	return momentFn().format(native);
+}
+
+/** A date control's Alt gesture: advance by the linked interval sequence. */
+export interface NextDateAction {
+	/** The interval to be applied, human-readable ("90d"). */
+	interval: string;
+	/** The date it would write, as the field displays it. */
+	next: string;
+	apply: () => Promise<void>;
+}
+
+/**
+ * The Alt gesture for a date control, or undefined when the field has no usable
+ * next interval. Alt-click on a `Cycle` opens its picker (the gesture it doesn't
+ * do); here the click opens the picker, so Alt performs the write — the same
+ * "Alt does the other one" rule, read from the other end.
+ */
+export function nextDateActionFor(ctx: EditContext, field: Field): NextDateAction | undefined {
+	if (field.type !== "Date" && field.type !== "DateTime") return undefined;
+	const provider = nextDateProvider(ctx, field);
+	if (!provider) return undefined;
+	const base = baseNativeDate(ctx, field);
+	const next = provider.preview(base);
+	if (!next) return undefined;
+	return {
+		interval: provider.label,
+		next,
+		apply: async () => {
+			await provider.apply(base);
+		},
+	};
 }
 
 function placeholderFor(field: Field): string {
@@ -490,7 +583,12 @@ export async function runControlAction(
 	field: Field,
 	{ alt = false }: { alt?: boolean } = {}
 ): Promise<void> {
-	if (alt) return updateField(ctx, field);
+	if (alt) {
+		const next = nextDateActionFor(ctx, field);
+		// A date whose control's click opens the picker: Alt writes the next date.
+		if (next) return next.apply();
+		return updateField(ctx, field);
+	}
 	switch (controlActionFor(field.type)) {
 		case "cycle":
 			return cycleField(ctx, field);

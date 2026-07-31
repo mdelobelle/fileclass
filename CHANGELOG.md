@@ -8,6 +8,29 @@ All notable changes to Fileclass are documented here. The format follows
 
 ### UI
 
+- **Alt-click a date to advance it.** A `Date`/`DateTime` field with a *Next
+  interval field* now takes its **Set next date** action straight from any control
+  — Properties button, note-fields modal, table cell — without opening the picker.
+  Hold Alt over the control and its calendar icon becomes a skip-forward, with the
+  date it would write in the tooltip. Same rule as everywhere else: Alt performs
+  the gesture the click doesn't.
+- **Fixed: "Set next date" ignored the field's format.** It wrote a bare ISO date,
+  so a field formatted `YYYY-MM-DD ddd` — or stored as a `[[daily note]]` link —
+  lost its shape as soon as the schedule advanced. Both routes now go through one
+  write rule, shared with the picker's Save.
+
+- **Two actions beside "Add property"**: the Properties section now offers
+  **+ Add a class** and, when the note is missing any, **+ Insert *N* missing
+  fields** — named with the count and the field names in its tooltip. Binding a
+  class or completing a note no longer needs the command palette while you are
+  already looking at the frontmatter. Toggle: *Property section actions*.
+
+- **`Next interval field` is a dropdown**: a `Date`/`DateTime` field now picks the
+  interval that drives its **Set next date** button from the fileClass's own and
+  inherited `Duration`/`CycleDuration` fields, instead of taking a typed name. A
+  wrong name used to fail in silence — the button simply never appeared. A stored
+  name that matches no field is kept and marked `(not found)` rather than dropped.
+
 - **One screen for a fileClass, whichever door you use.** Clicking a fileClass in the
   footer of a note's fields modal used to open an intermediate modal offering *Open
   fileClass settings* / *Create base view* — a fork that existed nowhere else, while

@@ -97,5 +97,16 @@
     "durationSeconds": 98,
     "recordedWith": "0.1.1",
     "privacyStatus": "public"
+  },
+  "010": {
+    "id": "lhrJ2a5pFRY",
+    "url": "https://www.youtube.com/watch?v=lhrJ2a5pFRY",
+    "title": "Fileclass #010 · CycleDuration: a sequence, not a duration",
+    "subject": "CycleDuration: a sequence, not a duration",
+    "scenario": "010_cycle_duration",
+    "doc": "fields/#an-interval-sequence-cycleduration",
+    "durationSeconds": 102,
+    "recordedWith": "0.1.1",
+    "privacyStatus": "public"
   }
 }

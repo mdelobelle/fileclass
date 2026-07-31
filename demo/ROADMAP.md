@@ -53,7 +53,8 @@ thread, and a tight smoke test of that type's input path.
 | 007 | Date — the format you store | `Date`, picker, three-level write format, format check | `Book.published` | ✅ [published](https://www.youtube.com/watch?v=1c2a1usAPRU) |
 | 008 | DateTime and Time | `DateTime`, `Time` (a point in time vs a time of day) | `Activity` class, `Reading group` note | ✅ [published](https://www.youtube.com/watch?v=bInkg1jLOmM) |
 | 009 | Duration | `Duration` (words, spinners, ISO on disk) | `Album` class, `Kind of Blue` note | ✅ [published](https://www.youtube.com/watch?v=G3mUhJ1Ywuc) |
-| 010 | Cycling an interval, and the next date | `CycleDuration`, `Duration` presets, set-next-date | `Book.review` | |
+| 010 | CycleDuration: a sequence, not a duration | `CycleDuration`, `Duration` presets | `Atomic Habits` note, `Book.next interval` | ✅ [published](https://www.youtube.com/watch?v=lhrJ2a5pFRY) |
+| 010b | Set next date | the `Next interval field` option, and the rotation it drives | `Book.review` | |
 | 011 | Several values in one field | `Multi`, `MultiInput` | `Book.themes` | |
 
 ## Arc 3 — fields that point at notes
@@ -115,4 +116,5 @@ thread, and a tight smoke test of that type's input path.
 | 038 | Groups on a canvas as data | `CanvasGroup`, `CanvasGroupLink` | — | |
 | 039 | The settings, one pass | behaviour toggles, indicators, defaults | — | |
 
-**39 takes, roughly 45 minutes of finished video.**
+**41 takes** (39 numbered, plus `010b` and `016b` — facets that earned their own
+take), roughly 50 minutes of finished video.

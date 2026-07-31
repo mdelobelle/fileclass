@@ -1,0 +1,37 @@
+# Narration for take 010 — see ../SCENARIO.md for the format.
+# Starts where 009 ended: Album exists with its length field, Kind of Blue is
+# filled. Scope: CycleDuration — a sequence of spans rather than one, its presets,
+# and the fact that the order *is* the schedule. The date that walks the sequence
+# is 010b: rotation is the subtlest behaviour in the plugin (one click writes a
+# date and mutates a list), and it needs room to be seen twice.
+title: "Fileclass — CycleDuration: a sequence, not a duration"
+description: "Schedule a re-read by a sequence of intervals you compose yourself."
+doc: "fields/#an-interval-sequence-cycleduration" # deep link used in the description
+tags: "cycleduration, spaced repetition, interval sequence"
+vault_name: "Demo"
+plugin: true
+settings:
+  classFilesPath: "Classes/"
+  fileClassAlias: "fileClass"
+initial_pause: 1500
+default_pause: 900
+
+steps:
+  - title: "Atomic Habits is worth re-reading — on a schedule, not on a whim"
+    pause: 1800
+  - title: "That needs a sequence of intervals, not a single duration"
+    pause: 1800
+  - title: "Add a field named next interval, type CycleDuration"
+    pause: 1400
+  - title: "Its options hold the spans this class reuses: 90, 180 and 360 days"
+    pause: 1800
+  - title: "Presets are the class's vocabulary; the sequence is this note's choice"
+    pause: 1800
+  - title: "Save, then open the field: each preset adds itself with one click"
+    pause: 1800
+  - title: "The order is the schedule — move an item and you've changed it"
+    pause: 1800
+  - title: "Stored as a list of ISO spans, in that order"
+    pause: 1600
+  - title: "A sequence alone does nothing — next, a date that walks it 🎉"
+    pause: 2200

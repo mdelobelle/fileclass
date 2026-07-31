@@ -39,6 +39,7 @@ import {
 	writeTakeLog,
 } from "./lib/stage.mjs";
 import { CUE_LABEL, connect } from "./lib/subtitles.mjs";
+import { waitForPlugin } from "./lib/trust.mjs";
 import { DEFAULT_RATE, resolveVoice, speak, spokenText } from "./lib/voice.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -168,6 +169,11 @@ async function main() {
 		console.log(dim(`Attached to "${v?.name}" (${v?.path})`));
 	} else {
 		await stage.waitForVault(vaultPath);
+		// A staged vault is new to Obsidian, which holds its plugins behind a trust
+		// dialog — dismissed here so the take doesn't open with a modal in frame.
+		const { loaded, trusted } = await waitForPlugin(stage);
+		if (trusted) console.log(dim("Accepted this vault's trust prompt"));
+		if (!loaded) console.warn(dim("Warning: Fileclass isn't loaded in that vault."));
 		console.log(dim(`Opened   "${scenario.vaultName}"`));
 	}
 

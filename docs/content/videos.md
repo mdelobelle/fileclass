@@ -44,3 +44,7 @@ other. Captions are English; YouTube translates them into your language.
 ## Duration
 
 {{< video "009" >}}
+
+## CycleDuration: a sequence, not a duration
+
+{{< video "010" >}}

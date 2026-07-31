@@ -157,12 +157,19 @@ many steps ask the operator to **type**.
 | 005  | 50.1 s    | 1:43           | ×2.06 | 1 |
 | 006  | 58.3 s    | 1:41           | ×1.73 | 1 |
 | 007  | 60.8 s    | 2:54           | ×2.86 | 5 |
+| 008  | 60.3 s    | 2:17           | ×2.27 | 3 |
+| 009  | 52.7 s    | 1:38           | ×1.86 | 3 |
 
-Six click-driven takes landed between ×1.64 and ×2.20 of their narration. Take 007
-respected the narration budget to the second and still ran a minute longer: it was
-the first take **dominated by typing** — a format, a wrong format, three settings —
-and typing is slow to watch. Roughly, a step that types costs **4–6 s of video**
-beyond its narration; a step that clicks costs 1–2 s.
+Click-driven takes land between ×1.6 and ×2.3 of their narration; take 007 respected
+the narration budget to the second and still ran a minute longer, because it was the
+first take **dominated by typing** — a format, a wrong format, three settings. Roughly,
+a step that types costs **4–6 s of video** beyond its narration; a step that clicks
+costs 1–2 s.
+
+What the count doesn't capture is *what* gets typed: 009 has three typing steps too,
+but they're a class name, a field name and `45m 44s` — short strings, ×1.86 — where
+007's were moment formats read character by character. Count typing steps, then look
+at what they spell.
 
 So use both numbers:
 

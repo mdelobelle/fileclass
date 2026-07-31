@@ -52,8 +52,8 @@ thread, and a tight smoke test of that type's input path.
 | 006 | Cycle — one click, next value | `Cycle`, one gesture per type, Alt-click | `Book.ownership` | ✅ [published](https://www.youtube.com/watch?v=F6fgdtexSRQ) |
 | 007 | Date — the format you store | `Date`, picker, three-level write format, format check | `Book.published` | ✅ [published](https://www.youtube.com/watch?v=1c2a1usAPRU) |
 | 008 | DateTime and Time | `DateTime`, `Time` (a point in time vs a time of day) | `Activity` class, `Reading group` note | ✅ [published](https://www.youtube.com/watch?v=bInkg1jLOmM) |
-| 009 | Duration | `Duration` | `Album` class, `Album.length` | |
-| 010 | Cycling an interval, and the next date | `CycleDuration`, set-next-date | `Book.review` | |
+| 009 | Duration | `Duration` (words, spinners, ISO on disk) | `Album` class, `Kind of Blue` note | ✅ [published](https://www.youtube.com/watch?v=G3mUhJ1Ywuc) |
+| 010 | Cycling an interval, and the next date | `CycleDuration`, `Duration` presets, set-next-date | `Book.review` | |
 | 011 | Several values in one field | `Multi`, `MultiInput` | `Book.themes` | |
 
 ## Arc 3 — fields that point at notes

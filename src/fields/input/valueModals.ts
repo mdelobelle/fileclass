@@ -10,6 +10,8 @@ import { modalTitle } from "../../ui/modalTitle";
 
 import { DisplayGroup, groupLabel } from "../baseOrder";
 import { parseTemplate, renderTemplate } from "../inputTemplate";
+import { stepNumber, stepSize } from "../numberStep";
+import { NumberOptions } from "../options";
 import { ValidationResult } from "../validate";
 
 export interface PromptOptions {
@@ -18,8 +20,15 @@ export interface PromptOptions {
 	placeholder?: string;
 	validate?: (value: string) => ValidationResult;
 	onSubmit: (value: string) => void;
-	/** Tweak the raw input element (e.g. type="number" with min/max/step). */
+	/** Tweak the raw input element (inputMode, autocomplete, …). */
 	configureInput?: (el: HTMLInputElement) => void;
+	/**
+	 * Adds − / + buttons (and ↑/↓ keys) stepping by `step`. Numeric fields use
+	 * this instead of `type="number"`: a native number input silently swallows
+	 * every non-numeric keystroke, so a typo produced an empty field and no
+	 * explanation, while the field's own validation never got to speak.
+	 */
+	stepper?: NumberOptions;
 }
 
 /** Single-line text prompt with inline validation (Input/Number/Date/…). */
@@ -34,10 +43,18 @@ export class PromptModal extends Modal {
 		const errorEl = contentEl.createDiv();
 		errorEl.setCssStyles({ color: "var(--text-error)", minHeight: "1.2em" });
 
-		const input = new TextComponent(contentEl);
+		// A stepper needs the input and its buttons on one row; without one the
+		// input keeps the full width it always had.
+		const row = this.opts.stepper ? contentEl.createDiv() : contentEl;
+		if (this.opts.stepper) {
+			row.setCssStyles({ display: "flex", gap: "6px", alignItems: "center" });
+		}
+
+		const input = new TextComponent(row);
 		input.setValue(this.opts.initial ?? "").setPlaceholder(this.opts.placeholder ?? "");
-		input.inputEl.setCssStyles({ width: "100%" });
+		input.inputEl.setCssStyles({ width: "100%", flex: "1" });
 		this.opts.configureInput?.(input.inputEl);
+		if (this.opts.stepper) this.addStepper(row, input, this.opts.stepper);
 		window.setTimeout(() => input.inputEl.focus(), 0);
 
 		const submit = () => {
@@ -60,6 +77,34 @@ export class PromptModal extends Modal {
 		new Setting(contentEl).addButton((b) =>
 			b.setButtonText("Save").setCta().onClick(submit)
 		);
+	}
+
+	/**
+	 * − / + buttons and the ↑/↓ keys, both stepping by `stepNumber`. The buttons
+	 * keep focus in the field so a click can be followed by typing.
+	 */
+	private addStepper(row: HTMLElement, input: TextComponent, bounds: NumberOptions): void {
+		const step = (direction: 1 | -1) => {
+			input.setValue(String(stepNumber(input.getValue(), bounds, direction)));
+			input.inputEl.focus();
+		};
+		const button = (label: string, direction: 1 | -1, title: string) => {
+			const el = row.createEl("button", { text: label, attr: { type: "button", "aria-label": title } });
+			el.setAttr("title", title);
+			el.addEventListener("click", (e) => {
+				e.preventDefault(); // a bare <button> in a modal would submit it
+				step(direction);
+			});
+		};
+		const by = stepSize(bounds);
+		button("−", -1, `Decrease by ${by}`);
+		button("+", 1, `Increase by ${by}`);
+
+		input.inputEl.addEventListener("keydown", (e) => {
+			if (e.key !== "ArrowUp" && e.key !== "ArrowDown") return;
+			e.preventDefault();
+			step(e.key === "ArrowUp" ? 1 : -1);
+		});
 	}
 
 	onClose(): void {

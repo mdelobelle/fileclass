@@ -13,6 +13,7 @@ import { writeFieldValue, writeValues } from "../io/write";
 import { childFieldsOf, Field } from "../schema/field";
 import { contiguousGroups } from "./baseOrder";
 import { AdapterHost, Candidate, isMediaType, resolveCandidates } from "./candidates";
+import { controlActionFor } from "./controlAction";
 import { makeDisplayDeps } from "./displayDeps";
 import { describeField } from "./objectDisplay";
 import {
@@ -182,17 +183,20 @@ function openNumberPrompt(
 	current: unknown,
 	onValue: (value: unknown) => void
 ): void {
-	const { min, max, step } = numberOptions(field);
+	const bounds = numberOptions(field);
 	new PromptModal(app, {
 		title: `Set ${field.name}`,
 		initial: current == null ? "" : String(current),
 		placeholder: placeholderFor(field),
+		// Deliberately NOT type="number": that input drops non-numeric keystrokes
+		// on the floor, so "twelve" looked like a dead field instead of failing
+		// validation with a reason. A text input with a numeric keypad hint keeps
+		// what you typed, and the field's own validation explains the refusal.
 		configureInput: (el) => {
-			el.type = "number";
-			if (min != null) el.min = String(min);
-			if (max != null) el.max = String(max);
-			if (step != null) el.step = String(step);
+			el.inputMode = "decimal";
+			el.autocomplete = "off";
 		},
+		stepper: bounds,
 		validate: (v) => validateField(field, coerceInput(field, v)),
 		onSubmit: (v) => onValue(coerceInput(field, v)),
 	}).open();
@@ -331,7 +335,7 @@ export async function promptFieldValue(
 				field,
 				childFields: childFieldsOf(ctx.allFields, field),
 				promptChild,
-				deps: makeDisplayDeps(ctx.host, ctx.allFields),
+				deps: makeDisplayDeps(ctx.allFields),
 				initial: asObjectValue(current),
 				onSave: (obj) => onValue(obj),
 			}).open();
@@ -343,7 +347,7 @@ export async function promptFieldValue(
 				field,
 				childFields: childFieldsOf(ctx.allFields, field),
 				promptChild,
-				deps: makeDisplayDeps(ctx.host, ctx.allFields),
+				deps: makeDisplayDeps(ctx.allFields),
 				initial: asListValue(current),
 				onSave: (arr) => onValue(arr),
 			}).open();
@@ -476,6 +480,27 @@ export async function toggleBooleanField(ctx: EditContext, field: Field): Promis
 	await commit(ctx.host.app, ctx.file, field, next);
 }
 
+/**
+ * The gesture a control surface performs on a field — the same one everywhere,
+ * decided by the type (see controlAction.ts). `alt` requests the type's input
+ * instead, so a Cycle or Boolean can still be set to an explicit value.
+ */
+export async function runControlAction(
+	ctx: EditContext,
+	field: Field,
+	{ alt = false }: { alt?: boolean } = {}
+): Promise<void> {
+	if (alt) return updateField(ctx, field);
+	switch (controlActionFor(field.type)) {
+		case "cycle":
+			return cycleField(ctx, field);
+		case "toggle":
+			return toggleBooleanField(ctx, field);
+		default:
+			return updateField(ctx, field);
+	}
+}
+
 /** Cycles a Cycle field to its next allowed value and writes it (single write). */
 export async function cycleField(ctx: EditContext, field: Field): Promise<void> {
 	const allowed = await resolveFieldValues(ctx.host, field, ctx.file);
@@ -496,7 +521,7 @@ export function pickAndUpdateField(host: AdapterHost, file: TFile, fields: Field
 		new Notice("Fileclass: no editable fields apply to this note.");
 		return;
 	}
-	const deps = makeDisplayDeps(host, fields);
+	const deps = makeDisplayDeps(fields);
 	new ChoiceSuggestModal<Field>(
 		host.app,
 		editable,

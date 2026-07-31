@@ -23,5 +23,6 @@ docs/resources/
 docs/.hugo_build.lock
 
 # Demo/onboarding tooling
+# Scenario fixtures (demo/NNN_*/demo-vault/) ARE committed; the vaults a take
+# actually runs in live outside the repo, in ~/fileclass-demos/.
 demo/node_modules/
-demo/demo-vault/

@@ -1,0 +1,46 @@
+# Narration for take 006 — see ../SCENARIO.md for the format.
+# Starts where 005 ended: Book has publisher, pages, genre and read; Dune is
+# complete and read; Tolkien's book is read: false with two fields still empty.
+# Scope: the Cycle type, the one-click advance in the Properties editor, the
+# Alt-click escape to the picker, and the same gesture in the note-fields modal.
+# `ownership` rather than `status` on purpose: a status field would duplicate the
+# Boolean `read` that take 005 just installed.
+title: "Fileclass — Cycle: one click, next value"
+description: "Walk a short list of values with a click, instead of browsing a picker."
+doc: "ui/#one-gesture-per-field-type" # deep link used in the description
+tags: "cycle field, one click, typed properties"
+vault_name: "Demo"
+plugin: true
+settings:
+  classFilesPath: "Classes/"
+  fileClassAlias: "fileClass"
+initial_pause: 1500
+default_pause: 900
+
+steps:
+  - title: "Dune is read. But do you actually own it?"
+    pause: 1400
+  - title: "Wanted, owned, lent out: a cycle you walk, not a list you browse"
+    pause: 1800
+  - title: "Open the Book class and add a field named ownership"
+    pause: 1000
+  - title: "Type Cycle — it takes the same list of values as a Select"
+    pause: 1400
+  - title: "Add three: Wanted, Owned, Lent out"
+    pause: 1400
+  - title: "Save, and insert it in Dune"
+    pause: 1200
+  - title: "The button in the properties editor carries the Cycle icon"
+    pause: 1400
+  - title: "One click: Wanted"
+    pause: 1000
+  - title: "Click again: Owned — the value advances, no picker in the way"
+    pause: 1600
+  - title: "Once more: Lent out, and the next click wraps back to Wanted"
+    pause: 1600
+  - title: "Need a value directly? Alt-click opens the picker"
+    pause: 1600
+  - title: "Open the note-fields modal: same icon, same click, same advance"
+    pause: 1600
+  - title: "A Select asks you to choose; a Cycle just moves 🎉"
+    pause: 2200

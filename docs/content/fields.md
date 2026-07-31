@@ -14,10 +14,10 @@ field types and the commands that set values. Everything is written to
 |------|--------|-------|------------|
 | **Input** | text | text prompt (or [guided template](#input-templates)) | must be scalar text |
 | **MultiInput** | list of text | list editor (add/remove/reorder; each item plain or [templated](#input-templates)) | a list of scalar text items |
-| **Number** | number | number input (spinner, `min`/`max`/`step`) | numeric; optional `min`/`max` |
+| **Number** | number | text prompt with − / + buttons stepping by `step` ([details](#number-fields)) | numeric; optional `min`/`max` |
 | **Boolean** | true/false | toggle | boolean |
 | **Select** | one value | value picker | must be an allowed value (if a list is defined) |
-| **Cycle** | one value | value picker | must be an allowed value |
+| **Cycle** | one value | one click advances to the next value ([details](../ui/#one-gesture-per-field-type)) | must be an allowed value |
 | **Multi** | list | toggle list | each item must be allowed |
 | **Date** | date | date picker | `YYYY-MM-DD` (unless a custom format is set) |
 | **DateTime** | date+time | date-time picker | `YYYY-MM-DDTHH:mm` |
@@ -43,6 +43,13 @@ Empty values are always valid — a field is optional unless a constraint says
 otherwise. `Lookup` and `Formula` (computed fields) are **out of scope** for
 Fileclass — use Bases views for reverse relations and computed columns.
 
+`Boolean` is the simplest of them: no options, a switch for input, and a real
+`true`/`false` in the frontmatter, which Obsidian renders as a checkbox in its own
+properties editor. Note that an **empty** boolean is not `false` — it says nothing,
+which is why *insert missing fields* leaves it blank rather than guessing.
+
+{{< video "005" >}}
+
 ## Required fields
 
 Any field can be marked **Required** in the schema editor (the toggle sits with
@@ -58,6 +65,26 @@ empty value is reported as a violation — everywhere validation surfaces:
 
 Non-empty values keep their normal per-type validation (a number stays numeric,
 a `Select` must still be an allowed value, and so on).
+
+## Number fields
+
+{{< video "003" >}}
+
+`Number` stores a real number in the frontmatter — `pages: 412`, not `pages: "412"` —
+so a base can sort, filter and total it.
+
+Its options are **Min**, **Max** and **Step**. The input is a plain text field with
+its own **−** and **+** buttons (and the ↑/↓ keys) stepping by `step`, 1 by default:
+
+- on an **empty field the first − or + shows `Min`** itself (0 when no minimum is
+  set), whichever button you press — one click, one value the field accepts — and
+  the buttons step normally from there;
+- the value is **clamped** to `Min`/`Max`, and a fractional step stays clean —
+  stepping 0.1 by 0.2 gives 0.3, not 0.30000000000000004.
+
+Typing is never blocked: enter `twelve` and the field keeps it, then validation
+refuses the save with *"pages" must be a number*. A native number input would have
+dropped those keystrokes silently, leaving an empty field and no explanation.
 
 ## Input templates
 
@@ -166,19 +193,87 @@ must **save the change in the fileClass settings** for the picker to use it.
 
 ## Date fields (Date / DateTime / Time)
 
+{{< video "008" >}}
+
+Three types for three questions: `Date` is a day, `DateTime` a **point in time** (a
+day and a clock in one value), `Time` a **time of day** with no day attached — the
+hour a door opens, every session. Each is stored in its own native form —
+`YYYY-MM-DD`, `YYYY-MM-DD[T]HH:mm`, `HH:mm` — and has its own default write format in
+the settings.
+
 Editing a date opens a **native picker** (calendar / clock) with **Today** and
 **Clear** buttons, plus a **link toggle**:
 
 - **Raw text** (default) — stores the formatted date, e.g. `2026-07-16`.
 - **As link** — stores a wikilink, e.g. `[[2026-07-16]]` or, with a **Link path**
-  set, `[[Journal/2026-07-16]]`. Configure the default state (**Insert as link**)
-  and the **Link path** in the schema editor.
+  set, `[[Journal/2026-07-16]]`. Configure the default state (**Insert as link**),
+  the **Link path** and the **Link alias** in the schema editor.
 
-Set a custom **`dateFormat`** (moment.js tokens) to store any format; otherwise
-the ISO default above is used. If the **Natural Language Dates** plugin is
-installed, an extra field parses phrases like *"next friday"* into the picker.
+### Linking to a daily note
+
+The **Link path** may contain **braced moment tokens**, which follow the date — so
+a link can be filed the way daily notes usually are. Only what's inside the braces
+is formatted, which is why the literal words survive (a raw moment format would
+read the `D` of `Daily` as a day number):
+
+| Field format | Link path | Link alias | Stored value |
+| ------------ | --------- | ---------- | ------------ |
+| *(ISO)* | `Journal/` | off | `[[Journal/2026-07-30]]` |
+| `YYYY-MM-DD ddd` | `Daily/Notes/{{YYYY}}/{{MM}}/` | off | `[[Daily/Notes/2026/07/2026-07-30 Thu]]` |
+| `YYYY-MM-DD ddd` | `Daily/Notes/{{YYYY}}/{{MM}}/` | **on** | `[[Daily/Notes/2026/07/2026-07-30 Thu\|2026-07-30 Thu]]` |
+
+**Link alias** writes `[[path/date|date]]`, so the link reads as the date instead
+of its whole path. It is skipped when there is no path — `[[2026-07-30|2026-07-30]]`
+would say nothing twice.
+
+### Which format is written
+
+{{< video "007" >}}
+
+Three levels, first one wins:
+
+1. the field's own **Date format** (moment.js tokens), set in the schema editor;
+2. the plugin-wide default for that type — [**Default date format**, **Default
+   datetime format**, **Default time format**](../settings/#core). The field
+   editor names the one that applies: *"Blank uses default: DD/MM/YYYY"*;
+3. blank everywhere → the native ISO form (`YYYY-MM-DD`, `YYYY-MM-DDTHH:mm`,
+   `HH:mm`).
+
+Every input where a format is typed — the three settings and a field's own **Date
+format** — shows **what today's date looks like through it** (`now → 30/07/2026`)
+and flags what moment can't read: `YYYY-KK-007` warns that `"KK"` is not a token
+and would be written as-is (wrap literal text in `[brackets]`). The **Link path**
+gets the same treatment, previewing the whole wikilink it would write today.
+
+All three decide **what is written to the file**. Nothing reformats a date for
+display: a stored date is shown exactly as it sits in the frontmatter (an
+insert-as-link value included). The one exception is an object display template,
+which may ask for a format per token — `{{released|YYYY}}`.
+
+That is deliberate: how a date is stored in your vault is your call. Store
+`30/07/2026`, or a wikilink to a daily note, and recover ordering in a base with a
+formula (`date(...)`) when you need to sort or filter on it.
+
+### Obsidian's own property type can overwrite your format
+
+Obsidian keeps its **own** type for each property (Settings → Properties, or the
+menu on a property row). If you set a property to Obsidian's **Date** type and then
+edit it with **Obsidian's** date picker rather than Fileclass's, Obsidian writes
+its own `YYYY-MM-DD` form — whatever the field's format says, and dropping a
+wikilink value.
+
+Fileclass can't prevent that: property-type widgets are global and per-*type* in
+Obsidian, so the plugin has no way to intercept the native picker for one field
+without hijacking every date property in the vault. Keep such properties on
+Obsidian's **Text** type and edit them through Fileclass's button, which is the
+one that knows your format.
+
+If the **Natural Language Dates** plugin is installed, an extra field parses
+phrases like *"next friday"* into the picker.
 
 ## Durations & interval cycling
+
+{{< video "009" >}}
 
 A `Duration` field stores a **length of time** as an RFC 5545 `DURATION` string —
 unlike a `Time` field it doesn't wrap at 24h, so it fits prep times, effort
@@ -289,6 +384,8 @@ color. Naming a `Color` field `color` lets the core **Bases Map view** use it as
 the marker color.
 
 ## Where allowed values come from
+
+{{< video "004" >}}
 
 `Select`, `Cycle`, and `Multi` draw their allowed values from the field's option
 source:

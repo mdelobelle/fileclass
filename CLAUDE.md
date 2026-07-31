@@ -20,6 +20,12 @@ Hard rules (details in the architecture doc):
   and disabling the rule). Private internals in `src/engine/basesAdapter.ts` use
   `unknown` casts to minimal interfaces instead.
 - Every phase deliverable includes unit tests (vitest) and a doc page (mkdocs).
+- **Every feature also gets a demo scenario proposed** — tests, docs, *and* a
+  `demo/NNN_*/` take (see `demo/SCENARIO.md`, or the `demo-scenario` skill).
+  Propose it as part of finishing the feature, without being asked; it doubles as
+  the manual smoke test, so a feature that can't be narrated in one calm minute
+  is a signal about the feature, not about the video. Propose the step list and
+  wait for approval before writing the scenario.
 
 Reference implementation to port behavior from (fileClass format, field UX):
 `/Users/mdelobel/Obsidian-Dev/.obsidian/plugins/metadatamenu/` — port semantics,

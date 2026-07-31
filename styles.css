@@ -591,3 +591,21 @@
 	padding-top: 0;
 	padding-bottom: var(--size-2-2);
 }
+
+/* Live feedback under a date-format input: what today's date looks like through
+   it, and what moment can't read in it (src/ui/dateFormatPreview.ts). */
+.fileclass-format-preview {
+	margin-top: var(--size-2-2);
+	font-size: var(--font-ui-smaller);
+}
+.fileclass-format-sample {
+	font-family: var(--font-monospace);
+	color: var(--text-normal);
+	background: var(--background-modifier-form-field);
+	padding: 0 var(--size-2-2);
+	border-radius: var(--radius-s);
+}
+.fileclass-format-problem {
+	margin-top: var(--size-2-1);
+	color: var(--text-error);
+}

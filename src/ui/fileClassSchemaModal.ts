@@ -13,6 +13,7 @@ import type FileclassPlugin from "../../main";
 import { childPathOf, Field } from "../schema/field";
 import { parseFileClass } from "../schema/fileClass";
 import { INDEXED_EVENT } from "../schema/fileclassIndex";
+import { dateFormatDefaults } from "../settings/settings";
 import { mutateFields } from "../schema/fileClassIo";
 import {
 	addFieldDef,
@@ -25,6 +26,9 @@ import { ChoiceSuggestModal } from "../fields/input/valueModals";
 import { FieldDefModal } from "./fieldDefModal";
 import { makeStickyFooter } from "./modalFooter";
 import { FileClassOptionsModal } from "./fileClassOptionsModal";
+import { openBulkEdit } from "./bulkEditModal";
+import { pickAndCreateBase } from "../views/baseFileGenerator";
+import { fileClassBaseFile, openFileClassBase } from "../views/baseSync";
 
 export class FileClassSchemaModal extends Modal {
 	private changeRef?: EventRef;
@@ -36,7 +40,12 @@ export class FileClassSchemaModal extends Modal {
 		private readonly name: string,
 		private readonly file: TFile,
 		/** "" for the root; a field id-path when editing an object's children. */
-		private readonly parentPath = ""
+		private readonly parentPath = "",
+		/**
+		 * Closes whatever opened this modal, for the actions that navigate away
+		 * (opening a base leaves a modal stranded over the view it just opened).
+		 */
+		private readonly closeParent?: () => void
 	) {
 		super(plugin.app);
 	}
@@ -65,6 +74,55 @@ export class FileClassSchemaModal extends Modal {
 		this.contentEl.empty();
 	}
 
+	/**
+	 * Everything you can do to the fileClass itself, in the modal that edits it —
+	 * the same set as its right-click menu, so the icon, the menu and the
+	 * note-fields breadcrumb all land on one screen with nothing missing.
+	 */
+	private renderClassActions(contentEl: HTMLElement): void {
+		const hasBase = !!fileClassBaseFile(this.plugin, this.name);
+		const leave = () => {
+			this.close();
+			this.closeParent?.();
+		};
+		new Setting(contentEl)
+			.setName("This fileClass")
+			.addButton((b) =>
+				b
+					.setButtonText("Options…")
+					.setTooltip("Icon, inheritance, base sync, bindings")
+					.onClick(() => new FileClassOptionsModal(this.plugin, this.name, this.file).open())
+			)
+			.addExtraButton((b) =>
+				b
+					.setIcon("layout-grid")
+					.setTooltip(hasBase ? "Modify its base" : "Create a base")
+					.onClick(() => {
+						leave();
+						pickAndCreateBase(this.plugin, this.name);
+					})
+			)
+			.addExtraButton((b) =>
+				b
+					.setIcon("table")
+					.setTooltip(hasBase ? "Open its base" : "No base yet")
+					.setDisabled(!hasBase)
+					.onClick(() => {
+						leave();
+						openFileClassBase(this.plugin, this.name);
+					})
+			)
+			.addExtraButton((b) =>
+				b
+					.setIcon("replace")
+					.setTooltip("Bulk edit one of its fields")
+					.onClick(() => {
+						this.close();
+						openBulkEdit(this.plugin, this.name);
+					})
+			);
+	}
+
 	/** Fields at the current level (root or an object's children), from the index. */
 	private ownFields(): Field[] {
 		const parsed = this.plugin.index.getFileClass(this.name) ?? parseFileClass(this.name, {});
@@ -77,15 +135,7 @@ export class FileClassSchemaModal extends Modal {
 		const heading = this.parentPath ? `${this.name} › children` : `Schema — ${this.name}`;
 		modalTitle(contentEl, heading);
 
-		if (!this.parentPath) {
-			new Setting(contentEl)
-				.setName("fileClass options")
-				.addButton((b) =>
-					b
-						.setButtonText("Options…")
-						.onClick(() => new FileClassOptionsModal(this.plugin, this.name, this.file).open())
-				);
-		}
+		if (!this.parentPath) this.renderClassActions(contentEl);
 
 		const fields = this.ownFields();
 		if (!fields.length) contentEl.createEl("p", { text: "No fields yet." });
@@ -137,6 +187,7 @@ export class FileClassSchemaModal extends Modal {
 	private addField(): void {
 		new FieldDefModal(this.app, {
 			title: "Add field",
+			dateDefaults: dateFormatDefaults(this.plugin.settings),
 			onSubmit: (r) =>
 				void mutateFields(this.app, this.file, (fields) =>
 					addFieldDef(
@@ -151,6 +202,7 @@ export class FileClassSchemaModal extends Modal {
 	private editField(field: Field): void {
 		new FieldDefModal(this.app, {
 			title: "Edit field",
+			dateDefaults: dateFormatDefaults(this.plugin.settings),
 			initial: { name: field.name, type: field.type, options: field.options },
 			onSubmit: (r) =>
 				void mutateFields(this.app, this.file, (fields) =>
@@ -172,15 +224,22 @@ export class FileClassSchemaModal extends Modal {
 	}
 }
 
-/** Opens the schema editor for `name`, or a fileClass picker when omitted. */
-export function openFileClassSchema(plugin: FileclassPlugin, name?: string): void {
+/**
+ * Opens the schema editor for `name`, or a fileClass picker when omitted.
+ * `closeParent` is dismissed by the actions that navigate away from the modal.
+ */
+export function openFileClassSchema(
+	plugin: FileclassPlugin,
+	name?: string,
+	closeParent?: () => void
+): void {
 	const open = (n: string) => {
 		const file = plugin.index.getFileClassFile(n);
 		if (!file) {
 			new Notice(`Fileclass: note for "${n}" not found.`);
 			return;
 		}
-		new FileClassSchemaModal(plugin, n, file).open();
+		new FileClassSchemaModal(plugin, n, file, "", closeParent).open();
 	};
 	if (name) return open(name);
 

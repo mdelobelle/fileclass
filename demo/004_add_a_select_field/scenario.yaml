@@ -1,0 +1,48 @@
+# Narration for take 004 — see ../SCENARIO.md for the format.
+# Starts where 003 ended: Book has publisher (Input) and pages (Number), and Dune
+# is filled in. Scope: the Select type with an inline values list, and the same
+# vocabulary reused on a second note. The note/base value sources are named in
+# one line but not shown — they belong to the File-field takes.
+title: "Fileclass — Select: the values you allow"
+description: "Give Book a genre that can only be one of the values you decide."
+doc: "fields/#where-allowed-values-come-from" # deep link used in the description
+tags: "select field, allowed values, note types"
+vault_name: "Demo"
+plugin: true
+settings:
+  classFilesPath: "Classes/"
+  fileClassAlias: "fileClass"
+initial_pause: 1500
+default_pause: 900
+
+steps:
+  - title: "Dune has a publisher and a page count. What kind of book is it?"
+    pause: 1400
+  - title: "A genre isn't free text — it's one of a few values you decide"
+    pause: 1600
+  - title: "Open the Book class, and add a field named genre"
+    pause: 1000
+  - title: "Its type is Select: one value out of a list"
+    pause: 1200
+  - title: "The list can come from a note or a base — today we'll type it"
+    pause: 1400
+  - title: "Add three values: Science fiction, Fantasy, Comics"
+    pause: 1600
+  - title: "Save the schema"
+    pause: 1200
+  - title: "Back in Dune, insert genre"
+    pause: 1200
+  - title: "No text box this time — just your three values"
+    pause: 1400
+  - title: "Pick Science fiction, and it's written as it stands"
+    pause: 1400
+  - title: "The same class fits other notes: give Tolkien's book its class"
+    pause: 1400
+  - title: "Insert its fields, and genre offers the very same three"
+    pause: 1600
+  - title: "Fantasy for that one"
+    pause: 1000
+  - title: "Two books, one vocabulary — no typos to reconcile later"
+    pause: 1800
+  - title: "That's what a Select buys you over a text field 🎉"
+    pause: 2200

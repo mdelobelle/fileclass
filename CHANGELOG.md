@@ -6,6 +6,91 @@ All notable changes to Fileclass are documented here. The format follows
 
 ## [Unreleased]
 
+### UI
+
+- **One screen for a fileClass, whichever door you use.** Clicking a fileClass in the
+  footer of a note's fields modal used to open an intermediate modal offering *Open
+  fileClass settings* / *Create base view* — a fork that existed nowhere else, while
+  the icon and the right-click menu went straight to the editor. The breadcrumb now
+  opens that editor too, and the editor carries the class-level actions its
+  right-click menu already had: **Options…**, create or modify its base, open that
+  base (disabled until one exists), and bulk edit one of its fields. The intermediate
+  modal is gone, and nothing it offered was lost.
+
+- **"Create a class" on the class-files folder.** Right-clicking the folder that
+  holds your fileClasses now offers it, so a new class no longer needs the command
+  palette — the folder is where one looks for it. (The entry follows the *Context
+  menu entries* setting, and appears on that folder only, not on the notes inside
+  it.)
+- **Binding a class now fills the note.** *Add a class to this note* used to write
+  the binding and stop there, leaving every new note one command short of usable;
+  it now inserts the class's missing fields in the same gesture. The index rebuilds
+  on a debounce after a frontmatter write, so the insertion waits for the binding to
+  be visible rather than acting on a stale resolution, and gives up quietly if it
+  never is — the explicit command stays available. Turn it off with **Insert fields
+  when adding a class** (Settings → Fileclass → Behavior).
+
+### Settings
+
+- **Date formats show what they write, and say when they're wrong.** Every input
+  that takes a moment format — the three defaults above and a field's own **Date
+  format** — now renders today's date through it (`now → 30/07/2026`), and reports
+  letters moment doesn't know: typing `YYYY-KK-007` warns that `"KK"` is not a
+  token and would be written verbatim. moment itself never complains, which is how
+  a typo used to reach the frontmatter unnoticed. The **Link path** previews the
+  whole wikilink it would write today, tokens expanded.
+
+- **`Default date display format` becomes `Default date format`, and decides what
+  is *written*** — plus **`Default datetime format`** and **`Default time
+  format`**, one per date type. A `Date`/`DateTime`/`Time` field with no format of
+  its own is now stored in the default for its type (blank = the native ISO form),
+  and the field editor names the fallback in place: *"momentjs format. Blank uses
+  default: DD/MM/YYYY"*. Symmetrically, **nothing reformats a date for display any
+  more**: a stored date is shown exactly as the file holds it. How a date is
+  written is a deliberate choice — ISO, `DD/MM/YYYY`, a wikilink to a daily note —
+  and ordering is recovered in a base with a `date(...)` formula.
+
+  Two consequences worth knowing. The old setting's value is **not** carried over:
+  it used to change the display only, so inheriting it would have silently started
+  rewriting dates in a human format. And the same setting no longer applies to all
+  three types at once — a date-shaped format used to turn every `Time` value into
+  today's date on screen.
+
+### Fields
+
+- **Date links can follow the date, and carry an alias.** A `Date` field stored as
+  a link could only prepend a fixed folder (`[[Journal/2026-07-30]]`), so it
+  couldn't reach a daily note filed under its year and month, and the link
+  displayed its whole path. **Link path** now expands **braced moment tokens** —
+  `Daily/Notes/{{YYYY}}/{{MM}}/` — and a new **Link alias** option writes
+  `[[path/date|date]]`, giving
+  `[[Daily/Notes/2026/07/2026-07-30 Thu|2026-07-30 Thu]]`. Only what's inside the
+  braces is formatted, so literal words survive (a raw moment format would read the
+  `D` of `Daily` as a day number). The alias is skipped when there is no path.
+
+- **Number input: typing works, and it has − / + buttons.** The prompt used a
+  native `type="number"` input, which silently discards every non-numeric
+  keystroke: typing `twelve` looked like a dead field, and the field's own
+  validation never got the chance to explain itself. It is now a text input with a
+  numeric keypad hint, so what you type stays and the refusal is spelled out
+  (*"pages" must be a number*). It also gained **−** and **+** buttons, and ↑/↓
+  keys, stepping by the field's `step` (1 by default). On an empty field the first
+  click shows `Min` itself (0 when there is no minimum), so it always lands on a
+  legal value; the result is clamped to `Min`/`Max`, and a fractional step stays
+  clean (0.1 + 0.2 → 0.3).
+
+### UI
+
+- **One gesture per field type, on every control.** A `Cycle` advanced to its next
+  value in the note-fields modal but opened a value picker everywhere else — in the
+  Properties editor and in editable table cells — under a `rotate-cw` icon that
+  promised the advance. The gesture is now decided by the type alone and shared by
+  all three surfaces: `Cycle` writes the next allowed value, `Boolean` flips, every
+  other type opens its typed input. **Alt-click** opens the input wherever the
+  gesture writes a value directly, so an explicit choice is always one modifier
+  away. The button's label names what it will do ("Next value", "Toggle", "Edit")
+  instead of a generic *Edit*.
+
 ## [0.1.1] - 2026-07-26
 
 ### UI

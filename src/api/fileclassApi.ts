@@ -403,7 +403,7 @@ export function createFileclassApi(plugin: FileclassPlugin): FileclassApi {
 			const fileClasses = index.getFileClasses(file);
 			if (!fileClasses.length) return null;
 			const roots = index.getFields(file).filter(isRootField);
-			const deps = makeDisplayDeps(plugin, index.getFields(file));
+			const deps = makeDisplayDeps(index.getFields(file));
 			return {
 				path: file.path,
 				fileClasses,

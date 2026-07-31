@@ -11,6 +11,7 @@ import { App, Modal, Setting, moment as obsidianMoment } from "obsidian";
 import { modalTitle } from "../../ui/modalTitle";
 
 import { Field, FieldType } from "../../schema/field";
+import { buildDateLink } from "../dateLink";
 import { dateOptions } from "../options";
 
 /** Obsidian re-exports the callable moment fn but types it as a namespace. */
@@ -187,15 +188,23 @@ export class DateInputModal extends Modal {
 		const customFmt = dateOptions(this.opts.field).dateFormat;
 		// Default formats: the native value is already the stored form.
 		const date = customFmt ? moment(raw, this.nativeFormat).format(customFmt) : raw;
-		this.opts.onSubmit(this.insertAsLink ? this.wrapAsLink(date) : date);
+		this.opts.onSubmit(this.insertAsLink ? this.wrapAsLink(date, raw) : date);
 		this.close();
 	}
 
-	/** Wraps the date as `[[<linkPath><date>]]` (MDM's insert-as-link form). */
-	private wrapAsLink(date: string): string {
-		let path = dateOptions(this.opts.field).dateLinkPath ?? "";
-		if (path && !path.endsWith("/")) path += "/";
-		return `[[${path}${date}]]`;
+	/**
+	 * Wraps the date as a wikilink. `iso` is the native (unformatted) value, used
+	 * to expand the `{{YYYY}}`-style tokens of the link path — the link's folder
+	 * can therefore follow the date, as daily notes are usually filed.
+	 */
+	private wrapAsLink(date: string, iso: string): string {
+		const { dateLinkPath, dateLinkAlias } = dateOptions(this.opts.field);
+		return buildDateLink(
+			date,
+			iso,
+			{ linkPath: dateLinkPath, alias: dateLinkAlias },
+			(value, fmt) => moment(value, this.nativeFormat).format(fmt)
+		);
 	}
 
 	onClose(): void {

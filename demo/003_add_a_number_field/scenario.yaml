@@ -1,0 +1,49 @@
+# Narration for take 003 — see ../SCENARIO.md for the format.
+# Starts where 002 ended: the Book class exists with its publisher Input, and
+# Dune is bound to it. Scope: the Number type, its Min/Max, and the proof that a
+# number is not a string that looks like one. No bases, no bulk edit.
+title: "Fileclass — Number, and why it isn't text"
+description: "Give Book a page count that only accepts numbers, and prove it."
+doc: "fields/#number-fields" # deep link used in the YouTube description
+tags: "number field, validation, typed properties"
+vault_name: "Demo"
+plugin: true
+settings:
+  classFilesPath: "Classes/"
+  fileClassAlias: "fileClass"
+# On screen the quotes carry the meaning; spoken, they vanish — so say it in words.
+pronounce:
+  Type “many”: "Type the word many"
+initial_pause: 1500
+default_pause: 900
+
+steps:
+  - title: "Dune is typed now: a Book, with a publisher"
+    pause: 1400
+  - title: "But its page count is still a sentence — nothing can sort or total it"
+    pause: 1600
+  - title: "Open the Book class, and add a second field"
+  - title: "Name it pages, and pick the Number type"
+    pause: 1200
+  - title: "Number has a Min, a Max and a Step: a book has at least one page"
+    pause: 1400
+  - title: "Cap it at five thousand, and you've said what a page count is"
+    pause: 1400
+  - title: "Save the schema"
+    pause: 1200
+  - title: "Back in Dune, insert the field the class just gained"
+    pause: 1400
+  - title: "The input comes with its own minus and plus, stepping by one"
+    pause: 1400
+  - title: "On an empty field, the first plus lands on the minimum you set"
+    pause: 1600
+  - title: "Type “many” instead — the field keeps it, and refuses to save"
+    pause: 1600
+  - title: "Try 9000 — refused too, it's over the maximum you set"
+    pause: 1600
+  - title: "412 goes in without a complaint"
+    pause: 1200
+  - title: "In the frontmatter it's unquoted: a real number, not a lookalike"
+    pause: 1600
+  - title: "That's what lets a base sort it, filter it, and add it up 🎉"
+    pause: 2200

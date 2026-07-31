@@ -1,0 +1,101 @@
+{
+  "001": {
+    "id": "KKG_36JGjWA",
+    "url": "https://www.youtube.com/watch?v=KKG_36JGjWA",
+    "title": "Fileclass #001 · Install and set up",
+    "subject": "Install and set up",
+    "scenario": "001_install_and_param_fileclass",
+    "doc": "settings/#core",
+    "durationSeconds": 111,
+    "recordedWith": null,
+    "privacyStatus": "public"
+  },
+  "002": {
+    "id": "1gU612KaXYg",
+    "url": "https://www.youtube.com/watch?v=1gU612KaXYg",
+    "title": "Fileclass #002 · Your first class",
+    "subject": "Your first class",
+    "scenario": "002_create_your_first_fileclass",
+    "doc": "schema/#fields",
+    "durationSeconds": 132,
+    "recordedWith": "0.1.1",
+    "privacyStatus": "public"
+  },
+  "003": {
+    "id": "W1KAokens_4",
+    "url": "https://www.youtube.com/watch?v=W1KAokens_4",
+    "title": "Fileclass #003 · Number, and why it isn't text",
+    "subject": "Number, and why it isn't text",
+    "scenario": "003_add_a_number_field",
+    "doc": "fields/#number-fields",
+    "durationSeconds": 112,
+    "recordedWith": "0.1.1",
+    "privacyStatus": "public"
+  },
+  "004": {
+    "id": "_kHMoXBNY7k",
+    "url": "https://www.youtube.com/watch?v=_kHMoXBNY7k",
+    "title": "Fileclass #004 · Select: the values you allow",
+    "subject": "Select: the values you allow",
+    "scenario": "004_add_a_select_field",
+    "doc": "fields/#where-allowed-values-come-from",
+    "durationSeconds": 127,
+    "recordedWith": "0.1.1",
+    "privacyStatus": "public"
+  },
+  "005": {
+    "id": "4BvyykBs-8s",
+    "url": "https://www.youtube.com/watch?v=4BvyykBs-8s",
+    "title": "Fileclass #005 · Boolean: the checkbox",
+    "subject": "Boolean: the checkbox",
+    "scenario": "005_add_a_boolean_field",
+    "doc": "fields/#available-field-types",
+    "durationSeconds": 103,
+    "recordedWith": "0.1.1",
+    "privacyStatus": "public"
+  },
+  "006": {
+    "id": "F6fgdtexSRQ",
+    "url": "https://www.youtube.com/watch?v=F6fgdtexSRQ",
+    "title": "Fileclass #006 · Cycle: one click, next value",
+    "subject": "Cycle: one click, next value",
+    "scenario": "006_cycle_through_values",
+    "doc": "ui/#one-gesture-per-field-type",
+    "durationSeconds": 101,
+    "recordedWith": "0.1.1",
+    "privacyStatus": "public"
+  },
+  "007": {
+    "id": "1c2a1usAPRU",
+    "url": "https://www.youtube.com/watch?v=1c2a1usAPRU",
+    "title": "Fileclass #007 · Date: the format you store",
+    "subject": "Date: the format you store",
+    "scenario": "007_add_a_date_field",
+    "doc": "fields/#which-format-is-written",
+    "durationSeconds": 174,
+    "recordedWith": "0.1.1",
+    "privacyStatus": "public"
+  },
+  "008": {
+    "id": "bInkg1jLOmM",
+    "url": "https://www.youtube.com/watch?v=bInkg1jLOmM",
+    "title": "Fileclass #008 · DateTime and Time",
+    "subject": "DateTime and Time",
+    "scenario": "008_datetime_and_time",
+    "doc": "fields/#date-fields-date--datetime--time",
+    "durationSeconds": 137,
+    "recordedWith": "0.1.1",
+    "privacyStatus": "public"
+  },
+  "009": {
+    "id": "G3mUhJ1Ywuc",
+    "url": "https://www.youtube.com/watch?v=G3mUhJ1Ywuc",
+    "title": "Fileclass #009 · Duration",
+    "subject": "Duration",
+    "scenario": "009_duration_field",
+    "doc": "fields/#durations--interval-cycling",
+    "durationSeconds": 98,
+    "recordedWith": "0.1.1",
+    "privacyStatus": "public"
+  }
+}

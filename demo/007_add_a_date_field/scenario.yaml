@@ -1,0 +1,48 @@
+# Narration for take 007 — see ../SCENARIO.md for the format.
+# Starts where 006 ended: Book has publisher, pages, genre, read and ownership;
+# Dune is complete with ownership: Owned. Scope: the Date type — the picker, the
+# ISO value, the three-level write format with its live preview, and the format
+# check. The daily-note link form is take 016b, not here.
+title: "Fileclass — Date: the format you store"
+description: "A picker for dates, and a say in how they land in your files."
+doc: "fields/#which-format-is-written" # deep link used in the description
+tags: "date field, moment format, date picker"
+vault_name: "Demo"
+plugin: true
+settings:
+  classFilesPath: "Classes/"
+  fileClassAlias: "fileClass"
+# The screen keeps the exact string; the voice needs it said, not spelled.
+pronounce:
+  YYYY-KK-007 — “KK” isn't a token: "Take a format with K K in it: not a token"
+  Stored as 1965-08-01: "Stored in ISO"
+initial_pause: 1500
+default_pause: 900
+
+steps:
+  - title: "Dune's publication year sits in the prose, nowhere else"
+    pause: 1600
+  - title: "Add a field named published, type Date"
+    pause: 1000
+  - title: "Under Date format, Fileclass names what blank will store"
+    pause: 1800
+  - title: "Save, and insert it in Dune"
+    pause: 1200
+  - title: "A calendar, not a text box, with Today one click away"
+    pause: 1600
+  - title: "Pick the first of August, 1965"
+    pause: 1200
+  - title: "Stored as 1965-08-01: sortable, and unambiguous anywhere"
+    pause: 1800
+  - title: "The format is yours: set one, and see today's date through it"
+    pause: 1800
+  - title: "It also catches what moment can't read"
+    pause: 1600
+  - title: "YYYY-KK-007 — “KK” isn't a token, so it would be written as-is"
+    pause: 1800
+  - title: "Every date alike? Set one default per type in the settings"
+    pause: 1800
+  - title: "ISO sorts by itself; another format needs a formula"
+    pause: 1800
+  - title: "Typed, checked, stored the way you choose 🎉"
+    pause: 2200

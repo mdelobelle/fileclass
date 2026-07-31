@@ -1,8 +1,9 @@
 /*
  * Note-fields modal (ARCHITECTURE.md §19.1). The single hub for a note's
- * fields: lists its resolved root fields with their current values and
- * per-field Edit/Clear, plus header actions. All editing reuses the P2
- * dispatcher (updateField/clearField) — no new write path. Re-renders on
+ * fields: lists its resolved root fields with their current values and, per
+ * field, the gesture its type performs (advance / toggle / edit) plus Clear, and
+ * header actions. All editing reuses the P2 dispatcher (runControlAction /
+ * clearField) — no new write path. Re-renders on
  * metadata changes so edits made through sub-modals show immediately.
  */
 import { EventRef, Modal, Setting, setIcon, TFile } from "obsidian";
@@ -12,13 +13,8 @@ import { modalTitle } from "./modalTitle";
 import type FileclassPlugin from "../../main";
 import { insertMissingFields } from "../commands/insertMissingFields";
 import { makeDisplayDeps } from "../fields/displayDeps";
-import {
-	clearField,
-	cycleField,
-	EditContext,
-	toggleBooleanField,
-	updateField,
-} from "../fields/fieldActions";
+import { controlActionFor, controlLabel } from "../fields/controlAction";
+import { clearField, EditContext, runControlAction } from "../fields/fieldActions";
 import { describeField, DisplayDeps } from "../fields/objectDisplay";
 import { isInputSupported } from "../fields/support";
 import { fieldTypeIcon } from "../fields/typeIcons";
@@ -26,8 +22,8 @@ import { INDEXED_EVENT } from "../schema/fileclassIndex";
 import { readFieldValue } from "../io/read";
 import { Field, isRootField } from "../schema/field";
 import { AddFileClassModal } from "./addFileClassModal";
+import { openFileClassSchema } from "./fileClassSchemaModal";
 import { makeValuePreview } from "./valuePreview";
-import { FileClassNavModal } from "./fileClassNavModal";
 import { makeIndicatorIcon, MODAL_SCOPE, navIndicatorFile } from "./indicator/indicatorDom";
 import { renderValueWithLinks } from "./valueLinks";
 
@@ -63,7 +59,7 @@ export class NoteFieldsModal extends Modal {
 
 		const fields = this.plugin.index.getFields(this.file);
 		const ctx: EditContext = { host: this.plugin, file: this.file, allFields: fields };
-		const deps = makeDisplayDeps(this.plugin, fields);
+		const deps = makeDisplayDeps(fields);
 		const rootFields = fields.filter((f) => isRootField(f));
 
 		if (!rootFields.length) {
@@ -109,7 +105,7 @@ export class NoteFieldsModal extends Modal {
 				});
 				link.addEventListener("click", (e) => {
 					e.preventDefault();
-					new FileClassNavModal(this.plugin, cls, () => this.close()).open();
+					openFileClassSchema(this.plugin, cls, () => this.close());
 				});
 				// Hovering a fileClass marks the rows of the fields it declares.
 				link.addEventListener("mouseenter", () => this.highlightOwner(cls));
@@ -147,20 +143,23 @@ export class NoteFieldsModal extends Modal {
 		this.addRowActions(ctx, setting, field);
 	}
 
-	/** Right-side quick actions, chosen by field type. */
+	/**
+	 * Right-side quick actions. The gesture and its label come from the shared
+	 * mapping (controlAction.ts), so this modal, the Properties buttons and the
+	 * table cells all do the same thing to a given type — and Alt-click opens the
+	 * input wherever the gesture writes a value directly.
+	 */
 	private addRowActions(ctx: EditContext, setting: Setting, field: Field): void {
-		if (field.type === "Boolean") {
-			setting.addExtraButton((b) =>
-				b.setIcon("toggle-left").setTooltip("Toggle").onClick(() => void toggleBooleanField(ctx, field))
-			);
-		} else if (field.type === "Cycle") {
-			setting.addExtraButton((b) =>
-				b.setIcon("rotate-cw").setTooltip("Next value").onClick(() => void cycleField(ctx, field))
-			);
-		} else if (isInputSupported(field.type)) {
-			setting.addExtraButton((b) =>
-				b.setIcon("pencil").setTooltip("Edit").onClick(() => void updateField(ctx, field))
-			);
+		if (isInputSupported(field.type)) {
+			const action = controlActionFor(field.type);
+			const { icon, verb, alt } = controlLabel(action);
+			setting.addExtraButton((b) => {
+				b.setIcon(icon).setTooltip(alt ? `${verb} (Alt-click to pick a value)` : verb);
+				// Not `.onClick()`: it drops the event, and the modifier is the point.
+				b.extraSettingsEl.addEventListener("click", (e) => {
+					void runControlAction(ctx, field, { alt: e.altKey });
+				});
+			});
 		}
 		setting.addExtraButton((b) =>
 			b

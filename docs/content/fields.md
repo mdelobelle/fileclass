@@ -298,7 +298,15 @@ button on a `Duration` field, and chips you tap to append on a `CycleDuration`
 list (you can still reorder, add a custom one, or repeat a preset). Presets are
 a convenience — values are still stored per note.
 
-`CycleDuration` stores an **ordered list** of durations — an *interval sequence*.
+### An interval sequence (`CycleDuration`)
+
+{{< video "010" >}}
+
+`CycleDuration` stores an **ordered list** of durations — an *interval sequence*. The
+order is the schedule: it is what a linked date field walks through, one interval per
+click. Its **presets** are the class's vocabulary of spans (say 90, 180 and 360 days
+for a re-read cycle); the sequence itself is each note's own composition — two of
+them, all three, or the same one twice.
 
 ### Set next date (spaced repetition)
 

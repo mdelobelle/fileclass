@@ -159,6 +159,7 @@ many steps ask the operator to **type**.
 | 007  | 60.8 s    | 2:54           | ×2.86 | 5 |
 | 008  | 60.3 s    | 2:17           | ×2.27 | 3 |
 | 009  | 52.7 s    | 1:38           | ×1.86 | 3 |
+| 010  | 49.5 s    | 1:42           | ×2.07 | 3 |
 
 Click-driven takes land between ×1.6 and ×2.3 of their narration; take 007 respected
 the narration budget to the second and still ran a minute longer, because it was the

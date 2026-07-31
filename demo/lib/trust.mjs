@@ -1,0 +1,69 @@
+/*
+ * Getting past "Do you trust the author of this vault?".
+ *
+ * Obsidian holds a new vault's community plugins behind that dialog, and remembers
+ * the answer in localStorage under `enable-plugin-<vault id>` — an id derived from
+ * the vault's path. Every take stages its own path, so every take meets the dialog
+ * once: the plugin never loads, a smoke test has nothing to inspect, and a take
+ * would open on camera with a modal in front of it.
+ *
+ * Clicking it is safe here in a way it would never be in general: the vault was
+ * staged by this tooling seconds ago and the only plugin in it is the one being
+ * demonstrated, copied from this repo's own build.
+ */
+
+/** True when a page is showing the trust dialog. */
+const TRUST_TEXT = /trust the author of this vault/i;
+const TRUST_BUTTON = /trust author/i;
+
+/**
+ * Accepts the trust dialog if it's up, in whichever window shows it.
+ * @returns true when a dialog was accepted, false when there was none.
+ */
+export async function acceptVaultTrust(stage) {
+	for (const page of stage.pages) {
+		const clicked = await page
+			.evaluate(
+				(textSrc, buttonSrc) => {
+					const text = new RegExp(textSrc, "i");
+					const button = new RegExp(buttonSrc, "i");
+					for (const modal of document.querySelectorAll(".modal-container")) {
+						if (!text.test(modal.textContent ?? "")) continue;
+						const accept = [...modal.querySelectorAll("button")].find((b) =>
+							button.test(b.textContent ?? "")
+						);
+						if (accept) {
+							accept.click();
+							return true;
+						}
+					}
+					return false;
+				},
+				TRUST_TEXT.source,
+				TRUST_BUTTON.source
+			)
+			.catch(() => false);
+		if (clicked) return true;
+	}
+	return false;
+}
+
+/**
+ * Waits for the plugin to be loaded, accepting the trust dialog as soon as it
+ * appears. Both are the same wait from the caller's point of view: "is the plugin
+ * there yet, and is anything obvious in the way?"
+ */
+export async function waitForPlugin(stage, { timeout = 25000, poll = 500 } = {}) {
+	const start = Date.now();
+	let trusted = false;
+	while (Date.now() - start < timeout) {
+		const loaded = await stage.appPage
+			.evaluate(() => !!window.app.plugins.plugins.fileclass)
+			.catch(() => false);
+		if (loaded) return { loaded: true, trusted };
+		await stage.refresh(); // the dialog may live in its own window
+		if (await acceptVaultTrust(stage)) trusted = true;
+		await new Promise((r) => setTimeout(r, poll));
+	}
+	return { loaded: false, trusted };
+}

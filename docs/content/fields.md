@@ -47,8 +47,24 @@ Fileclass — use Bases views for reverse relations and computed columns.
 
 Four of those types hold a **list** rather than a scalar, and they split by who
 decides what may go in it. `Multi` offers the values the class allows, as a switch
-each — and stores them **in the order the class declares**, not the order you
-picked them. `MultiInput` takes a list nobody can enumerate in advance: you type
+each — **clicking anywhere on a row flips it**, not just the switch — and stores
+them **in the order the class declares**, not the order you picked them.
+
+Every multi-select opens with a **filter box**, focused, so a list of hundreds is
+narrowed by typing rather than by scrolling. <kbd>Enter</kbd> flips the first match
+and clears the box, which chains: type, Enter, type, Enter. Filtering only changes
+what is *shown* — values ticked while hidden are still saved.
+
+Two controls make a long list survivable in the other direction, when the problem is
+undoing rather than finding:
+
+- the icon at the end of the filter row shows **only the ticked values**, turning a
+  list of hundreds into the handful you actually chose;
+- **Unselect all** (bottom left, carrying the count) unticks **everything** — not
+  just what the filter shows, which is why it names the number it is about to clear.
+
+In "only ticked" mode a row you untick stays where it is instead of vanishing under
+the pointer; the list settles the next time you type or leave the mode. `MultiInput` takes a list nobody can enumerate in advance: you type
 each item, reorder them, and blank rows are dropped on save. Either way the
 frontmatter gets a plain YAML list, so a base can filter on it.
 
@@ -148,6 +164,12 @@ the alias shown in the picker and written into the link.
   no value for the grouping property) reads **(No value)**.
 - When no base is configured, or the core Bases plugin is unavailable, the picker
   gracefully falls back to **all notes** (File) or **all media files** (Media).
+- `MultiFile`/`MultiMedia` pick **several** at once: the same switch list as a
+  `Multi` field (a click anywhere on a row flips it), pre-ticked with what the note
+  already holds. The stored order is the **view's**, not the order you switched
+  them on — so a sorted view gives sorted links.
+
+{{< video "013" >}}
 - `Media`/`MultiMedia` with the `embed` option store an embed (`![[…]]`).
 - Links honor your vault's link settings (`generateMarkdownLink`).
 

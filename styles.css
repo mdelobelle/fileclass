@@ -110,6 +110,42 @@
 .metadata-property > .fileclass-prop-edit:hover {
 	color: var(--text-normal);
 }
+/*
+ * "Open <class> schema" on the fileClass row (#23). Sized for a multi-select
+ * pill, which is where it usually lands — Obsidian renders that property as a
+ * list in most vaults — and used as-is when the value is plain text.
+ */
+.metadata-property .fileclass-prop-class {
+	flex: 0 0 auto;
+	align-self: center;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--text-muted);
+	cursor: pointer;
+}
+.metadata-property .fileclass-prop-class:hover {
+	color: var(--text-normal);
+}
+/* In the icon column: same box as the field buttons next to it. */
+.metadata-property > .fileclass-prop-class {
+	height: var(--input-height, 26px);
+	margin: 0 2px;
+	padding: 0 3px;
+}
+.metadata-property > .fileclass-prop-class svg {
+	width: 15px;
+	height: 15px;
+}
+/* Inside a pill: compact, right after the class name. */
+.multi-select-pill > .fileclass-prop-class {
+	margin: 0 1px 0 4px;
+	padding: 0 2px;
+}
+.multi-select-pill > .fileclass-prop-class svg {
+	width: 13px;
+	height: 13px;
+}
 /* Type preview (color swatch / icon glyph) beside a property value. */
 .metadata-property > .fileclass-prop-preview {
 	flex: 0 0 auto;

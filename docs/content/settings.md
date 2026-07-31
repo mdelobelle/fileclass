@@ -31,7 +31,7 @@ letters moment doesn't know, so a format is judged on what it writes.
 | **Canvas fields engine** | Auto-fills `Canvas`/`CanvasGroup`/`CanvasGroupLink` fields from `.canvas` files. This is the one surface that writes frontmatter automatically. |
 | **Context menu entries** | Adds Fileclass actions to the file and editor right-click menus, and **Create a class** on the class-files folder. |
 | **Insert fields when adding a class** | Binding a fileClass to a note adds its missing fields to the frontmatter straight away, instead of leaving you to run *Insert missing fields*. On by default. |
-| **Property editor buttons** | Shows a per-field edit button (its type icon) in Obsidian's native Properties editor, for typed input. |
+| **Property editor buttons** | Shows a per-field edit button (its type icon) in Obsidian's native Properties editor, for typed input — and, on the `fileClass` row, a wrench opening that class's schema. |
 | **Property section actions** | Adds **+ Add a class** beside Obsidian's *+ Add property*, plus **+ Insert *N* missing fields** when the note is missing any. On by default. |
 
 ## Indicators

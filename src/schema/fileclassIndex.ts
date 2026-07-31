@@ -205,7 +205,7 @@ export class FileclassIndex extends Events {
 		return this.nameByPath.get(path);
 	}
 
-	/** The Markdown note backing a fileClass (`<classFilesPath><name>.md`). */
+	/** The Markdown note backing a fileClass, from the index (falling back to the conventional path) */
 	getFileClassFile(name: string): TFile | null {
 		const path = this.pathByName.get(name);
 		if (path) {

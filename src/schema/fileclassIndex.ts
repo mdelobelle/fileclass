@@ -32,7 +32,7 @@ export const INDEXED_EVENT = "fileclass:indexed";
 export class FileclassIndex extends Events {
 	private byName = new Map<string, ParsedFileClass>();
 	private nameByPath = new Map<string, string>();
-  	private pathByName: Map<string, string> = new Map<string, string>();
+  	private pathByName: Map<string, string> = new Map<string, string>(); // Invariant: pathByName must stay in step with nameByPath across clear() and rebuilds
 	private ancestorsByName = new Map<string, string[]>();
 	private fieldsByName = new Map<string, Field[]>();
 	private tagBindings = new Map<string, string>();

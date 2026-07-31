@@ -32,6 +32,8 @@ export interface FileclassSettings {
 	enableValidationColumns: boolean;
 	/** Add Fileclass entries to the file/editor context menus. */
 	enableContextMenu: boolean;
+	/** Insert a class's missing fields as soon as the class is bound to a note. */
+	insertFieldsOnBind: boolean;
 	/** Show an edit button on matching rows of the native Properties editor. */
 	enablePropertyEditButtons: boolean;
 	/** Show the field indicator icon in the tab header. */
@@ -62,6 +64,7 @@ export const DEFAULT_SETTINGS: FileclassSettings = {
 	enableCanvasEngine: true,
 	enableValidationColumns: true,
 	enableContextMenu: true,
+	insertFieldsOnBind: true,
 	enablePropertyEditButtons: true,
 	enableTabHeaderIndicator: true,
 	enableFileExplorerIndicator: true,

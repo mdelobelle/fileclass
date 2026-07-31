@@ -160,6 +160,18 @@ export class FileclassSettingTab extends PluginSettingTab {
 			);
 
 		new Setting(containerEl)
+			.setName("Insert fields when adding a class")
+			.setDesc(
+				"Binding a fileClass to a note adds its missing fields to the frontmatter straight away, instead of leaving you to run Insert missing fields."
+			)
+			.addToggle((toggle) =>
+				toggle.setValue(this.plugin.settings.insertFieldsOnBind).onChange(async (value) => {
+					this.plugin.settings.insertFieldsOnBind = value;
+					await this.plugin.saveSettings();
+				})
+			);
+
+		new Setting(containerEl)
 			.setName("Property editor buttons")
 			.setDesc("Show an edit button on properties that match a fileClass field, for typed input.")
 			.addToggle((toggle) =>

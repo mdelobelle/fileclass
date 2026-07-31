@@ -86,5 +86,16 @@
     "durationSeconds": 137,
     "recordedWith": "0.1.1",
     "privacyStatus": "public"
+  },
+  "009": {
+    "id": "G3mUhJ1Ywuc",
+    "url": "https://www.youtube.com/watch?v=G3mUhJ1Ywuc",
+    "title": "Fileclass #009 · Duration",
+    "subject": "Duration",
+    "scenario": "009_duration_field",
+    "doc": "fields/#durations--interval-cycling",
+    "durationSeconds": 98,
+    "recordedWith": "0.1.1",
+    "privacyStatus": "public"
   }
 }

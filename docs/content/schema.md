@@ -89,7 +89,13 @@ a fileClass note changes, and emits a `fileclass:indexed` event.
 
 Run the command **Fileclass: add a class to this note** and pick a
 fileClass. It writes the binding into the note's frontmatter (frontmatter-only,
-via a single `processFrontMatter` write).
+via a single `processFrontMatter` write) and then **inserts that class's missing
+fields**, so the note arrives typed and empty rather than bound and bare. Turn
+[**Insert fields when adding a class**](../settings/#behavior) off to keep the
+binding alone and insert them yourself.
+
+A fileClass note can also be created from the **class-files folder's right-click
+menu** (*Create a class*), not only from the command palette.
 
 ## Creating notes with a template (Templater / Templates)
 
@@ -117,9 +123,14 @@ bake the fields into the template **once**:
 ## Editing a fileClass
 
 You can author a fileClass's own definition from the UI — no need to edit its
-YAML by hand. Run **Fileclass: edit a class schema** (or right-click a
-fileClass note → **Manage this fileClass**) to open the schema editor:
+YAML by hand. **One screen does it**, reached three ways: the command **Fileclass:
+edit a class schema**, a fileClass note's right-click menu (**Manage this
+fileClass**) or its indicator icon, and the fileClass name in the footer of a note's
+[fields modal](../ui/#note-fields-modal).
 
+- **This fileClass** — the actions that apply to the class itself, the same set as
+  its right-click menu: **Options…**, create or modify **its base**, **open** that
+  base (greyed out until one exists), and **bulk edit** one of its fields.
 - **Fields** — add, edit, remove, and reorder field definitions. A field has a
   **name**, a **type**, and type-specific settings; its stable id is generated
   automatically.

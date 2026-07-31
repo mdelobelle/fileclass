@@ -1,0 +1,49 @@
+# Narration for take 009 — see ../SCENARIO.md for the format.
+# Starts where 008 ended: Book has seven fields, Activity has starts + doors and
+# Reading group is filled in. Scope: the Duration type — the three ways into one
+# value (words, unit spinners, quick-pick presets), the live compact preview, the
+# ISO form on disk, and the refusal of what it can't parse. The `Presets` option is
+# left to 010: a preset earns its place when the same spans recur, which is
+# CycleDuration's subject — an album's length never repeats.
+title: "Fileclass — Duration"
+description: "A span of time, typed in words or dialled in, always ISO on disk."
+doc: "fields/#durations--interval-cycling" # deep link used in the description
+tags: "duration field, iso 8601, rfc 5545"
+vault_name: "Demo"
+plugin: true
+settings:
+  classFilesPath: "Classes/"
+  fileClassAlias: "fileClass"
+# Spelled out, the ISO string costs five seconds of voice for no gain: the screen
+# shows it, the narration only has to say what it is.
+pronounce:
+  Stored as PT45M44S — an ISO span: "Stored as an ISO span"
+initial_pause: 1500
+default_pause: 900
+
+steps:
+  - title: "Kind of Blue: its running time sits in the prose again"
+    pause: 1800
+  - title: "Not a Book — this one's an Album, with a class of its own"
+    pause: 1600
+  # Perform this one from the Classes folder's right-click menu: its entry is named
+  # "Create a class", exactly like the command, so the subtitle holds either way —
+  # and the menu is the door most people look for first.
+  - title: "Create a class named Album, then add a field: length"
+    pause: 1200
+  - title: "Type Duration: a span of time, not a moment on a clock"
+    pause: 1600
+  - title: "Save, then bind the note to Album — its fields come with it"
+    pause: 1200
+  - title: "The input takes words: forty-five minutes, forty-four seconds"
+    pause: 1800
+  - title: "Or dial it in unit by unit — the two stay in step"
+    pause: 1600
+  - title: "The preview shows the compact form as you go"
+    pause: 1400
+  - title: "Stored as PT45M44S — an ISO span, which sorts and totals"
+    pause: 1800
+  - title: "Type nonsense and it says so, instead of storing it"
+    pause: 1600
+  - title: "One value, three ways in, always the same shape on disk 🎉"
+    pause: 2200

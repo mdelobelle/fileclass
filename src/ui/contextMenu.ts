@@ -4,10 +4,12 @@
  * modals/commands — no new write path. A Component so its event listeners are
  * torn down on plugin unload.
  */
-import { Component, Menu, TFile } from "obsidian";
+import { Component, Menu, TAbstractFile, TFile, TFolder } from "obsidian";
 
 import type FileclassPlugin from "../../main";
+import { createFileClass } from "../commands/createFileClass";
 import { insertMissingFields } from "../commands/insertMissingFields";
+import { isClassFolder } from "../schema/classFolder";
 import { pickAndUpdateField } from "../fields/fieldActions";
 import { pickAndCreateBase } from "../views/baseFileGenerator";
 import { fileClassBaseFile, openFileClassBase } from "../views/baseSync";
@@ -28,7 +30,7 @@ export class FileclassContextMenu extends Component {
 		this.registerEvent(
 			this.plugin.app.workspace.on("file-menu", (menu, file) => {
 				this.fileMenuOpen = true;
-				if (file instanceof TFile && file.extension === "md") this.build(menu, file);
+				this.buildForItem(menu, file);
 				menu.onHide = () => (this.fileMenuOpen = false);
 			})
 		);
@@ -38,6 +40,30 @@ export class FileclassContextMenu extends Component {
 				const file = this.plugin.app.workspace.getActiveFile();
 				if (file && file.extension === "md") this.build(menu, file);
 			})
+		);
+	}
+
+	/** A note gets note/fileClass actions; the class folder gets "Create a class". */
+	private buildForItem(menu: Menu, item: TAbstractFile): void {
+		if (item instanceof TFile && item.extension === "md") {
+			this.build(menu, item);
+			return;
+		}
+		if (item instanceof TFolder) this.buildClassFolderMenu(menu, item);
+	}
+
+	/**
+	 * Right-clicking the folder that holds the fileClasses is the place people look
+	 * for "make me a new one" — the command palette shouldn't be the only door.
+	 */
+	private buildClassFolderMenu(menu: Menu, folder: TFolder): void {
+		if (!this.plugin.settings.enableContextMenu) return;
+		if (!isClassFolder(folder.path, this.plugin.settings.classFilesPath)) return;
+		menu.addItem((entry) =>
+			entry
+				.setTitle("Create a class")
+				.setIcon("file-spreadsheet")
+				.onClick(() => createFileClass(this.plugin))
 		);
 	}
 

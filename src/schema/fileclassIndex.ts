@@ -32,6 +32,8 @@ export const INDEXED_EVENT = "fileclass:indexed";
 export class FileclassIndex extends Events {
 	private byName = new Map<string, ParsedFileClass>();
 	private nameByPath = new Map<string, string>();
+	/** Reverse of `nameByPath`; `rebuild()` clears and refills both together. */
+	private pathByName = new Map<string, string>();
 	private ancestorsByName = new Map<string, string[]>();
 	private fieldsByName = new Map<string, Field[]>();
 	private tagBindings = new Map<string, string>();
@@ -70,6 +72,7 @@ export class FileclassIndex extends Events {
 	private clear(): void {
 		this.byName.clear();
 		this.nameByPath.clear();
+		this.pathByName.clear();
 		this.ancestorsByName.clear();
 		this.fieldsByName.clear();
 		this.tagBindings.clear();
@@ -85,6 +88,7 @@ export class FileclassIndex extends Events {
 		const parsed = parseFileClass(name, frontmatter);
 		this.byName.set(name, parsed);
 		this.nameByPath.set(file.path, name);
+		this.pathByName.set(name, file.path);
 		if (parsed.errors.length) this.errors.push(...parsed.errors);
 	}
 
@@ -201,8 +205,14 @@ export class FileclassIndex extends Events {
 		return this.nameByPath.get(path);
 	}
 
-	/** The Markdown note backing a fileClass (`<classFilesPath><name>.md`). */
+	/** The Markdown note backing a fileClass, from the index (falling back to the conventional path) */
 	getFileClassFile(name: string): TFile | null {
+		const path = this.pathByName.get(name);
+		if (path) {
+			const file = this.app.vault.getFileByPath(path);
+			if (file instanceof TFile) return file;
+		}
+		// Not indexed yet (class created before the debounced rebuild fired).
 		const folder = this.host.settings.classFilesPath;
 		if (!folder) return null;
 		const file = this.app.vault.getFileByPath(`${folder}${name}.md`);

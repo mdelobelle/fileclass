@@ -22,8 +22,8 @@ import { INDEXED_EVENT } from "../schema/fileclassIndex";
 import { readFieldValue } from "../io/read";
 import { Field, isRootField } from "../schema/field";
 import { AddFileClassModal } from "./addFileClassModal";
+import { openFileClassSchema } from "./fileClassSchemaModal";
 import { makeValuePreview } from "./valuePreview";
-import { FileClassNavModal } from "./fileClassNavModal";
 import { makeIndicatorIcon, MODAL_SCOPE, navIndicatorFile } from "./indicator/indicatorDom";
 import { renderValueWithLinks } from "./valueLinks";
 
@@ -105,7 +105,7 @@ export class NoteFieldsModal extends Modal {
 				});
 				link.addEventListener("click", (e) => {
 					e.preventDefault();
-					new FileClassNavModal(this.plugin, cls, () => this.close()).open();
+					openFileClassSchema(this.plugin, cls, () => this.close());
 				});
 				// Hovering a fileClass marks the rows of the fields it declares.
 				link.addEventListener("mouseenter", () => this.highlightOwner(cls));

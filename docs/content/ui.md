@@ -33,9 +33,11 @@ The modal refreshes automatically as values are written, so edits made through a
 sub-modal appear immediately.
 
 Its **footer** shows the fileClass(es) applying to the note as an **inheritance
-breadcrumb** (`ancestor › parent › fileClass`). Each name is **clickable** (opens
-that fileClass's schema editor) and, on **hover**, marks the rows of the fields
-that fileClass declares with a vertical bar — so you can see which fileClass owns
+breadcrumb** (`ancestor › parent › fileClass`). Each name is **clickable** — it
+opens [that fileClass's editor](../schema/#editing-a-fileclass), the same screen the
+note's indicator icon and the fileClass's right-click menu open, stacked over the
+note so closing it brings you back. On **hover**, a name marks the rows of the fields
+that fileClass declares with a vertical bar, so you can see which fileClass owns
 which field (inherited fields point at the ancestor that declares them).
 
 Open it with the command **Fileclass: manage note fields** or from a context
@@ -67,10 +69,15 @@ Markdown file — in the file explorer, on a tab, or in the editor — adds:
 - **Manage note fields** → the modal above.
 - **Update a field** → pick one field and edit it.
 - **Insert missing fields**.
-- **Add fileClass**.
+- **Add fileClass** — which also inserts that class's fields, unless you turn
+  [**Insert fields when adding a class**](../settings/#behavior) off.
 
 On a **fileClass note**, the menu instead offers schema actions plus **Bulk edit
 a field of this fileClass** (see below).
+
+Right-clicking the **class-files folder** itself offers **Create a class** — the
+command palette isn't the only door to a new fileClass, and the folder is where one
+naturally looks for it.
 
 All actions write to frontmatter only, one `processFrontMatter` write each.
 

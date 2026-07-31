@@ -29,7 +29,8 @@ letters moment doesn't know, so a format is judged on what it writes.
 |---------|--------------|
 | **Validation columns** | Adds `valid` ✓/✗ and `errors` columns to the editable [`fileclass-table`](../views/#validation-columns) view, flagging notes that violate their schema. On by default. |
 | **Canvas fields engine** | Auto-fills `Canvas`/`CanvasGroup`/`CanvasGroupLink` fields from `.canvas` files. This is the one surface that writes frontmatter automatically. |
-| **Context menu entries** | Adds Fileclass actions to the file and editor right-click menus. |
+| **Context menu entries** | Adds Fileclass actions to the file and editor right-click menus, and **Create a class** on the class-files folder. |
+| **Insert fields when adding a class** | Binding a fileClass to a note adds its missing fields to the frontmatter straight away, instead of leaving you to run *Insert missing fields*. On by default. |
 | **Property editor buttons** | Shows a per-field edit button (its type icon) in Obsidian's native Properties editor, for typed input. |
 
 ## Indicators

@@ -40,3 +40,7 @@ other. Captions are English; YouTube translates them into your language.
 ## DateTime and Time
 
 {{< video "008" >}}
+
+## Duration
+
+{{< video "009" >}}

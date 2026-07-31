@@ -6,6 +6,7 @@
 import { Notice, SuggestModal, TFile } from "obsidian";
 
 import type FileclassPlugin from "../../main";
+import { insertMissingFields } from "../commands/insertMissingFields";
 
 export class AddFileClassModal extends SuggestModal<string> {
 	constructor(private readonly plugin: FileclassPlugin, private readonly file: TFile) {
@@ -45,6 +46,31 @@ export class AddFileClassModal extends SuggestModal<string> {
 			});
 		} catch (err) {
 			new Notice(`Fileclass: could not add "${name}" (${(err as Error).message}).`);
+			return;
 		}
+		if (this.plugin.settings.insertFieldsOnBind) await this.insertFieldsOf(name);
+	}
+
+	/**
+	 * Adds the newly bound class's missing fields. The index rebuilds on a debounce
+	 * after the frontmatter write, so this waits for the binding to be visible
+	 * rather than inserting from a stale resolution — and gives up quietly if it
+	 * never becomes visible, leaving the explicit command available.
+	 */
+	private async insertFieldsOf(name: string): Promise<void> {
+		const bound = await this.waitForBinding(name);
+		if (!bound) return;
+		const fields = this.plugin.index.getFields(this.file);
+		if (fields.length) await insertMissingFields(this.app, this.file, fields, { silent: true });
+	}
+
+	/** Polls until the index sees `name` on this note (or ~2s has passed). */
+	private async waitForBinding(name: string, timeout = 2000): Promise<boolean> {
+		const start = Date.now();
+		while (Date.now() - start < timeout) {
+			if (this.plugin.index.getFileClasses(this.file).includes(name)) return true;
+			await new Promise((r) => window.setTimeout(r, 100));
+		}
+		return false;
 	}
 }

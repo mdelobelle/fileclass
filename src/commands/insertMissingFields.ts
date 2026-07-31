@@ -15,7 +15,13 @@ import { Field, isRootField } from "../schema/field";
 export async function insertMissingFields(
 	app: App,
 	file: TFile,
-	fields: Field[]
+	fields: Field[],
+	/**
+	 * `silent` drops the "nothing to insert" notice — the automatic run after
+	 * binding a class has nothing to apologise for when a note is already complete.
+	 * A write is always announced, whoever asked for it.
+	 */
+	{ silent = false }: { silent?: boolean } = {}
 ): Promise<number> {
 	const missing = fields.filter((f) => isRootField(f) && !hasFieldKey(app, file, f));
 	// De-duplicate by name (a note may bind several fileClasses sharing a field).
@@ -28,7 +34,7 @@ export async function insertMissingFields(
 	}
 
 	if (!writes.length) {
-		new Notice("Fileclass: no missing fields to insert.");
+		if (!silent) new Notice("Fileclass: no missing fields to insert.");
 		return 0;
 	}
 	await writeValues(app, file, writes);

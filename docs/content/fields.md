@@ -273,6 +273,8 @@ phrases like *"next friday"* into the picker.
 
 ## Durations & interval cycling
 
+{{< video "009" >}}
+
 A `Duration` field stores a **length of time** as an RFC 5545 `DURATION` string —
 unlike a `Time` field it doesn't wrap at 24h, so it fits prep times, effort
 estimates, brew times, etc.:

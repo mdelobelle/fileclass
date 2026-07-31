@@ -6,6 +6,30 @@ All notable changes to Fileclass are documented here. The format follows
 
 ## [Unreleased]
 
+### UI
+
+- **One screen for a fileClass, whichever door you use.** Clicking a fileClass in the
+  footer of a note's fields modal used to open an intermediate modal offering *Open
+  fileClass settings* / *Create base view* — a fork that existed nowhere else, while
+  the icon and the right-click menu went straight to the editor. The breadcrumb now
+  opens that editor too, and the editor carries the class-level actions its
+  right-click menu already had: **Options…**, create or modify its base, open that
+  base (disabled until one exists), and bulk edit one of its fields. The intermediate
+  modal is gone, and nothing it offered was lost.
+
+- **"Create a class" on the class-files folder.** Right-clicking the folder that
+  holds your fileClasses now offers it, so a new class no longer needs the command
+  palette — the folder is where one looks for it. (The entry follows the *Context
+  menu entries* setting, and appears on that folder only, not on the notes inside
+  it.)
+- **Binding a class now fills the note.** *Add a class to this note* used to write
+  the binding and stop there, leaving every new note one command short of usable;
+  it now inserts the class's missing fields in the same gesture. The index rebuilds
+  on a debounce after a frontmatter write, so the insertion waits for the binding to
+  be visible rather than acting on a stale resolution, and gives up quietly if it
+  never is — the explicit command stays available. Turn it off with **Insert fields
+  when adding a class** (Settings → Fileclass → Behavior).
+
 ### Settings
 
 - **Date formats show what they write, and say when they're wrong.** Every input

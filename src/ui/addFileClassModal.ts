@@ -31,6 +31,10 @@ export class AddFileClassModal extends SuggestModal<string> {
 	}
 
 	private async addFileClass(name: string): Promise<void> {
+		if (!this.plugin.index.getFileClass(name)) {
+			new Notice(`Fileclass: "${name}" not found.`);
+			return;
+		}
 		const alias = this.plugin.settings.fileClassAlias;
 		try {
 			await this.app.fileManager.processFrontMatter(this.file, (fm) => {

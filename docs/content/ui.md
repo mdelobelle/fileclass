@@ -102,6 +102,9 @@ Markdown file — in the file explorer, on a tab, or in the editor — adds:
 - **Insert missing fields**.
 - **Add fileClass** — which also inserts that class's fields, unless you turn
   [**Insert fields when adding a class**](../settings/#behavior) off.
+- **Open *&lt;class&gt;* schema** — one entry per fileClass that applies to the note,
+  named. This is the only route for a class bound by **tag, path, bookmark or Base
+  view**: those leave no value in the frontmatter to click.
 
 On a **fileClass note**, the menu instead offers schema actions plus **Bulk edit
 a field of this fileClass** (see below).
@@ -162,6 +165,17 @@ everything else opens the type-appropriate input with its validation, instead of
 Obsidian's untyped value cell. **Alt-click** always opens the input. Auto-
 maintained fields (Canvas family) and computed types get no button. Toggle it
 under **Settings → Fileclass → Property editor buttons**.
+
+The **`fileClass` row** gets a different button: a **wrench opening that class's
+schema**, one per class the row lists. The stored value is an identifier, not a
+wikilink — binding can also come from a tag, a path or a Base view — so there was
+nothing to click through to, and reaching the class definition meant finding it in
+the class folder. Where the button lands depends on how Obsidian types the
+property, which is its decision and not the plugin's: a **List** property renders
+each value as a pill and the wrench sits inside it, right after the name; a
+**Text** property fills the row, so the wrench takes its place in the icon column
+between the key and the value. A name matching no class gets no button — which is
+also how a typo announces itself.
 
 Like the indicators, this is a best-effort DOM decoration (Obsidian exposes no
 API for it): if the properties DOM changes, the buttons simply stop appearing and

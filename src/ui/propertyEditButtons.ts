@@ -33,12 +33,15 @@ import { Field, isRootField } from "../schema/field";
 import { hasFieldKey } from "../io/read";
 import { AddFileClassModal } from "./addFileClassModal";
 import { attachAltAffordance } from "./altAffordance";
+import { openFileClassSchema } from "./fileClassSchemaModal";
 import { makeValuePreview } from "./valuePreview";
 
 const BTN_CLASS = "fileclass-prop-edit";
 const PREVIEW_CLASS = "fileclass-prop-preview";
 /** The section-actions wrapper, sitting right after "Add property". */
 const ACTIONS_CLASS = "fileclass-prop-actions";
+/** The "open this class's schema" button, on the fileClass row (#23). */
+const CLASS_CLASS = "fileclass-prop-class";
 /** Leaf types whose views render a native Properties editor. */
 const LEAF_TYPES = ["markdown", "file-properties"];
 
@@ -103,7 +106,10 @@ export class PropertyEditButtons extends Component {
 			if (this.plugin.settings.enablePropertyEditButtons) {
 				document
 					.querySelectorAll<HTMLElement>(".metadata-property[data-property-key]")
-					.forEach((row) => this.injectRow(row));
+					.forEach((row) => {
+						this.injectRow(row);
+						this.injectClassRow(row);
+					});
 			}
 			if (this.plugin.settings.enablePropertyActionButtons) {
 				// Our own buttons don't carry the native class, so this can't match them.
@@ -189,6 +195,76 @@ export class PropertyEditButtons extends Component {
 			if (e.key === "Enter" || e.key === " ") run(e);
 		});
 		return btn;
+	}
+
+	/**
+	 * On the `fileClass` row: one button per bound class, opening its schema (#23).
+	 *
+	 * The value is an identifier, not a link — binding can also come from a tag, a
+	 * path or a Base view — so there is nothing to click through to. This adds the
+	 * missing affordance without changing what is stored.
+	 *
+	 * Two shapes to cover, and which one appears is Obsidian's decision, not ours:
+	 * a property it types as List renders each value as a `.multi-select-pill`
+	 * (even a single one), while a Text property renders the raw value. Both are
+	 * handled; a name that matches no class gets no button, which is also how a
+	 * typo announces itself.
+	 */
+	private injectClassRow(row: HTMLElement): void {
+		const key = row.getAttribute("data-property-key");
+		const alias = this.plugin.settings.fileClassAlias;
+		// Obsidian lowercases data-property-key, hence the case-insensitive match.
+		if (!key || !alias || key.toLowerCase() !== alias.toLowerCase()) return;
+		const valueEl = row.querySelector<HTMLElement>(":scope > .metadata-property-value");
+		if (!valueEl) return;
+
+		const pills = valueEl.querySelectorAll<HTMLElement>(
+			":scope > .multi-select-container > .multi-select-pill"
+		);
+		if (pills.length) {
+			pills.forEach((pill) => {
+				const name = pill.querySelector(".multi-select-pill-content")?.textContent?.trim() ?? "";
+				const remove = pill.querySelector<HTMLElement>(
+					":scope > .multi-select-pill-remove-button"
+				);
+				this.placeClassButton(pill, name, remove);
+			});
+			// A pill removed since the last pass leaves nothing behind: its button
+			// lived inside it.
+			return;
+		}
+		// A text value fills the row, so appending to it would park the button at the
+		// far right edge. It goes in the icon column instead — between the key and
+		// the value, where every other row's control sits.
+		this.placeClassButton(row, valueEl.textContent?.trim() ?? "", valueEl);
+	}
+
+	/**
+	 * Puts (or refreshes, or removes) the schema button for `name` inside `host`,
+	 * before `before` when given. Dedup by name so a settled row mutates no
+	 * further — this DOM is watched, and a re-inject on every pass would loop.
+	 */
+	private placeClassButton(host: HTMLElement, name: string, before: HTMLElement | null): void {
+		const existing = host.querySelector<HTMLElement>(`:scope > .${CLASS_CLASS}`);
+		const known = !!name && !!this.plugin.index.getFileClass(name);
+		if (!known) {
+			existing?.remove();
+			return;
+		}
+		if (existing?.dataset.fcName === name) return;
+		existing?.remove();
+		const btn = createSpan({ cls: `${CLASS_CLASS} clickable-icon` });
+		btn.dataset.fcName = name;
+		btn.setAttribute("aria-label", `Open "${name}" schema (Fileclass)`);
+		setIcon(btn, "wrench");
+		btn.addEventListener("click", (e) => {
+			// Inside a pill, a click would otherwise start editing the value.
+			e.preventDefault();
+			e.stopPropagation();
+			openFileClassSchema(this.plugin, name);
+		});
+		if (before) host.insertBefore(btn, before);
+		else host.appendChild(btn);
 	}
 
 	private injectRow(row: HTMLElement): void {
@@ -296,7 +372,7 @@ export class PropertyEditButtons extends Component {
 	}
 
 	private removeAll(): void {
-		for (const cls of [BTN_CLASS, PREVIEW_CLASS, ACTIONS_CLASS]) {
+		for (const cls of [BTN_CLASS, PREVIEW_CLASS, ACTIONS_CLASS, CLASS_CLASS]) {
 			document.querySelectorAll(`.${cls}`).forEach((el) => el.remove());
 		}
 	}

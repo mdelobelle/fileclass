@@ -8,6 +8,13 @@ All notable changes to Fileclass are documented here. The format follows
 
 ### UI
 
+- **Reach a class's schema from a note bound to it** (#23). The `fileClass` row of
+  the Properties editor gets a wrench per class — inside the pill when Obsidian
+  types the property as a list, in the icon column when it types it as text — and
+  the note's context menu lists *Open &lt;class&gt; schema* for each class that applies,
+  including those bound by tag, path or Base view, which leave no value to click.
+  The stored value stays a plain identifier: this only adds navigation.
+
 - **Alt+Enter runs a modal's primary action** — *Save*, *Add field*, *Apply* —
   wherever the focus is, so a form filled from the keyboard is submitted from the
   keyboard. Fileclass's own modals only; Obsidian's are untouched.

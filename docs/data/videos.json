@@ -75,5 +75,16 @@
     "durationSeconds": 174,
     "recordedWith": "0.1.1",
     "privacyStatus": "public"
+  },
+  "008": {
+    "id": "bInkg1jLOmM",
+    "url": "https://www.youtube.com/watch?v=bInkg1jLOmM",
+    "title": "Fileclass #008 · DateTime and Time",
+    "subject": "DateTime and Time",
+    "scenario": "008_datetime_and_time",
+    "doc": "fields/#date-fields-date--datetime--time",
+    "durationSeconds": 137,
+    "recordedWith": "0.1.1",
+    "privacyStatus": "public"
   }
 }

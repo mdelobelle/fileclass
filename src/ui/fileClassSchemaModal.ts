@@ -23,7 +23,7 @@ import {
 } from "../schema/fileClassWrite";
 import { ChoiceSuggestModal } from "../fields/input/valueModals";
 import { FieldDefModal, FieldDefResult } from "./fieldDefModal";
-import { applyConditional } from "../views/conditionalSync";
+import { writeFieldDependency } from "./fieldSettings";
 import { makeStickyFooter } from "./modalFooter";
 import { FileClassOptionsModal } from "./fileClassOptionsModal";
 import { openBulkEdit } from "./bulkEditModal";
@@ -187,23 +187,9 @@ export class FileClassSchemaModal extends Modal {
 		}).open();
 	}
 
-	/**
-	 * A field that depends on another one (#19) needs a formula and a view in the
-	 * base it takes candidates from. The field's own options already name that view
-	 * (derived from the predicate), so this only has to make it exist.
-	 */
+	/** What saving a definition implies beyond the write — shared with the other door. */
 	private writeDependency(r: FieldDefResult): void {
-		const o = r.options;
-		if (!o || Array.isArray(o)) return;
-		const baseFile = typeof o.baseFile === "string" ? o.baseFile : "";
-		const source = typeof o.dependsOn === "string" ? o.dependsOn : "";
-		const match = typeof o.matchProperty === "string" ? o.matchProperty : "";
-		const sourceView = typeof o.sourceView === "string" ? o.sourceView : "";
-		if (!baseFile || !source || !match || !sourceView) return;
-		const sourceType =
-			this.plugin.index.getResolvedFields(this.name).find((f) => f.name === source)?.type ??
-			"Input";
-		void applyConditional(this.plugin, { baseFile, sourceView, source, sourceType, match });
+		writeFieldDependency(this.plugin, this.name, r);
 	}
 
 	private editField(field: Field): void {

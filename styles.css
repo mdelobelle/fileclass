@@ -668,6 +668,18 @@
 }
 
 /*
+ * The type icon in a note-fields row is a label until Alt is held, when it becomes a
+ * way into the field's settings — so it only claims to be clickable then.
+ */
+.fileclass-type-icon:hover {
+	color: var(--text-normal);
+}
+.fileclass-field-row .fileclass-type-icon svg.lucide-wrench {
+	cursor: pointer;
+	color: var(--text-accent);
+}
+
+/*
  * The generated predicate, previewed under the dependency controls (#19): the view
  * name that will be created, then the formula in the base's own language.
  */

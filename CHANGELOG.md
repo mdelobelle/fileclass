@@ -8,6 +8,13 @@ All notable changes to Fileclass are documented here. The format follows
 
 ### UI
 
+- **A field's settings, one Alt-click from the note.** In the note-fields modal, Alt
+  over a row's type icon turns it into a wrench and Alt-clicking it opens that
+  field's definition editor. Changing one option of a field you are looking at used
+  to mean leaving the note, opening its fileClass and finding the field again. The
+  write goes to the fileClass note that declares it — the ancestor, for an inherited
+  field — and a dependent field's formula is regenerated from this door too.
+
 - **A dependent field builds its own filter** (#19). Pick the field to depend on and
   the property to match, and Fileclass writes the formula into the bound base and
   points the field at a **narrowed copy of the view you chose** — its filters, sort

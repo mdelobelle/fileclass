@@ -27,6 +27,13 @@ type](#one-gesture-per-field-type) rule:
 explicit value — and on a date wired to an interval sequence, Alt-click advances
 it instead of opening the picker.
 
+**Alt-click a row's type icon** to open that field's **settings** — the same
+definition editor the schema editor uses, addressed by field. Hold Alt over the icon
+and it becomes a wrench, so the gesture announces itself. Changing one option of a
+field you are looking at no longer means leaving the note, opening its fileClass and
+finding the field again; the write goes to the fileClass note that *declares* the
+field, which for an inherited one is the ancestor.
+
 Header actions: **Insert missing fields** (adds any root fields absent from the
 frontmatter) and **Add fileClass** (binds another fileClass to the note).
 

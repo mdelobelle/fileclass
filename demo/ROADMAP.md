@@ -23,7 +23,7 @@ One take before the arcs, and the only one that shows the whole plugin end to en
 
 | # | Take | Feature | Vault gains | Status |
 | - | ---- | ------- | ----------- | ------ |
-| 000 | Tour #1 — from an untyped vault to a typed library | install, class folder, a class bound by folder, `File` candidates narrowed by another field | untyped library + `Authors/` + `Authors.base` | scripted |
+| 000 | Tour #1 — from an untyped vault to a typed library | install, class folder, a class bound by folder, `File` candidates narrowed by another field | untyped library + `Authors/` + `Authors.base` | ✅ [published](https://www.youtube.com/watch?v=rScC86I2vlg) |
 
 It is deliberately the exception to the 60-second rule (~5 min), and it can only be
 recorded once the store carries the release with #19 — the install happens on camera.

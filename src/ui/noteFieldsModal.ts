@@ -29,6 +29,7 @@ import { Field, isRootField } from "../schema/field";
 import { AddFileClassModal } from "./addFileClassModal";
 import { openFileClassSchema } from "./fileClassSchemaModal";
 import { attachAltAffordance } from "./altAffordance";
+import { openFieldSettings } from "./fieldSettings";
 import { makeValuePreview } from "./valuePreview";
 import { makeIndicatorIcon, MODAL_SCOPE, navIndicatorFile } from "./indicator/indicatorDom";
 import { renderValueWithLinks } from "./valueLinks";
@@ -135,8 +136,23 @@ export class NoteFieldsModal extends Modal {
 		setting.settingEl.addClass("fileclass-field-row");
 		setting.settingEl.dataset.fcOwner = field.fileClassName; // for footer hover highlight
 		const typeIcon = createSpan({ cls: "fileclass-type-icon" });
-		typeIcon.setAttribute("aria-label", field.type);
+		const typeLabel = `${field.type} — Alt-click for this field's settings`;
+		typeIcon.setAttribute("aria-label", typeLabel);
 		setIcon(typeIcon, fieldTypeIcon(field.type));
+		// Alt turns the type icon into a way into the definition editor: changing one
+		// option of a field you are looking at shouldn't mean leaving the note, opening
+		// its fileClass and finding the field again.
+		attachAltAffordance(
+			typeIcon,
+			{ icon: fieldTypeIcon(field.type), label: typeLabel },
+			() => ({ icon: "wrench", label: `Edit "${field.name}" settings (Fileclass)` })
+		);
+		typeIcon.addEventListener("click", (e) => {
+			if (!e.altKey) return;
+			e.preventDefault();
+			e.stopPropagation();
+			openFieldSettings(this.plugin, field);
+		});
 		setting.nameEl.prepend(typeIcon);
 
 		const valueEl = setting.controlEl.createSpan({ cls: "fileclass-field-value" });

@@ -49,6 +49,57 @@ export async function acceptVaultTrust(stage) {
 }
 
 /**
+ * Closes what accepting the dialog opened: Obsidian lands the operator in
+ * Settings → Community plugins, and a take would open with that in frame.
+ *
+ * It is closed in whichever shape this build uses — a pane inside the main window
+ * (`app.setting.close()`), or its own window, which has no `window.app` at all and
+ * so can only be asked to close itself. Only ever called right after we clicked the
+ * trust dialog: we opened it, we close it.
+ */
+export async function dismissSettings(stage, { timeout = 2500, poll = 250 } = {}) {
+	const start = Date.now();
+	// Obsidian opens it *after* the trust flow settles, so waiting for it beats
+	// firing once and hoping.
+	while (Date.now() - start < timeout) {
+		if (await closeSettingsOnce(stage)) return true;
+		await new Promise((r) => setTimeout(r, poll));
+	}
+	return false;
+}
+
+async function closeSettingsOnce(stage) {
+	await stage.refresh().catch(() => {});
+	let closed = false;
+	for (const page of stage.pages) {
+		const isApp = await page.evaluate(() => !!window.app).catch(() => false);
+		if (isApp) {
+			const had = await page
+				.evaluate(() => {
+					const open = !!document.querySelector(".modal-container.mod-settings");
+					window.app?.setting?.close?.();
+					return open;
+				})
+				.catch(() => false);
+			closed = closed || had;
+			continue;
+		}
+		const isSettings = await page
+			.evaluate(() => !!document.querySelector(".vertical-tab-header, .settings-modal-container"))
+			.catch(() => false);
+		if (isSettings) {
+			// Electron refuses `window.close()` for a window it opened itself, and this
+			// renderer has no `window.app` to ask nicely — so the target is closed the
+			// way the operator's click on the cross would: from outside.
+			await page.keyboard.press("Escape").catch(() => {});
+			if (!page.isClosed()) await page.close().catch(() => {});
+			closed = true;
+		}
+	}
+	return closed;
+}
+
+/**
  * Waits for the plugin to be loaded, accepting the trust dialog as soon as it
  * appears. Both are the same wait from the caller's point of view: "is the plugin
  * there yet, and is anything obvious in the way?"

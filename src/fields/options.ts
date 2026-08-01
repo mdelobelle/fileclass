@@ -143,6 +143,12 @@ export interface BaseBindingOptions {
 	viewName?: string;
 	/** Base column id used as the suggestion's display/alias (e.g. "note.title"). */
 	displayColumn?: string;
+	/** Field of the edited note whose value narrows the candidates (#19). */
+	dependsOn?: string;
+	/** Candidate-side property compared against that value (#19). */
+	matchProperty?: string;
+	/** The view the author picked, which the generated one narrows (#19). */
+	sourceView?: string;
 }
 
 export function baseBindingOptions(field: Field): BaseBindingOptions {
@@ -156,6 +162,10 @@ export function baseBindingOptionsFromOptions(options: FieldOptions): BaseBindin
 		viewName: typeof o.viewName === "string" && o.viewName ? o.viewName : undefined,
 		displayColumn:
 			typeof o.displayColumn === "string" && o.displayColumn ? o.displayColumn : undefined,
+		dependsOn: typeof o.dependsOn === "string" && o.dependsOn ? o.dependsOn : undefined,
+		matchProperty:
+			typeof o.matchProperty === "string" && o.matchProperty ? o.matchProperty : undefined,
+		sourceView: typeof o.sourceView === "string" && o.sourceView ? o.sourceView : undefined,
 	};
 }
 

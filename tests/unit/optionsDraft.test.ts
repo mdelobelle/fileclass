@@ -215,6 +215,9 @@ describe("File / Media base binding", () => {
 			baseFile: "People.base",
 			viewName: "All",
 			displayColumn: "note.title",
+			// #19's pair, empty until the author picks a dependency.
+			dependsOn: "",
+			matchProperty: "",
 		});
 		expect(buildFieldOptions("MultiFile", draft)).toEqual({
 			baseFile: "People.base",

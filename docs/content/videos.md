@@ -68,3 +68,7 @@ other. Captions are English; YouTube translates them into your language.
 ## Covers and attachments
 
 {{< video "014" >}}
+
+## Candidates that depend on another field
+
+{{< video "015" >}}

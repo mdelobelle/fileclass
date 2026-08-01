@@ -22,7 +22,8 @@ import {
 	updateFieldDef,
 } from "../schema/fileClassWrite";
 import { ChoiceSuggestModal } from "../fields/input/valueModals";
-import { FieldDefModal } from "./fieldDefModal";
+import { FieldDefModal, FieldDefResult } from "./fieldDefModal";
+import { writeFieldDependency } from "./fieldSettings";
 import { makeStickyFooter } from "./modalFooter";
 import { FileClassOptionsModal } from "./fileClassOptionsModal";
 import { openBulkEdit } from "./bulkEditModal";
@@ -174,15 +175,21 @@ export class FileClassSchemaModal extends Modal {
 			title: "Add field",
 			dateDefaults: dateFormatDefaults(this.plugin.settings),
 			classFields: this.plugin.index.getResolvedFields(this.name),
-			onSubmit: (r) =>
+			onSubmit: (r) => {
 				void mutateFields(this.app, this.file, (fields) =>
 					addFieldDef(
 						fields,
 						{ name: r.name, type: r.type, options: r.options, path: this.parentPath },
 						collectFieldIds(fields)
 					)
-				),
+				).then(() => this.writeDependency(r));
+			},
 		}).open();
+	}
+
+	/** What saving a definition implies beyond the write — shared with the other door. */
+	private writeDependency(r: FieldDefResult): void {
+		writeFieldDependency(this.plugin, this.name, r);
 	}
 
 	private editField(field: Field): void {
@@ -191,14 +198,15 @@ export class FileClassSchemaModal extends Modal {
 			dateDefaults: dateFormatDefaults(this.plugin.settings),
 			classFields: this.plugin.index.getResolvedFields(this.name),
 			initial: { name: field.name, type: field.type, options: field.options },
-			onSubmit: (r) =>
+			onSubmit: (r) => {
 				void mutateFields(this.app, this.file, (fields) =>
 					updateFieldDef(fields, field.id, {
 						name: r.name,
 						type: r.type,
 						options: r.options,
 					})
-				),
+				).then(() => this.writeDependency(r));
+			},
 		}).open();
 	}
 

@@ -215,6 +215,34 @@ make a take readable.
   `~/fileclass-demos/<scenario>/<vault_name>` and wipes that copy after the take,
   so a botched run costs nothing.
 
+## Poking at a staged vault (`probe.mjs`)
+
+To check something against the real app — a picker's contents, what a gesture
+writes, a computed style — put it in a throwaway module and let `probe.mjs` own the
+lifecycle:
+
+```bash
+node probe.mjs 014 /tmp/check-thumbnails.mjs        # stage, run, put everything back
+node probe.mjs 014 /tmp/check.mjs --keep            # leave it open to look at it
+```
+
+```js
+export default async function ({ stage, page, vault, sleep }) {
+	console.log(await page.evaluate(() => window.app.vault.getName()));
+}
+```
+
+It stages the fixture, launches Obsidian, **waits until the plugin is actually
+loaded** (about 1.3s — no fixed sleep), runs the module, and tears down in a
+`finally`: quit, vault list restored, staged vault wiped. Same on a throw, and on
+SIGINT — all three verified, because the habit it replaces (backgrounding
+`smoke.mjs` behind a `sleep 300` pipe) left Obsidian open on a staged vault
+whenever the probe finished early or died, and someone had to quit it by hand.
+
+The vault list is also backed up **on disk** now, so a run killed hard enough to
+skip its own teardown can still be undone — `restoreVaultRegistryFromDisk()` in
+`lib/stage.mjs`.
+
 ## 6. Verify before handing it over
 
 ```bash
@@ -282,7 +310,11 @@ Gotchas worth knowing:
 
 - Obsidian may ask to trust the vault / turn off Restricted mode the first time
   it opens a staged vault. In `001` that prompt is part of the story; elsewhere,
-  accept it before cueing step 1.
+  accept it before cueing step 1. `record.mjs`, `smoke.mjs` and `probe.mjs` accept
+  it for you (`lib/trust.mjs`) — the plugin does not load until it is answered.
+  Accepting it sometimes leaves **Settings → Community plugins** showing, in its own
+  window in this build; the tooling tries to close it and does not always win, so
+  glance at the screen before cueing step 1.
 - A staged vault ships with **Always update links** and no delete prompt, so a
   rename or a delete on camera doesn't raise a dialog you'd have to dismiss mid-take
   (`lib/stage.mjs`, `app.json` defaults). A fixture that wants the prompt can commit

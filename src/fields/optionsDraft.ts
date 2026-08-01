@@ -6,6 +6,7 @@
  * options untouched (no clobbering — D5-style safety).
  */
 import { FieldOptions, FieldType } from "../schema/field";
+import { conditionalViewName, hasDependency } from "./conditional";
 import { CanvasDirection } from "./canvas/canvasGraph";
 import { baseBindingOptionsFromOptions, listOptionsFromOptions } from "./options";
 
@@ -74,6 +75,9 @@ export interface OptionsDraft {
 	baseFile?: string;
 	viewName?: string;
 	displayColumn?: string;
+	/** #19: the field this one depends on, and the property to match on. */
+	dependsOn?: string;
+	matchProperty?: string;
 	/** Column whose values feed a Select/Multi list (ValuesFromBase). */
 	valuesColumn?: string;
 }
@@ -191,8 +195,12 @@ export function optionsToDraft(type: FieldType, options: FieldOptions): OptionsD
 				const b = baseBindingOptionsFromOptions(options);
 				return {
 					baseFile: b.baseFile ?? "",
-					viewName: b.viewName ?? "",
+					// A dependency points the field at a generated view; the author still
+					// edits the one it was derived from.
+					viewName: b.sourceView ?? b.viewName ?? "",
 					displayColumn: b.displayColumn ?? "",
+					dependsOn: b.dependsOn ?? "",
+					matchProperty: b.matchProperty ?? "",
 				};
 			}
 			return {};
@@ -334,6 +342,20 @@ export function buildFieldOptions(type: FieldType, draft: OptionsDraft): FieldOp
 			if (draft.baseFile?.trim()) o.baseFile = draft.baseFile.trim();
 			if (draft.viewName?.trim()) o.viewName = draft.viewName.trim();
 			if (draft.displayColumn?.trim()) o.displayColumn = draft.displayColumn.trim();
+			if (draft.dependsOn?.trim()) o.dependsOn = draft.dependsOn.trim();
+			if (draft.matchProperty?.trim()) o.matchProperty = draft.matchProperty.trim();
+			// A dependency owns the view: its name is derived from the predicate, so the
+			// stored options stay consistent even if writing the base fails or is
+			// postponed (base open in a tab).
+			if (hasDependency(draft.dependsOn, draft.matchProperty)) {
+				const sourceView = draft.viewName?.trim() ?? "";
+				if (sourceView) o.sourceView = sourceView;
+				o.viewName = conditionalViewName({
+					source: draft.dependsOn as string,
+					match: draft.matchProperty as string,
+					sourceView,
+				});
+			}
 			return o;
 		}
 	}

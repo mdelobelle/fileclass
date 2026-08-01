@@ -38,6 +38,8 @@ const OBSIDIAN_JSON = join(
 	"obsidian",
 	"obsidian.json"
 );
+/** Where the pre-run vault list is parked, so a killed run can still be undone. */
+const REGISTRY_BACKUP = join(RUNS_DIR, ".obsidian-json.backup");
 const APP = process.env.OBSIDIAN_APP || "Obsidian";
 
 /** Community theme every take records with (copied from a local vault). */
@@ -267,6 +269,11 @@ export async function quitObsidian({ timeout = 15000 } = {}) {
  */
 export function captureVaultRegistry(vault) {
 	const before = existsSync(OBSIDIAN_JSON) ? readFileSync(OBSIDIAN_JSON, "utf8") : null;
+	// Also on disk: a run killed before its teardown takes its in-memory copy with
+	// it, and the operator is left with a dead demo vault in their vault list.
+	mkdirSync(RUNS_DIR, { recursive: true });
+	if (before == null) rmSync(REGISTRY_BACKUP, { force: true });
+	else writeFileSync(REGISTRY_BACKUP, before);
 	const config = before ? JSON.parse(before) : { vaults: {} };
 	const previouslyOpen = Object.values(config.vaults ?? {})
 		.filter((v) => v.open)
@@ -284,8 +291,20 @@ export function captureVaultRegistry(vault) {
 		restore() {
 			if (before == null) rmSync(OBSIDIAN_JSON, { force: true });
 			else writeFileSync(OBSIDIAN_JSON, before);
+			rmSync(REGISTRY_BACKUP, { force: true });
 		},
 	};
+}
+
+/**
+ * Puts the vault list back from the on-disk backup — the repair for a run that
+ * died before its own teardown. Returns what it did, so a caller can say so.
+ */
+export function restoreVaultRegistryFromDisk() {
+	if (!existsSync(REGISTRY_BACKUP)) return "nothing to restore";
+	writeFileSync(OBSIDIAN_JSON, readFileSync(REGISTRY_BACKUP, "utf8"));
+	rmSync(REGISTRY_BACKUP, { force: true });
+	return "restored the vault list from the backup";
 }
 
 /** Launches Obsidian with the CDP port and waits for it to answer. */

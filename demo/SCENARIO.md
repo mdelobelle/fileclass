@@ -215,6 +215,34 @@ make a take readable.
   `~/fileclass-demos/<scenario>/<vault_name>` and wipes that copy after the take,
   so a botched run costs nothing.
 
+## Poking at a staged vault (`probe.mjs`)
+
+To check something against the real app — a picker's contents, what a gesture
+writes, a computed style — put it in a throwaway module and let `probe.mjs` own the
+lifecycle:
+
+```bash
+node probe.mjs 014 /tmp/check-thumbnails.mjs        # stage, run, put everything back
+node probe.mjs 014 /tmp/check.mjs --keep            # leave it open to look at it
+```
+
+```js
+export default async function ({ stage, page, vault, sleep }) {
+	console.log(await page.evaluate(() => window.app.vault.getName()));
+}
+```
+
+It stages the fixture, launches Obsidian, **waits until the plugin is actually
+loaded** (about 1.3s — no fixed sleep), runs the module, and tears down in a
+`finally`: quit, vault list restored, staged vault wiped. Same on a throw, and on
+SIGINT — all three verified, because the habit it replaces (backgrounding
+`smoke.mjs` behind a `sleep 300` pipe) left Obsidian open on a staged vault
+whenever the probe finished early or died, and someone had to quit it by hand.
+
+The vault list is also backed up **on disk** now, so a run killed hard enough to
+skip its own teardown can still be undone — `restoreVaultRegistryFromDisk()` in
+`lib/stage.mjs`.
+
 ## 6. Verify before handing it over
 
 ```bash

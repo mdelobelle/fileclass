@@ -8,6 +8,15 @@ All notable changes to Fileclass are documented here. The format follows
 
 ### UI
 
+- **A dependent field builds its own filter** (#19). Pick the field to depend on and
+  the property to match, and Fileclass writes the formula and the view into the
+  bound base, then points the field at it — with a preview of both before you save.
+  Hand-authoring that meant knowing `this.<Property>` resolves to the edited note,
+  choosing a value or a link comparison, and remembering the `.isTruthy()` guards
+  without which an empty-vs-empty comparison is `true` and the picker offers every
+  value-less candidate. Names come from the predicate, so regenerating converges
+  instead of accumulating, and everything else in the base is left alone.
+
 - **Removed: the `embed` option** on `Media`/`MultiMedia`. It wrote `![[cover.png]]`
   instead of `[[cover.png]]`, which made sense in Metadata Menu — its fields could
   live **inline in the note body**, where an embed renders. In frontmatter it renders

@@ -22,7 +22,8 @@ import {
 	updateFieldDef,
 } from "../schema/fileClassWrite";
 import { ChoiceSuggestModal } from "../fields/input/valueModals";
-import { FieldDefModal } from "./fieldDefModal";
+import { FieldDefModal, FieldDefResult } from "./fieldDefModal";
+import { applyConditional } from "../views/conditionalSync";
 import { makeStickyFooter } from "./modalFooter";
 import { FileClassOptionsModal } from "./fileClassOptionsModal";
 import { openBulkEdit } from "./bulkEditModal";
@@ -174,15 +175,34 @@ export class FileClassSchemaModal extends Modal {
 			title: "Add field",
 			dateDefaults: dateFormatDefaults(this.plugin.settings),
 			classFields: this.plugin.index.getResolvedFields(this.name),
-			onSubmit: (r) =>
+			onSubmit: (r) => {
 				void mutateFields(this.app, this.file, (fields) =>
 					addFieldDef(
 						fields,
 						{ name: r.name, type: r.type, options: r.options, path: this.parentPath },
 						collectFieldIds(fields)
 					)
-				),
+				).then(() => this.writeDependency(r));
+			},
 		}).open();
+	}
+
+	/**
+	 * A field that depends on another one (#19) needs a formula and a view in the
+	 * base it takes candidates from. The field's own options already name that view
+	 * (derived from the predicate), so this only has to make it exist.
+	 */
+	private writeDependency(r: FieldDefResult): void {
+		const o = r.options;
+		if (!o || Array.isArray(o)) return;
+		const baseFile = typeof o.baseFile === "string" ? o.baseFile : "";
+		const source = typeof o.dependsOn === "string" ? o.dependsOn : "";
+		const match = typeof o.matchProperty === "string" ? o.matchProperty : "";
+		if (!baseFile || !source || !match) return;
+		const sourceType =
+			this.plugin.index.getResolvedFields(this.name).find((f) => f.name === source)?.type ??
+			"Input";
+		void applyConditional(this.plugin, { baseFile, source, sourceType, match });
 	}
 
 	private editField(field: Field): void {
@@ -191,14 +211,15 @@ export class FileClassSchemaModal extends Modal {
 			dateDefaults: dateFormatDefaults(this.plugin.settings),
 			classFields: this.plugin.index.getResolvedFields(this.name),
 			initial: { name: field.name, type: field.type, options: field.options },
-			onSubmit: (r) =>
+			onSubmit: (r) => {
 				void mutateFields(this.app, this.file, (fields) =>
 					updateFieldDef(fields, field.id, {
 						name: r.name,
 						type: r.type,
 						options: r.options,
 					})
-				),
+				).then(() => this.writeDependency(r));
+			},
 		}).open();
 	}
 

@@ -190,7 +190,48 @@ the alias shown in the picker and written into the link.
 ### Conditional candidates (dependent fields)
 
 A link field's candidate list can depend on the value of **another field of the
-note you are editing**. When the picker opens, Fileclass runs the bound Base view
+note you are editing** — and Fileclass writes the plumbing for you.
+
+In the field's options, under the base and view, set:
+
+- **Depends on another field** — the field of this fileClass whose value narrows the
+  list. Only single-valued fields are offered: comparing a list to a scalar needs a
+  different predicate (see [by hand](#writing-the-predicate-by-hand) below).
+- **Match on property** — the property on the *candidate* side to compare against
+  it. It defaults to the source field's name, which is the usual case.
+
+A preview shows the view that will be created and the formula behind it, so you see
+the predicate before saving rather than discovering it later inside the `.base`. On
+save, Fileclass adds them to the bound base and points the field at the view:
+
+```yaml
+formulas:
+  fcMatch_Goal_by_Goal: Goal.isTruthy() && this.Goal.isTruthy() && (file(Goal).basename == file(this.Goal).basename)
+views:
+  - type: table
+    name: "Fileclass · Goal = this.Goal"
+    filters:
+      and:
+        - formula.fcMatch_Goal_by_Goal == true
+```
+
+Three things worth knowing about what it generates:
+
+- the comparison shape follows the **source field's type**: a link field is compared
+  by basename, anything else by value;
+- the names come from the **predicate**, not from the field, so two fields narrowed
+  the same way share one formula and one view, and renaming a field orphans nothing;
+- your base is otherwise untouched — other views, other formulas, and the tuning
+  inside the generated view (order, sort, column widths) all survive a regeneration.
+
+A field whose candidates are notes of its own fileClass will **offer the edited note
+itself**; add `file != this.file` to the generated view if that bothers you.
+
+### Writing the predicate by hand
+
+Still available, and still the way to express what the builder doesn't — a
+multi-valued source (`this.<field>.contains(…)`), or a comparison the two types
+don't agree on. When the picker opens, Fileclass runs the bound Base view
 with the current note as its context, so `this` inside the view's filters and
 formulas resolves to that note — not only `this.file`, but its frontmatter
 properties too (`this.<PropertyName>`). Write a view filter that compares each

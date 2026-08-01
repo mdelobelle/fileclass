@@ -81,7 +81,11 @@ export class FieldDefModal extends Modal {
 		modalTitle(contentEl, this.opts.title);
 
 		new Setting(contentEl).setName("Name").addText((t) =>
-			t.setValue(this.name).onChange((v) => (this.name = v))
+			t.setValue(this.name).onChange((v) => {
+				this.name = v;
+				// A field can't depend on itself, and the name decides which one that is.
+				renderOptions();
+			})
 		);
 
 		const optionsEl = contentEl.createDiv({ cls: "fileclass-field-options" });
@@ -90,6 +94,7 @@ export class FieldDefModal extends Modal {
 				app: this.app,
 				dateDefaults: this.opts.dateDefaults,
 				classFields: this.opts.classFields,
+				fieldName: this.name,
 			});
 
 		new Setting(contentEl).setName("Type").addDropdown((d) => {

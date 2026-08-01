@@ -668,6 +668,23 @@
 }
 
 /*
+ * The generated predicate, previewed under the dependency controls (#19): the view
+ * name that will be created, then the formula in the base's own language.
+ */
+.fileclass-formula {
+	display: block;
+	margin-top: var(--size-2-1, 2px);
+	font-size: var(--font-ui-smaller);
+	white-space: pre-wrap;
+	word-break: break-word;
+}
+/* A control that has nothing to act on yet, dimmed rather than removed so the
+ * form doesn't jump as the dropdown above it is set. */
+.fileclass-setting-off {
+	opacity: 0.5;
+}
+
+/*
  * Media thumbnails (#44 follow-up). One size everywhere a media value or candidate
  * appears — picker row, note-fields modal, properties row, table cell — because
  * the point is recognising the picture, not admiring it. `contain` keeps a large

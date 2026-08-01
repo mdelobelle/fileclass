@@ -141,7 +141,7 @@ function isBaseWithViews(base: unknown): boolean {
 }
 
 /** Leaves currently displaying the .base at `path` (any registered view type). */
-function openBaseLeaves(app: App, path: string): WorkspaceLeaf[] {
+export function openBaseLeaves(app: App, path: string): WorkspaceLeaf[] {
 	const leaves: WorkspaceLeaf[] = [];
 	app.workspace.iterateAllLeaves((leaf) => {
 		if (leaf.getViewState().state?.file === path) leaves.push(leaf);
@@ -154,7 +154,7 @@ function openBaseLeaves(app: App, path: string): WorkspaceLeaf[] {
  * a Bases leaf flushes its in-memory layout. Resolves on the first `modify` of
  * the file, or after a short timeout so a no-op close can't hang the sync.
  */
-function detachAndAwaitSave(app: App, file: TFile, leaves: WorkspaceLeaf[]): Promise<void> {
+export function detachAndAwaitSave(app: App, file: TFile, leaves: WorkspaceLeaf[]): Promise<void> {
 	return new Promise((resolve) => {
 		let done = false;
 		const finish = (): void => {
@@ -173,7 +173,7 @@ function detachAndAwaitSave(app: App, file: TFile, leaves: WorkspaceLeaf[]): Pro
 }
 
 /** Confirms closing an open base before syncing. Resolves true on confirm. */
-function confirmCloseOpenBase(app: App, fileName: string): Promise<boolean> {
+export function confirmCloseOpenBase(app: App, fileName: string): Promise<boolean> {
 	return new Promise((resolve) => {
 		const modal = new Modal(app);
 		modal.titleEl.setText("Base is open");

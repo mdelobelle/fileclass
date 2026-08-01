@@ -63,19 +63,21 @@ field's candidates. Field-value filtering runs entirely on core Obsidian.
 
 ## Requirements
 
-- Obsidian **1.13.2+** with the core **Bases** plugin enabled.
+- Obsidian **1.12.7+** with the core **Bases** plugin enabled.
 - Schema and typed input work without Bases; query-dependent features
-  (File/Media candidates, generated views) require it.
+  (File/Media candidates, generated views) require it. They rely on Bases
+  internals validated on 1.13.2; on older versions they degrade gracefully rather
+  than erroring.
 
 ## Installation
 
-Fileclass is **not yet in the community plugin store**. To install manually:
+**Settings → Community plugins → Browse**, search for **Fileclass**, install and
+enable it. Then point it at a folder for your class notes — the first minute of
+[Tour #1](https://www.youtube.com/watch?v=rScC86I2vlg) does exactly that.
 
-1. Download `main.js`, `manifest.json` and `styles.css` from the
-   [latest release](https://github.com/mdelobelle/fileclass/releases) (or from
-   the repository root).
-2. Copy them into `<your-vault>/.obsidian/plugins/fileclass/`.
-3. Reload Obsidian and enable **Fileclass** in **Settings → Community plugins**.
+To install a build by hand instead, copy `main.js`, `manifest.json` and
+`styles.css` from the [latest release](https://github.com/mdelobelle/fileclass/releases)
+into `<your-vault>/.obsidian/plugins/fileclass/`, then reload Obsidian.
 
 ## Coming from Metadata Menu
 

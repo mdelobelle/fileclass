@@ -16,9 +16,8 @@ import type FileclassPlugin from "../../main";
 import { Filter, matchesFilter } from "./filter";
 import { insertMissingFields } from "../commands/insertMissingFields";
 import { getBaseFiles, getBaseRows } from "../engine/basesAdapter";
-import { isMediaType, resolveCandidates } from "../fields/candidates";
+import { resolveCandidates } from "../fields/candidates";
 import { formatLink } from "../fields/links";
-import { baseBindingOptions } from "../fields/options";
 import { openFileClassSchema } from "../ui/fileClassSchemaModal";
 import { makeDisplayDeps } from "../fields/displayDeps";
 import { clearField } from "../fields/fieldActions";
@@ -450,7 +449,6 @@ export function createFileclassApi(plugin: FileclassPlugin): FileclassApi {
 			const file = requireFile(path);
 			const f = rootField(file, field);
 			if (!f || !LINK_TYPES.has(f.type)) return [];
-			const embed = isMediaType(f.type) && baseBindingOptions(f).embed;
 			const candidates = await resolveCandidates(plugin, f, file);
 			return candidates.map((c) => ({
 				display: c.display,
@@ -458,8 +456,7 @@ export function createFileclassApi(plugin: FileclassPlugin): FileclassApi {
 					app,
 					c.file,
 					file.path,
-					c.display !== c.file.basename ? c.display : undefined,
-					embed
+					c.display !== c.file.basename ? c.display : undefined
 				),
 			}));
 		},

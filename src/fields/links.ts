@@ -10,11 +10,14 @@ export function formatLink(
 	app: App,
 	target: TFile,
 	sourcePath: string,
-	alias?: string,
-	embed = false
+	alias?: string
 ): string {
-	const link = app.fileManager.generateMarkdownLink(target, sourcePath, undefined, alias);
-	return embed ? `!${link}` : link;
+	// Never an embed (`![[…]]`), even for a media field: Obsidian does not register
+	// an embedded frontmatter value as a link, so it is left dangling by a rename,
+	// is absent from the graph, and a Bases image column ignores it. The option that
+	// used to write one came from Metadata Menu, where these fields could live
+	// inline in the body — there an embed renders. Here they cannot.
+	return app.fileManager.generateMarkdownLink(target, sourcePath, undefined, alias);
 }
 
 /** Resolves the target path of a stored link value (for pre-selecting a picker). */

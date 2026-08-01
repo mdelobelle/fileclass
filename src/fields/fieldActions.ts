@@ -47,7 +47,6 @@ import { formatLink, linkTargetPath } from "./links";
 import { thumbFor } from "../ui/mediaThumb";
 import { asListValue, asObjectValue } from "./objectDraft";
 import {
-	baseBindingOptions,
 	colorSource,
 	dateOptions,
 	durationPresets,
@@ -383,14 +382,13 @@ export async function promptFieldValue(
 		case "File":
 		case "Media": {
 			const media = isMediaType(field.type);
-			const embed = media && baseBindingOptions(field).embed;
 			const candidates = await resolveCandidates(ctx.host, field, file);
 			const grouped = candidates.some((c) => c.group !== undefined);
 			new ChoiceSuggestModal<Candidate>(
 				app,
 				candidates,
 				(c) => c.display,
-				(c) => onValue(formatLink(app, c.file, file.path, aliasFor(c), embed)),
+				(c) => onValue(formatLink(app, c.file, file.path, aliasFor(c))),
 				`Set ${field.name}`,
 				grouped ? (c) => c.group ?? null : undefined,
 				// A cover is chosen by looking at it, not by reading its file name.
@@ -402,7 +400,6 @@ export async function promptFieldValue(
 		case "MultiFile":
 		case "MultiMedia": {
 			const media = isMediaType(field.type);
-			const embed = media && baseBindingOptions(field).embed;
 			const candidates = await resolveCandidates(ctx.host, field, file);
 			const byDisplay = new Map(candidates.map((c) => [c.display, c] as const));
 			const currentPaths = new Set(
@@ -428,7 +425,7 @@ export async function promptFieldValue(
 						displays
 							.map((d) => byDisplay.get(d))
 							.filter((c): c is Candidate => !!c)
-							.map((c) => formatLink(app, c.file, file.path, aliasFor(c), embed))
+							.map((c) => formatLink(app, c.file, file.path, aliasFor(c)))
 					),
 			}).open();
 			return;

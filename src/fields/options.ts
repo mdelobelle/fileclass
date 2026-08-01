@@ -143,8 +143,6 @@ export interface BaseBindingOptions {
 	viewName?: string;
 	/** Base column id used as the suggestion's display/alias (e.g. "note.title"). */
 	displayColumn?: string;
-	/** Media only: store the value as an embed (`![[…]]`) rather than a link. */
-	embed: boolean;
 }
 
 export function baseBindingOptions(field: Field): BaseBindingOptions {
@@ -158,7 +156,6 @@ export function baseBindingOptionsFromOptions(options: FieldOptions): BaseBindin
 		viewName: typeof o.viewName === "string" && o.viewName ? o.viewName : undefined,
 		displayColumn:
 			typeof o.displayColumn === "string" && o.displayColumn ? o.displayColumn : undefined,
-		embed: o.embed === true || o.embed === "true",
 	};
 }
 

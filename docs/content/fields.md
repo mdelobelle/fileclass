@@ -29,7 +29,7 @@ field types and the commands that set values. Everything is written to
 | **Color** | CSS color | [swatch palette + custom](#color) | a valid CSS color |
 | **File** | link | note picker | a link string |
 | **MultiFile** | list of links | toggle list | a list of links |
-| **Media** | link/embed | file picker | a link string |
+| **Media** | link | file picker (with thumbnails) | a link string |
 | **MultiMedia** | list | toggle list | a list of links |
 | **Object** | nested object | draft editor | each known child validates |
 | **ObjectList** | list of objects | draft editor | each item's children validate |
@@ -170,7 +170,13 @@ the alias shown in the picker and written into the link.
   them on — so a sorted view gives sorted links.
 
 {{< video "013" >}}
-- `Media`/`MultiMedia` with the `embed` option store an embed (`![[…]]`).
+- The value is always a **plain link**, never an embed (`![[…]]`). Metadata Menu
+  offered that, and it made sense there: its fields could live **inline in the note
+  body**, where an embed renders. In frontmatter it renders nothing — and worse,
+  Obsidian doesn't register an embedded value as a link, so **renaming the image
+  leaves it dangling** (a plain link is rewritten for you), it is absent from the
+  graph, and a Bases `image` column ignores it. Values already stored as embeds keep
+  resolving everywhere Fileclass reads them.
 - An **image value shows as a thumbnail** wherever Fileclass displays it — in the
   picker, so a cover is chosen by looking at it rather than by reading
   `cover-final-2.png`, and beside the value in the note-fields modal, the

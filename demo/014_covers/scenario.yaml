@@ -14,8 +14,11 @@
 #    was wrong, its API call was;
 #  - the Media fallback is already scoped to media files, so there is no unusable
 #    list to fix here: take 012's "look at this mess" beat does not repeat;
-#  - a frontmatter never renders an embed, whatever the option — hence step 9,
-#    which explains it rather than letting the viewer think it is broken.
+#  - a frontmatter never renders an embed, and the `embed` option was removed after
+#    measuring what it cost: Obsidian doesn't register an embedded value as a link,
+#    so a rename left it dangling and a Bases image column ignored it. Steps 8-9 now
+#    say what the value IS — a plain link, maintained by Obsidian — and why the
+#    thumbnail is what makes the row legible.
 title: "Fileclass — Covers and attachments"
 description: "A field that points at a picture, and shows it."
 doc: "fields/#link-fields-file--media" # deep link used in the description
@@ -43,9 +46,9 @@ steps:
     pause: 1800
   - title: "Pick the sand-coloured one"
     pause: 1300
-  - title: "Stored as an embed — the exclamation mark comes from the Embed option"
-    pause: 1800
-  - title: "Frontmatter can't render an embed, so the thumbnail stands in for it"
+  - title: "Stored as a plain link — rename the image and the value follows"
+    pause: 1900
+  - title: "Frontmatter shows the raw text, so the thumbnail stands in for the picture"
     pause: 1900
   - title: "Multi media is the same list with several picks — a gallery"
     pause: 1700

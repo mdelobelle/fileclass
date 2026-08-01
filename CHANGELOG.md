@@ -8,6 +8,15 @@ All notable changes to Fileclass are documented here. The format follows
 
 ### UI
 
+- **Removed: the `embed` option** on `Media`/`MultiMedia`. It wrote `![[cover.png]]`
+  instead of `[[cover.png]]`, which made sense in Metadata Menu — its fields could
+  live **inline in the note body**, where an embed renders. In frontmatter it renders
+  nothing, and the marker costs you three things, all measured: Obsidian doesn't
+  register an embedded value as a link, so **a rename leaves it dangling** while a
+  plain link is rewritten; it is absent from the graph; and a Bases `image` column
+  shows nothing for it. Values already stored as embeds keep resolving wherever
+  Fileclass reads them — thumbnails, candidates, pre-selection.
+
 - **Image values show as thumbnails** — in the `Media`/`MultiMedia` picker, and
   beside the value in the note-fields modal, the Properties row and table cells. A
   media field points at a picture; every surface used to show its file name.

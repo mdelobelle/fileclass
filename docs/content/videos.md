@@ -64,3 +64,7 @@ other. Captions are English; YouTube translates them into your language.
 ## Several links in one field
 
 {{< video "013" >}}
+
+## Covers and attachments
+
+{{< video "014" >}}

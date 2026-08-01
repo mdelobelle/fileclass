@@ -260,7 +260,10 @@ node record.mjs 002 --no-keys    # hide the pressed-keys badge
 
 It quits your Obsidian (asks first), stages the vault, relaunches Obsidian on it
 with `--remote-debugging-port=9222`, and waits for Enter so you can start
-QuickTime. Then **⌘⌃⌥⇧C in Obsidian** advances the narration (Enter in the
+QuickTime. With `--speak` it says **"ready"** just before waiting: an audible
+"armed" without looking away from Obsidian, and it pays the voice's one-time
+startup off-camera — measured at about a second, which the first subtitle used to
+absorb. A cue pressed during that word still counts. Then **⌘⌃⌥⇧C in Obsidian** advances the narration (Enter in the
 terminal also works; `q` or Ctrl-C aborts and cleans up). At the end it quits
 Obsidian, restores your vault list and wipes the demo vault.
 
@@ -280,6 +283,10 @@ Gotchas worth knowing:
 - Obsidian may ask to trust the vault / turn off Restricted mode the first time
   it opens a staged vault. In `001` that prompt is part of the story; elsewhere,
   accept it before cueing step 1.
+- A staged vault ships with **Always update links** and no delete prompt, so a
+  rename or a delete on camera doesn't raise a dialog you'd have to dismiss mid-take
+  (`lib/stage.mjs`, `app.json` defaults). A fixture that wants the prompt can commit
+  its own `.obsidian/app.json` — the defaults only fill in what a fixture omits.
 - The file right-click menu opens in its own window — fine here, since you're the
   one clicking, and the subtitle stays visible in every window.
 - With `--keep`, Obsidian stays open on the demo vault, so *it* will mark that

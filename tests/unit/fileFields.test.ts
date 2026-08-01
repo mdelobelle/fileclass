@@ -15,12 +15,13 @@ const make = (type: FieldType, options: FieldOptions = []): Field => ({
 });
 
 describe("baseBindingOptions", () => {
-	it("reads base/view/display/embed", () => {
+	it("reads base, view and display column", () => {
 		const o = baseBindingOptions(
 			make("File", {
 				baseFile: "People.base",
 				viewName: "All",
 				displayColumn: "note.title",
+				// A leftover from the removed embed option: an unknown key is ignored.
 				embed: "true",
 			})
 		);
@@ -28,16 +29,14 @@ describe("baseBindingOptions", () => {
 			baseFile: "People.base",
 			viewName: "All",
 			displayColumn: "note.title",
-			embed: true,
 		});
 	});
 
-	it("defaults to no binding and no embed", () => {
+	it("defaults to no binding", () => {
 		expect(baseBindingOptions(make("File"))).toEqual({
 			baseFile: undefined,
 			viewName: undefined,
 			displayColumn: undefined,
-			embed: false,
 		});
 	});
 });

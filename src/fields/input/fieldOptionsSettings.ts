@@ -210,7 +210,7 @@ export function renderFieldOptionsSettings(
 		case "MultiFile":
 		case "Media":
 		case "MultiMedia":
-			renderLinkSettings(container, type, draft, ctx);
+			renderLinkSettings(container, draft, ctx);
 			return;
 		case "Canvas":
 		case "CanvasGroup":
@@ -239,7 +239,6 @@ export function renderFieldOptionsSettings(
 
 function renderLinkSettings(
 	container: HTMLElement,
-	type: FieldType,
 	draft: OptionsDraft,
 	ctx: FieldOptionsCtx
 ): void {
@@ -266,12 +265,6 @@ function renderLinkSettings(
 			t.setValue(draft.displayColumn ?? "").onChange((v) => (draft.displayColumn = v))
 		);
 
-	if (type === "Media" || type === "MultiMedia") {
-		new Setting(container)
-			.setName("Embed")
-			.setDesc("Store the value as an embed (![[…]]).")
-			.addToggle((t) => t.setValue(!!draft.embed).onChange((v) => (draft.embed = v)));
-	}
 }
 
 function renderDurationPresets(container: HTMLElement, draft: OptionsDraft, app: App): void {

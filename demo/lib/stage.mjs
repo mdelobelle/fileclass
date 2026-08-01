@@ -80,7 +80,10 @@ const DEFAULTS = {
 		cssTheme: THEME,
 		nativeMenus: false,
 	},
-	"app.json": { promptDelete: false },
+	// No prompts a take would have to dismiss on camera: deleting goes straight to
+	// the bin, and a rename updates links without asking — which take 014 relies on,
+	// since it renames a cover to show the value following it.
+	"app.json": { promptDelete: false, alwaysUpdateLinks: true },
 };
 
 const isDir = (p) => existsSync(p) && readdirSync(p, { withFileTypes: true }) && true;

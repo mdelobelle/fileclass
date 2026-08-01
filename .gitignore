@@ -22,6 +22,9 @@ docs/public/
 docs/resources/
 docs/.hugo_build.lock
 
+# Outreach backlog (notes de promo, ne pas publier)
+.claude/outreach/
+
 # Demo/onboarding tooling
 # Scenario fixtures (demo/NNN_*/demo-vault/) ARE committed; the vaults a take
 # actually runs in live outside the repo, in ~/fileclass-demos/.

@@ -76,7 +76,6 @@ export interface OptionsDraft {
 	displayColumn?: string;
 	/** Column whose values feed a Select/Multi list (ValuesFromBase). */
 	valuesColumn?: string;
-	embed?: boolean;
 }
 
 const LINK_TYPES: ReadonlySet<FieldType> = new Set<FieldType>([
@@ -85,7 +84,6 @@ const LINK_TYPES: ReadonlySet<FieldType> = new Set<FieldType>([
 	"Media",
 	"MultiMedia",
 ]);
-const MEDIA_TYPES: ReadonlySet<FieldType> = new Set<FieldType>(["Media", "MultiMedia"]);
 
 const numStr = (v: unknown): string =>
 	typeof v === "number" || (typeof v === "string" && v.trim() !== "") ? String(v) : "";
@@ -195,7 +193,6 @@ export function optionsToDraft(type: FieldType, options: FieldOptions): OptionsD
 					baseFile: b.baseFile ?? "",
 					viewName: b.viewName ?? "",
 					displayColumn: b.displayColumn ?? "",
-					embed: b.embed,
 				};
 			}
 			return {};
@@ -337,7 +334,6 @@ export function buildFieldOptions(type: FieldType, draft: OptionsDraft): FieldOp
 			if (draft.baseFile?.trim()) o.baseFile = draft.baseFile.trim();
 			if (draft.viewName?.trim()) o.viewName = draft.viewName.trim();
 			if (draft.displayColumn?.trim()) o.displayColumn = draft.displayColumn.trim();
-			if (MEDIA_TYPES.has(type) && draft.embed) o.embed = true;
 			return o;
 		}
 	}

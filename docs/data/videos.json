@@ -152,5 +152,16 @@
     "durationSeconds": 111,
     "recordedWith": "0.1.1",
     "privacyStatus": "public"
+  },
+  "014": {
+    "id": "HtjfEO19p-g",
+    "url": "https://www.youtube.com/watch?v=HtjfEO19p-g",
+    "title": "Fileclass #014 · Covers and attachments",
+    "subject": "Covers and attachments",
+    "scenario": "014_covers",
+    "doc": "fields/#link-fields-file--media",
+    "durationSeconds": 115,
+    "recordedWith": "0.1.1",
+    "privacyStatus": "public"
   }
 }

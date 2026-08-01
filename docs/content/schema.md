@@ -149,8 +149,7 @@ When adding or editing a field, its type reveals the relevant settings:
   in place), **from a note** (its non-empty lines), or **from a Base view** (the
   names of the files the view matches).
 - **File / MultiFile / Media / MultiMedia** — a **Base file** and **view**
-  (candidate source), an optional **display column** (the alias), and **embed**
-  (Media).
+  (candidate source) and an optional **display column** (the alias).
 - **Object / ObjectList** — a **Children** button opens the same editor scoped to
   the object's nested fields; nesting can go several levels deep.
 

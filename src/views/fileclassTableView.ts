@@ -143,9 +143,13 @@ class FileclassTableView extends Component {
 			this.renderInternalLink(content, entry.file.path, entry.file.basename, source);
 		} else {
 			const raw = this.cellText(entry, col);
-			// A type preview (Color swatch / Icon glyph) leads the value, if any.
+			// A type preview (Color swatch / Icon glyph / image) leads the value.
 			if (field) {
-				const preview = makeValuePreview(field, raw);
+				const preview = makeValuePreview(field, raw, {
+					app: this.plugin.app,
+					sourcePath: entry.file.path,
+					raw: readFieldValue(this.plugin.app, entry.file, field),
+				});
 				if (preview) content.prepend(preview);
 			}
 			for (const seg of parseCellSegments(raw)) {

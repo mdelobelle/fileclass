@@ -128,7 +128,8 @@ export class NoteFieldsModal extends Modal {
 	}
 
 	private renderFieldRow(ctx: EditContext, deps: DisplayDeps, field: Field): void {
-		const value = describeField(field, readFieldValue(this.app, this.file, field), deps);
+		const raw = readFieldValue(this.app, this.file, field);
+		const value = describeField(field, raw, deps);
 		// Compact row: the type is shown as a leading icon, not a text label.
 		const setting = new Setting(this.contentEl).setName(field.name);
 		setting.settingEl.addClass("fileclass-field-row");
@@ -143,7 +144,11 @@ export class NoteFieldsModal extends Modal {
 		renderValueWithLinks(valueEl, value, this.file.path, this.app, (linktext) =>
 			this.linkIndicator(linktext)
 		);
-		const preview = makeValuePreview(field, value);
+		const preview = makeValuePreview(field, value, {
+			app: this.app,
+			sourcePath: this.file.path,
+			raw,
+		});
 		if (preview) valueEl.prepend(preview);
 
 		this.addRowActions(ctx, setting, field);

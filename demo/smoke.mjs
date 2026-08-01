@@ -182,7 +182,10 @@ async function main() {
 			quitTheirs = true;
 			await quitObsidian();
 		}
-		vaultPath = stageVault(scenario, pluginDir);
+		// A smoke test inspects what the plugin makes of the fixture, so it always
+		// gets the plugin — even for a take that installs it on camera (`plugin:
+		// false`), where waiting for a plugin nobody installed used to fail after 25s.
+		vaultPath = stageVault({ ...scenario, plugin: true }, pluginDir);
 		staged = true;
 		console.log(dim(`Staged   ${vaultPath} (plugin ${pluginVersion(pluginDir) ?? "?"})`));
 		registry = captureVaultRegistry(vaultPath);

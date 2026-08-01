@@ -172,9 +172,18 @@ async function main() {
 		await stage.waitForVault(vaultPath);
 		// A staged vault is new to Obsidian, which holds its plugins behind a trust
 		// dialog — dismissed here so the take doesn't open with a modal in frame.
-		const { loaded, trusted } = await waitForPlugin(stage);
+		const requirePlugin = scenario.plugin !== false;
+		const { loaded, trusted } = await waitForPlugin(stage, { requirePlugin });
 		if (trusted) console.log(dim("Accepted this vault's trust prompt"));
-		if (!loaded) console.warn(dim("Warning: Fileclass isn't loaded in that vault."));
+		if (!loaded) {
+			console.log(
+				dim(
+					requirePlugin
+						? "Warning: Fileclass isn't loaded in that vault."
+						: "Fileclass isn't installed — this take installs it on camera."
+				)
+			);
+		}
 		console.log(dim(`Opened   "${scenario.vaultName}"`));
 	}
 

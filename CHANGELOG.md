@@ -4,6 +4,23 @@ All notable changes to Fileclass are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); this project uses
 [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Fixed
+
+- **Turning Bases on after Fileclass no longer needs a restart.** Feature detection
+  ran once, at layout-ready, and nothing re-ran it: a vault where the core Bases
+  plugin was switched on later kept File/Media candidates and generated views
+  disabled for the rest of the session, with no way to tell why. Fileclass now
+  re-detects whenever a core plugin is toggled.
+
+- **A generated base could report `Unknown view type: fileclass-table`.** The
+  editable view is registered once, when Bases is available; a session that missed
+  that moment rendered every base Fileclass had generated as an error — on a file
+  Fileclass wrote itself. Registration is retried whenever Bases becomes available,
+  and a failure is logged instead of being swallowed. (The view type still needs
+  Fileclass enabled to render, as any plugin-provided Bases view does.)
+
 ## [0.2.0] - 2026-08-01
 
 ### UI

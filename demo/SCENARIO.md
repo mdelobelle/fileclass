@@ -280,6 +280,10 @@ Gotchas worth knowing:
 - Obsidian may ask to trust the vault / turn off Restricted mode the first time
   it opens a staged vault. In `001` that prompt is part of the story; elsewhere,
   accept it before cueing step 1.
+- A staged vault ships with **Always update links** and no delete prompt, so a
+  rename or a delete on camera doesn't raise a dialog you'd have to dismiss mid-take
+  (`lib/stage.mjs`, `app.json` defaults). A fixture that wants the prompt can commit
+  its own `.obsidian/app.json` — the defaults only fill in what a fixture omits.
 - The file right-click menu opens in its own window — fine here, since you're the
   one clicking, and the subtitle stays visible in every window.
 - With `--keep`, Obsidian stays open on the demo vault, so *it* will mark that

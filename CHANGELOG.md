@@ -4,7 +4,7 @@ All notable changes to Fileclass are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); this project uses
 [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [0.2.0] - 2026-08-01
 
 ### UI
 
@@ -135,6 +135,17 @@ All notable changes to Fileclass are documented here. The format follows
   never is — the explicit command stays available. Turn it off with **Insert fields
   when adding a class** (Settings → Fileclass → Behavior).
 
+
+- **One gesture per field type, on every control.** A `Cycle` advanced to its next
+  value in the note-fields modal but opened a value picker everywhere else — in the
+  Properties editor and in editable table cells — under a `rotate-cw` icon that
+  promised the advance. The gesture is now decided by the type alone and shared by
+  all three surfaces: `Cycle` writes the next allowed value, `Boolean` flips, every
+  other type opens its typed input. **Alt-click** opens the input wherever the
+  gesture writes a value directly, so an explicit choice is always one modifier
+  away. The button's label names what it will do ("Next value", "Toggle", "Edit")
+  instead of a generic *Edit*.
+
 ### Settings
 
 - **Date formats show what they write, and say when they're wrong.** Every input
@@ -183,18 +194,6 @@ All notable changes to Fileclass are documented here. The format follows
   click shows `Min` itself (0 when there is no minimum), so it always lands on a
   legal value; the result is clamped to `Min`/`Max`, and a fractional step stays
   clean (0.1 + 0.2 → 0.3).
-
-### UI
-
-- **One gesture per field type, on every control.** A `Cycle` advanced to its next
-  value in the note-fields modal but opened a value picker everywhere else — in the
-  Properties editor and in editable table cells — under a `rotate-cw` icon that
-  promised the advance. The gesture is now decided by the type alone and shared by
-  all three surfaces: `Cycle` writes the next allowed value, `Boolean` flips, every
-  other type opens its typed input. **Alt-click** opens the input wherever the
-  gesture writes a value directly, so an explicit choice is always one modifier
-  away. The button's label names what it will do ("Next value", "Toggle", "Edit")
-  instead of a generic *Edit*.
 
 ## [0.1.1] - 2026-07-26
 

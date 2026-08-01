@@ -1,0 +1,50 @@
+{
+  "main": {
+    "id": "tour-main",
+    "type": "split",
+    "direction": "vertical",
+    "children": [
+      {
+        "id": "tour-tabs",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "tour-note",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Dune.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "left": {
+    "id": "tour-left",
+    "type": "split",
+    "direction": "horizontal",
+    "width": 300,
+    "children": [
+      {
+        "id": "tour-left-tabs",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "tour-explorer",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {}
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "active": "tour-note"
+}

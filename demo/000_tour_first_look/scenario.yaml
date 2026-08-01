@@ -1,0 +1,93 @@
+# Narration for Tour #1 — see ../SCENARIO.md for the format.
+#
+# The catalogue's entry point, and the one take that breaks the 60-second budget on
+# purpose: ~270 words, ~5 minutes finished. It ends where the numbered series begins,
+# and says so.
+#
+# From nothing means from nothing: no Classes folder, no class, and the plugin is
+# installed from the community store on camera (`plugin: false`, no `settings:` block
+# — pre-filling the class folder would delete act 0).
+#
+# Consequence worth knowing before recording: the store version must already carry
+# the dependency builder (#19), or act 5 cannot be performed. Release first.
+#
+# Two things the fixture does on purpose:
+#  - the four library notes are typed by hand and inconsistently (author / writer /
+#    nothing / artist). That inconsistency IS act 1;
+#  - the authors carry `language` in their own frontmatter, so act 2 declares a value
+#    that was already there rather than inventing one, and binding by folder types six
+#    notes in one gesture — verified: `filesPaths: [Authors]` resolves the class and
+#    its field on every note inside, without touching their frontmatter.
+#
+# And Authors.base is scoped by FOLDER, not by `fileClass == "Author"`: bound by path,
+# those notes never carry a fileClass property for Bases to filter on. Filtering on
+# the class would have left act 5's picker empty.
+title: "Fileclass — Tour #1: from an untyped vault to a typed library"
+description: "The whole plugin in five minutes: install it, declare a class, and let a field's candidates narrow themselves."
+doc: "" # the tour points at the docs as a whole, not at one section
+tags: "obsidian, fileclass, tour, getting started, frontmatter, bases"
+vault_name: "Demo"
+plugin: false # installed on camera, from the community store
+initial_pause: 1500
+default_pause: 900
+
+steps:
+  # --- Act 0: install and set up
+  - title: "Fileclass gives your notes a schema — here's the whole thing, from install"
+    pause: 2000
+  - title: "Community plugins are off in a fresh vault: turn off Restricted mode, then install Fileclass"
+    pause: 2000
+  - title: "It builds on the core Bases plugin, so make sure Bases is on"
+    pause: 1900
+  - title: "A class is a note, so classes need a home: make a Classes folder"
+    pause: 1900
+  - title: "And tell Fileclass where it is"
+    pause: 1700
+  # --- Act 1: the problem
+  - title: "Six authors and four books, all typed by hand"
+    pause: 1800
+  - title: "Dune says author, The Lord of the Rings says writer, Tintin says nothing"
+    pause: 2000
+  - title: "Nothing declares what any of them should have"
+    pause: 1800
+  # --- Act 2: the first class, and a folder that types itself
+  - title: "Create a class: Author, with a single field — language"
+    pause: 1800
+  - title: "Its Files paths option binds every note in a folder"
+    pause: 1900
+  - title: "Point it at Authors: six notes typed in one gesture"
+    pause: 1900
+  - title: "The values were already there; now they're declared"
+    pause: 1800
+  # --- Act 3: the class we'll work with
+  - title: "Now the books: create Book"
+    pause: 1500
+  - title: "Give it a publisher, a page count, and a language"
+    pause: 1800
+  # --- Act 4: filling
+  - title: "Bind Dune to Book: its fields arrive already named"
+    pause: 1800
+  - title: "One screen for the whole note, each field with its own input"
+    pause: 1800
+  - title: "A number stays a number, a list only offers what you allowed"
+    pause: 1900
+  - title: "The same controls appear in Obsidian's own properties panel"
+    pause: 1800
+  # --- Act 5: the core
+  - title: "Now the field this plugin exists for: author, pointing at a note"
+    pause: 1900
+  - title: "Its candidates come from a base view — the list you curate, in your view's order"
+    pause: 2000
+  - title: "And it can narrow itself by what the note already says"
+    pause: 1900
+  - title: "Depend on language, match the candidates' own language"
+    pause: 1800
+  - title: "English books, English-writing authors — Verne and Hergé step aside"
+    pause: 2000
+  # --- Act 6: what's next
+  - title: "One base per class, generated, with what's missing flagged"
+    pause: 1900
+  - title: "The whole series walks through every field type — the link is in the description"
+    pause: 1900
+  - title: "The rest is in the docs 🎉"
+    pause: 2200

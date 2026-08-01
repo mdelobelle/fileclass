@@ -4,6 +4,8 @@
  *
  *   node probe.mjs 014 /tmp/check-thumbnails.mjs
  *   node probe.mjs 014 /tmp/check.mjs --keep    # leave the vault open to look at it
+ *   node probe.mjs 000 /tmp/check.mjs --with-plugin   # a `plugin: false` take, but
+ *                                                     # rehearse its content anyway
  *
  * Why this exists: the habit was to background `smoke.mjs` with a `sleep 300`
  * pipe, run a probe next to it, and wait for the timer to close the app. When the
@@ -97,14 +99,20 @@ async function main() {
 		await quitObsidian();
 	}
 
-	const vault = stageVault(scenario, pluginDir);
+	// A take that installs the plugin on camera stages without it. Its *content* still
+	// needs rehearsing, so --with-plugin layers the local build in for a probe only.
+	const withPlugin = flag("with-plugin");
+	const vault = stageVault(withPlugin ? { ...scenario, plugin: true } : scenario, pluginDir);
 	staged = true;
 	registry = captureVaultRegistry(vault);
 	console.log(dim(`Staged   ${vault} (plugin ${pluginVersion(pluginDir) ?? "?"})`));
 	await launchObsidian(port);
 	launched = true;
 
-	const stage = await attachWhenReady(port, { vaultPath: vault });
+	const stage = await attachWhenReady(port, {
+		vaultPath: vault,
+		requirePlugin: withPlugin || scenario.plugin !== false,
+	});
 	const probe = await import(pathToFileURL(scriptPath).href);
 	if (typeof probe.default !== "function") {
 		throw new Error(`${scriptArg} must export a default async function ({ stage, page, vault })`);

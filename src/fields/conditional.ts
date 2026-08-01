@@ -115,9 +115,16 @@ export function formulaName(spec: Pick<DependencySpec, "source" | "match">): str
 	return `fcMatch_${identifier(spec.match)}_by_${identifier(spec.source)}`;
 }
 
-/** The generated view's name — it reads as the predicate it applies. */
-export function conditionalViewName(spec: Pick<DependencySpec, "source" | "match">): string {
-	return `Fileclass · ${spec.match.trim()} = this.${spec.source.trim()}`;
+/**
+ * The generated view's name — it reads as the source view plus the predicate it
+ * applies, so two fields narrowing *different* scopes the same way don't collide.
+ */
+export function conditionalViewName(
+	spec: Pick<DependencySpec, "source" | "match"> & { sourceView?: string }
+): string {
+	const scope = spec.sourceView?.trim();
+	const predicate = `${spec.match.trim()} = this.${spec.source.trim()}`;
+	return scope ? `Fileclass · ${scope} · ${predicate}` : `Fileclass · ${predicate}`;
 }
 
 /** True for a view name this feature generated (so the UI can say it owns it). */

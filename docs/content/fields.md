@@ -202,27 +202,45 @@ In the field's options, under the base and view, set:
 
 A preview shows the view that will be created and the formula behind it, so you see
 the predicate before saving rather than discovering it later inside the `.base`. On
-save, Fileclass adds them to the bound base and points the field at the view:
+save, Fileclass adds them to the bound base and points the field at the generated
+view — **a narrowed copy of the view you chose**, keeping its filters, sort and
+order:
 
 ```yaml
 formulas:
-  fcMatch_Goal_by_Goal: Goal.isTruthy() && this.Goal.isTruthy() && (file(Goal).basename == file(this.Goal).basename)
+  fcMatch_publisher_by_publisher: publisher.isTruthy() && this.publisher.isTruthy() && (publisher == this.publisher)
 views:
   - type: table
-    name: "Fileclass · Goal = this.Goal"
+    name: All series            # yours, untouched
     filters:
       and:
-        - formula.fcMatch_Goal_by_Goal == true
+        - fileClass == "Series"
+    sort:
+      - property: started
+        direction: ASC
+  - type: table
+    name: "Fileclass · All series · publisher = this.publisher"
+    filters:
+      and:
+        - fileClass == "Series"                            # the scope, inherited
+        - formula.fcMatch_publisher_by_publisher == true    # the predicate, added
+    sort:
+      - property: started
+        direction: ASC
 ```
 
-Three things worth knowing about what it generates:
+Four things worth knowing about what it generates:
 
+- it **narrows your view rather than replacing it**. That scope matters: a generated
+  view filtered on the formula alone would match anything in the vault sharing the
+  value — a comic published by Casterman would show up among Casterman's series;
 - the comparison shape follows the **source field's type**: a link field is compared
   by basename, anything else by value;
-- the names come from the **predicate**, not from the field, so two fields narrowed
-  the same way share one formula and one view, and renaming a field orphans nothing;
+- the view's name carries the scope it narrows, so two fields narrowing different
+  views the same way don't collide, while the **formula** is named after the
+  predicate alone and is shared;
 - your base is otherwise untouched — other views, other formulas, and the tuning
-  inside the generated view (order, sort, column widths) all survive a regeneration.
+  inside the generated view (column widths, say) all survive a regeneration.
 
 A field whose candidates are notes of its own fileClass will **offer the edited note
 itself**; add `file != this.file` to the generated view if that bothers you.

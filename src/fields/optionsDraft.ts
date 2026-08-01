@@ -195,7 +195,9 @@ export function optionsToDraft(type: FieldType, options: FieldOptions): OptionsD
 				const b = baseBindingOptionsFromOptions(options);
 				return {
 					baseFile: b.baseFile ?? "",
-					viewName: b.viewName ?? "",
+					// A dependency points the field at a generated view; the author still
+					// edits the one it was derived from.
+					viewName: b.sourceView ?? b.viewName ?? "",
 					displayColumn: b.displayColumn ?? "",
 					dependsOn: b.dependsOn ?? "",
 					matchProperty: b.matchProperty ?? "",
@@ -346,9 +348,12 @@ export function buildFieldOptions(type: FieldType, draft: OptionsDraft): FieldOp
 			// stored options stay consistent even if writing the base fails or is
 			// postponed (base open in a tab).
 			if (hasDependency(draft.dependsOn, draft.matchProperty)) {
+				const sourceView = draft.viewName?.trim() ?? "";
+				if (sourceView) o.sourceView = sourceView;
 				o.viewName = conditionalViewName({
 					source: draft.dependsOn as string,
 					match: draft.matchProperty as string,
+					sourceView,
 				});
 			}
 			return o;

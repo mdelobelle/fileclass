@@ -88,10 +88,17 @@ describe("matchFormula", () => {
 });
 
 describe("names come from the predicate, not the field", () => {
-	it("is stable for a given pair, so two fields share one formula and view", () => {
+	it("is stable for a given pair, so two fields share one formula", () => {
 		const a = { source: "Goal", match: "Goal" };
 		expect(formulaName(a)).toBe("fcMatch_Goal_by_Goal");
 		expect(conditionalViewName(a)).toBe("Fileclass · Goal = this.Goal");
+	});
+
+	it("names the view after the scope it narrows, so two scopes don't collide", () => {
+		expect(conditionalViewName({ source: "publisher", match: "publisher", sourceView: "All series" }))
+			.toBe("Fileclass · All series · publisher = this.publisher");
+		expect(conditionalViewName({ source: "publisher", match: "publisher", sourceView: "Comics" }))
+			.toBe("Fileclass · Comics · publisher = this.publisher");
 	});
 
 	it("keeps a formula name to word characters", () => {

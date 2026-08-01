@@ -9,8 +9,9 @@ All notable changes to Fileclass are documented here. The format follows
 ### UI
 
 - **A dependent field builds its own filter** (#19). Pick the field to depend on and
-  the property to match, and Fileclass writes the formula and the view into the
-  bound base, then points the field at it — with a preview of both before you save.
+  the property to match, and Fileclass writes the formula into the bound base and
+  points the field at a **narrowed copy of the view you chose** — its filters, sort
+  and order, plus the predicate — with a preview of both before you save.
   Hand-authoring that meant knowing `this.<Property>` resolves to the edited note,
   choosing a value or a link comparison, and remembering the `.isTruthy()` guards
   without which an empty-vs-empty comparison is `true` and the picker offers every

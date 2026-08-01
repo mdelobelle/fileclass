@@ -198,11 +198,12 @@ export class FileClassSchemaModal extends Modal {
 		const baseFile = typeof o.baseFile === "string" ? o.baseFile : "";
 		const source = typeof o.dependsOn === "string" ? o.dependsOn : "";
 		const match = typeof o.matchProperty === "string" ? o.matchProperty : "";
-		if (!baseFile || !source || !match) return;
+		const sourceView = typeof o.sourceView === "string" ? o.sourceView : "";
+		if (!baseFile || !source || !match || !sourceView) return;
 		const sourceType =
 			this.plugin.index.getResolvedFields(this.name).find((f) => f.name === source)?.type ??
 			"Input";
-		void applyConditional(this.plugin, { baseFile, source, sourceType, match });
+		void applyConditional(this.plugin, { baseFile, sourceView, source, sourceType, match });
 	}
 
 	private editField(field: Field): void {

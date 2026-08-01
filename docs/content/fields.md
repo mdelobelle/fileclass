@@ -183,6 +183,8 @@ the alias shown in the picker and written into the link.
   Properties row and a table cell. A list shows its first three. Images only: the
   media types also accept audio, video and PDF, and there is no honest thumbnail
   for those.
+
+{{< video "014" >}}
 - Links honor your vault's link settings (`generateMarkdownLink`).
 
 ### Conditional candidates (dependent fields)

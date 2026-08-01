@@ -187,6 +187,11 @@ async function main() {
 		`\n${bold("Start your screen recorder, then press")} ${bold(CUE_LABEL)} ${bold("in Obsidian to begin.")}\n` +
 			dim(`The same chord advances every step · Enter here also works · q aborts\n`)
 	);
+	// "ready", out loud, before the cue. It tells the operator the take is armed
+	// without looking away from Obsidian — and it pays the voice's one-time cost
+	// (process, voice assets, audio device) off-camera, which is why the first
+	// subtitle used to hear its line about a second late.
+	if (voice) await speak("ready", { voice, rate }).done;
 	await stage.waitForCue();
 
 	// t0 = the starting cue. Every offset in the take log is relative to it, which

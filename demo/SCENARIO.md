@@ -260,7 +260,10 @@ node record.mjs 002 --no-keys    # hide the pressed-keys badge
 
 It quits your Obsidian (asks first), stages the vault, relaunches Obsidian on it
 with `--remote-debugging-port=9222`, and waits for Enter so you can start
-QuickTime. Then **⌘⌃⌥⇧C in Obsidian** advances the narration (Enter in the
+QuickTime. With `--speak` it says **"ready"** just before waiting: an audible
+"armed" without looking away from Obsidian, and it pays the voice's one-time
+startup off-camera — measured at about a second, which the first subtitle used to
+absorb. A cue pressed during that word still counts. Then **⌘⌃⌥⇧C in Obsidian** advances the narration (Enter in the
 terminal also works; `q` or Ctrl-C aborts and cleans up). At the end it quits
 Obsidian, restores your vault list and wipes the demo vault.
 

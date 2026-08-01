@@ -115,6 +115,13 @@ dropped those keystrokes silently, leaving an empty field and no explanation.
 
 ## Input templates
 
+> **A template is a shape, not a list of allowed values.** For *"this field may only
+> be fiction, non-fiction or essay"*, the field type is `Select` (one value) or
+> `Multi` (several), and the values come from its **Values list** — or from a note, a
+> folder, or a base view: see [Where allowed values come from](#where-allowed-values-come-from).
+> Reach for a template when every value follows the same pattern instead — a URL, a
+> reference number, an amount with a unit.
+
 An `Input` field can define a **Template** in its options so its value follows a
 fixed structure instead of being typed by hand. The template is a plain string
 with placeholders:

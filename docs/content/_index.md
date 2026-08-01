@@ -27,6 +27,15 @@ It is the successor of [Metadata Menu](https://github.com/mdelobelle/metadatamen
 (same author). Metadata Menu goes into maintenance mode; if you rely on Dataview
 inline fields (`key:: value`), stay there.
 
+## See it work
+
+Five minutes, from a vault where every note types its own properties by hand to a
+library with two classes, guided input, and a candidate list that narrows itself.
+
+{{< video-embed "000" >}}
+
+Then one short video per feature, on the [Videos](videos/) page.
+
 ## Documentation
 
 - [Positioning](positioning/) — how Fileclass relates to core Properties, core

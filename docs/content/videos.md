@@ -9,6 +9,10 @@ weight: 15
 One feature per video, a minute or two each, in the order they build on each
 other. Captions are English; YouTube translates them into your language.
 
+## Tour #1: from an untyped vault to a typed library
+
+{{< video "000" >}}
+
 ## Install and set up
 
 {{< video "001" >}}

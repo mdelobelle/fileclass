@@ -1,0 +1,47 @@
+# Narration for take 010b — see ../SCENARIO.md for the format.
+# Starts where 010 ended: Book has `next interval` (CycleDuration, presets 90/180/
+# 360 days) and Atomic Habits carries the sequence. Scope: the option that links a
+# Date field to that sequence, and the rotation it drives — seen twice, then
+# wrapping, which is why this is its own take rather than 010's last minute.
+#
+# Two things the picker does that the script has to respect (dateInputModal.ts):
+# a successful "Set next date" CLOSES the modal, so each click means reopening the
+# field; and it advances from the field's current value, falling back to today only
+# when it is empty — so the third click lands 90+180+360 days out, not 360.
+title: "Fileclass — Set next date"
+description: "A date that walks your interval sequence, one click at a time."
+doc: "fields/#set-next-date-spaced-repetition" # deep link used in the description
+tags: "spaced repetition, next date, cycleduration"
+vault_name: "Demo"
+plugin: true
+settings:
+  classFilesPath: "Classes/"
+  fileClassAlias: "fileClass"
+initial_pause: 1500
+default_pause: 900
+
+steps:
+  - title: "Atomic Habits has its sequence — 90, 180 then 360 days"
+    pause: 1600
+  - title: "But nothing yet says when the next re-read falls"
+    pause: 1800
+  - title: "Add a Date field named review"
+    pause: 1400
+  - title: "Its options hold a Next interval field: pick the sequence there"
+    pause: 1800
+  - title: "The list offers only what can drive a date — nothing to remember"
+    pause: 1700
+  - title: "Save, insert it, and open review"
+    pause: 1400
+  - title: "The picker gained a line: next interval, plus 90 days"
+    pause: 1800
+  - title: "One click on Set next date: 90 days from today, written"
+    pause: 1800
+  - title: "And the sequence turned — 180 days is now first"
+    pause: 1800
+  - title: "Open it again: the next date counts from that one, not from today"
+    pause: 1900
+  - title: "A third click, and the list wraps back to 90 days"
+    pause: 1800
+  - title: "A schedule you walk one click at a time — no computed fields 🎉"
+    pause: 2200

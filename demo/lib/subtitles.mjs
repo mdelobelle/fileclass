@@ -7,7 +7,12 @@
  *   1. a caption bar at the bottom — the narration the viewer reads;
  *   2. a capture-phase keydown listener bumping a counter when the cue chord is
  *      pressed, so the operator can advance the script while Obsidian, not the
- *      terminal, has focus.
+ *      terminal, has focus;
+ *   3. a key badge under the caption showing the special keys being pressed —
+ *      ⏎, ⌥⏎, ⇥ — so a keyboard gesture is visible in the recording. Typed text
+ *      never appears: the viewer reads the value in the field, and a keylogger
+ *      strip would be noise. Rendered in-page, so there is no round trip between
+ *      the keypress and the pixels.
  *
  * Installed everywhere, shown in ONE place: the caption is painted only on the
  * focused window and blanked on the others, else opening settings puts a second
@@ -25,12 +30,13 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const CUE_CODE = process.env.FILECLASS_DEMO_CUE || "KeyC";
 export const CUE_LABEL = `⌘⌃⌥⇧${CUE_CODE.replace(/^Key/, "")}`;
 
-export async function connect(port) {
+/** `showKeys: false` records without the key badge (see Stage.showKeys). */
+export async function connect(port, { showKeys = true } = {}) {
 	const browser = await puppeteer.connect({
 		browserURL: `http://127.0.0.1:${port}`,
 		defaultViewport: null,
 	});
-	const stage = new Stage(browser);
+	const stage = new Stage(browser, { showKeys });
 	await stage.refresh();
 	return stage;
 }
@@ -53,6 +59,82 @@ function install(cueCode) {
 	}
 	window.__fcDemo.code = cueCode;
 
+	if (!window.__fcKeys) {
+		/*
+		 * Which chords to show, and which to keep quiet:
+		 *  - typed text is invisible (a bare letter, digit or punctuation);
+		 *  - a named key (Enter, Tab, Escape, an arrow) always shows;
+		 *  - anything held with ⌘/⌃/⌥ shows, letter included (⌘S);
+		 *  - a modifier held ALONE shows after a beat — that's the Alt-click reveal,
+		 *    and the beat is what keeps the cue chord's four modifiers from
+		 *    flashing on screen as the operator rolls them;
+		 *  - the cue chord shows nothing and clears whatever is up: it is the
+		 *    operator's private signal, not part of the demo.
+		 */
+		const GLYPHS = {
+			Enter: "⏎", Tab: "⇥", Escape: "⎋", Backspace: "⌫", Delete: "⌦",
+			ArrowUp: "↑", ArrowDown: "↓", ArrowLeft: "←", ArrowRight: "→",
+			Home: "↖", End: "↘", PageUp: "⇞", PageDown: "⇟", " ": "Space",
+		};
+		const MODIFIER_KEYS = ["Meta", "Control", "Alt", "Shift", "CapsLock"];
+		const state = { chord: "", count: 0, hideAt: 0, pending: 0, timer: 0 };
+
+		const chordOf = (e) => {
+			const mods =
+				(e.metaKey ? "⌘" : "") + (e.ctrlKey ? "⌃" : "") + (e.altKey ? "⌥" : "") +
+				(e.shiftKey ? "⇧" : "");
+			if (MODIFIER_KEYS.includes(e.key)) return { label: mods, alone: true };
+			const named = e.key in GLYPHS || e.key.length > 1;
+			// Shift is not a "real" modifier here: ⇧a is just A.
+			const real = e.metaKey || e.ctrlKey || e.altKey;
+			if (!named && !real) return null;
+			const glyph = GLYPHS[e.key] ?? (e.key.length === 1 ? e.key.toUpperCase() : e.key);
+			return { label: mods + glyph, alone: false };
+		};
+
+		const badge = () => document.getElementById("fc-demo-keys");
+		const clear = () => {
+			window.clearTimeout(state.pending);
+			state.pending = 0;
+			state.chord = "";
+			state.count = 0;
+			badge()?.classList.remove("fc-show");
+		};
+		const render = (label) => {
+			const el = badge();
+			if (!el) return;
+			state.count = label === state.chord ? state.count + 1 : 1;
+			state.chord = label;
+			el.textContent = state.count > 1 ? `${label} ×${state.count}` : label;
+			el.classList.add("fc-show");
+			window.clearTimeout(state.timer);
+			// Long enough to read at 1× and to bridge a quick Enter–Enter chain.
+			state.timer = window.setTimeout(clear, 1600);
+		};
+
+		window.__fcKeys = { clear, enabled: true };
+		window.addEventListener(
+			"keydown",
+			(e) => {
+				if (!window.__fcKeys.enabled || e.repeat) return;
+				const isCue =
+					e.code === window.__fcDemo?.code &&
+					e.metaKey && e.ctrlKey && e.altKey && e.shiftKey;
+				if (isCue) return clear();
+				const chord = chordOf(e);
+				if (!chord) return;
+				window.clearTimeout(state.pending);
+				if (chord.alone) {
+					// Deliberate hold, not a chord being assembled.
+					state.pending = window.setTimeout(() => render(chord.label), 260);
+					return;
+				}
+				render(chord.label);
+			},
+			true
+		);
+	}
+
 	if (!document.getElementById("fc-demo-subtitle")) {
 		const style = document.createElement("style");
 		style.id = "fc-demo-subtitle-style";
@@ -68,17 +150,30 @@ function install(cueCode) {
 			#fc-demo-subtitle.fc-show{opacity:1;transform:translateX(-50%) translateY(0)}
 			#fc-demo-subtitle.fc-title{font-size:34px;padding:20px 34px;bottom:auto;top:50%;
 				transform:translate(-50%,-50%)}
-			#fc-demo-subtitle.fc-title.fc-show{transform:translate(-50%,-50%)}`;
+			#fc-demo-subtitle.fc-title.fc-show{transform:translate(-50%,-50%)}
+			#fc-demo-keys{position:fixed;z-index:2147483647;left:50%;bottom:2vh;
+				transform:translateX(-50%) translateY(4px);padding:6px 16px;border-radius:10px;
+				background:rgba(14,14,20,.78);-webkit-backdrop-filter:blur(10px);
+				backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.10);
+				color:#fff;font-size:19px;line-height:1.2;font-weight:600;letter-spacing:1.5px;
+				font-family:-apple-system,BlinkMacSystemFont,sans-serif;pointer-events:none;
+				user-select:none;opacity:0;transition:opacity .16s ease,transform .16s ease}
+			#fc-demo-keys.fc-show{opacity:1;transform:translateX(-50%) translateY(0)}`;
 		document.head.appendChild(style);
 		const el = document.createElement("div");
 		el.id = "fc-demo-subtitle";
 		document.body.appendChild(el);
+		const keys = document.createElement("div");
+		keys.id = "fc-demo-keys";
+		document.body.appendChild(keys);
 	}
 }
 
 class Stage {
-	constructor(browser) {
+	constructor(browser, { showKeys = true } = {}) {
 		this.browser = browser;
+		/** Show the special keys being pressed under the caption. */
+		this.showKeys = showKeys;
 		this.pages = [];
 		this.appPage = null;
 		this.cues = new Map(); // page → last seen counter
@@ -188,15 +283,22 @@ class Stage {
 			this.pages.map((page) =>
 				page
 					.evaluate(
-						(t, isTitle) => {
+						(t, isTitle, focused, showKeys) => {
 							const el = document.getElementById("fc-demo-subtitle");
 							if (!el) return;
 							el.textContent = t;
 							el.classList.toggle("fc-title", !!isTitle);
 							el.classList.toggle("fc-show", !!t);
+							// The key badge follows the caption: one window at a time.
+							if (window.__fcKeys) {
+								window.__fcKeys.enabled = !!showKeys && !!focused;
+								if (!focused) window.__fcKeys.clear();
+							}
 						},
 						page === this.focused ? text : "",
-						title
+						title,
+						page === this.focused,
+						this.showKeys
 					)
 					.catch(() => {})
 			)
@@ -222,6 +324,8 @@ class Stage {
 					.evaluate(() => {
 						document.getElementById("fc-demo-subtitle")?.remove();
 						document.getElementById("fc-demo-subtitle-style")?.remove();
+						document.getElementById("fc-demo-keys")?.remove();
+						window.__fcKeys?.clear();
 					})
 					.catch(() => {})
 			)

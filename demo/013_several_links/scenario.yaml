@@ -1,0 +1,57 @@
+# Narration for take 013 — see ../SCENARIO.md for the format.
+# Starts where 012 ended (Book.author points at Authors.base) and adds the Comic
+# class, Tintin's frontmatter — it has been the vault's one untyped note since 001,
+# where it played the counter-example — and Bob De Moor as a second contributor.
+#
+# `contributors` reuses the SAME base view as `author`: nothing new to build, which
+# is also what one does in a real vault. The Author roster grows to fifteen people
+# (the Studios Hergé circle, plus widely known writers) — a filter over five rows
+# would demonstrate nothing, and at 53px a row fifteen of them overflow the modal.
+#
+# Two facts from the source the script leans on:
+#  - MultiFile opens MultiSelectModal, the same switch list as a Multi field, over
+#    base-sourced candidates — hence step 5's comparison;
+#  - it submits `options.filter(...)`, so the stored order is the candidate order,
+#    i.e. the view's. Authors.base sorts by `born`, so picking De Moor (1925) before
+#    Hergé (1907) still stores Hergé first — step 10 demonstrates it, and the filter
+#    makes the point sharper: what you typed has no bearing on what is stored.
+#  - the filter is display-only and Enter flips the first match then clears the box,
+#    which is what steps 7-8 chain. The key badge shows both ⏎, so the keyboard work
+#    is legible on screen.
+title: "Fileclass — Several links in one field"
+description: "A field holding several notes, from the list you decided."
+doc: "fields/#link-fields-file--media" # deep link used in the description
+tags: "multifile, links, bases, contributors"
+vault_name: "Demo"
+plugin: true
+settings:
+  classFilesPath: "Classes/"
+  fileClassAlias: "fileClass"
+initial_pause: 1500
+default_pause: 900
+
+steps:
+  - title: "Tintin in Tibet is Hergé's — but a comic is rarely one person's work"
+    pause: 1600
+  - title: "Add a field named contributors, type Multi file"
+    pause: 1400
+  - title: "Point it at Authors, view All authors — the same list as author"
+    pause: 1600
+  - title: "Save, insert it in Tintin, and open contributors"
+    pause: 1400
+  - title: "Not one pick this time but a switch each, like a Multi field"
+    pause: 1800
+  - title: "Fifteen people here — type to narrow the list instead of scrolling"
+    pause: 1800
+  - title: "Type moor, press Enter: Bob De Moor is on, and the box clears"
+    pause: 1900
+  - title: "Then herg, Enter — one hand, no scrolling"
+    pause: 1700
+  - title: "Two wikilinks in one field, stored as a list"
+    pause: 1700
+  - title: "In the view's order — the base decides, not the order you typed"
+    pause: 1900
+  - title: "Reopen it: what the note already holds is switched on"
+    pause: 1800
+  - title: "Several notes in one field, from a list you decide 🎉"
+    pause: 2200

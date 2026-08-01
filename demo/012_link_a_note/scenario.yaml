@@ -1,0 +1,48 @@
+# Narration for take 012 — see ../SCENARIO.md for the format.
+# Opens arc 3: a field whose value is another note. Starts where 011 ended (Book
+# has themes and awards, Dune carries both) and adds the cast this arc needs: the
+# Author class, four author notes, and Authors.base.
+#
+# Why the base ships in the fixture instead of being created on camera: generating
+# one from a class is take 032's subject. Here it is scenery, like the notes.
+#
+# Two facts the script leans on, both read from the source:
+#  - resolveCandidates() has exactly two sources — a base view, or ALL notes as a
+#    fallback. There is no "notes of class X" filter without a base, which is why
+#    steps 3-4 show the unusable list before the fix rather than after it.
+#  - the candidates come back in the view's display order (sort, then group flow),
+#    so Authors.base sorts by `born`: the picker reads Tolkien, Hergé, Herbert,
+#    Davis — visibly not alphabetical. Step 7 is a demonstration, not a claim.
+title: "Fileclass — Link a note to another note"
+description: "A field whose value is a note, with a candidate list you decide."
+doc: "fields/#link-fields-file--media" # deep link used in the description
+tags: "file field, links, bases, candidates"
+vault_name: "Demo"
+plugin: true
+settings:
+  classFilesPath: "Classes/"
+  fileClassAlias: "fileClass"
+initial_pause: 1500
+default_pause: 900
+
+steps:
+  - title: "Dune names its author in the prose, not in a field"
+    pause: 1600
+  - title: "Add a field named author, type File"
+    pause: 1400
+  - title: "Insert it in Dune, open it, and every note is offered"
+    pause: 1800
+  - title: "Even Dune itself — a link field needs a shortlist"
+    pause: 1800
+  - title: "Its options take a base file and one of its views"
+    pause: 1600
+  - title: "Point it at Authors, view All authors"
+    pause: 1400
+  - title: "Four authors now, in the view's order — oldest first, not alphabetical"
+    pause: 1900
+  - title: "Pick Frank Herbert"
+    pause: 1200
+  - title: "Stored as a wikilink, following your own link settings"
+    pause: 1800
+  - title: "A field that points at a note, with a list you decide 🎉"
+    pause: 2200

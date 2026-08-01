@@ -7,7 +7,8 @@
  */
 import { App, Setting } from "obsidian";
 
-import { FieldType } from "../../schema/field";
+import { Field, FieldType } from "../../schema/field";
+import { intervalFieldChoices, isIntervalField } from "../intervalChoices";
 import {
 	BaseColumnSuggest,
 	BaseFileSuggest,
@@ -23,11 +24,17 @@ import { COLOR_SOURCES } from "./colorPicker";
 import { DateFormatDefaults, defaultFormatFor, NO_DATE_DEFAULTS } from "../dateFormats";
 import { buildDateLink } from "../dateLink";
 import { attachFormatPreview, attachLinkPreview, formatNow } from "../../ui/dateFormatPreview";
+import { chainRowInput, returnFocusTo } from "../../ui/listKeyboard";
 
 export interface FieldOptionsCtx {
 	app: App;
 	/** Plugin-wide write formats, to name the fallback under "Date format". */
 	dateDefaults?: DateFormatDefaults;
+	/**
+	 * The fileClass's resolved fields (own and inherited), so "Next interval
+	 * field" can offer the compatible ones instead of asking for a name.
+	 */
+	classFields?: readonly Pick<Field, "name" | "type">[];
 }
 
 /** What "blank" stores when no default is set either. */
@@ -170,19 +177,27 @@ export function renderFieldOptionsSettings(
 				refreshLink();
 			}
 			if (type !== "Time") {
+				const classFields = ctx.classFields ?? [];
+				const choices = intervalFieldChoices(classFields, draft.nextIntervalField);
+				const none = !classFields.some((f) => isIntervalField(f));
 				new Setting(container)
 					.setName("Next interval field")
 					.setDesc(
-						"Optional. Name of a Duration or CycleDuration field in this fileClass. Adds a " +
-							'"Set next date" button that advances this date by that interval (and cycles ' +
-							"a CycleDuration list to its next value)."
+						'Optional. Adds a "Set next date" button that advances this date by the ' +
+							"interval held in another field (and cycles a CycleDuration list to its " +
+							"next value). " +
+							(none
+								? "This fileClass has no Duration or CycleDuration field yet — add one, then come back."
+								: "Only Duration and CycleDuration fields can drive it.")
 					)
-					.addText((t) =>
-						t
-							.setPlaceholder("(none)")
-							.setValue(draft.nextIntervalField ?? "")
-							.onChange((v) => (draft.nextIntervalField = v))
-					);
+					.addDropdown((d) => {
+						for (const c of choices) d.addOption(c.value, c.label);
+						// A stored name the dropdown had to keep (see intervalChoices)
+						// stays selected; setValue on an absent option would blank it.
+						d.setValue(draft.nextIntervalField ?? "").onChange(
+							(v) => (draft.nextIntervalField = v)
+						);
+					});
 			}
 			return;
 		}
@@ -263,7 +278,7 @@ function renderDurationPresets(container: HTMLElement, draft: OptionsDraft, app:
 	if (!draft.durationPresets) draft.durationPresets = [];
 	const presets = draft.durationPresets;
 
-	const listEl = container.createDiv();
+	const listEl = container.createDiv({ cls: "fileclass-setting-list" });
 	const rebuild = () => {
 		listEl.empty();
 		presets.forEach((p, i) => {
@@ -311,6 +326,7 @@ function renderDurationPresets(container: HTMLElement, draft: OptionsDraft, app:
 							presets.push(v);
 							rebuild();
 						}
+						returnFocusTo(b.buttonEl);
 					},
 				}).open()
 			)
@@ -410,12 +426,18 @@ function renderInlineValues(container: HTMLElement, draft: OptionsDraft): void {
 	if (!draft.values) draft.values = [];
 	const values = draft.values;
 
-	const listEl = container.createDiv();
-	const rebuild = () => {
+	const listEl = container.createDiv({ cls: "fileclass-setting-list" });
+	// Resolved on Enter, not here: the button renders below the rows.
+	let addButton: HTMLElement | undefined;
+	/** `focusIndex` is the row just added — its input takes the caret. */
+	const rebuild = (focusIndex = -1) => {
 		listEl.empty();
 		values.forEach((val, i) => {
 			new Setting(listEl)
-				.addText((t) => t.setValue(val).onChange((v) => (values[i] = v)))
+				.addText((t) => {
+					t.setValue(val).onChange((v) => (values[i] = v));
+					chainRowInput(t.inputEl, () => addButton, i === focusIndex);
+				})
 				.addExtraButton((b) =>
 					b
 						.setIcon("trash")
@@ -427,12 +449,14 @@ function renderInlineValues(container: HTMLElement, draft: OptionsDraft): void {
 				);
 		});
 	};
+
 	rebuild();
 
-	new Setting(container).addButton((b) =>
+	new Setting(container).setClass("fileclass-list-add").addButton((b) => {
+		addButton = b.buttonEl;
 		b.setButtonText("Add value").onClick(() => {
 			values.push("");
-			rebuild();
-		})
-	);
+			rebuild(values.length - 1);
+		});
+	});
 }

@@ -80,7 +80,7 @@ export async function publishedVideos() {
 			id: meta.result.videoId,
 			url: meta.result.url,
 			title: meta.title,
-			subject: meta.title.replace(/^Fileclass #\d+\s*·\s*/, ""),
+			subject: meta.title.replace(/^Fileclass #\d+[a-z]?\s*·\s*/, ""),
 			scenario: scenario.id,
 			doc: scenario.doc || "",
 			durationSeconds: await duration(dir, meta),

@@ -33,6 +33,7 @@ import { createFileclassApi, FileclassApi } from "./src/api/fileclassApi";
 import { CanvasEngine } from "./src/fields/canvas/canvasEngine";
 import { FieldIndicator } from "./src/ui/indicator/fieldIndicator";
 import { LinkIndicator } from "./src/ui/indicator/linkIndicator";
+import { registerPrimaryActionShortcut } from "./src/ui/primaryAction";
 import { PropertyEditButtons } from "./src/ui/propertyEditButtons";
 import { NoteFieldsModal } from "./src/ui/noteFieldsModal";
 
@@ -94,6 +95,7 @@ export default class FileclassPlugin extends Plugin {
 		this.linkIndicator = this.addChild(new LinkIndicator(this));
 		this.canvasEngine = this.addChild(new CanvasEngine(this));
 		this.propertyButtons = this.addChild(new PropertyEditButtons(this));
+		registerPrimaryActionShortcut(this);
 		this.registerCommands();
 		this.registerVaultListeners();
 

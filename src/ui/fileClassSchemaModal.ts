@@ -188,6 +188,7 @@ export class FileClassSchemaModal extends Modal {
 		new FieldDefModal(this.app, {
 			title: "Add field",
 			dateDefaults: dateFormatDefaults(this.plugin.settings),
+			classFields: this.plugin.index.getResolvedFields(this.name),
 			onSubmit: (r) =>
 				void mutateFields(this.app, this.file, (fields) =>
 					addFieldDef(
@@ -203,6 +204,7 @@ export class FileClassSchemaModal extends Modal {
 		new FieldDefModal(this.app, {
 			title: "Edit field",
 			dateDefaults: dateFormatDefaults(this.plugin.settings),
+			classFields: this.plugin.index.getResolvedFields(this.name),
 			initial: { name: field.name, type: field.type, options: field.options },
 			onSubmit: (r) =>
 				void mutateFields(this.app, this.file, (fields) =>

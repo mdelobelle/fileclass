@@ -33,11 +33,11 @@ export class AddFileClassModal extends SuggestModal<string> {
 	}
 
 	private async addFileClass(name: string): Promise<void> {
-		const alias = this.plugin.settings.fileClassAlias;
 		if (!this.plugin.index.getFileClass(name)) {
 			new Notice(`Fileclass: "${name}" not found.`);
 			return;
 		}
+		const alias = this.plugin.settings.fileClassAlias;
 		// A plain wikilink to the class by name. fileClass names are unique, so no
 		// path qualification is needed; a bare `[[name]]` is always captured in
 		// `frontmatterLinks` (the read path) and matches the generated base filter,

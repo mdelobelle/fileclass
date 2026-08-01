@@ -10,7 +10,7 @@ import { modalTitle } from "./modalTitle";
 import { renderFieldOptionsSettings } from "../fields/input/fieldOptionsSettings";
 import { DateFormatDefaults } from "../fields/dateFormats";
 import { buildFieldOptions, optionsToDraft, OptionsDraft } from "../fields/optionsDraft";
-import { FIELD_TYPES, FieldOptions, FieldType } from "../schema/field";
+import { Field, FIELD_TYPES, FieldOptions, FieldType } from "../schema/field";
 import { makeStickyFooter } from "./modalFooter";
 
 /**
@@ -61,6 +61,11 @@ export class FieldDefModal extends Modal {
 			onSubmit: (result: FieldDefResult) => void;
 			/** Plugin-wide date write formats, named under "Date format". */
 			dateDefaults?: DateFormatDefaults;
+			/**
+			 * The fileClass's resolved fields, so a Date field can pick its
+			 * "Next interval field" from the compatible ones by name.
+			 */
+			classFields?: readonly Pick<Field, "name" | "type">[];
 		}
 	) {
 		super(app);
@@ -79,11 +84,12 @@ export class FieldDefModal extends Modal {
 			t.setValue(this.name).onChange((v) => (this.name = v))
 		);
 
-		const optionsEl = contentEl.createDiv();
+		const optionsEl = contentEl.createDiv({ cls: "fileclass-field-options" });
 		const renderOptions = () =>
 			renderFieldOptionsSettings(optionsEl, this.type, this.draft, {
 				app: this.app,
 				dateDefaults: this.opts.dateDefaults,
+				classFields: this.opts.classFields,
 			});
 
 		new Setting(contentEl).setName("Type").addDropdown((d) => {

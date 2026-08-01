@@ -44,3 +44,23 @@ other. Captions are English; YouTube translates them into your language.
 ## Duration
 
 {{< video "009" >}}
+
+## CycleDuration: a sequence, not a duration
+
+{{< video "010" >}}
+
+## Set next date
+
+{{< video "010b" >}}
+
+## Several values in one field
+
+{{< video "011" >}}
+
+## Link a note to another note
+
+{{< video "012" >}}
+
+## Several links in one field
+
+{{< video "013" >}}

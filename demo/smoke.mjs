@@ -34,6 +34,7 @@ import {
 	wipeVault,
 } from "./lib/stage.mjs";
 import { fieldTypesFromSource, scanScript } from "./lib/scriptScan.mjs";
+import { waitForPlugin } from "./lib/trust.mjs";
 import { connect } from "./lib/subtitles.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -62,26 +63,6 @@ async function teardown() {
 	registry?.restore();
 	if (staged) wipeVault(scenario);
 	if (quitTheirs) relaunchObsidian();
-}
-
-/**
- * Waits for the plugin to be loaded. A freshly staged vault opens its workspace
- * before its community plugins, and Obsidian may hold them behind a trust prompt —
- * so this is a real wait, not a courtesy sleep, and its failure is actionable.
- */
-async function waitForPlugin(stage, { timeout = 25000 } = {}) {
-	const start = Date.now();
-	while (Date.now() - start < timeout) {
-		const state = await stage.appPage
-			.evaluate(() => ({
-				loaded: !!window.app.plugins.plugins.fileclass,
-				enabled: [...(window.app.plugins.enabledPlugins ?? [])],
-			}))
-			.catch(() => ({ loaded: false, enabled: [] }));
-		if (state.loaded) return true;
-		await sleep(500);
-	}
-	return false;
 }
 
 /** Everything the app can tell us about the staged vault, in one round trip. */
@@ -211,18 +192,13 @@ async function main() {
 
 	const stage = await connect(port);
 	if (!attach) await stage.waitForVault(vaultPath);
-	if (!(await waitForPlugin(stage))) {
-		console.log(
-			warn("\nFileclass isn't loaded in that vault.") +
-				"\nObsidian is most likely asking to trust it (community plugins stay off until you\n" +
-				"do), or Restricted mode is on. Accept it in the window, then press Enter here."
+	const { loaded, trusted } = await waitForPlugin(stage);
+	if (trusted) console.log(dim("Accepted this vault's trust prompt (staged vaults are new to Obsidian)"));
+	if (!loaded) {
+		throw new Error(
+			"Fileclass never loaded in that vault — Restricted mode may be on for it, " +
+				"or the plugin build is missing (run `npm run build`)."
 		);
-		const rl = createInterface({ input: process.stdin, output: process.stdout });
-		await rl.question("");
-		rl.close();
-		if (!(await waitForPlugin(stage, { timeout: 8000 }))) {
-			throw new Error("Fileclass still isn't loaded — nothing to check against.");
-		}
 	}
 	await sleep(800); // let the index settle once the plugin is up
 	report(await inspect(stage));

@@ -46,6 +46,7 @@ export const PRONUNCIATION = {
 	MultiInput: "multi input",
 	ObjectList: "object list",
 	CycleDuration: "cycle duration",
+	YAML: "yammel",
 	".base": " dot base",
 	".md": " dot M D",
 };

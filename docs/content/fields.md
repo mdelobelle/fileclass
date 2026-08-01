@@ -43,6 +43,33 @@ Empty values are always valid — a field is optional unless a constraint says
 otherwise. `Lookup` and `Formula` (computed fields) are **out of scope** for
 Fileclass — use Bases views for reverse relations and computed columns.
 
+### One value or several
+
+Four of those types hold a **list** rather than a scalar, and they split by who
+decides what may go in it. `Multi` offers the values the class allows, as a switch
+each — **clicking anywhere on a row flips it**, not just the switch — and stores
+them **in the order the class declares**, not the order you picked them.
+
+Every multi-select opens with a **filter box**, focused, so a list of hundreds is
+narrowed by typing rather than by scrolling. <kbd>Enter</kbd> flips the first match
+and clears the box, which chains: type, Enter, type, Enter. Filtering only changes
+what is *shown* — values ticked while hidden are still saved.
+
+Two controls make a long list survivable in the other direction, when the problem is
+undoing rather than finding:
+
+- the icon at the end of the filter row shows **only the ticked values**, turning a
+  list of hundreds into the handful you actually chose;
+- **Unselect all** (bottom left, carrying the count) unticks **everything** — not
+  just what the filter shows, which is why it names the number it is about to clear.
+
+In "only ticked" mode a row you untick stays where it is instead of vanishing under
+the pointer; the list settles the next time you type or leave the mode. `MultiInput` takes a list nobody can enumerate in advance: you type
+each item, reorder them, and blank rows are dropped on save. Either way the
+frontmatter gets a plain YAML list, so a base can filter on it.
+
+{{< video "011" >}}
+
 `Boolean` is the simplest of them: no options, a switch for input, and a real
 `true`/`false` in the frontmatter, which Obsidian renders as a checkbox in its own
 properties editor. Note that an **empty** boolean is not `false` — it says nothing,
@@ -119,6 +146,8 @@ when several values share one shape — e.g. a list of repository URLs from a
 
 ## Link fields (File / Media)
 
+{{< video "012" >}}
+
 `File`, `MultiFile`, `Media`, and `MultiMedia` store wikilinks. Their **candidate
 list comes from a Base view** — configure the field with a `.base` file and view
 (`baseFile` + `viewName`); this replaces Metadata Menu's Dataview query and Media
@@ -135,6 +164,12 @@ the alias shown in the picker and written into the link.
   no value for the grouping property) reads **(No value)**.
 - When no base is configured, or the core Bases plugin is unavailable, the picker
   gracefully falls back to **all notes** (File) or **all media files** (Media).
+- `MultiFile`/`MultiMedia` pick **several** at once: the same switch list as a
+  `Multi` field (a click anywhere on a row flips it), pre-ticked with what the note
+  already holds. The stored order is the **view's**, not the order you switched
+  them on — so a sorted view gives sorted links.
+
+{{< video "013" >}}
 - `Media`/`MultiMedia` with the `embed` option store an embed (`![[…]]`).
 - Links honor your vault's link settings (`generateMarkdownLink`).
 
@@ -298,26 +333,56 @@ button on a `Duration` field, and chips you tap to append on a `CycleDuration`
 list (you can still reorder, add a custom one, or repeat a preset). Presets are
 a convenience — values are still stored per note.
 
-`CycleDuration` stores an **ordered list** of durations — an *interval sequence*.
+### An interval sequence (`CycleDuration`)
+
+{{< video "010" >}}
+
+`CycleDuration` stores an **ordered list** of durations — an *interval sequence*. The
+order is the schedule: it is what a linked date field walks through, one interval per
+click. Its **presets** are the class's vocabulary of spans (say 90, 180 and 360 days
+for a re-read cycle); the sequence itself is each note's own composition — two of
+them, all three, or the same one twice.
 
 ### Set next date (spaced repetition)
+
+{{< video "010b" >}}
 
 This is how you schedule a date that moves forward by your own sequence of
 intervals (spaced repetition, recurring reviews, chores):
 
 1. Add a **`CycleDuration`** field (e.g. `next interval`) and enter your intervals
    in order — say `1 day`, `1 week`, `2 weeks`, `5 weeks`.
-2. On a **`Date`** (or `DateTime`) field (e.g. `next session`), set its **Next
-   interval field** option to that CycleDuration field's name.
+2. On a **`Date`** (or `DateTime`) field (e.g. `next session`), open its **Next
+   interval field** option and pick that field. The dropdown lists the
+   `Duration` and `CycleDuration` fields of the fileClass — its own and its
+   inherited ones — so there is no name to remember and no incompatible type to
+   choose by mistake. Leave it on `(none)` for a plain date.
 3. Editing the date now shows a **Set next date** button. One click:
-   - computes `current date + first interval`,
+   - computes `current date + first interval` — from the date already stored,
+     falling back to today when the field is empty,
    - writes it to the date field, and
    - **rotates** the interval list so the next click uses the following interval,
      wrapping back to the first after the last.
 
+   The picker closes on success, so each step of the schedule is one deliberate
+   gesture.
+4. Or skip the picker: **Alt-click the date's control** — in the Properties
+   editor, the note-fields modal or a table cell — and it advances straight away.
+   Holding Alt over the control shows the date it would write.
+
 So repeatedly clicking `next session` walks the date through `+1d`, `+1w`, `+2w`,
 `+5w`, then `+1d` again. Pointing the option at a plain **`Duration`** field
 instead gives a fixed interval (added every time, no rotation).
+
+Whichever route you take, the date is stored **exactly as the picker would store
+it**: the field's own `dateFormat`, and its link shape when the field defaults to
+links or already holds one — so a `[[Daily/Notes/2026/10/2026-10-29 Thu|…]]` stays
+a link instead of collapsing to a bare date.
+
+If the option was set and the interval field has since been renamed, retyped or
+removed, the dropdown keeps that name and marks it `(not found)`: the stored
+value isn't dropped behind your back, and the missing **Set next date** button
+now has a visible reason.
 
 It is a **manual, one-shot action** — no automatic recomputation and nothing
 touches other notes, so it stays within Fileclass's guided-input scope (computed

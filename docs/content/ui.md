@@ -24,7 +24,8 @@ type](#one-gesture-per-field-type) rule:
 - **Clear** (all) — removes the field's value.
 
 **Alt-click** a toggle or a next button to open the input instead, and set an
-explicit value.
+explicit value — and on a date wired to an interval sequence, Alt-click advances
+it instead of opening the picker.
 
 Header actions: **Insert missing fields** (adds any root fields absent from the
 frontmatter) and **Add fileClass** (binds another fileClass to the note).
@@ -55,11 +56,41 @@ gesture: the buttons in the Properties editor, a cell of the editable
 | ---- | ----- | --------- |
 | `Cycle` | writes the **next allowed value** | opens the value picker |
 | `Boolean` | **flips** true/false | opens the switch |
+| `Date`/`DateTime` with a [next interval](../fields/#set-next-date-spaced-repetition) | opens the picker | writes the **next date** |
 | everything else | opens the type's **input** | — |
+
+Alt is always "the gesture the click doesn't do". For a `Cycle` the click writes,
+so Alt opens the picker; for a date it is the other way round. While you hold Alt
+over a date's control, its calendar icon becomes a **skip-forward** and its
+tooltip names the date it would write (`Set "review" to 2026-10-29 (+90d)`) — the
+value is read at that moment, so it is never a stale promise.
 
 Before this, a `Cycle` advanced in the note-fields modal but opened a picker
 everywhere else — under a `rotate-cw` icon that promised the advance. A control's
 icon now tells you what will happen, wherever you click it.
+
+## Adding list values from the keyboard
+
+Every editor that builds a list — a `Select`/`Cycle`/`Multi` **values list**,
+**duration presets**, the items of a `MultiInput` or a `CycleDuration` — chains
+without the mouse:
+
+- **Add value** (or *Add preset* / *Add item*) puts the caret straight in the new
+  row's input.
+- **Enter** hands focus back to that Add button.
+
+So a list is typed as `Add`, text, <kbd>Enter</kbd>, <kbd>Enter</kbd>, text,
+<kbd>Enter</kbd>… and you decide when to stop, because focus rests on the button
+rather than opening a row you didn't ask for. Rows entered through their own modal
+(a duration, a templated item) behave the same: the modal opens focused, Enter
+saves it, and focus returns to the Add button.
+
+**<kbd>Alt</kbd>+<kbd>Enter</kbd> runs the modal's primary action** — *Save*, *Add
+field*, *Apply* — from wherever the caret is, so finishing a form never needs a
+Tab hunt or the mouse. It reads the same way as Alt everywhere else in the plugin:
+the gesture the plain key doesn't do. Plain <kbd>Enter</kbd> keeps its local
+meaning (submit this input, or move to the Add button); only Fileclass's own
+modals answer the chord.
 
 ## Context menus
 
@@ -71,6 +102,9 @@ Markdown file — in the file explorer, on a tab, or in the editor — adds:
 - **Insert missing fields**.
 - **Add fileClass** — which also inserts that class's fields, unless you turn
   [**Insert fields when adding a class**](../settings/#behavior) off.
+- **Open *&lt;class&gt;* schema** — one entry per fileClass that applies to the note,
+  named. This is the only route for a class bound by **tag, path, bookmark or Base
+  view**: those leave no value in the frontmatter to click.
 
 On a **fileClass note**, the menu instead offers schema actions plus **Bulk edit
 a field of this fileClass** (see below).
@@ -132,6 +166,40 @@ Obsidian's untyped value cell. **Alt-click** always opens the input. Auto-
 maintained fields (Canvas family) and computed types get no button. Toggle it
 under **Settings → Fileclass → Property editor buttons**.
 
+The **`fileClass` row** gets a different button: a **wrench opening that class's
+schema**, one per class the row lists. The stored value is an identifier, not a
+wikilink — binding can also come from a tag, a path or a Base view — so there was
+nothing to click through to, and reaching the class definition meant finding it in
+the class folder. Where the button lands depends on how Obsidian types the
+property, which is its decision and not the plugin's: a **List** property renders
+each value as a pill and the wrench sits inside it, right after the name; a
+**Text** property fills the row, so the wrench takes its place in the icon column
+between the key and the value. A name matching no class gets no button — which is
+also how a typo announces itself.
+
 Like the indicators, this is a best-effort DOM decoration (Obsidian exposes no
 API for it): if the properties DOM changes, the buttons simply stop appearing and
 everything else keeps working.
+
+## Property section actions
+
+Next to Obsidian's **+ Add property**, on the same line, Fileclass adds:
+
+- **+ Add a class** — opens the fileClass picker, the same one as the command and
+  the context menu. Always available, whether the note already has a class or not
+  (a note may bind several).
+- **+ Insert *N* missing fields** — appears **only when the note is missing
+  some**, names how many, and lists them in its tooltip. Clicking inserts them
+  all with empty values, in one write.
+
+The second button's absence is the useful half of the design: when it isn't
+there, the note is complete. It is never a button whose only outcome is "nothing
+to insert" — which, since binding a class inserts its fields automatically
+(*Insert fields when adding a class*, on by default), is what it would show most
+of the time.
+
+Both buttons sit in the properties section, so they follow Obsidian's own rule
+for showing it: a note with **no frontmatter at all** displays no properties
+section, and therefore no buttons — use the command palette, the right-click menu
+or the [field indicator](#field-indicator) to bind the first class. Toggle the
+pair under **Settings → Fileclass → Property section actions**.

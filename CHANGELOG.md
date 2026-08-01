@@ -8,6 +8,81 @@ All notable changes to Fileclass are documented here. The format follows
 
 ### UI
 
+- **Focus rings are no longer clipped** in Fileclass's modals. Their bodies scroll,
+  which clips sideways too, and a switch at the right edge sat flush against it —
+  the ring of a keyboard-focused toggle was cut off. The bodies now carry
+  horizontal padding.
+- **Unselect all, and a "only ticked" filter**, for the other half of a long list:
+  finding a value was the filter box, undoing a dozen was still one click each. The
+  icon at the end of the filter row narrows the list to what is ticked; the footer
+  button clears everything and names the count, since it also clears what the filter
+  hides.
+- **A filter box at the top of every multi-select**, focused on open, so hundreds
+  of values are narrowed by typing instead of scrolling. Enter flips the first
+  match and clears the box, chaining type-Enter-type-Enter. Filtering is display
+  only: a value ticked while hidden is still saved.
+- **A picker over hundreds of values scrolls and hovers smoothly.** No virtual
+  list: `content-visibility` lets the engine skip off-screen rows, so selection,
+  pre-ticked state and find-in-page keep working on real DOM. Measured on a
+  500-value list — a style recalc of the picker, which every hover pays, went from
+  24-43 ms to 8-13 ms, and the worst scroll frame from 90 ms to 9 ms.
+
+- **A multi-select row toggles wherever you click it**, not only on the switch —
+  which is a small target in a column of them, while the label is where the eye
+  already is. The hovered row is banded so the label and its switch read as one
+  target. Applies to every `Multi`, `MultiFile` and `MultiMedia` picker.
+- **Fixed: the View and Display-column suggesters stayed open** after you chose a
+  value, while Base file closed properly. Selecting fires an `input` event so the
+  setting picks the value up, and that event re-queries the suggestions: a
+  synchronous source resolves before the popover closes, an awaited one resolves
+  after and reopened it.
+
+- **Reach a class's schema from a note bound to it** (#23). The `fileClass` row of
+  the Properties editor gets a wrench per class — inside the pill when Obsidian
+  types the property as a list, in the icon column when it types it as text — and
+  the note's context menu lists *Open &lt;class&gt; schema* for each class that applies,
+  including those bound by tag, path or Base view, which leave no value to click.
+  The stored value stays a plain identifier: this only adds navigation.
+
+- **Alt+Enter runs a modal's primary action** — *Save*, *Add field*, *Apply* —
+  wherever the focus is, so a form filled from the keyboard is submitted from the
+  keyboard. Fileclass's own modals only; Obsidian's are untouched.
+
+- **Values lists read as one block.** The rows of a values list or of duration
+  presets no longer carry a separator between them, and the last input is no longer
+  glued to the line below it: Obsidian collapses the padding of a `.setting-item`
+  that is first or last *in its parent*, which fired inside the wrapper div holding
+  those rows. Same repair for the last of a field's type options.
+
+- **List editors chain from the keyboard.** Adding a value, a duration preset or a
+  list item now puts the caret in the new row, and Enter hands focus back to the
+  Add button — so a values list is typed `Add`, text, Enter, Enter, text, Enter
+  instead of one mouse trip per row. The duration input also accepts **Enter to
+  save**, which it didn't: the chain used to stop there.
+
+- **Alt-click a date to advance it.** A `Date`/`DateTime` field with a *Next
+  interval field* now takes its **Set next date** action straight from any control
+  — Properties button, note-fields modal, table cell — without opening the picker.
+  Hold Alt over the control and its calendar icon becomes a skip-forward, with the
+  date it would write in the tooltip. Same rule as everywhere else: Alt performs
+  the gesture the click doesn't.
+- **Fixed: "Set next date" ignored the field's format.** It wrote a bare ISO date,
+  so a field formatted `YYYY-MM-DD ddd` — or stored as a `[[daily note]]` link —
+  lost its shape as soon as the schedule advanced. Both routes now go through one
+  write rule, shared with the picker's Save.
+
+- **Two actions beside "Add property"**: the Properties section now offers
+  **+ Add a class** and, when the note is missing any, **+ Insert *N* missing
+  fields** — named with the count and the field names in its tooltip. Binding a
+  class or completing a note no longer needs the command palette while you are
+  already looking at the frontmatter. Toggle: *Property section actions*.
+
+- **`Next interval field` is a dropdown**: a `Date`/`DateTime` field now picks the
+  interval that drives its **Set next date** button from the fileClass's own and
+  inherited `Duration`/`CycleDuration` fields, instead of taking a typed name. A
+  wrong name used to fail in silence — the button simply never appeared. A stored
+  name that matches no field is kept and marked `(not found)` rather than dropped.
+
 - **One screen for a fileClass, whichever door you use.** Clicking a fileClass in the
   footer of a note's fields modal used to open an intermediate modal offering *Open
   fileClass settings* / *Create base view* — a fork that existed nowhere else, while

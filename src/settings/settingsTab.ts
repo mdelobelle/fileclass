@@ -158,10 +158,25 @@ export class FileclassSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName("Property editor buttons")
-			.setDesc("Show an edit button on properties that match a fileClass field, for typed input.")
+			.setDesc(
+				"Show Fileclass buttons inside property rows: typed input on a field, and a shortcut to a class's schema on the fileClass row."
+			)
 			.addToggle((toggle) =>
 				toggle.setValue(this.plugin.settings.enablePropertyEditButtons).onChange(async (value) => {
 					this.plugin.settings.enablePropertyEditButtons = value;
+					await this.plugin.saveSettings();
+					this.plugin.propertyButtons.refreshNow();
+				})
+			);
+
+		new Setting(containerEl)
+			.setName("Property section actions")
+			.setDesc(
+				'Show "Add a class" next to "Add property", and "Insert missing fields" when the note is missing some.'
+			)
+			.addToggle((toggle) =>
+				toggle.setValue(this.plugin.settings.enablePropertyActionButtons).onChange(async (value) => {
+					this.plugin.settings.enablePropertyActionButtons = value;
 					await this.plugin.saveSettings();
 					this.plugin.propertyButtons.refreshNow();
 				})

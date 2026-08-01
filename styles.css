@@ -110,6 +110,42 @@
 .metadata-property > .fileclass-prop-edit:hover {
 	color: var(--text-normal);
 }
+/*
+ * "Open <class> schema" on the fileClass row (#23). Sized for a multi-select
+ * pill, which is where it usually lands — Obsidian renders that property as a
+ * list in most vaults — and used as-is when the value is plain text.
+ */
+.metadata-property .fileclass-prop-class {
+	flex: 0 0 auto;
+	align-self: center;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--text-muted);
+	cursor: pointer;
+}
+.metadata-property .fileclass-prop-class:hover {
+	color: var(--text-normal);
+}
+/* In the icon column: same box as the field buttons next to it. */
+.metadata-property > .fileclass-prop-class {
+	height: var(--input-height, 26px);
+	margin: 0 2px;
+	padding: 0 3px;
+}
+.metadata-property > .fileclass-prop-class svg {
+	width: 15px;
+	height: 15px;
+}
+/* Inside a pill: compact, right after the class name. */
+.multi-select-pill > .fileclass-prop-class {
+	margin: 0 1px 0 4px;
+	padding: 0 2px;
+}
+.multi-select-pill > .fileclass-prop-class svg {
+	width: 13px;
+	height: 13px;
+}
 /* Type preview (color swatch / icon glyph) beside a property value. */
 .metadata-property > .fileclass-prop-preview {
 	flex: 0 0 auto;
@@ -121,6 +157,117 @@
 .metadata-property > .fileclass-prop-edit svg {
 	width: 15px;
 	height: 15px;
+}
+
+/*
+ * Section actions beside the native "Add property". That button is inline-flex
+ * with a top margin of its own, so the wrapper matches it and the row reads as
+ * one line of buttons; it wraps on a narrow pane instead of overflowing.
+ */
+/*
+ * Mirrors what Obsidian declares on .metadata-add-button — metadata label font
+ * (`.text-icon-button` alone would give --font-ui-small, a size smaller) and the
+ * same 0.5em top margin, which resolves against that font. Variables, not the
+ * numbers they currently evaluate to, so the row stays on one baseline when a
+ * theme or the user changes the metadata font.
+ */
+.metadata-content > .fileclass-prop-actions {
+	display: inline-flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--size-4-1);
+	font-size: var(--metadata-label-font-size);
+	font-family: var(--metadata-label-font);
+	margin: 0.5em 0 0 var(--size-4-2);
+	vertical-align: top;
+}
+.metadata-container .fileclass-prop-action {
+	font-size: var(--metadata-label-font-size);
+	font-family: var(--metadata-label-font);
+	padding-inline-start: var(--size-2-3);
+	cursor: pointer;
+	color: var(--text-muted);
+}
+.metadata-container .fileclass-prop-action:hover {
+	color: var(--text-normal);
+}
+
+/*
+ * A multi-select row toggles wherever you click it. The switch is a small target
+ * in a column of them, and the label is where the eye already is; the cursor says
+ * the whole row is live.
+ */
+.fileclass-toggle-row {
+	cursor: pointer;
+	/*
+	 * Native windowing for a long list. A picker over a few hundred allowed values
+	 * builds thousands of nodes (500 values ≈ 3500 nodes, 27000px of content), and
+	 * the cost showed up where it is most felt: a style recalc of the picker took
+	 * 24-43ms — every hover — and scrolling hit a 90ms frame.
+	 *
+	 * `content-visibility: auto` lets the engine skip style, layout and paint for
+	 * off-screen rows, and the explicit `contain` applies to the on-screen ones too.
+	 * Measured on that 500-value list: recalc 24-43ms → 8-13ms, worst scroll frame
+	 * 90ms → 9ms, no frame over 32ms. No virtual list of our own, so selection,
+	 * pre-ticked state and find-in-page keep working on real DOM.
+	 *
+	 * 21px is the row's *content* box (padding adds 32px). It only seeds the
+	 * scrollbar estimate — `auto` corrects it once a row has been rendered — and at
+	 * 21px the total is within 1% of thetrue height, against 15% at 37px.
+	 */
+	content-visibility: auto;
+	contain-intrinsic-size: auto 21px;
+	contain: layout style paint;
+}
+.fileclass-toggle-row .setting-item-name {
+	user-select: none;
+}
+/*
+ * The hovered row gets a band, so the label and its switch read as one target.
+ *
+ * `!important` is not decoration: the theme sets a row's background with
+ * !important of its own, and a modal-scoped selector measured transparent while
+ * this paints — specificity cannot win against it. Same token Obsidian uses for
+ * its own list hovers. A border-radius was tried and dropped: the theme wins that
+ * one too, and a full-width band lines up with the row separators anyway.
+ */
+.fileclass-toggle-row:hover {
+	background-color: var(--background-modifier-hover) !important;
+}
+
+/*
+ * Lists of like rows — a values list, duration presets — read as one block, not
+ * as a stack of unrelated settings: no separator between rows, a tight rhythm,
+ * and a single cushion closing the group.
+ *
+ * This also repairs a spacing bug. Obsidian collapses the padding of a
+ * `.setting-item` that is first or last *in its parent* (app.css, guarded by
+ * `:where(:not(.setting-group *))`). Rows rendered inside a wrapper div are last
+ * in that wrapper, not in the modal, so the final input ended up glued to the
+ * separator below it. The `.setting-group` escape hatch fixes the collapse but
+ * pulls in the theme's group padding and radius, which indents the rows — hence
+ * these rules, whose selectors mirror the specificity of the ones they counter.
+ */
+.modal:not(.mod-settings) .fileclass-setting-list > .setting-item:not(.setting-item-heading) {
+	border-top: none;
+	padding: var(--size-4-1) 0;
+	margin-bottom: 0;
+}
+.fileclass-setting-list {
+	padding-bottom: var(--size-4-4);
+}
+/* The "Add …" row closes the block, so it carries no separator either. */
+.modal:not(.mod-settings) .setting-item.fileclass-list-add:not(.setting-item-heading) {
+	border-top: none;
+	padding-top: 0;
+	padding-bottom: var(--size-4-4);
+}
+/* Same collapse, one level up: the last of a field's type options sat against the
+ * separator that starts the next row. */
+.modal:not(.mod-settings)
+	.fileclass-field-options
+	> .setting-item:not(.setting-item-heading):last-child {
+	padding-bottom: var(--size-4-4);
 }
 
 /* Canvas field filters: color/side chips + label chip list. */
@@ -505,10 +652,67 @@
 	letter-spacing: 0.03em;
 	margin: var(--size-4-2) 0 var(--size-2-1);
 }
+/*
+ * Room for a focus ring. Our modal bodies scroll (`overflow-y: auto`), which clips
+ * horizontally as well, and the switches and inputs sit flush against the right
+ * edge: a keyboard-focused toggle measured 0px from the scroll box with a 2px
+ * outline, so the ring was cut off. 8px clears any theme's ring and keeps the
+ * content off the modal's inner wall.
+ *
+ * Scoped to `.fileclass-scroll-body` — the class modalTitle() puts on our own modal
+ * content — so Obsidian's own modals and other plugins' are left alone.
+ */
+.modal-content.fileclass-scroll-body {
+	padding-left: var(--size-4-2, 8px);
+	padding-right: var(--size-4-2, 8px);
+}
+
+/*
+ * The multi-select filter box: sticky under the title, because a filter that
+ * scrolls away is useless on the list that needs it most.
+ */
+.fileclass-filter-row {
+	position: sticky;
+	top: var(--fc-title-h, 0);
+	z-index: 3;
+	display: flex;
+	align-items: center;
+	gap: var(--size-4-1, 4px);
+	padding: var(--size-2-3) 0;
+	background: var(--modal-background, var(--background-primary));
+}
+.fileclass-filter-input {
+	flex: 1;
+	min-width: 0;
+}
+/* "Only ticked", at the end of the filter row: same list, narrower. */
+.fileclass-filter-only {
+	flex: 0 0 auto;
+	color: var(--text-muted);
+}
+.fileclass-filter-only.is-active {
+	color: var(--text-on-accent);
+	background-color: var(--interactive-accent);
+}
+/* Unselect all sits left, Save right — the destructive one away from the default. */
+.fileclass-multi-footer {
+	display: flex;
+	justify-content: flex-end;
+}
+.fileclass-multi-footer .setting-item-control {
+	width: 100%;
+	justify-content: space-between;
+}
+.fileclass-filter-hidden {
+	display: none;
+}
+.fileclass-filter-empty {
+	padding: var(--size-4-4) 0;
+}
 /* Sticky variant (multi-select list): the current group stays under the title. */
 .fileclass-group-sticky {
 	position: sticky;
-	top: var(--fc-title-h, 0);
+	top: calc(var(--fc-title-h, 0px) + var(--fc-filter-h, 0px));
 	z-index: 2;
 	margin: 0;
 	padding: var(--size-2-3) 0 var(--size-2-1);

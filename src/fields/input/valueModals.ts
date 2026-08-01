@@ -3,10 +3,20 @@
  * generic: a text prompt, a single-choice suggester, and a multi-select toggle
  * list. Field-type wiring lives in fieldActions.ts.
  */
-import { App, Modal, SuggestModal, Setting, TextAreaComponent, TextComponent } from "obsidian";
+import {
+	App,
+	Modal,
+	setIcon,
+	SuggestModal,
+	Setting,
+	TextAreaComponent,
+	TextComponent,
+	ToggleComponent,
+} from "obsidian";
 
 import { makeStickyFooter } from "../../ui/modalFooter";
 import { modalTitle } from "../../ui/modalTitle";
+import { returnFocusTo } from "../../ui/listKeyboard";
 
 import { DisplayGroup, groupLabel } from "../baseOrder";
 import { parseTemplate, renderTemplate } from "../inputTemplate";
@@ -69,7 +79,7 @@ export class PromptModal extends Modal {
 		};
 
 		input.inputEl.addEventListener("keydown", (e) => {
-			if (e.key === "Enter") {
+			if (e.key === "Enter" && !e.altKey && !e.ctrlKey && !e.metaKey) {
 				e.preventDefault();
 				submit();
 			}
@@ -261,6 +271,8 @@ export interface MultiInputOptions {
  */
 export class MultiInputEditorModal extends Modal {
 	private readonly items: string[];
+	/** Set when a row was added from the keyboard: the next render focuses Add. */
+	private focusAddOnRender = false;
 
 	constructor(app: App, private readonly opts: MultiInputOptions) {
 		super(app);
@@ -271,10 +283,11 @@ export class MultiInputEditorModal extends Modal {
 		this.render();
 	}
 
-	private editItem(index: number): void {
+	private editItem(index: number, chain = false): void {
 		const current = this.items[index] ?? "";
 		const onValue = (value: string) => {
 			this.items[index] = value;
+			this.focusAddOnRender = chain;
 			this.render();
 		};
 		const title = `${this.opts.title} — item ${index + 1}`;
@@ -325,12 +338,17 @@ export class MultiInputEditorModal extends Modal {
 		});
 
 		new Setting(contentEl)
-			.addButton((b) =>
+			.addButton((b) => {
 				b.setButtonText("Add item").onClick(() => {
 					this.items.push("");
-					this.editItem(this.items.length - 1);
-				})
-			)
+					this.editItem(this.items.length - 1, true);
+				});
+				// This render replaced the button that was clicked; focus the new one.
+				if (this.focusAddOnRender) {
+					this.focusAddOnRender = false;
+					returnFocusTo(b.buttonEl);
+				}
+			})
 			.addButton((b) =>
 				b
 					.setButtonText("Save")
@@ -497,10 +515,119 @@ export interface MultiSelectOptions {
 /** Toggle list for Multi fields over a constrained set of values. */
 export class MultiSelectModal extends Modal {
 	private readonly selected: Set<string>;
+	/** Rows, in render order, so the filter can show and hide them. */
+	private readonly rows: { value: string; el: HTMLElement }[] = [];
+	/** Group headers with their members: a header hides when none match. */
+	private readonly headers: { el: HTMLElement; values: string[] }[] = [];
+	private emptyEl?: HTMLElement;
+	/** The live filter text, kept so a mode change can re-apply it. */
+	private query = "";
+	/** "Show only what is ticked" — the companion of Unselect all. */
+	private selectedOnly = false;
+	private onlyEl?: HTMLElement;
+	private clearEl?: HTMLButtonElement;
 
 	constructor(app: App, private readonly opts: MultiSelectOptions) {
 		super(app);
 		this.selected = new Set(opts.selected);
+	}
+
+	/**
+	 * A filter box above the list. Scrolling to find one value among hundreds is
+	 * the actual cost of a long list, whatever the frame rate; typing two letters
+	 * is not. It is focused on open, so the modal is usable without the mouse.
+	 *
+	 * Filtering is **display only**: what gets saved is computed from `selected`
+	 * over every option, so hiding a ticked row never drops it. Enter toggles the
+	 * first visible match and clears the box, which chains — type, Enter, type,
+	 * Enter — and is guarded on a non-empty query so a stray Enter can't tick the
+	 * first row of an unfiltered list.
+	 */
+	private renderFilter(contentEl: HTMLElement): HTMLElement {
+		const row = contentEl.createDiv({ cls: "fileclass-filter-row" });
+		const input = new TextComponent(row);
+		input.setPlaceholder("Filter… (Enter toggles the first match)");
+		input.inputEl.addClass("fileclass-filter-input");
+		input.onChange((query) => this.applyFilter(query));
+
+		/*
+		 * "Only ticked" sits at the end of the filter row, because it filters the
+		 * same list — and it is what makes Unselect all usable: narrow to what is
+		 * on, see it as a short list, then clear it.
+		 */
+		const only = row.createSpan({ cls: "fileclass-filter-only clickable-icon" });
+		setIcon(only, "list-checks");
+		only.addEventListener("click", () => {
+			this.selectedOnly = !this.selectedOnly;
+			only.toggleClass("is-active", this.selectedOnly);
+			this.applyFilter(this.query);
+			this.refreshCounts();
+		});
+		this.onlyEl = only;
+		input.inputEl.addEventListener("keydown", (e) => {
+			if (e.key !== "Enter" || e.altKey || e.ctrlKey || e.metaKey) return;
+			e.preventDefault();
+			const query = input.getValue().trim();
+			if (!query) return;
+			const first = this.rows.find((r) => !r.el.hasClass("fileclass-filter-hidden"));
+			if (!first) return;
+			first.el.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+			input.setValue("");
+			this.applyFilter("");
+		});
+		window.setTimeout(() => input.inputEl.focus(), 0);
+		return row;
+	}
+
+	/**
+	 * Applies the text query and the "only ticked" mode together.
+	 *
+	 * Deliberately NOT called when a row is ticked: in "only ticked" mode that would
+	 * make rows vanish from under the pointer as you untick them. The list settles
+	 * when you next type or switch the mode.
+	 */
+	private applyFilter(query: string): void {
+		this.query = query;
+		const q = query.trim().toLowerCase();
+		const visible = (value: string): boolean =>
+			(!q || value.toLowerCase().includes(q)) &&
+			(!this.selectedOnly || this.selected.has(value));
+		let shown = 0;
+		for (const { value, el } of this.rows) {
+			const hit = visible(value);
+			el.toggleClass("fileclass-filter-hidden", !hit);
+			if (hit) shown++;
+		}
+		for (const { el, values } of this.headers) {
+			el.toggleClass("fileclass-filter-hidden", !values.some(visible));
+		}
+		if (shown) this.emptyEl?.hide();
+		else this.emptyEl?.show();
+	}
+
+	/** Keeps the two selection-aware controls truthful as rows are ticked. */
+	private refreshCounts(): void {
+		const n = this.selected.size;
+		if (this.clearEl) {
+			this.clearEl.setText(n ? `Unselect all (${n})` : "Unselect all");
+			this.clearEl.disabled = n === 0;
+		}
+		this.onlyEl?.setAttribute(
+			"aria-label",
+			this.selectedOnly ? "Showing only ticked values" : `Show only ticked values (${n})`
+		);
+	}
+
+	/** Unticks everything — all of it, not just what the filter shows. */
+	private unselectAll(): void {
+		this.selected.clear();
+		for (const { el } of this.rows) {
+			el.querySelector(".checkbox-container")?.removeClass("is-enabled");
+			const input = el.querySelector<HTMLInputElement>("input[type=checkbox]");
+			if (input) input.checked = false;
+		}
+		this.applyFilter(this.query);
+		this.refreshCounts();
 	}
 
 	onOpen(): void {
@@ -511,51 +638,95 @@ export class MultiSelectModal extends Modal {
 		// Preserve allowed order, then any already-selected extras.
 		const options = [...new Set([...this.opts.allowed, ...this.opts.selected])];
 
+		const filter = this.renderFilter(contentEl);
+		const listEl = contentEl.createDiv();
+
 		const groups = this.opts.groups;
 		if (groups && groups.length) {
 			const rendered = new Set<string>();
 			for (const g of groups) {
 				const values = g.values.filter((v) => options.includes(v));
 				if (!values.length) continue;
-				this.renderGroupHeader(contentEl, groupLabel(g.key));
+				const header = this.renderGroupHeader(listEl, groupLabel(g.key));
+				this.headers.push({ el: header, values });
 				for (const v of values) {
-					this.renderToggle(contentEl, v);
+					this.renderToggle(listEl, v);
 					rendered.add(v);
 				}
 			}
 			const extras = options.filter((v) => !rendered.has(v));
 			if (extras.length) {
-				this.renderGroupHeader(contentEl, "(Other)");
-				for (const v of extras) this.renderToggle(contentEl, v);
+				const header = this.renderGroupHeader(listEl, "(Other)");
+				this.headers.push({ el: header, values: extras });
+				for (const v of extras) this.renderToggle(listEl, v);
 			}
 		} else {
-			for (const v of options) this.renderToggle(contentEl, v);
+			for (const v of options) this.renderToggle(listEl, v);
 		}
+		this.emptyEl = listEl.createDiv({
+			cls: "setting-item-description fileclass-filter-empty",
+			text: "No value matches.",
+		});
+		this.emptyEl.hide();
+		// Measured after layout: the group headers stick below the filter, not under it.
+		contentEl.style.setProperty("--fc-filter-h", `${filter.offsetHeight}px`);
 
 		const footer = makeStickyFooter(contentEl);
-		new Setting(footer).addButton((b) =>
-			b
-				.setButtonText("Save")
-				.setCta()
-				.onClick(() => {
-					this.opts.onSubmit(options.filter((v) => this.selected.has(v)));
-					this.close();
-				})
-		);
-	}
-
-	private renderToggle(container: HTMLElement, value: string): void {
-		new Setting(container).setName(value).addToggle((t) =>
-			t.setValue(this.selected.has(value)).onChange((on) => {
-				if (on) this.selected.add(value);
-				else this.selected.delete(value);
+		new Setting(footer)
+			.setClass("fileclass-multi-footer")
+			.addButton((b) => {
+				// Left of Save: with a long list, unticking one by one is the chore.
+				this.clearEl = b.buttonEl;
+				b.setButtonText("Unselect all").onClick(() => this.unselectAll());
 			})
-		);
+			.addButton((b) =>
+				b
+					.setButtonText("Save")
+					.setCta()
+					.onClick(() => {
+						this.opts.onSubmit(options.filter((v) => this.selected.has(v)));
+						this.close();
+					})
+			);
+		this.refreshCounts();
 	}
 
-	private renderGroupHeader(container: HTMLElement, label: string): void {
+	/**
+	 * One row per allowed value. The **whole row** toggles, not just the switch:
+	 * with a dozen values the switches are a column of small targets, and the label
+	 * is the thing the eye is already on.
+	 */
+	private renderToggle(container: HTMLElement, value: string): void {
+		const apply = (on: boolean): void => {
+			if (on) this.selected.add(value);
+			else this.selected.delete(value);
+			this.refreshCounts();
+		};
+		let toggle: ToggleComponent | undefined;
+		const setting = new Setting(container)
+			.setName(value)
+			.addToggle((t) => {
+				toggle = t;
+				t.setValue(this.selected.has(value)).onChange(apply);
+			});
+		setting.settingEl.addClass("fileclass-toggle-row");
+		this.rows.push({ value, el: setting.settingEl });
+		setting.settingEl.addEventListener("click", (e) => {
+			// The switch handles its own clicks; anywhere else in the row flips it.
+			if ((e.target as HTMLElement).closest(".checkbox-container")) return;
+			const next = !this.selected.has(value);
+			apply(next);
+			// Harmless if setValue also fires onChange: apply() is idempotent.
+			toggle?.setValue(next);
+		});
+	}
+
+	private renderGroupHeader(container: HTMLElement, label: string): HTMLElement {
 		// Sticky so the current group stays visible while the list scrolls.
-		container.createDiv({ text: label, cls: "fileclass-group-header fileclass-group-sticky" });
+		return container.createDiv({
+			text: label,
+			cls: "fileclass-group-header fileclass-group-sticky",
+		});
 	}
 
 	onClose(): void {

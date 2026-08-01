@@ -97,5 +97,60 @@
     "durationSeconds": 98,
     "recordedWith": "0.1.1",
     "privacyStatus": "public"
+  },
+  "010": {
+    "id": "lhrJ2a5pFRY",
+    "url": "https://www.youtube.com/watch?v=lhrJ2a5pFRY",
+    "title": "Fileclass #010 · CycleDuration: a sequence, not a duration",
+    "subject": "CycleDuration: a sequence, not a duration",
+    "scenario": "010_cycle_duration",
+    "doc": "fields/#an-interval-sequence-cycleduration",
+    "durationSeconds": 102,
+    "recordedWith": "0.1.1",
+    "privacyStatus": "public"
+  },
+  "010b": {
+    "id": "45_n091aKkM",
+    "url": "https://www.youtube.com/watch?v=45_n091aKkM",
+    "title": "Fileclass #010b · Set next date",
+    "subject": "Set next date",
+    "scenario": "010b_set_next_date",
+    "doc": "fields/#set-next-date-spaced-repetition",
+    "durationSeconds": 106,
+    "recordedWith": "0.1.1",
+    "privacyStatus": "public"
+  },
+  "011": {
+    "id": "g0FilbQ8N3w",
+    "url": "https://www.youtube.com/watch?v=g0FilbQ8N3w",
+    "title": "Fileclass #011 · Several values in one field",
+    "subject": "Several values in one field",
+    "scenario": "011_multi_values",
+    "doc": "fields/#available-field-types",
+    "durationSeconds": 114,
+    "recordedWith": "0.1.1",
+    "privacyStatus": "public"
+  },
+  "012": {
+    "id": "orwUfnJCWT4",
+    "url": "https://www.youtube.com/watch?v=orwUfnJCWT4",
+    "title": "Fileclass #012 · Link a note to another note",
+    "subject": "Link a note to another note",
+    "scenario": "012_link_a_note",
+    "doc": "fields/#link-fields-file--media",
+    "durationSeconds": 95,
+    "recordedWith": "0.1.1",
+    "privacyStatus": "public"
+  },
+  "013": {
+    "id": "t7avhsV-ZXk",
+    "url": "https://www.youtube.com/watch?v=t7avhsV-ZXk",
+    "title": "Fileclass #013 · Several links in one field",
+    "subject": "Several links in one field",
+    "scenario": "013_several_links",
+    "doc": "fields/#link-fields-file--media",
+    "durationSeconds": 111,
+    "recordedWith": "0.1.1",
+    "privacyStatus": "public"
   }
 }

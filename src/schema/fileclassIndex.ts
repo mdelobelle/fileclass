@@ -45,6 +45,7 @@ interface ReadFileClass {
 export class FileclassIndex extends Events {
 	private byName = new Map<string, ParsedFileClass>();
 	private nameByPath = new Map<string, string>();
+	/** Reverse of `nameByPath`; `rebuild()` clears and refills both together. */
 	private pathByName = new Map<string, string>();
 	private ancestorsByName = new Map<string, string[]>();
 	private fieldsByName = new Map<string, Field[]>();
@@ -306,7 +307,8 @@ export class FileclassIndex extends Events {
 		return this.nameByPath.get(path);
 	}
 
-	/** The Markdown note backing a fileClass, resolved by its indexed path. */
+	/** The `.fileclass` definition backing a fileClass, resolved from the index
+	 *  (falling back to a vault-wide filename lookup for a just-created class). */
 	getFileClassFile(name: string): TFile | null {
 		const path = this.pathByName.get(name);
 		if (path) {

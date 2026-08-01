@@ -44,6 +44,7 @@ import {
 	YamlCodec,
 } from "./structuredText";
 import { formatLink, linkTargetPath } from "./links";
+import { thumbFor } from "../ui/mediaThumb";
 import { asListValue, asObjectValue } from "./objectDraft";
 import {
 	baseBindingOptions,
@@ -381,7 +382,8 @@ export async function promptFieldValue(
 
 		case "File":
 		case "Media": {
-			const embed = isMediaType(field.type) && baseBindingOptions(field).embed;
+			const media = isMediaType(field.type);
+			const embed = media && baseBindingOptions(field).embed;
 			const candidates = await resolveCandidates(ctx.host, field, file);
 			const grouped = candidates.some((c) => c.group !== undefined);
 			new ChoiceSuggestModal<Candidate>(
@@ -390,14 +392,17 @@ export async function promptFieldValue(
 				(c) => c.display,
 				(c) => onValue(formatLink(app, c.file, file.path, aliasFor(c), embed)),
 				`Set ${field.name}`,
-				grouped ? (c) => c.group ?? null : undefined
+				grouped ? (c) => c.group ?? null : undefined,
+				// A cover is chosen by looking at it, not by reading its file name.
+				media ? (c) => thumbFor(app, c.file) : undefined
 			).open();
 			return;
 		}
 
 		case "MultiFile":
 		case "MultiMedia": {
-			const embed = isMediaType(field.type) && baseBindingOptions(field).embed;
+			const media = isMediaType(field.type);
+			const embed = media && baseBindingOptions(field).embed;
 			const candidates = await resolveCandidates(ctx.host, field, file);
 			const byDisplay = new Map(candidates.map((c) => [c.display, c] as const));
 			const currentPaths = new Set(
@@ -411,6 +416,13 @@ export async function promptFieldValue(
 				allowed: candidates.map((c) => c.display),
 				selected,
 				groups: contiguousGroups(candidates),
+				// Same reason as the single picker: pick a picture by looking at it.
+				preview: media
+					? (v) => {
+							const c = byDisplay.get(v);
+							return c ? thumbFor(app, c.file) : null;
+						}
+					: undefined,
 				onSubmit: (displays) =>
 					onValue(
 						displays

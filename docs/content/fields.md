@@ -171,6 +171,12 @@ the alias shown in the picker and written into the link.
 
 {{< video "013" >}}
 - `Media`/`MultiMedia` with the `embed` option store an embed (`![[…]]`).
+- An **image value shows as a thumbnail** wherever Fileclass displays it — in the
+  picker, so a cover is chosen by looking at it rather than by reading
+  `cover-final-2.png`, and beside the value in the note-fields modal, the
+  Properties row and a table cell. A list shows its first three. Images only: the
+  media types also accept audio, video and PDF, and there is no honest thumbnail
+  for those.
 - Links honor your vault's link settings (`generateMarkdownLink`).
 
 ### Conditional candidates (dependent fields)

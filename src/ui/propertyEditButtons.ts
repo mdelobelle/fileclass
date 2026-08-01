@@ -30,7 +30,7 @@ import { EditContext, nextDateActionFor, runControlAction } from "../fields/fiel
 import { isInputSupported } from "../fields/support";
 import { fieldTypeIcon } from "../fields/typeIcons";
 import { Field, isRootField } from "../schema/field";
-import { hasFieldKey } from "../io/read";
+import { hasFieldKey, readFieldValue } from "../io/read";
 import { AddFileClassModal } from "./addFileClassModal";
 import { attachAltAffordance } from "./altAffordance";
 import { openFileClassSchema } from "./fileClassSchemaModal";
@@ -298,7 +298,12 @@ export class PropertyEditButtons extends Component {
 			existingPreview.dataset.fcValue !== value
 		) {
 			existingPreview?.remove();
-			const preview = makeValuePreview(field, value);
+			const preview = makeValuePreview(field, value, {
+				app: this.plugin.app,
+				sourcePath: file.path,
+				// A list value can't be recovered from the row's text; read it instead.
+				raw: readFieldValue(this.plugin.app, file, field),
+			});
 			if (preview) {
 				preview.addClass(PREVIEW_CLASS);
 				preview.dataset.fcKey = key;

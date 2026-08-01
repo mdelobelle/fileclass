@@ -418,7 +418,9 @@ export class ChoiceSuggestModal<T> extends SuggestModal<T> {
 		private readonly toText: (choice: T) => string,
 		private readonly onPick: (choice: T) => void,
 		placeholder = "Select a value",
-		private readonly groupOf?: (choice: T) => string | null | undefined
+		private readonly groupOf?: (choice: T) => string | null | undefined,
+		/** Optional visual leading the row — a media thumbnail, today. */
+		private readonly preview?: (choice: T) => HTMLElement | null
 	) {
 		super(app);
 		this.setPlaceholder(placeholder);
@@ -459,10 +461,22 @@ export class ChoiceSuggestModal<T> extends SuggestModal<T> {
 			if (group !== undefined && (i <= 0 || group !== prev)) {
 				el.createDiv({ text: groupLabel(group), cls: "fileclass-group-header" });
 			}
-			el.createDiv({ text: this.toText(choice) });
+			this.renderRow(el.createDiv(), choice);
 			return;
 		}
-		el.setText(this.toText(choice));
+		this.renderRow(el, choice);
+	}
+
+	/** The row itself: the preview, then the text. */
+	private renderRow(host: HTMLElement, choice: T): void {
+		const thumb = this.preview?.(choice);
+		if (!thumb) {
+			host.setText(this.toText(choice));
+			return;
+		}
+		host.addClass("fileclass-suggestion-row");
+		host.append(thumb);
+		host.createSpan({ text: this.toText(choice) });
 	}
 
 	/** Names the group whose section currently sits at the top of the results. */
@@ -500,6 +514,8 @@ export class ChoiceSuggestModal<T> extends SuggestModal<T> {
 }
 
 export interface MultiSelectOptions {
+	/** Optional visual leading each row — a media thumbnail, today. */
+	preview?: (value: string) => HTMLElement | null;
 	title: string;
 	allowed: string[];
 	selected: string[];
@@ -710,6 +726,11 @@ export class MultiSelectModal extends Modal {
 				t.setValue(this.selected.has(value)).onChange(apply);
 			});
 		setting.settingEl.addClass("fileclass-toggle-row");
+		const thumb = this.opts.preview?.(value);
+		if (thumb) {
+			setting.nameEl.prepend(thumb);
+			setting.nameEl.addClass("fileclass-suggestion-row");
+		}
 		this.rows.push({ value, el: setting.settingEl });
 		setting.settingEl.addEventListener("click", (e) => {
 			// The switch handles its own clicks; anywhere else in the row flips it.

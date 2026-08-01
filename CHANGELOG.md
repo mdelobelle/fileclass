@@ -8,6 +8,10 @@ All notable changes to Fileclass are documented here. The format follows
 
 ### UI
 
+- **Image values show as thumbnails** — in the `Media`/`MultiMedia` picker, and
+  beside the value in the note-fields modal, the Properties row and table cells. A
+  media field points at a picture; every surface used to show its file name.
+
 - **Focus rings are no longer clipped** in Fileclass's modals. Their bodies scroll,
   which clips sideways too, and a switch at the right edge sat flush against it —
   the ring of a keyboard-focused toggle was cut off. The bodies now carry

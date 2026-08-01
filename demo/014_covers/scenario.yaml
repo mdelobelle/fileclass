@@ -1,0 +1,53 @@
+# Narration for take 014 — see ../SCENARIO.md for the format.
+# Starts where 013 ended (Comic.contributors, Tintin carrying both) and adds what
+# this take needs: the five covers in an Images/ folder — out of the file
+# explorer's way, and out of the root, which the author roster already crowds —
+# plus Images.base inventorying them.
+#
+# The covers are generated, not scanned: tools/make-covers.py draws original
+# geometric plates carrying each work's title. A published take showing a real
+# jacket would be someone's copyright.
+#
+# What the surfaces pass established before this was scripted:
+#  - a Bases view CAN list image files (`file.ext == "png"`), so the candidate list
+#    comes from the base like the authors' does — the first probe said otherwise and
+#    was wrong, its API call was;
+#  - the Media fallback is already scoped to media files, so there is no unusable
+#    list to fix here: take 012's "look at this mess" beat does not repeat;
+#  - a frontmatter never renders an embed, whatever the option — hence step 9,
+#    which explains it rather than letting the viewer think it is broken.
+title: "Fileclass — Covers and attachments"
+description: "A field that points at a picture, and shows it."
+doc: "fields/#link-fields-file--media" # deep link used in the description
+tags: "media field, images, embed, bases"
+vault_name: "Demo"
+plugin: true
+settings:
+  classFilesPath: "Classes/"
+  fileClassAlias: "fileClass"
+initial_pause: 1500
+default_pause: 900
+
+steps:
+  - title: "Dune has no cover — and the vault now keeps five in an Images folder"
+    pause: 1700
+  - title: "A base inventories them, the way Authors does for people"
+    pause: 1700
+  - title: "Add a field named cover, type Media"
+    pause: 1400
+  - title: "Point it at Images, view All covers"
+    pause: 1400
+  - title: "Save, insert it in Dune, and open cover"
+    pause: 1400
+  - title: "The picker shows the pictures themselves, not their file names"
+    pause: 1800
+  - title: "Pick the sand-coloured one"
+    pause: 1300
+  - title: "Stored as an embed — the exclamation mark comes from the Embed option"
+    pause: 1800
+  - title: "Frontmatter can't render an embed, so the thumbnail stands in for it"
+    pause: 1900
+  - title: "Multi media is the same list with several picks — a gallery"
+    pause: 1700
+  - title: "A field that points at a picture, and shows it 🎉"
+    pause: 2200

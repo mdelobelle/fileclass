@@ -668,6 +668,40 @@
 }
 
 /*
+ * Media thumbnails (#44 follow-up). One size everywhere a media value or candidate
+ * appears — picker row, note-fields modal, properties row, table cell — because
+ * the point is recognising the picture, not admiring it. `contain` keeps a large
+ * image from forcing layout work on a long list.
+ */
+.fileclass-thumb {
+	height: 28px;
+	width: auto;
+	max-width: 44px;
+	object-fit: cover;
+	border-radius: 3px;
+	flex: 0 0 auto;
+	vertical-align: middle;
+	/* `layout paint`, never `size`: size containment zeroes the intrinsic
+	 * dimensions, so `width: auto` resolved to 0 and the image loaded, measured
+	 * 28px tall, and painted nothing. */
+	contain: layout paint;
+}
+/* Several thumbnails for a list value, side by side. */
+.fileclass-thumb-strip {
+	display: inline-flex;
+	align-items: center;
+	gap: 3px;
+	vertical-align: middle;
+}
+/* A row that leads with a thumbnail: keep image and text on one baseline. */
+.fileclass-suggestion-row {
+	display: flex;
+	align-items: center;
+	gap: var(--size-4-2, 8px);
+	min-width: 0;
+}
+
+/*
  * The multi-select filter box: sticky under the title, because a filter that
  * scrolls away is useless on the list that needs it most.
  */

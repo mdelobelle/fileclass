@@ -65,9 +65,11 @@ export function renderFieldOptionsSettings(
 			new Setting(container)
 				.setName("Template")
 				.setDesc(
-					'Optional. Compose each value from fixed parts. {{name}} is a text sub-input; ' +
-						'{{name:["a","b"]}} is a dropdown over the JSON array of choices. When set, entry ' +
-						"shows one control per placeholder plus a live preview; each stored value stays a " +
+					"Optional — a shape for each value, not a list of allowed values. To limit a field " +
+						"to values you choose, use Select or Multi instead. In a template, {{name}} is a " +
+						'free-text part and {{name:["a","b"]}} a dropdown over that JSON array. When set, ' +
+						"entry shows one control per placeholder plus a live preview; each stored value " +
+						"stays a " +
 						(type === "MultiInput" ? "single string (one per list item)." : "single string.")
 				)
 				// Stack the textarea full-width under the label (it's cramped in the

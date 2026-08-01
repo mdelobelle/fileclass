@@ -17,6 +17,13 @@ you have used Notion databases or Metadata Menu, it is that idea — but
 
 📖 **Documentation: https://mdelobelle.github.io/fileclass/**
 
+🎬 **Start here — Tour #1** (5 min): from a vault where every note types its own
+properties by hand to a typed library, install and setup included:
+**https://www.youtube.com/watch?v=rScC86I2vlg**
+
+Then one short video per feature, a couple of minutes each:
+[the whole series](https://mdelobelle.github.io/fileclass/videos/).
+
 It is the successor to [Metadata Menu](https://github.com/mdelobelle/metadatamenu)
 (same author). If you rely on Dataview inline fields (`key:: value`), stay on
 Metadata Menu; Fileclass is frontmatter-only.

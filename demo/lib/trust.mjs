@@ -103,18 +103,25 @@ async function closeSettingsOnce(stage) {
  * Waits for the plugin to be loaded, accepting the trust dialog as soon as it
  * appears. Both are the same wait from the caller's point of view: "is the plugin
  * there yet, and is anything obvious in the way?"
+ *
+ * `requirePlugin: false` is for a take that installs Fileclass on camera: there is
+ * no plugin to wait for, and waiting the full timeout reads as a hang — which is
+ * how one operator ended up installing the plugin by hand to unblock the runner,
+ * then uninstalling it, which is a fine way to open a base while the plugin is
+ * absent. One pass still clears a trust dialog, in case the fixture ships plugins
+ * of its own.
  */
-export async function waitForPlugin(stage, { timeout = 25000, poll = 500 } = {}) {
-	const start = Date.now();
+export async function waitForPlugin(stage, { timeout = 25000, poll = 500, requirePlugin = true } = {}) {
+	const deadline = Date.now() + (requirePlugin ? timeout : 0);
 	let trusted = false;
-	while (Date.now() - start < timeout) {
+	for (;;) {
 		const loaded = await stage.appPage
 			.evaluate(() => !!window.app.plugins.plugins.fileclass)
 			.catch(() => false);
 		if (loaded) return { loaded: true, trusted };
 		await stage.refresh(); // the dialog may live in its own window
 		if (await acceptVaultTrust(stage)) trusted = true;
+		if (Date.now() >= deadline) return { loaded: false, trusted };
 		await new Promise((r) => setTimeout(r, poll));
 	}
-	return { loaded: false, trusted };
 }

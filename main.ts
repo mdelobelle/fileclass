@@ -10,7 +10,7 @@
 import { Notice, Plugin, TAbstractFile, TFile, debounce } from "obsidian";
 
 import { setPlugin, clearPlugin } from "./src/globals";
-import { isBasesAvailable } from "./src/engine/basesAdapter";
+import { isBasesAvailable, onCorePluginChange } from "./src/engine/basesAdapter";
 import { QueryCache } from "./src/engine/queryCache";
 import { createFileClass } from "./src/commands/createFileClass";
 import { insertMissingFields } from "./src/commands/insertMissingFields";
@@ -68,6 +68,9 @@ export default class FileclassPlugin extends Plugin {
 	 */
 	basesAvailable = false;
 
+	/** True between a successful view registration and its unregister. */
+	private tableViewRegistered = false;
+
 	async onload(): Promise<void> {
 		setPlugin(this);
 		await this.loadSettings();
@@ -95,15 +98,37 @@ export default class FileclassPlugin extends Plugin {
 			this.registerFileclassTableView();
 			this.index.rebuild();
 		});
+
+		// Bases can be switched on after we loaded; without this the session stays in
+		// degraded mode until Obsidian restarts.
+		this.register(onCorePluginChange(this.app, () => this.refreshBasesAvailability()));
 	}
 
-	/** Registers the editable fileclass-table Bases view when Bases is available. */
+	/**
+	 * Registers the editable fileclass-table Bases view when Bases is available.
+	 *
+	 * Retried whenever Bases becomes available, not just at layout-ready: the bases
+	 * this plugin generates ask for the `fileclass-table` view type, and a session
+	 * that missed its one registration renders them as "Unknown view type:
+	 * fileclass-table" — an error on a file Fileclass itself wrote. A failure is
+	 * logged rather than swallowed, for the same reason: silence here surfaces much
+	 * later, somewhere unrelated.
+	 */
 	private registerFileclassTableView(): void {
-		if (!this.basesAvailable) return;
+		if (!this.basesAvailable || this.tableViewRegistered) return;
 		try {
-			this.register(registerFileclassTableView(this));
-		} catch {
-			/* Bases internals drifted — the view is optional, degrade silently. */
+			const unregister = registerFileclassTableView(this);
+			this.tableViewRegistered = true;
+			this.register(() => {
+				this.tableViewRegistered = false;
+				unregister();
+			});
+		} catch (e) {
+			console.error(
+				"Fileclass: could not register the editable fileclass-table Bases view — " +
+					"generated bases will report an unknown view type until this succeeds.",
+				e
+			);
 		}
 	}
 
@@ -276,13 +301,18 @@ export default class FileclassPlugin extends Plugin {
 		const available = isBasesAvailable(this.app);
 		if (available === this.basesAvailable) return;
 		this.basesAvailable = available;
-		if (!available) {
-			new Notice(
-				"Fileclass: the core Bases plugin is disabled or incompatible. " +
-					"Schema and typed input still work; query-dependent features " +
-					"(File/Media fields, generated views) are disabled.",
-				10000
-			);
+		if (available) {
+			// Bases arrived after we loaded — enabled by hand, or loaded late. Nothing
+			// else re-runs the view registration, so a generated base would stay
+			// unrenderable for the rest of the session.
+			this.registerFileclassTableView();
+			return;
 		}
+		new Notice(
+			"Fileclass: the core Bases plugin is disabled or incompatible. " +
+				"Schema and typed input still work; query-dependent features " +
+				"(File/Media fields, generated views) are disabled.",
+			10000
+		);
 	}
 }

@@ -24,7 +24,7 @@
  *   by identity via a probe on a nonexistent property.
  */
 
-import { App, TFile } from "obsidian";
+import { App, EventRef, TFile } from "obsidian";
 
 // ---------------------------------------------------------------------------
 // Structural typings for Bases private internals (minified names — we only
@@ -170,7 +170,11 @@ interface BasesInstance {
 /** Private Obsidian surfaces reached only here, cast through `unknown` (never `any`). */
 interface AppInternals {
     embedRegistry?: { embedByExtension?: Record<string, unknown> };
-    internalPlugins?: { getPluginById?(id: string): { instance?: BasesInstance } | undefined };
+    internalPlugins?: {
+        getPluginById?(id: string): { instance?: BasesInstance } | undefined;
+        on?(name: "change", cb: () => void): EventRef;
+        offref?(ref: EventRef): void;
+    };
 }
 
 function getEmbedCreator(app: App): EmbedCreator | null {
@@ -180,6 +184,26 @@ function getEmbedCreator(app: App): EmbedCreator | null {
 
 function getBasesInstance(app: App): BasesInstance | null {
     return (app as unknown as AppInternals).internalPlugins?.getPluginById?.("bases")?.instance ?? null;
+}
+
+/**
+ * Calls back whenever a core plugin is enabled or disabled, so feature detection
+ * can be re-run. Bases can be turned on *after* Fileclass loaded — by hand, or in
+ * a vault where it was off — and nothing else says so: the detection then stays
+ * stuck on "unavailable" for the whole session, disabling File/Media candidates
+ * and generated views until Obsidian restarts. Returns an unsubscribe.
+ */
+export function onCorePluginChange(app: App, cb: () => void): () => void {
+    const plugins = (app as unknown as AppInternals).internalPlugins;
+    if (!plugins || typeof plugins.on !== "function") return () => {};
+    const ref = plugins.on("change", cb);
+    return () => {
+        try {
+            plugins.offref?.(ref);
+        } catch {
+            /* Obsidian may already have torn the registry down */
+        }
+    };
 }
 
 /** True when the Bases plugin is enabled and the internals we rely on are present. */

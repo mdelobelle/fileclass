@@ -163,5 +163,16 @@
     "durationSeconds": 115,
     "recordedWith": "0.1.1",
     "privacyStatus": "public"
+  },
+  "015": {
+    "id": "862i7fYe5Iw",
+    "url": "https://www.youtube.com/watch?v=862i7fYe5Iw",
+    "title": "Fileclass #015 · Candidates that depend on another field",
+    "subject": "Candidates that depend on another field",
+    "scenario": "015_dependent_candidates",
+    "doc": "fields/#conditional-candidates-dependent-fields",
+    "durationSeconds": 117,
+    "recordedWith": "0.1.1",
+    "privacyStatus": "public"
   }
 }

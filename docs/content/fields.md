@@ -189,6 +189,8 @@ the alias shown in the picker and written into the link.
 
 ### Conditional candidates (dependent fields)
 
+{{< video "015" >}}
+
 A link field's candidate list can depend on the value of **another field of the
 note you are editing** — and Fileclass writes the plumbing for you.
 

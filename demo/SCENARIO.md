@@ -310,7 +310,11 @@ Gotchas worth knowing:
 
 - Obsidian may ask to trust the vault / turn off Restricted mode the first time
   it opens a staged vault. In `001` that prompt is part of the story; elsewhere,
-  accept it before cueing step 1.
+  accept it before cueing step 1. `record.mjs`, `smoke.mjs` and `probe.mjs` accept
+  it for you (`lib/trust.mjs`) — the plugin does not load until it is answered.
+  Accepting it sometimes leaves **Settings → Community plugins** showing, in its own
+  window in this build; the tooling tries to close it and does not always win, so
+  glance at the screen before cueing step 1.
 - A staged vault ships with **Always update links** and no delete prompt, so a
   rename or a delete on camera doesn't raise a dialog you'd have to dismiss mid-take
   (`lib/stage.mjs`, `app.json` defaults). A fixture that wants the prompt can commit

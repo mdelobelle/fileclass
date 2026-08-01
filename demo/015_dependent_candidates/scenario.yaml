@@ -1,0 +1,51 @@
+# Narration for take 015 — see ../SCENARIO.md for the format.
+# Closes arc 3. Starts where 014 ended (Book.cover from Images.base, Dune wearing
+# one) and adds the Series class, five real series and Series.base.
+#
+# This take exists because of issue #19: before it, a dependent field meant
+# hand-writing a Bases formula, and filming that would have taught YAML editing
+# rather than the plugin. The take now films two dropdowns.
+#
+# Facts the script leans on, all verified:
+#  - `this.<Property>` resolves for a plain value, not only for links, so a
+#    publisher-to-publisher comparison narrows the list (measured: 3 of 5);
+#  - Tintin in Tibet already carries `publisher: Casterman` from 013, so the
+#    dependency has something to bite on without a setup step;
+#  - the guards `.isTruthy()` are the subtle half of the generated formula, and the
+#    reason hand-writing it goes wrong — but they don't show on screen, so they live
+#    in the description and the docs, not in a subtitle.
+title: "Fileclass — Candidates that depend on another field"
+description: "A picker narrowed by what the note already says."
+doc: "fields/#conditional-candidates-dependent-fields" # deep link used in the description
+tags: "conditional candidates, dependent fields, bases, formula"
+vault_name: "Demo"
+plugin: true
+settings:
+  classFilesPath: "Classes/"
+  fileClassAlias: "fileClass"
+initial_pause: 1500
+default_pause: 900
+
+steps:
+  - title: "Tintin in Tibet belongs to a series, and Casterman published several"
+    pause: 1700
+  - title: "Add a field named series, type File, pointed at the Series base"
+    pause: 1600
+  - title: "Insert it in Tintin and open it: every series in the library"
+    pause: 1800
+  - title: "Including other publishers' — the list knows nothing about this note"
+    pause: 1800
+  - title: "Its options can depend on another field: pick publisher"
+    pause: 1700
+  - title: "And match it against the candidates' own publisher"
+    pause: 1600
+  - title: "The preview shows the view and the formula it will write"
+    pause: 1800
+  - title: "Save, and open it again: only Casterman's three"
+    pause: 1800
+  - title: "It wrote a formula and a view — the rest of your base is untouched"
+    pause: 1800
+  - title: "The field's own type decides value or link comparison"
+    pause: 1700
+  - title: "Two dropdowns instead of a formula 🎉"
+    pause: 2200

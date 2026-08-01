@@ -8,6 +8,7 @@
  * actually matter and returns the moment they hold.
  */
 import { connect } from "./subtitles.mjs";
+import { acceptVaultTrust, dismissSettings } from "./trust.mjs";
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -20,12 +21,15 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
  * @param timeout     ms before giving up (the whole launch, not one attempt)
  * @param quiet       don't report how long it took
  */
+const dim = (text) => `\x1b[2m${text}\x1b[0m`;
+
 export async function attachWhenReady(
 	port = "9222",
 	{ vaultPath = null, timeout = 90000, quiet = false } = {}
 ) {
 	const start = Date.now();
 	let stage = null;
+	let accepted = false;
 	let lastError = "the debug port never answered";
 	while (Date.now() - start < timeout) {
 		if (!stage) {
@@ -36,6 +40,13 @@ export async function attachWhenReady(
 			}
 		}
 		await stage.refresh().catch(() => {});
+		// A staged vault is new to Obsidian, so it asks whether the author is
+		// trusted — and the plugin does not load until that is answered. The dialog
+		// can live in its own window, hence the refresh above.
+		if (await acceptVaultTrust(stage).catch(() => false)) {
+			accepted = true;
+			if (!quiet) console.log(dim("Accepted this vault's trust prompt"));
+		}
 		const ready = await stage.appPage
 			?.evaluate(
 				(want) => {
@@ -48,7 +59,14 @@ export async function attachWhenReady(
 			)
 			.catch(() => "no renderer");
 		if (ready === true) {
-			if (!quiet) console.log(`\x1b[2mattached in ${((Date.now() - start) / 1000).toFixed(1)}s\x1b[0m`);
+			// Accepting the trust dialog lands Obsidian in Settings → Community plugins,
+			// which it opens once the flow settles — later than the click, so this waits
+			// for it. Not conditioned on having accepted: a freshly staged vault has no
+			// business showing a settings window, and this way the cleanup can't race.
+			if (await dismissSettings(stage, { timeout: accepted ? 4000 : 600 }).catch(() => false)) {
+				if (!quiet) console.log(dim("Closed the settings window it opened"));
+			}
+			if (!quiet) console.log(dim(`attached in ${((Date.now() - start) / 1000).toFixed(1)}s`));
 			return stage;
 		}
 		lastError = typeof ready === "string" ? ready : lastError;

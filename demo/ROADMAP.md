@@ -17,6 +17,17 @@ either — driving a terminal with burned-in subtitles isn't tooling we have, an
 its audience reads the docs. "Coming from Metadata Menu" and "which level of
 normalization" belong in a GitHub discussion thread, not in a video.
 
+## Tour
+
+One take before the arcs, and the only one that shows the whole plugin end to end.
+
+| # | Take | Feature | Vault gains | Status |
+| - | ---- | ------- | ----------- | ------ |
+| 000 | Tour #1 — from an untyped vault to a typed library | install, class folder, a class bound by folder, `File` candidates narrowed by another field | untyped library + `Authors/` + `Authors.base` | scripted |
+
+It is deliberately the exception to the 60-second rule (~5 min), and it can only be
+recorded once the store carries the release with #19 — the install happens on camera.
+
 ## The cast
 
 The vault is a media library, and it's the *same* library across the whole

@@ -68,6 +68,25 @@ and the recurring cast of the media library. Take the number from there rather
 than inventing one, and use the same works and people — a class introduced in one
 take is the one queried three takes later.
 
+## 2b. Tours are a different genre
+
+`000_tour_first_look` is the catalogue's entry point and the one take that breaks the
+60-second budget on purpose: ~270 words, ~5 minutes, store install included. It ends by
+pointing at the numbered series and the docs, so it never has to cover everything — one
+type gets the spotlight (`File`, whose candidate list narrows itself) and the rest are
+named and left to their own takes.
+
+A tour starts from **nothing**: no class folder, no class, `plugin: false`, no
+`settings:` block — pre-filling the class folder would delete its first act. Two
+consequences to carry into any future tour:
+
+- the **store** version must already contain what the tour shows, since the install is
+  performed on camera. Tour #1 demonstrates the dependency builder (#19), so it can only
+  be recorded once the release carrying it is live: **release first, then record**;
+- a class bound by folder (`Files paths`) never writes `fileClass:` into its notes, so a
+  base filtering on `fileClass == "…"` sees none of them. Scope such a base **by folder**.
+  That one was caught by rehearsal, not by reading.
+
 ## 3. Write `scenario.yaml`
 
 ```yaml

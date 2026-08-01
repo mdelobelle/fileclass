@@ -25,7 +25,7 @@ const dim = (text) => `\x1b[2m${text}\x1b[0m`;
 
 export async function attachWhenReady(
 	port = "9222",
-	{ vaultPath = null, timeout = 90000, quiet = false } = {}
+	{ vaultPath = null, timeout = 90000, quiet = false, requirePlugin = true } = {}
 ) {
 	const start = Date.now();
 	let stage = null;
@@ -49,13 +49,17 @@ export async function attachWhenReady(
 		}
 		const ready = await stage.appPage
 			?.evaluate(
-				(want) => {
+				(want, need) => {
 					const app = window.app;
 					if (!app?.workspace?.layoutReady) return "layout not ready";
 					if (want && app.vault.adapter?.getBasePath?.() !== want) return "another vault";
+					// A take that installs the plugin on camera (`plugin: false`) has none
+					// to wait for; waiting anyway is how the tour's first probe timed out.
+					if (!need) return true;
 					return app.plugins?.plugins?.fileclass ? true : "plugin not loaded";
 				},
-				vaultPath
+				vaultPath,
+				requirePlugin
 			)
 			.catch(() => "no renderer");
 		if (ready === true) {

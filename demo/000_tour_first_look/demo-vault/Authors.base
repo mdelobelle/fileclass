@@ -1,0 +1,12 @@
+views:
+  - type: table
+    name: All authors
+    filters:
+      and:
+        - file.folder == "Authors"
+    sort:
+      - property: file.name
+        direction: ASC
+    order:
+      - file.name
+      - language

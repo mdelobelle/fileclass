@@ -4,6 +4,16 @@ All notable changes to Fileclass are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); this project uses
 [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Fixed
+
+- **The "Set next date" button had no label.** `setIcon()` on an Obsidian button
+  replaces its content, so the text set just before it never rendered: the picker
+  showed an icon with no name — nothing on hover, nothing for a screen reader. It
+  reads *Set next date* again, with a tooltip; the skip-forward icon stays where it
+  belongs, on the field's own control under Alt.
+
 ## [0.2.2] - 2026-08-02
 
 ### Fixed

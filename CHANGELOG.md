@@ -4,6 +4,24 @@ All notable changes to Fileclass are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); this project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.2.2] - 2026-08-02
+
+### Fixed
+
+- **A templated field shows the value you already had.** The guided form's preview is
+  the value being built, and the first control you touch rewrites it — so for a value
+  that predates the template, and therefore fills no control, the preview was the only
+  copy of it and it vanished on the first keystroke. The stored value now sits above
+  the controls as **Current value**, selectable and never rewritten.
+
+- **Editing one part of a templated value no longer wipes the others.** The guided
+  form for a templated `Input` opened with blank controls, so touching any of them
+  re-rendered the template from empty parts: correcting the shelf number in
+  `Study · A-3` stored ` · -7` and lost the room. The form now reads the stored value
+  back into its parts — literals escaped, one capture per placeholder, a dropdown
+  matched against its own choices — and a value that doesn't fit the template still
+  falls back to empty controls, as before.
+
 ## [0.2.1] - 2026-08-02
 
 ### Fixed

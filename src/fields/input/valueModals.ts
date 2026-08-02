@@ -19,7 +19,7 @@ import { modalTitle } from "../../ui/modalTitle";
 import { returnFocusTo } from "../../ui/listKeyboard";
 
 import { DisplayGroup, groupLabel } from "../baseOrder";
-import { parseTemplate, renderTemplate } from "../inputTemplate";
+import { matchTemplate, parseTemplate, renderTemplate } from "../inputTemplate";
 import { stepNumber, stepSize } from "../numberStep";
 import { NumberOptions } from "../options";
 import { ValidationResult } from "../validate";
@@ -204,14 +204,29 @@ export class TemplateInputModal extends Modal {
 		const { contentEl } = this;
 		modalTitle(contentEl, this.opts.title);
 
+		// Seed the controls from the value already stored, so editing one part keeps
+		// the others: touching a control re-renders the whole template.
+		const stored = this.opts.initial ? matchTemplate(this.opts.template, this.opts.initial) : null;
+
+		// The value as it stands, kept where it can be read while typing. The preview
+		// below is the *new* value and is rewritten by the first control you touch —
+		// which, for a value that predates the template and so seeds no control, used
+		// to be the only place it existed. Nobody should have to remember it.
+		if (this.opts.initial) {
+			const current = contentEl.createDiv({ cls: "fileclass-current-value" });
+			current.createSpan({ text: "Current value: ", cls: "fileclass-current-value-label" });
+			current.createSpan({ text: this.opts.initial });
+		}
+
 		for (const part of parseTemplate(this.opts.template)) {
-			this.values[part.name] = "";
+			this.values[part.name] = stored?.[part.name] ?? "";
 			const row = new Setting(contentEl).setName(part.name);
 			if (part.choices) {
 				const choices = part.choices;
 				row.addDropdown((d) => {
 					d.addOption("", "--select--");
 					for (const c of choices) d.addOption(c, c);
+					if (choices.includes(this.values[part.name])) d.setValue(this.values[part.name]);
 					d.onChange((v) => this.onPartChange(part.name, v));
 				});
 			} else {
@@ -219,6 +234,7 @@ export class TemplateInputModal extends Modal {
 				row.addText((t) =>
 					t
 						.setPlaceholder(`Value for ${part.name}`)
+						.setValue(this.values[part.name])
 						.onChange((v) => this.onPartChange(part.name, v))
 				);
 			}

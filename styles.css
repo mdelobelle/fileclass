@@ -876,3 +876,17 @@
 	margin-top: var(--size-2-1);
 	color: var(--text-error);
 }
+
+/* The stored value, above a templated Input's controls. Selectable and never
+   rewritten: the Result preview shows what you are building, this shows what is
+   there now — the two must not look like the same line. */
+.fileclass-current-value {
+	margin-bottom: var(--size-4-3);
+	font-size: var(--font-ui-small);
+	user-select: text;
+	overflow-wrap: anywhere;
+}
+
+.fileclass-current-value-label {
+	color: var(--text-muted);
+}

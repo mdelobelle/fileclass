@@ -76,3 +76,7 @@ other. Captions are English; YouTube translates them into your language.
 ## Candidates that depend on another field
 
 {{< video "015" >}}
+
+## A field with a fixed shape
+
+{{< video "016" >}}

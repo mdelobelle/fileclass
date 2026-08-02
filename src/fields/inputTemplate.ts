@@ -63,6 +63,54 @@ export function parseTemplate(template: string): TemplatePart[] {
 }
 
 /**
+ * Reads a rendered value back into its parts — the inverse of `renderTemplate`,
+ * as far as one exists.
+ *
+ * Without this, editing a value already in the note started from blank controls:
+ * touching one of them re-rendered the template from empty parts and silently
+ * dropped the others, so correcting a shelf number lost the room it was in.
+ *
+ * The template becomes a regex — literals escaped, one capture per placeholder,
+ * a backreference for a name that recurs, and an alternation of the choices for a
+ * dropdown, which is tighter than `.*?` and disambiguates adjacent parts. Returns
+ * `null` when the value doesn't fit the template (a hand-typed value, or a
+ * multi-line template whose newlines `renderTemplate` collapsed); the caller then
+ * falls back to empty parts, which is what it always did.
+ */
+export function matchTemplate(template: string, value: string): Record<string, string> | null {
+	const names: string[] = [];
+	let pattern = "";
+	let cursor = 0;
+	for (const match of template.matchAll(placeholderRe())) {
+		pattern += escapeRegExp(template.slice(cursor, match.index));
+		cursor = (match.index ?? 0) + match[0].length;
+		const [name, optionsString] = splitNameOptions(match[1]);
+		// An unnamed placeholder renders as nothing, so it matches nothing.
+		if (!name) continue;
+		const seenAt = names.indexOf(name);
+		if (seenAt !== -1) {
+			pattern += `\\${seenAt + 1}`; // one control drives every occurrence
+			continue;
+		}
+		names.push(name);
+		const choices =
+			optionsString === undefined ? undefined : parseChoices(optionsString.trim()).choices;
+		pattern += choices?.length ? `(${choices.map(escapeRegExp).join("|")})` : "(.*?)";
+	}
+	pattern += escapeRegExp(template.slice(cursor));
+
+	const found = new RegExp(`^${pattern}$`, "su").exec(value);
+	if (!found) return null;
+	const values: Record<string, string> = {};
+	names.forEach((name, i) => (values[name] = found[i + 1] ?? ""));
+	return values;
+}
+
+function escapeRegExp(source: string): string {
+	return source.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
+}
+
+/**
  * Renders a template by substituting every placeholder with its value (missing
  * or empty → ""). Newlines collapse to ", " so the result stays a single
  * frontmatter scalar (Metadata Menu parity).

@@ -481,26 +481,50 @@ fields remain out of scope).
 
 ## Location
 
-A `Location` field stores geographic coordinates as a **`"lat,lon"`** scalar
-(the core Bases Map view / Map View plugin convention):
+{{< video "019" >}}
+
+A `Location` field stores geographic coordinates as a **`"lat,lon"`** scalar — the
+convention map plugins read:
 
 ```yaml
 location: "48.8566,2.3522"
 ```
 
 Editing gives two **range-validated** number fields (latitude −90..90, longitude
-−180..180) plus a **paste** box that accepts a `"lat,lon"` string and fills them.
-**Open in map** opens the coordinates on OpenStreetMap in your browser.
+−180..180) plus a **paste** box that fills them from whatever you copied:
+
+| pasted | read as |
+|---|---|
+| `48.8584, 2.2945` · `48.8584 2.2945` · `48.8584; 2.2945` | the pair |
+| `48.8584° N, 2.2945° E` | the pair, with `S`/`W` negative |
+| a Google Maps link (`/@lat,lon,17z`, `?q=lat,lon`) | the pair |
+| an Apple Maps link (`?ll=lat,lon`) | the pair |
+| an OpenStreetMap link (`?mlat=…&mlon=…`, `#map=15/lat/lon`) | the pair |
+| `geo:48.8584,2.2945` | the pair |
+
+Anything else says so instead of filling nothing, and a pair that is off the globe
+says *that* rather than pretending it couldn't be read. **Open in map** opens the
+coordinates on OpenStreetMap in your browser.
 
 > **No embedded map picker.** An in-app map means loading remote tiles, which is
 > against Fileclass's no-remote-resources stance (and an Electron `<webview>`
 > proved unstable). To pick a new spot, use **Open in map** or any map site in
 > your browser, then copy the `lat,lon` from the URL and paste it here.
 
-Because the value uses the standard `"lat,lon"` convention, a note with a
-`Location` field is picked up **automatically** by the core **Bases Map view**
-and the community **Map View** plugin — Fileclass just makes the property easy to
-enter correctly; it does not generate map views itself.
+### Seeing them on a map
+
+Bases has no map layout of its own. **[Maps](https://github.com/obsidianmd/obsidian-maps)**,
+a community plugin by the Obsidian team, adds one — install it from **Settings →
+Community plugins → Browse**, search *Maps*.
+
+Then open a base, add a view, set its type to **Map**, and set **Marker
+coordinates** to your `Location` field. Markers appear for every note the view's
+filters return, and follow those filters as they change. The view options also let
+each marker take its **icon** and **colour** from properties — which is what an
+[`Icon`](#icon) and a [`Color`](#color) field on the same class are for.
+
+Fileclass makes the property easy to enter correctly and validates it; drawing the
+map is the map plugin's job.
 
 ## Icon
 

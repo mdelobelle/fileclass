@@ -4,9 +4,16 @@ All notable changes to Fileclass are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); this project uses
 [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [0.2.3] - 2026-08-03
 
 ### Fixed
+
+- **The coordinates box reads what you actually paste.** It accepted the canonical
+  `lat,lon` and nothing else — a Google or Apple Maps link, an OpenStreetMap link, a
+  `geo:` URI, a degree-marked pair like `48.8584° N, 2.2945° E`, even a space between
+  the two numbers all filled **nothing at all, without a word**. All of those are read
+  now; text that holds no pair says so, and a pair that is off the globe is told apart
+  from one that couldn't be read, because those are different mistakes.
 
 - **The "Set next date" button had no label.** `setIcon()` on an Obsidian button
   replaces its content, so the text set just before it never rendered: the picker
@@ -25,8 +32,7 @@ All notable changes to Fileclass are documented here. The format follows
   the ellipse a 50% radius draws on Obsidian's 26x22 default, and the two pickers in
   a field's palette keep their distinct rings — dashed for *add to my colors*,
   rainbow for a one-off shade — with the chosen colour inset inside them. Three places changed: the palette in the settings, the field picker, and
-  the canvas colour options. The settings pane also rebuilds itself if it is ever
-  found blank — a belt-and-braces that should now never fire.
+  the canvas colour options.
 
 - **The icon picker shows the icon you already have.** It renders 240 of some 1900
   icons in alphabetical order, so a value like `rocket` was simply absent from the

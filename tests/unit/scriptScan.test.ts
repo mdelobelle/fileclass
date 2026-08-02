@@ -56,3 +56,14 @@ describe("scanScript — what makes a step suspicious", () => {
 		expect(scan(["Open the settings"])[0].suspicious).toBe(false);
 	});
 });
+
+describe("a step's input value", () => {
+	it("is not part of what the narrator says", () => {
+		// The caption shows it in yellow; the voice reads the title alone. A step's
+		// `input` never reaches spokenText, which is why this holds by construction —
+		// pinned here so a future refactor doesn't start reading coordinates aloud.
+		const [step] = scan(["Paste what you copied"]);
+		expect(step.title).toBe("Paste what you copied");
+		expect(step.title).not.toMatch(/\d{2}\.\d/);
+	});
+});

@@ -39,7 +39,7 @@ import {
 	wipeVault,
 	writeTakeLog,
 } from "./lib/stage.mjs";
-import { CUE_LABEL, LIFT_LABEL, connect } from "./lib/subtitles.mjs";
+import { CUE_LABEL, INSERT_LABEL, LIFT_LABEL, connect } from "./lib/subtitles.mjs";
 import { waitForPlugin } from "./lib/trust.mjs";
 import { DEFAULT_RATE, resolveVoice, speak, spokenText } from "./lib/voice.mjs";
 
@@ -195,7 +195,10 @@ async function main() {
 	console.log(
 		`\n${bold("Start your screen recorder, then press")} ${bold(CUE_LABEL)} ${bold("in Obsidian to begin.")}\n` +
 			dim(`The same chord advances every step · Enter here also works · q aborts\n`) +
-			dim(`${LIFT_LABEL} lifts the caption to the top when it covers what you need · next step puts it back\n`)
+			dim(`${LIFT_LABEL} lifts the caption to the top when it covers what you need · next step puts it back\n`) +
+			(scenario.steps.some((s) => s.input)
+				? dim(`${INSERT_LABEL} types the value shown in yellow into whatever field is focused\n`)
+				: "")
 	);
 	// "ready", out loud, before the cue. It tells the operator the take is armed
 	// without looking away from Obsidian — and it pays the voice's one-time cost
@@ -229,7 +232,7 @@ async function main() {
 	}
 
 	for (const [i, step] of scenario.steps.entries()) {
-		await stage.show(step.title);
+		await stage.show(step.title, { input: step.input });
 		const shownAt = at();
 		console.log(`${dim(`${String(i + 1).padStart(2)}/${total}`)}  ${step.title}`);
 		const line = voice ? speak(spokenText(step.title, scenario.pronounce), { voice, rate }) : null;

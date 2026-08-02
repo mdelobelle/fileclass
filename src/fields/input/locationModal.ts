@@ -8,7 +8,7 @@ import { App, Modal, Notice, Setting, TextComponent } from "obsidian";
 
 import { modalTitle } from "../../ui/modalTitle";
 
-import { formatLocation, isValidLocation, mapUrl, parseLocation } from "../location";
+import { extractPastedPair, formatLocation, isValidLocation, mapUrl, parseLocation, parsePastedLocation } from "../location";
 
 export interface LocationModalOptions {
 	title: string;
@@ -32,9 +32,9 @@ export class LocationInputModal extends Modal {
 
 		new Setting(contentEl)
 			.setName("Paste coordinates")
-			.setDesc('A "lat, lon" string — fills the fields below.')
+			.setDesc("A map link, or a lat, lon pair — fills the fields below.")
 			.addText((t) => {
-				t.setPlaceholder("48.8566, 2.3522").onChange((v) => this.onPaste(v));
+				t.setPlaceholder("48.8566, 2.3522 — or a Google/Apple/OSM link").onChange((v) => this.onPaste(v));
 				window.setTimeout(() => t.inputEl.focus(), 0);
 			});
 
@@ -70,8 +70,21 @@ export class LocationInputModal extends Modal {
 	}
 
 	private onPaste(value: string): void {
-		const coords = parseLocation(value);
-		if (!coords) return;
+		const text = value.trim();
+		if (!text) return void this.validateLive();
+		const coords = parsePastedLocation(text);
+		if (!coords) {
+			// Saying nothing was the old behaviour, and it read as "this box is
+			// broken": a Maps link or a degree-marked pair simply filled nothing. And
+			// a pair we did read but that sits off the globe is a different mistake.
+			const offGlobe = extractPastedPair(text);
+			this.errorEl.setText(
+				offGlobe
+					? "Those are out of range: latitude −90 to 90, longitude −180 to 180."
+					: "Couldn't read coordinates from that — try a map link, or a lat, lon pair."
+			);
+			return;
+		}
 		this.latInput.setValue(String(coords.lat));
 		this.lonInput.setValue(String(coords.lon));
 		this.validateLive();

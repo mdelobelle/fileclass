@@ -1,0 +1,96 @@
+# Narration for take 019 — see ../SCENARIO.md for the format.
+# Fifth of arc 4 — 020, 021 and 022 still follow it. Starts where 018 ended: Series carries its Color field and the five
+# series wear one. Adds `Activity.branch`, and ends on a map.
+#
+# Facts the script leans on, all verified before scripting:
+#  - the paste box reads Google/Apple/OpenStreetMap links, geo: URIs, degree pairs
+#    and space-separated pairs, and says so when it can't read something — measured
+#    in the app, and the reason step 5 can film a paste rather than typing digits;
+#  - the two number fields validate live, −90..90 and −180..180;
+#  - "Open in map" builds an OpenStreetMap URL from the pair;
+#  - Bases has NO map layout of its own here: its registered views are table, cards
+#    and list (plus fileclass-table). The map comes from **Maps**, the Obsidian
+#    team's community plugin, which is why step 9 installs it on camera;
+#  - Maps reads a text property `"lat, lng"` — what Location stores — and takes each
+#    marker's icon from a Lucide id and its colour from a CSS colour. Which is
+#    exactly what takes 017 and 018 introduced. Its own example base writes
+#    `coordinates:`, `markerIcon:`, `markerColor:` into the view.
+#
+# The fixture gives Activity its `icon` and `color` already filled: both types were
+# introduced in the two takes before this one, so a vault would plausibly have them
+# by now, and re-filming "add an Icon field" would be a rerun. Their values are what
+# step 11 has to bite on. Icon ids checked in the app: book-open, pen-line, film,
+# shopping-basket.
+#
+# Activities.base shows `icon` and `color` as columns, so the values driving the
+# markers are on screen before the map exists — which is what step 13 points back to.
+# A native table shows them as their text (`film`, `#7852ee`), not as a glyph and a
+# swatch: that is Bases rendering an ordinary string, and it is the honest framing.
+#
+# Coordinates to use on camera — Belgium, since the whole library is Franco-Belgian.
+# Approximate to a few hundred metres, from memory rather than from a gazetteer: step
+# 7 opens each pair in a browser, which is exactly where a wrong corner would show.
+#
+#   Signing — Blake & Mortimer Belgian Comic Strip Center   50.851164933845816, 4.36018873480511
+#   Film club — Dune           Cinéma Palace, bd Anspach    50.84795104992325, 4.348730734603368
+#   Library book sale          Musée Hergé, LLN             50.67135709058256, 4.612915008109884
+#   Reading group              KBR, Mont des Arts           50.8434, 4.3564
+#
+# Step 5 films a paste rather than a typed pair, on the SIGNING — the link below is
+# the Comic Strip Center, the same spot as the first row above, in Google's form:
+#   https://www.google.com/maps/@50.851164933845816,4.36018873480511,17z
+# So the order on camera is: signing (pasted link), film club, sale, reading group.
+#
+# The first three come from the operator's own map, to the metre. The KBR one is
+# still mine, approximate — step 7 opens it in a browser, which is where a wrong
+# corner shows. Each of those steps carries the value as `input:`, so ⌘⌃⌥⇧I types it
+# rather than the operator losing thirty seconds to eighteen digits.
+# Three sit within a few streets of each other and the fourth is 25 km out, which is
+# what makes zooming out at step 10 say something.
+#
+# The alternative — pulling icon and colour from a linked note through a formula,
+# the way Maps' own example does — is in the docs, not on camera: filming formula
+# editing is what issue #19 taught us to avoid.
+title: "Fileclass — A place on a map"
+description: "Coordinates typed once, and a map that reads them."
+doc: "fields/#location" # deep link used in the description
+tags: "location, coordinates, map, bases"
+vault_name: "Demo"
+plugin: true
+settings:
+  classFilesPath: "Classes/"
+  fileClassAlias: "fileClass"
+initial_pause: 1500
+default_pause: 900
+
+steps:
+  - title: "Four dates in the library's calendar, each one somewhere else"
+    pause: 1800
+  - title: "Where they happen only exists in the prose, and no map can read prose"
+    pause: 1900
+  - title: "Add a field named branch to Activity, type Location"
+    pause: 1700
+  - title: "Two fields, latitude and longitude, each checked as you type"
+    pause: 1800
+  - title: "The signing is at the comic strip centre: paste its map link, both fields fill"
+    input: "https://www.google.com/maps/@50.851164933845816,4.36018873480511,17z"
+    pause: 1900
+  - title: "What it can't read, it says — instead of quietly doing nothing"
+    pause: 1900
+  - title: "Open in map sends the pair to your browser, to check you have the right street corner"
+    pause: 2000
+  - title: "The film club, by the canal"
+    input: "50.84795104992325, 4.348730734603368"
+    pause: 1700
+  - title: "The sale, out at Louvain-la-Neuve"
+    input: "50.67135709058256, 4.612915008109884"
+    pause: 1700
+  - title: "And the reading group at the Mont des Arts — what is stored stays a plain lat, lon"
+    input: "50.8434, 4.3564"
+    pause: 1900
+  - title: "Bases has no map of its own: Maps, from the Obsidian team, adds one"
+    pause: 2000
+  - title: "Add a Map view, point Marker coordinates at branch — four markers appear"
+    pause: 2100
+  - title: "Marker colour and icon read properties too: the ones the last two takes put there"
+    pause: 2300

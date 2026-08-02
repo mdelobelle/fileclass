@@ -316,6 +316,8 @@ Obsidian, restores your vault list and wipes the demo vault.
 
 If a caption covers what the step is about — a setting low in a pane, the controls of a picker — **⌘⌃⌥⇧U** lifts it to the top of the screen, and the key badge with it. Press it again to drop it back; the next subtitle starts at the bottom either way, so a raised caption never leaks into the following step.
 
+A step may also carry an **`input:`** — a value the operator would otherwise type on camera, like coordinates or a link. The caption shows it in yellow, set apart from the sentence, and **⌘⌃⌥⇧I** types it into whatever field is focused: real keystrokes, so the field's own handlers run and the viewer sees the text appear. It is spoken nowhere — the narration reads the step's title, not eighteen digits.
+
 **Keys you press show up on screen.** A badge under the caption names the special
 keys as they happen — `⏎`, `⌥⏎`, `⇥`, `⎋`, and `⏎ ×3` when you chain the same one —
 so a keyboard gesture is legible in the recording. What it deliberately never

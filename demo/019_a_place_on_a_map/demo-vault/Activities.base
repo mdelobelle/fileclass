@@ -1,0 +1,15 @@
+views:
+  - type: table
+    name: All activities
+    filters:
+      and:
+        - fileClass == "Activity"
+    sort:
+      - property: starts
+        direction: ASC
+    order:
+      - file.name
+      - icon
+      - color
+      - starts
+      - doors

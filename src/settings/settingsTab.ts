@@ -14,44 +14,13 @@ import { FolderSuggest } from "../ui/folderSuggest";
 import { normalizeFolderPath } from "./settings";
 
 export class FileclassSettingTab extends PluginSettingTab {
-	/** Windows already watched for a blanked pane (one listener each). */
-	private readonly watched = new WeakSet<Window>();
-
 	constructor(app: App, private readonly plugin: FileclassPlugin) {
 		super(app, plugin);
 	}
 
-	/**
-	 * Rebuilds this pane if something emptied it while it was on screen.
-	 *
-	 * Opening the system colour popover from *Custom colors* does exactly that on
-	 * Obsidian 1.13.4 — the tab stays selected with nothing in it. Dismissing the
-	 * popover with Escape fires no `change`, so nothing else would bring it back and
-	 * the operator has to click the tab again.
-	 *
-	 * Deliberately narrow: only when the container is still in a document that has
-	 * the settings UI in it, and only when it is genuinely empty — switching to
-	 * another tab fills the same element, and closing settings takes it away.
-	 */
-	private readonly restoreIfBlank = (): void => {
-		const el = this.containerEl;
-		if (!el.isConnected || el.childElementCount > 0) return;
-		if (!el.doc.querySelector(".vertical-tab-header")) return;
-		this.display();
-	};
-
 	display(): void {
 		const { containerEl } = this;
 		containerEl.empty();
-
-		// The pane can be blanked from outside; catch it when the window comes back.
-		// Registered through the plugin so unload takes it with it, and once per
-		// window, since settings may live in a popout.
-		const win = containerEl.win;
-		if (!this.watched.has(win)) {
-			this.watched.add(win);
-			this.plugin.registerDomEvent(win, "focus", this.restoreIfBlank);
-		}
 
 		new Setting(containerEl)
 			.setName("Class files folder")
@@ -296,18 +265,7 @@ export class FileclassSettingTab extends PluginSettingTab {
 				label: "Add color",
 				cls: "is-add",
 				badge: "plus",
-				onPick: (value) => {
-					void addCustomColor(value).then(() => {
-					// Opening the OS colour panel can leave the settings pane emptied —
-					// reported on 1.13.4, where the tab stays selected with nothing in it
-					// until you click it again. Not reproducible without a human hand on
-					// the mouse (a synthesized click doesn't open the panel), so rather
-					// than guess at the cause, the pane rebuilds itself when it comes
-					// back to an empty container.
-						if (containerEl.childElementCount === 0) this.display();
-						else render();
-					});
-				},
+				onPick: (value) => void addCustomColor(value).then(render),
 			});
 		};
 		render();

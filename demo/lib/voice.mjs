@@ -47,6 +47,10 @@ export const PRONUNCIATION = {
 	ObjectList: "object list",
 	CycleDuration: "cycle duration",
 	YAML: "yammel",
+	// Read out, "lat, lon" is two clipped syllables that land as nonsense; the full
+	// words cost half a second and are what a narrator would say.
+	"lat, lon": "latitude and longitude",
+	"lat,lon": "latitude and longitude",
 	".base": " dot base",
 	".md": " dot M D",
 };

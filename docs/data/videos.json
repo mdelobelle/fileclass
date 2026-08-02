@@ -229,5 +229,16 @@
     "durationSeconds": 114,
     "recordedWith": "0.2.2",
     "privacyStatus": "public"
+  },
+  "019": {
+    "id": "Hev8hrBxWj0",
+    "url": "https://www.youtube.com/watch?v=Hev8hrBxWj0",
+    "title": "Fileclass #019 · A place on a map",
+    "subject": "A place on a map",
+    "scenario": "019_a_place_on_a_map",
+    "doc": "fields/#location",
+    "durationSeconds": 184,
+    "recordedWith": "0.2.2",
+    "privacyStatus": "public"
   }
 }

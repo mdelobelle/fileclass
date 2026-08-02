@@ -92,3 +92,7 @@ other. Captions are English; YouTube translates them into your language.
 ## Colors, and your own palette
 
 {{< video "018" >}}
+
+## A place on a map
+
+{{< video "019" >}}

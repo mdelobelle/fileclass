@@ -504,6 +504,8 @@ enter correctly; it does not generate map views itself.
 
 ## Icon
 
+{{< video "017" >}}
+
 An `Icon` field stores an icon **id** (a single scalar), chosen from a visual
 picker:
 

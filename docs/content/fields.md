@@ -525,6 +525,8 @@ as the marker icon — Fileclass just makes the property easy to enter.
 
 ## Color
 
+{{< video "018" >}}
+
 A `Color` field stores a **CSS color** value (a single scalar):
 
 ```yaml

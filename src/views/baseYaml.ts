@@ -31,17 +31,90 @@ interface BaseObject {
 }
 
 /**
- * The single filter clause scoping a base/view to a fileClass, e.g.
- * `fileClass == "Book"`. Shared by the create path (as a YAML line) and the
- * sync path (inside a `{ and: [...] }` object).
+ * Everything that binds a note to a fileClass and can be expressed as a Bases
+ * predicate. A class bound by folder or by tag leaves **no `fileClass` property**
+ * on its notes, so a view filtered on the property alone returns nothing — which
+ * is what a generated base did for every folder-mapped class.
+ *
+ * Bookmark groups and Base views also bind (`bookmarksGroups`, and a class named
+ * by a view) and have no equivalent Bases predicate; notes bound only that way
+ * are outside the generated filter, and the docs say so.
+ */
+export interface ClassScope {
+	/** The frontmatter property naming a class — the `fileClassAlias` setting. */
+	alias: string;
+	name: string;
+	/** Tags that bind: `tagNames`, plus the class name itself when `mapWithTag`. */
+	tags?: readonly string[];
+	/** Folders whose notes bind — subfolders included, as binding is by prefix. */
+	folders?: readonly string[];
+}
+
+/** A view filter is a clause or a nested boolean group. */
+export type FilterClause = string | { or: string[] };
+
+/**
+ * The single filter clause matching notes that name the class in frontmatter,
+ * e.g. `fileClass == "Book"`.
  */
 export function fileClassFilterClause(alias: string, fileClassName: string): string {
 	return `${alias} == ${JSON.stringify(fileClassName)}`;
 }
 
-/** The view-level filter object Fileclass owns on a managed view (issue #55). */
-export function fileClassViewFilter(alias: string, fileClassName: string): { and: string[] } {
-	return { and: [fileClassFilterClause(alias, fileClassName)] };
+/**
+ * Every predicate that selects a note of this class, property first.
+ *
+ * `file.inFolder()` rather than `file.folder ==` because binding is by prefix: a
+ * note in `Authors/Deep/` is bound by `filesPaths: [Authors]`, and an equality
+ * test on the folder would leave it out (measured: 6 rows instead of 7). Tags
+ * containing whitespace are skipped, matching the resolver — they never bind.
+ */
+export function fileClassPredicates(scope: ClassScope): string[] {
+	const clauses = [fileClassFilterClause(scope.alias, scope.name)];
+	for (const folder of scope.folders ?? []) {
+		const path = folder.trim().replace(/\/+$/, "");
+		if (path) clauses.push(`file.inFolder(${JSON.stringify(path)})`);
+	}
+	for (const tag of scope.tags ?? []) {
+		const name = tag.trim().replace(/^#/, "");
+		if (name && !/\s/u.test(name)) clauses.push(`file.hasTag(${JSON.stringify(name)})`);
+	}
+	return clauses;
+}
+
+/**
+ * The view-level filter object Fileclass owns on a managed view (issue #55).
+ * One predicate stays a plain clause; several become an `or` group nested in the
+ * `and`, which is where a dependent field's predicate is appended (#19).
+ */
+export function fileClassViewFilter(scope: ClassScope): { and: FilterClause[] } {
+	const clauses = fileClassPredicates(scope);
+	return { and: clauses.length > 1 ? [{ or: clauses }] : clauses };
+}
+
+/**
+ * True when a managed view's `filters` is one Fileclass wrote and nobody edited:
+ * the legacy single property clause, or an `or` group of nothing but generated
+ * predicates. Anything else is the user's, and is never overwritten.
+ */
+export function isGeneratedScopeFilter(filters: unknown, scope: ClassScope): boolean {
+	const group: unknown = (filters as { and?: unknown } | null)?.and;
+	// `Array.isArray` widens an `unknown` to `any[]`, which is how an `any` would
+	// creep into a file that forbids it — hence the explicit `unknown[]` casts.
+	if (!Array.isArray(group) || (group as unknown[]).length !== 1) return false;
+	const only: unknown = (group as unknown[])[0];
+	if (typeof only === "string") return only === fileClassFilterClause(scope.alias, scope.name);
+	if (!only || typeof only !== "object" || Object.keys(only).length !== 1) return false;
+	const clauses: unknown = (only as { or?: unknown }).or;
+	if (!Array.isArray(clauses)) return false;
+	const generated = new RegExp(
+		`^(?:${escapeForRegExp(scope.alias)} == |file\\.inFolder\\(|file\\.hasTag\\()`
+	);
+	return (clauses as unknown[]).every((c) => typeof c === "string" && generated.test(c));
+}
+
+function escapeForRegExp(source: string): string {
+	return source.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 /** A managed (Fileclass) table view — native `table` or editable `fileclass-table`. */
@@ -82,37 +155,44 @@ export function isBaseViewSynced(base: unknown, viewName: string, fieldNames: st
  * named `viewName`), setting its `order` to exactly `file.name` + the fields.
  * Bijective — adds, removes, and reorders columns — because this view is owned
  * by Fileclass (the mirror is explicit via the fileClass's `baseFile` option).
- * Other views in the base are never touched, and an **existing** managed view's
- * `filters` are left alone (issue #55: never move a legacy base-wide filter, and
- * never clobber a user's edits). A **newly created** managed view gets the
- * view-level fileClass filter. Mutates `base`; returns whether it changed.
+ * Other views in the base are never touched (issue #55: never move a legacy
+ * base-wide filter). A **newly created** managed view gets the view-level scope
+ * filter; an **existing** one keeps its filters unless they are still exactly what
+ * Fileclass generated, in which case they are brought up to date — that is how a
+ * base created before its class was mapped to a folder starts returning rows.
+ * A hand-edited filter is left alone. Mutates `base`; returns whether it changed.
  */
 export function mirrorBaseView(
 	base: unknown,
 	viewName: string,
 	fieldNames: string[],
-	fileClassName: string,
-	alias: string
+	scope: ClassScope
 ): boolean {
 	const b = base as BaseObject;
 	if (!Array.isArray(b?.views)) return false; // malformed; the generator owns creation
 	const views = b.views as BaseView[];
 	const desired = mirrorOrder(fieldNames);
+	const filters = fileClassViewFilter(scope);
 
 	const view = views.find((v) => isManagedTable(v, viewName));
 	if (!view) {
-		views.push({
-			type: FILECLASS_TABLE_VIEW,
-			name: viewName,
-			filters: fileClassViewFilter(alias, fileClassName),
-			order: desired,
-		});
+		views.push({ type: FILECLASS_TABLE_VIEW, name: viewName, filters, order: desired });
 		return true;
 	}
+	let changed = false;
+	if (
+		isGeneratedScopeFilter(view.filters, scope) &&
+		JSON.stringify(view.filters) !== JSON.stringify(filters)
+	) {
+		view.filters = filters;
+		changed = true;
+	}
 	const current = Array.isArray(view.order) ? view.order : [];
-	if (current.length === desired.length && current.every((v, i) => v === desired[i])) return false;
-	view.order = desired;
-	return true;
+	if (current.length !== desired.length || current.some((v, i) => v !== desired[i])) {
+		view.order = desired;
+		changed = true;
+	}
+	return changed;
 }
 
 /**
@@ -123,18 +203,22 @@ export function mirrorBaseView(
  * views for other fileClasses can be added without being shadowed.
  */
 export function buildBaseYaml(
-	fileClassName: string,
+	scope: ClassScope,
 	rootFieldNames: string[],
-	alias: string,
-	viewName: string = fileClassName
+	viewName: string = scope.name
 ): string {
+	const clauses = fileClassPredicates(scope);
 	const lines = [
 		"views:",
 		`  - type: ${FILECLASS_TABLE_VIEW}`,
 		`    name: ${JSON.stringify(viewName)}`,
 		"    filters:",
 		"      and:",
-		`        - ${fileClassFilterClause(alias, fileClassName)}`,
+		// One predicate reads better inline; several go in an `or` group, the shape
+		// a dependent field then appends its own clause beside (#19).
+		...(clauses.length > 1
+			? ["        - or:", ...clauses.map((c) => `            - ${c}`)]
+			: [`        - ${clauses[0]}`]),
 		"    order:",
 		"      - file.name",
 		...rootFieldNames.map((n) => `      - ${yamlScalar(n)}`),

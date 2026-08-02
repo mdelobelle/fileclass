@@ -135,6 +135,11 @@ For example, a `repository` field with the template
 
 When a template is set, editing the field opens a **guided form** — one control
 per placeholder plus a live **Result preview** you can still fine-tune by hand.
+A value already in the note is **read back into its parts**, so correcting one part
+keeps the others; a value that doesn't fit the template (typed by hand, or stored
+before the template existed) leaves the controls empty instead. Either way the value
+as it stands is shown as **Current value** above the controls, and stays there while
+you type — the preview is the value you are building, not the one you had.
 The stored value stays a **single text scalar** (the rendered string): a
 templated `Input` is still an `Input`, with no computation and no Bases
 dependency. A placeholder name that appears more than once is driven by a single

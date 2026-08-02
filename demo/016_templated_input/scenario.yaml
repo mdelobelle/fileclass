@@ -1,0 +1,65 @@
+# Narration for take 016 — see ../SCENARIO.md for the format.
+# Opens arc 4. Starts where 015 ended: Comic carries the dependent `series` field,
+# Series.base carries the generated formula and its narrowed view, Tintin in Tibet
+# names its series. Adds `Book.shelf`, a templated Input.
+#
+# Facts the script leans on, all verified in the app before scripting:
+#  - the guided form opens with one control per placeholder and a live preview, and
+#    a dropdown part only offers the choices declared in the template;
+#  - reopening a templated value pre-fills its parts, so step 11 shows an edit that
+#    keeps the room and the unit. That is a fix this take's surfaces pass produced:
+#    the form used to open blank and re-render from empty parts, storing " · -7";
+#  - the preview stays editable, which is the escape hatch for a value that doesn't
+#    fit the shape;
+#  - opening a hand-typed value that doesn't fit the template gives empty controls
+#    and a preview showing the value as it stands — the documented fallback, filmed
+#    rather than described, when the last step brings the other two books into shape.
+#
+# The three hand-typed shelves are deliberately inconsistent — "Study A-3",
+# "living room, B2", "shelf C 1" — because that is what a vault looks like before a
+# shape exists, and it is why sorting them is useless at step 2.
+#
+# No base in this take, and none in the fixture. The payoff was going to be a sorted
+# base, but the only view whose cells can be edited is `fileclass-table`, which no
+# take has introduced yet — a take about templates is not where that belongs. Every
+# value here is set from the note-fields modal, already familiar by now; in-cell
+# editing waits for take 034, which is about it.
+title: "Fileclass — A field with a fixed shape"
+description: "One control per part, one plain value in the frontmatter."
+doc: "fields/#input-templates" # deep link used in the description
+tags: "input template, guided input, placeholders, frontmatter"
+vault_name: "Demo"
+plugin: true
+settings:
+  classFilesPath: "Classes/"
+  fileClassAlias: "fileClass"
+initial_pause: 1500
+default_pause: 900
+
+steps:
+  - title: "Three books say where they are shelved, in three different ways"
+    pause: 1800
+  - title: "Nothing can sort or group them, because nothing shares a shape"
+    pause: 1700
+  - title: "Open the Book schema and add a field named shelf, type Input"
+    pause: 1700
+  - title: "Its Template option describes the parts: a room, a unit, a level"
+    pause: 1800
+  - title: "Write the shape once, with a placeholder per part"
+    pause: 2000
+  - title: "A template gives a shape; it does not restrict to a list of values — that is Select"
+    pause: 2000
+  - title: "On Dune, the field opens one control per part, and assembles the result live"
+    pause: 1900
+  - title: "The part written between brackets becomes a dropdown: only the rooms you declared"
+    pause: 1900
+  - title: "The preview stays editable, for the book that refuses to fit"
+    pause: 1800
+  - title: "Saved, the frontmatter holds one plain value: Study, middle dot, A dash 3"
+    pause: 1900
+  - title: "Come back later and the parts are still there — fixing the level keeps the room"
+    pause: 2000
+  - title: "Two books still say it their own way"
+    pause: 1800
+  - title: "Their fields modal opens the same form — and the whole library ends up in one shape"
+    pause: 2300

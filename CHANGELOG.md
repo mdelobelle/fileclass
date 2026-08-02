@@ -8,6 +8,12 @@ All notable changes to Fileclass are documented here. The format follows
 
 ### Fixed
 
+- **A templated field shows the value you already had.** The guided form's preview is
+  the value being built, and the first control you touch rewrites it — so for a value
+  that predates the template, and therefore fills no control, the preview was the only
+  copy of it and it vanished on the first keystroke. The stored value now sits above
+  the controls as **Current value**, selectable and never rewritten.
+
 - **Editing one part of a templated value no longer wipes the others.** The guided
   form for a templated `Input` opened with blank controls, so touching any of them
   re-rendered the template from empty parts: correcting the shelf number in

@@ -208,6 +208,16 @@ export class TemplateInputModal extends Modal {
 		// the others: touching a control re-renders the whole template.
 		const stored = this.opts.initial ? matchTemplate(this.opts.template, this.opts.initial) : null;
 
+		// The value as it stands, kept where it can be read while typing. The preview
+		// below is the *new* value and is rewritten by the first control you touch —
+		// which, for a value that predates the template and so seeds no control, used
+		// to be the only place it existed. Nobody should have to remember it.
+		if (this.opts.initial) {
+			const current = contentEl.createDiv({ cls: "fileclass-current-value" });
+			current.createSpan({ text: "Current value: ", cls: "fileclass-current-value-label" });
+			current.createSpan({ text: this.opts.initial });
+		}
+
 		for (const part of parseTemplate(this.opts.template)) {
 			this.values[part.name] = stored?.[part.name] ?? "";
 			const row = new Setting(contentEl).setName(part.name);

@@ -29,6 +29,8 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 /** Cmd+Ctrl+Option+Shift+C — four modifiers, so nothing else claims it. */
 const CUE_CODE = process.env.FILECLASS_DEMO_CUE || "KeyC";
 export const CUE_LABEL = `⌘⌃⌥⇧${CUE_CODE.replace(/^Key/, "")}`;
+/** Same modifiers, U: lifts the caption to the top of the screen and back. */
+export const LIFT_LABEL = "⌘⌃⌥⇧U";
 
 /** `showKeys: false` records without the key badge (see Stage.showKeys). */
 export async function connect(port, { showKeys = true } = {}) {
@@ -43,16 +45,37 @@ export async function connect(port, { showKeys = true } = {}) {
 
 /** Injected in each window: caption element + cue listener. Idempotent. */
 function install(cueCode) {
+	const LIFT_CODE = "KeyU";
+	/** Puts the caption (and the key badge under it) at the top or the bottom. */
+	const applyPlacement = () => {
+		const top = !!window.__fcDemo?.top;
+		for (const id of ["fc-demo-subtitle", "fc-demo-keys"]) {
+			document.getElementById(id)?.classList.toggle("fc-top", top);
+		}
+	};
+	window.__fcApplyPlacement = applyPlacement;
+
 	if (!window.__fcDemo) {
 		window.__fcDemo = { cue: 0 };
 		window.addEventListener(
 			"keydown",
 			(e) => {
-				if (e.code !== window.__fcDemo.code) return;
 				if (!(e.metaKey && e.ctrlKey && e.altKey && e.shiftKey)) return;
-				e.preventDefault();
-				e.stopPropagation();
-				window.__fcDemo.cue++;
+				if (e.code === window.__fcDemo.code) {
+					e.preventDefault();
+					e.stopPropagation();
+					window.__fcDemo.cue++;
+					return;
+				}
+				// Same chord, U: lift the caption out of the way of whatever it covers
+				// — a setting at the bottom of a pane, a picker's own controls. Press
+				// again to drop it back, and the next subtitle starts at the bottom.
+				if (e.code === LIFT_CODE) {
+					e.preventDefault();
+					e.stopPropagation();
+					window.__fcDemo.top = !window.__fcDemo.top;
+					applyPlacement();
+				}
 			},
 			true
 		);
@@ -117,10 +140,10 @@ function install(cueCode) {
 			"keydown",
 			(e) => {
 				if (!window.__fcKeys.enabled || e.repeat) return;
-				const isCue =
-					e.code === window.__fcDemo?.code &&
+				const isOperatorChord =
+					(e.code === window.__fcDemo?.code || e.code === LIFT_CODE) &&
 					e.metaKey && e.ctrlKey && e.altKey && e.shiftKey;
-				if (isCue) return clear();
+				if (isOperatorChord) return clear();
 				const chord = chordOf(e);
 				if (!chord) return;
 				window.clearTimeout(state.pending);
@@ -158,7 +181,9 @@ function install(cueCode) {
 				color:#fff;font-size:19px;line-height:1.2;font-weight:600;letter-spacing:1.5px;
 				font-family:-apple-system,BlinkMacSystemFont,sans-serif;pointer-events:none;
 				user-select:none;opacity:0;transition:opacity .16s ease,transform .16s ease}
-			#fc-demo-keys.fc-show{opacity:1;transform:translateX(-50%) translateY(0)}`;
+			#fc-demo-keys.fc-show{opacity:1;transform:translateX(-50%) translateY(0)}
+			#fc-demo-subtitle.fc-top:not(.fc-title){bottom:auto;top:6vh}
+			#fc-demo-keys.fc-top{bottom:auto;top:2vh}`;
 		document.head.appendChild(style);
 		const el = document.createElement("div");
 		el.id = "fc-demo-subtitle";
@@ -286,9 +311,14 @@ class Stage {
 						(t, isTitle, focused, showKeys) => {
 							const el = document.getElementById("fc-demo-subtitle");
 							if (!el) return;
+							// A different line means the next step: back to the bottom.
+							// Repaints of the same line (focus moved windows) keep it where
+							// the operator put it.
+							if (el.textContent !== t && window.__fcDemo) window.__fcDemo.top = false;
 							el.textContent = t;
 							el.classList.toggle("fc-title", !!isTitle);
 							el.classList.toggle("fc-show", !!t);
+							window.__fcApplyPlacement?.();
 							// The key badge follows the caption: one window at a time.
 							if (window.__fcKeys) {
 								window.__fcKeys.enabled = !!showKeys && !!focused;

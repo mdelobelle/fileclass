@@ -39,7 +39,7 @@ import {
 	wipeVault,
 	writeTakeLog,
 } from "./lib/stage.mjs";
-import { CUE_LABEL, connect } from "./lib/subtitles.mjs";
+import { CUE_LABEL, LIFT_LABEL, connect } from "./lib/subtitles.mjs";
 import { waitForPlugin } from "./lib/trust.mjs";
 import { DEFAULT_RATE, resolveVoice, speak, spokenText } from "./lib/voice.mjs";
 
@@ -194,7 +194,8 @@ async function main() {
 	// hand, and no fixed countdown survives that in practice.
 	console.log(
 		`\n${bold("Start your screen recorder, then press")} ${bold(CUE_LABEL)} ${bold("in Obsidian to begin.")}\n` +
-			dim(`The same chord advances every step · Enter here also works · q aborts\n`)
+			dim(`The same chord advances every step · Enter here also works · q aborts\n`) +
+			dim(`${LIFT_LABEL} lifts the caption to the top when it covers what you need · next step puts it back\n`)
 	);
 	// "ready", out loud, before the cue. It tells the operator the take is armed
 	// without looking away from Obsidian — and it pays the voice's one-time cost

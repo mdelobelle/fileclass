@@ -596,7 +596,8 @@ input.fileclass-color-circle::-webkit-color-swatch {
    Both inset their swatch so the ring stays visible around the chosen colour. */
 input.fileclass-color-circle.is-add::-webkit-color-swatch-wrapper,
 input.fileclass-color-circle.is-custom::-webkit-color-swatch-wrapper {
-	padding: 5px;
+	/* Just enough to keep the ring visible: 5px read as a dot lost inside a circle. */
+	padding: 2px;
 	width: 100%;
 	height: 100%;
 	box-sizing: border-box;

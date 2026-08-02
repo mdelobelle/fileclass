@@ -31,6 +31,11 @@
 #   Library book sale          Musée Hergé, LLN             50.67135709058256, 4.612915008109884
 #   Reading group              KBR, Mont des Arts           50.8434, 4.3564
 #
+# Step 5 films a paste rather than a typed pair, on the SIGNING — the link below is
+# the Comic Strip Center, the same spot as the first row above, in Google's form:
+#   https://www.google.com/maps/@50.851164933845816,4.36018873480511,17z
+# So the order on camera is: signing (pasted link), film club, sale, reading group.
+#
 # The first three come from the operator's own map, to the metre. The KBR one is
 # still mine, approximate — step 7 opens it in a browser, which is where a wrong
 # corner shows. Each of those steps carries the value as `input:`, so ⌘⌃⌥⇧I types it
@@ -62,7 +67,7 @@ steps:
     pause: 1700
   - title: "Two fields, latitude and longitude, each checked as you type"
     pause: 1800
-  - title: "Or paste what you just copied — a map link fills them both"
+  - title: "The signing is at the comic strip centre: paste its map link, both fields fill"
     input: "https://www.google.com/maps/@50.851164933845816,4.36018873480511,17z"
     pause: 1900
   - title: "What it can't read, it says — instead of quietly doing nothing"

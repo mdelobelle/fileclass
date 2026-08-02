@@ -18,6 +18,7 @@
 import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { once } from "node:events";
 import { createInterface } from "node:readline/promises";
 
 import { loadScenario } from "./lib/scenario.mjs";
@@ -57,8 +58,12 @@ let registry = null;
 let launched = false;
 let staged = false;
 let quitTheirs = false;
+let tornDown = false;
 
 async function teardown() {
+	// Idempotent: a signal can arrive while the normal path is already running it.
+	if (tornDown) return;
+	tornDown = true;
 	if (launched) await quitObsidian();
 	registry?.restore();
 	if (staged) wipeVault(scenario);
@@ -208,6 +213,16 @@ async function main() {
 	stage.disconnect();
 
 	if (flag("close") || attach) return;
+
+	// Nobody can press Enter when stdin isn't a terminal — a piped or scripted run.
+	// Waiting there used to end the process the moment stdin reached EOF, *before*
+	// the teardown below: Obsidian stayed open on the staged vault and the operator's
+	// vault list kept pointing at it, which then poisoned the next run's backup.
+	if (!process.stdin.isTTY) {
+		console.log(dim("\nNot a terminal — closing Obsidian and resetting the vault."));
+		return;
+	}
+
 	console.log(
 		dim(
 			"\nObsidian stays open on the staged vault — play the steps by hand if you want.\n" +
@@ -215,11 +230,16 @@ async function main() {
 		)
 	);
 	const rl = createInterface({ input: process.stdin, output: process.stdout });
-	await rl.question("");
-	rl.close();
+	try {
+		// Whichever comes first: the operator's Enter, or stdin closing under us
+		// (Ctrl-D, or the terminal going away). `question()` never settles on EOF.
+		await Promise.race([rl.question(""), once(rl, "close")]);
+	} finally {
+		rl.close();
+	}
 }
 
-for (const sig of ["SIGINT", "SIGTERM"]) {
+for (const sig of ["SIGINT", "SIGTERM", "SIGHUP"]) {
 	process.on(sig, async () => {
 		await teardown();
 		process.exit(130);

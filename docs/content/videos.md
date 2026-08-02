@@ -84,3 +84,7 @@ other. Captions are English; YouTube translates them into your language.
 ## Dates that link to your daily notes
 
 {{< video "016b" >}}
+
+## Pick an icon
+
+{{< video "017" >}}

@@ -51,20 +51,46 @@ export const PRONUNCIATION = {
 	".md": " dot M D",
 };
 
+/**
+ * Whole-word replacements, applied after the table above and case-sensitively.
+ *
+ * Separate because the table is a substring replacement — which is what lets
+ * `fileClass` fix `fileClasses` too — and a short word like `id` would then eat
+ * the middle of "video", "guide" and "identifier". Spelled out because `say`
+ * reads `id` as the word, and a field's `id` is two letters.
+ */
+export const PRONUNCIATION_WORDS = {
+	ID: "I D",
+	IDs: "I Ds",
+	id: "I D",
+	ids: "I Ds",
+};
+
 /** Replaces every occurrence of `from` — plain strings, no regex escaping. */
 const swap = (text, from, to) => text.split(from).join(to);
+
+/** Replaces `from` only where it stands as a whole word. */
+const swapWord = (text, from, to) =>
+	text.replace(new RegExp(`\\b${from.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "g"), to);
 
 /**
  * What the narrator should actually say. Emoji would be read out ("party
  * popper") and em dashes get no breath, so both are normalised away; the
  * pronunciation table fixes the identifiers. `extra` is the scenario's own map,
  * which wins over the shared table.
+ *
+ * @param {string} title
+ * @param {Record<string, string> | null} [extra]
+ * @returns {string}
  */
 export function spokenText(title, extra = null) {
 	const table = { ...PRONUNCIATION, ...(extra ?? {}) };
 	let text = title.replace(/\p{Extended_Pictographic}/gu, "");
 	for (const from of Object.keys(table).sort((a, b) => b.length - a.length)) {
 		text = swap(text, from, table[from]);
+	}
+	for (const from of Object.keys(PRONUNCIATION_WORDS).sort((a, b) => b.length - a.length)) {
+		text = swapWord(text, from, PRONUNCIATION_WORDS[from]);
 	}
 	return text
 		.replace(/\s*—\s*/g, ", ")

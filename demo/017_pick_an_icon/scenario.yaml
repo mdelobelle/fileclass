@@ -1,0 +1,55 @@
+# Narration for take 017 — see ../SCENARIO.md for the format.
+# Third of arc 4. Starts where 016b ended: Book.review is stored as a link filed
+# under Daily/{{YYYY}}/{{MM}}/, and Atomic Habits' review has been advanced once by
+# its interval (which rotated the cycle). Adds `Series.icon`.
+#
+# Why Series and not the `Media.icon` the roadmap first named: there is no Media
+# class — inheritance arrives in arc 5 — while the vault already holds five real
+# series that a glyph tells apart at a glance.
+#
+# Facts the script leans on, all verified in the app before scripting:
+#  - the picker is a grid of rendered icons, not a list of names, and it caps at 240
+#    of the 1935 Lucide registers, saying so under the grid — hence "you search
+#    rather than scroll" at step 5;
+#  - the value stored is the bare id (`rocket`), plain text;
+#  - Fileclass renders it as a glyph wherever it shows a value — the note-fields
+#    modal, the Properties row, its own table cells;
+#  - a NATIVE Bases table shows the id as text, not the glyph. Step 10 says so on
+#    purpose: the stored value is an ordinary string, which is what makes it
+#    portable and searchable. Measured, not assumed;
+#  - reopening the picker now shows "Current icon" with its glyph — a fix this
+#    take's surfaces pass produced, since a value like `rocket` never appears in the
+#    240 alphabetically-first icons and the picker used to say nothing about it.
+title: "Fileclass — Pick an icon"
+description: "A grid of real icons, and a plain id in the frontmatter."
+doc: "fields/#icon" # deep link used in the description
+tags: "icon, lucide, picker, frontmatter"
+vault_name: "Demo"
+plugin: true
+settings:
+  classFilesPath: "Classes/"
+  fileClassAlias: "fileClass"
+initial_pause: 1500
+default_pause: 900
+
+steps:
+  - title: "Five series in the library, and nothing to tell them apart at a glance"
+    pause: 1800
+  - title: "Add a field named icon to Series, type Icon"
+    pause: 1700
+  - title: "Its option picks the bank: Lucide, or every icon your plugins have registered"
+    pause: 1900
+  - title: "On Tintin, the field opens a grid of real icons, not a list of names"
+    pause: 1900
+  - title: "Nineteen hundred of them — you search rather than scroll"
+    pause: 1800
+  - title: "Choose the rocket: what gets stored is its id, plain text"
+    pause: 1900
+  - title: "The glyph then shows wherever the value shows — the fields modal, the properties panel"
+    pause: 2000
+  - title: "Reopen the field and it tells you which icon you already have"
+    pause: 1800
+  - title: "One each for the others: Blake and Mortimer, Alix, Lefranc, Yoko Tsuno"
+    pause: 2000
+  - title: "In a base the column reads as the id — the value stays ordinary text, legible anywhere"
+    pause: 2200

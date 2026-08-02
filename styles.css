@@ -890,3 +890,15 @@
 .fileclass-current-value-label {
 	color: var(--text-muted);
 }
+
+/* The glyph beside "Current icon:" — same line as its id, aligned with the text. */
+.fileclass-current-icon {
+	display: inline-flex;
+	vertical-align: text-bottom;
+	margin-right: var(--size-2-2);
+}
+
+.fileclass-current-icon .svg-icon {
+	width: var(--icon-s);
+	height: var(--icon-s);
+}

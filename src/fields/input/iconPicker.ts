@@ -50,6 +50,17 @@ export class IconPickerModal extends Modal {
 		const { contentEl } = this;
 		modalTitle(contentEl, this.opts.title);
 
+		// What the field holds right now. The grid renders 240 of some 1600 icons, in
+		// alphabetical order, so an icon like `rocket` is simply absent from the first
+		// screen: without this line the picker never showed the value it was editing,
+		// and you had to search for what you already had to see it.
+		if (this.opts.initial) {
+			const current = contentEl.createDiv({ cls: "fileclass-current-value" });
+			current.createSpan({ text: "Current icon: ", cls: "fileclass-current-value-label" });
+			paintIcon(current.createSpan({ cls: "fileclass-current-icon" }), this.opts.initial);
+			current.createSpan({ text: this.opts.initial });
+		}
+
 		new Setting(contentEl)
 			.setName("Search")
 			.addText((t: TextComponent) => {

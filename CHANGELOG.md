@@ -14,6 +14,12 @@ All notable changes to Fileclass are documented here. The format follows
   reads *Set next date* again, with a tooltip; the skip-forward icon stays where it
   belongs, on the field's own control under Alt.
 
+- **The icon picker shows the icon you already have.** It renders 240 of some 1900
+  icons in alphabetical order, so a value like `rocket` was simply absent from the
+  first screen: the picker never displayed the value it was editing, and you had to
+  search for what you already had in order to see it. The current icon and its id now
+  sit above the search box, and the grid still marks it when it comes into view.
+
 ## [0.2.2] - 2026-08-02
 
 ### Fixed

@@ -207,5 +207,16 @@
     "durationSeconds": 115,
     "recordedWith": "0.2.2",
     "privacyStatus": "public"
+  },
+  "017": {
+    "id": "TvkZfCN5rgo",
+    "url": "https://www.youtube.com/watch?v=TvkZfCN5rgo",
+    "title": "Fileclass #017 · Pick an icon",
+    "subject": "Pick an icon",
+    "scenario": "017_pick_an_icon",
+    "doc": "fields/#icon",
+    "durationSeconds": 128,
+    "recordedWith": "0.2.2",
+    "privacyStatus": "public"
   }
 }

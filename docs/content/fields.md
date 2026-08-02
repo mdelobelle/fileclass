@@ -481,6 +481,8 @@ fields remain out of scope).
 
 ## Location
 
+{{< video "019" >}}
+
 A `Location` field stores geographic coordinates as a **`"lat,lon"`** scalar — the
 convention map plugins read:
 

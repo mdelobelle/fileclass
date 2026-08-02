@@ -269,7 +269,18 @@ export class FileclassSettingTab extends PluginSettingTab {
 			setIcon(add, "plus");
 			const input = add.createEl("input", { cls: "fileclass-color-hidden", attr: { type: "color" } });
 			input.value = "#000000";
-			input.addEventListener("change", () => void addCustomColor(input.value).then(render));
+			input.addEventListener("change", () => {
+				void addCustomColor(input.value).then(() => {
+					// Opening the OS colour panel can leave the settings pane emptied —
+					// reported on 1.13.4, where the tab stays selected with nothing in it
+					// until you click it again. Not reproducible without a human hand on
+					// the mouse (a synthesized click doesn't open the panel), so rather
+					// than guess at the cause, the pane rebuilds itself when it comes
+					// back to an empty container.
+					if (containerEl.childElementCount === 0) this.display();
+					else render();
+				});
+			});
 		};
 		render();
 	}

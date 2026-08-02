@@ -9,6 +9,7 @@ import { attachFormatPreview } from "../ui/dateFormatPreview";
 
 import type FileclassPlugin from "../../main";
 import { addCustomColor, removeCustomColor } from "../fields/customPalette";
+import { colorCircleInput } from "../ui/colorInput";
 import { FolderSuggest } from "../ui/folderSuggest";
 import { normalizeFolderPath } from "./settings";
 
@@ -291,26 +292,22 @@ export class FileclassSettingTab extends PluginSettingTab {
 				setIcon(remove, "x");
 				remove.onclick = () => void removeCustomColor(color).then(render);
 			}
-			// A <label> wrapping a hidden native color input: clicking it opens the
-			// native dialog reliably (label activation), unlike input.click().
-			const add = paletteEl.createEl("label", {
-				cls: "fileclass-color-circle is-add",
-				attr: { "aria-label": "Add color", title: "Add color" },
-			});
-			setIcon(add, "plus");
-			const input = add.createEl("input", { cls: "fileclass-color-hidden", attr: { type: "color" } });
-			input.value = "#000000";
-			input.addEventListener("change", () => {
-				void addCustomColor(input.value).then(() => {
+			colorCircleInput(paletteEl, {
+				label: "Add color",
+				cls: "is-add",
+				badge: "plus",
+				onPick: (value) => {
+					void addCustomColor(value).then(() => {
 					// Opening the OS colour panel can leave the settings pane emptied —
 					// reported on 1.13.4, where the tab stays selected with nothing in it
 					// until you click it again. Not reproducible without a human hand on
 					// the mouse (a synthesized click doesn't open the panel), so rather
 					// than guess at the cause, the pane rebuilds itself when it comes
 					// back to an empty container.
-					if (containerEl.childElementCount === 0) this.display();
-					else render();
-				});
+						if (containerEl.childElementCount === 0) this.display();
+						else render();
+					});
+				},
 			});
 		};
 		render();

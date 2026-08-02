@@ -14,15 +14,16 @@ All notable changes to Fileclass are documented here. The format follows
   reads *Set next date* again, with a tooltip; the skip-forward icon stays where it
   belongs, on the field's own control under Alt.
 
-- **Adding a custom colour no longer leaves the settings pane blank.** On Obsidian
-  1.13.4, opening the system colour popover from *Custom colors* empties the settings
-  pane behind it: the tab stays selected with nothing in it until you click it again.
-  The pane now rebuilds itself — when the colour is picked, and when the window comes
-  back after the popover was dismissed with Escape, which fires no event at all. The
-  blanking comes from outside the plugin and could not be reproduced without a hand
-  on the mouse, so this treats the symptom, deliberately and narrowly: the rebuild
-  only happens for a container that is still on screen, empty, and in a document that
-  still holds the settings UI.
+- **Colour pickers open the way Obsidian's own does.** Every colour control was an
+  invisible `<input type="color">` (`opacity: 0`, absolutely positioned) inside a
+  `<label>` that activated it — and opening its popover from the settings window
+  emptied the settings pane behind it, leaving the tab selected with nothing in it.
+  Obsidian's accent-colour setting, which behaves, is a plain **visible** input
+  sitting directly in its row; ours are now the same thing, shaped into the same
+  circles by CSS, with the "add" mark moved to a corner badge that never takes the
+  click. Three places changed: the palette in the settings, the field picker, and
+  the canvas colour options. The settings pane also rebuilds itself if it is ever
+  found blank — a belt-and-braces that should now never fire.
 
 - **The icon picker shows the icon you already have.** It renders 240 of some 1900
   icons in alphabetical order, so a value like `rocket` was simply absent from the

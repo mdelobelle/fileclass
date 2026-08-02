@@ -6,11 +6,12 @@
  * The palette comes from an extensible source registry; storage is a raw CSS
  * color scalar (the palette is a picker concern, not a storage one).
  */
-import { App, Modal, setIcon } from "obsidian";
+import { App, Modal } from "obsidian";
 
 import { modalTitle } from "../../ui/modalTitle";
 
 import { isValidCssColor } from "../color";
+import { colorCircleInput } from "../../ui/colorInput";
 import { addCustomColor, customColors } from "../customPalette";
 
 export interface ColorSwatch {
@@ -50,14 +51,7 @@ export interface ColorPickerOptions {
 	onSubmit: (value: string) => void;
 }
 
-const HEX6_RE = /^#[0-9a-f]{6}$/iu;
 
-/** A hidden native color input, activated by clicking its wrapping label. */
-function colorTrigger(label: HTMLElement, initialHex: string, onPick: (v: string) => void): void {
-	const input = label.createEl("input", { cls: "fileclass-color-hidden", attr: { type: "color" } });
-	input.value = HEX6_RE.test(initialHex) ? initialHex : "#000000";
-	input.addEventListener("change", () => onPick(input.value));
-}
 
 export class ColorPickerModal extends Modal {
 	constructor(app: App, private readonly opts: ColorPickerOptions) {
@@ -105,21 +99,23 @@ export class ColorPickerModal extends Modal {
 		for (const c of customColors()) addSwatch(c, c);
 		if (current && isValidCssColor(current)) addSwatch(current, current);
 
-		// "+" — pick a color and pin it to the saved palette (label opens the
-		// native dialog; stays open so the new swatch appears).
-		const add = row.createEl("label", {
-			cls: "fileclass-color-circle is-add",
-			attr: { "aria-label": "Add to my colors…", title: "Add to my colors…" },
+		// "+" — pick a colour and pin it to the saved palette; the modal stays open
+		// so the new swatch appears in place.
+		colorCircleInput(row, {
+			label: "Add to my colors…",
+			cls: "is-add",
+			badge: "plus",
+			value: current,
+			onPick: (v) => void addCustomColor(v).then(() => this.render()),
 		});
-		setIcon(add, "plus");
-		colorTrigger(add, current, (v) => void addCustomColor(v).then(() => this.render()));
 
-		// Rainbow — pick a one-off custom color (applies, doesn't save).
-		const custom = row.createEl("label", {
-			cls: "fileclass-color-circle is-custom",
-			attr: { "aria-label": "Custom color…", title: "Custom color…" },
+		// A one-off colour: applied to the field, not saved to the palette.
+		colorCircleInput(row, {
+			label: "Custom color…",
+			cls: "is-custom",
+			value: current,
+			onPick: (v) => this.pick(v),
 		});
-		colorTrigger(custom, current, (v) => this.pick(v));
 	}
 
 	private pick(value: string): void {

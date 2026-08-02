@@ -555,14 +555,56 @@
 	width: 16px;
 	height: 16px;
 }
-/* Hidden native color input, activated by clicking its wrapping label. Not
-   display:none (label activation needs a rendered control) and no
-   pointer-events:none. */
-.fileclass-color-hidden {
+/* The colour inputs are real, visible <input type="color"> elements, shaped into
+   our circles — the same thing Obsidian's accent-colour setting uses, and the
+   reason its popover behaves where a hidden input inside a <label> did not. */
+.fileclass-color-slot {
+	position: relative;
+	display: inline-flex;
+	flex: 0 0 auto;
+}
+
+input.fileclass-color-circle {
+	appearance: none;
+	-webkit-appearance: none;
+	background: transparent;
+	/* element+class, because Obsidian styles input[type="color"] itself and its
+	   26x22 would otherwise sit in a row of 30px circles. */
+	width: 30px;
+	height: 30px;
+}
+
+input.fileclass-color-circle::-webkit-color-swatch-wrapper {
+	padding: 0;
+}
+
+input.fileclass-color-circle::-webkit-color-swatch {
+	border: none;
+	border-radius: 50%;
+	corner-shape: round;
+}
+
+/* A corner mark for "add", over the swatch but never in the way of the click. */
+.fileclass-color-slot-badge {
 	position: absolute;
-	width: 1px;
-	height: 1px;
-	opacity: 0;
+	right: -2px;
+	bottom: -2px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 14px;
+	height: 14px;
+	border-radius: 50%;
+	corner-shape: round;
+	background: var(--background-primary);
+	color: var(--text-normal);
+	box-shadow: 0 0 0 1px var(--background-modifier-border);
+	pointer-events: none;
+}
+
+.fileclass-color-slot-badge svg {
+	width: 10px;
+	height: 10px;
 }
 
 /* Value previews in the note-fields modal (#33/#32): color dot + icon glyph. */

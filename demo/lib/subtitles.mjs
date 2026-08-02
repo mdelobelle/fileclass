@@ -31,6 +31,8 @@ const CUE_CODE = process.env.FILECLASS_DEMO_CUE || "KeyC";
 export const CUE_LABEL = `⌘⌃⌥⇧${CUE_CODE.replace(/^Key/, "")}`;
 /** Same modifiers, U: lifts the caption to the top of the screen and back. */
 export const LIFT_LABEL = "⌘⌃⌥⇧U";
+/** Same modifiers, I: types the step's `input` into the focused field. */
+export const INSERT_LABEL = "⌘⌃⌥⇧I";
 
 /** `showKeys: false` records without the key badge (see Stage.showKeys). */
 export async function connect(port, { showKeys = true } = {}) {
@@ -46,6 +48,7 @@ export async function connect(port, { showKeys = true } = {}) {
 /** Injected in each window: caption element + cue listener. Idempotent. */
 function install(cueCode) {
 	const LIFT_CODE = "KeyU";
+	const INSERT_CODE = "KeyI";
 	/** Puts the caption (and the key badge under it) at the top or the bottom. */
 	const applyPlacement = () => {
 		const top = !!window.__fcDemo?.top;
@@ -75,6 +78,15 @@ function install(cueCode) {
 					e.stopPropagation();
 					window.__fcDemo.top = !window.__fcDemo.top;
 					applyPlacement();
+					return;
+				}
+				// The runner watches this counter and types the step's value into
+				// whatever is focused — the operator asked for it, so the keystrokes
+				// are theirs even though the fingers aren't.
+				if (e.code === INSERT_CODE) {
+					e.preventDefault();
+					e.stopPropagation();
+					window.__fcDemo.insert = (window.__fcDemo.insert ?? 0) + 1;
 				}
 			},
 			true
@@ -141,7 +153,9 @@ function install(cueCode) {
 			(e) => {
 				if (!window.__fcKeys.enabled || e.repeat) return;
 				const isOperatorChord =
-					(e.code === window.__fcDemo?.code || e.code === LIFT_CODE) &&
+					(e.code === window.__fcDemo?.code ||
+						e.code === LIFT_CODE ||
+						e.code === INSERT_CODE) &&
 					e.metaKey && e.ctrlKey && e.altKey && e.shiftKey;
 				if (isOperatorChord) return clear();
 				const chord = chordOf(e);
@@ -182,6 +196,9 @@ function install(cueCode) {
 				font-family:-apple-system,BlinkMacSystemFont,sans-serif;pointer-events:none;
 				user-select:none;opacity:0;transition:opacity .16s ease,transform .16s ease}
 			#fc-demo-keys.fc-show{opacity:1;transform:translateX(-50%) translateY(0)}
+			#fc-demo-subtitle .fc-input{display:inline-block;margin-left:.5em;padding:0 .4em;
+				border-radius:6px;background:rgba(224,172,0,.16);color:#ffd75e;
+				font-variant-numeric:tabular-nums;letter-spacing:.4px}
 			#fc-demo-subtitle.fc-top:not(.fc-title){bottom:auto;top:6vh}
 			#fc-demo-keys.fc-top{bottom:auto;top:2vh}`;
 		document.head.appendChild(style);
@@ -205,7 +222,8 @@ class Stage {
 		this.seen = new Map(); // page → order of appearance (newest window wins ties)
 		this.seq = 0;
 		this.focused = null; // the ONE window currently showing the caption
-		this.caption = { text: "", title: false };
+		this.caption = { text: "", title: false, input: null };
+		this.inserts = 0; // insert-chord presses already served
 	}
 
 	/**
@@ -303,12 +321,12 @@ class Stage {
 
 	/** Paints the caption on the focused window and blanks it on every other. */
 	async paint() {
-		const { text, title } = this.caption;
+		const { text, title, input } = this.caption;
 		await Promise.all(
 			this.pages.map((page) =>
 				page
 					.evaluate(
-						(t, isTitle, focused, showKeys) => {
+						(t, isTitle, focused, showKeys, value) => {
 							const el = document.getElementById("fc-demo-subtitle");
 							if (!el) return;
 							// A different line means the next step: back to the bottom.
@@ -316,6 +334,14 @@ class Stage {
 							// the operator put it.
 							if (el.textContent !== t && window.__fcDemo) window.__fcDemo.top = false;
 							el.textContent = t;
+							// The value the operator can have typed for them, set apart so
+							// it reads as data rather than as part of the sentence.
+							if (t && value) {
+								const chip = document.createElement("span");
+								chip.className = "fc-input";
+								chip.textContent = value;
+								el.appendChild(chip);
+							}
 							el.classList.toggle("fc-title", !!isTitle);
 							el.classList.toggle("fc-show", !!t);
 							window.__fcApplyPlacement?.();
@@ -328,22 +354,45 @@ class Stage {
 						page === this.focused ? text : "",
 						title,
 						page === this.focused,
-						this.showKeys
+						this.showKeys,
+						input ?? ""
 					)
 					.catch(() => {})
 			)
 		);
 	}
 
-	async show(text, { title = false } = {}) {
-		this.caption = { text, title };
+	async show(text, { title = false, input = null } = {}) {
+		this.caption = { text, title, input };
+		this.inserts = await this.insertCount(); // ignore anything pressed before now
 		await this.syncFocus(); // land it on the window that's actually in front
 		await this.paint();
 	}
 
 	async hide() {
-		this.caption = { text: "", title: false };
+		this.caption = { text: "", title: false, input: null };
 		await this.paint();
+	}
+
+	/** How many times the insert chord has been pressed in the focused window. */
+	async insertCount() {
+		if (!this.focused) return 0;
+		return (await this.focused.evaluate(() => window.__fcDemo?.insert ?? 0).catch(() => 0)) ?? 0;
+	}
+
+	/**
+	 * Types this step's `input` wherever the operator is, if they asked for it since
+	 * the last check. Real keystrokes rather than a value assignment: Obsidian's
+	 * fields listen for input events, and a take should show the text appearing.
+	 */
+	async typeRequestedInput() {
+		const value = this.caption.input;
+		if (!value || !this.focused) return false;
+		const pressed = await this.insertCount();
+		if (pressed <= this.inserts) return false;
+		this.inserts = pressed;
+		await this.focused.keyboard.type(value, { delay: 12 }).catch(() => {});
+		return true;
 	}
 
 	/** Removes the injected overlay (leaves the window otherwise untouched). */
@@ -390,6 +439,7 @@ class Stage {
 					throw new Error("aborted");
 				}
 				if (keyboard.take() || (await this.cued())) return;
+				await this.typeRequestedInput();
 				tick++;
 				if (tick % 4 === 0) await this.syncFocus(); // follow the front window
 				if (tick % 12 === 0) await this.refresh(); // ~1s: catch new windows

@@ -26,15 +26,17 @@
 # Approximate to a few hundred metres, from memory rather than from a gazetteer: step
 # 7 opens each pair in a browser, which is exactly where a wrong corner would show.
 #
-#   Reading group              KBR, Mont des Arts, Brussels      50.8434, 4.3564
-#   Signing — Blake & Mortimer Belgian Comic Strip Center        50.8503, 4.3583
-#   Film club — Dune           Cinéma Palace, bd Anspach         50.8484, 4.3505
-#   Library book sale          Louvain-la-Neuve, by Musée Hergé  50.6690, 4.6114
+#   Signing — Blake & Mortimer Belgian Comic Strip Center   50.851164933845816, 4.36018873480511
+#   Film club — Dune           Cinéma Palace, bd Anspach    50.84795104992325, 4.348730734603368
+#   Library book sale          Musée Hergé, LLN             50.67135709058256, 4.612915008109884
+#   Reading group              KBR, Mont des Arts           50.8434, 4.3564
 #
-# Step 5 films a paste rather than typing digits, so copy a link for that one:
-#   https://www.google.com/maps/@50.8503,4.3583,17z
-# Three of them sit within a few streets and the fourth is 25 km out, which is what
-# makes zooming out at step 10 say something.
+# The first three come from the operator's own map, to the metre. The KBR one is
+# still mine, approximate — step 7 opens it in a browser, which is where a wrong
+# corner shows. Each of those steps carries the value as `input:`, so ⌘⌃⌥⇧I types it
+# rather than the operator losing thirty seconds to eighteen digits.
+# Three sit within a few streets of each other and the fourth is 25 km out, which is
+# what makes zooming out at step 10 say something.
 #
 # The alternative — pulling icon and colour from a linked note through a formula,
 # the way Maps' own example does — is in the docs, not on camera: filming formula
@@ -60,13 +62,21 @@ steps:
     pause: 1700
   - title: "Two fields, latitude and longitude, each checked as you type"
     pause: 1800
-  - title: "Or paste what you just copied: a map link fills them both"
+  - title: "Or paste what you just copied — a map link fills them both"
+    input: "https://www.google.com/maps/@50.851164933845816,4.36018873480511,17z"
     pause: 1900
   - title: "What it can't read, it says — instead of quietly doing nothing"
     pause: 1900
   - title: "Open in map sends the pair to your browser, to check you have the right street corner"
     pause: 2000
-  - title: "The other three follow, and what is stored stays a plain lat, lon"
+  - title: "The film club, by the canal"
+    input: "50.84795104992325, 4.348730734603368"
+    pause: 1700
+  - title: "The sale, out at Louvain-la-Neuve"
+    input: "50.67135709058256, 4.612915008109884"
+    pause: 1700
+  - title: "And the reading group at the Mont des Arts — what is stored stays a plain lat, lon"
+    input: "50.8434, 4.3564"
     pause: 1900
   - title: "Bases has no map of its own: Maps, from the Obsidian team, adds one"
     pause: 2000

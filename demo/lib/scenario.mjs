@@ -12,7 +12,12 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { basename, join } from "node:path";
 
 /** Step keys we recognise; anything else on a `- ` line is the title itself. */
-const STEP_KEYS = new Set(["title", "pause", "hold", "note"]);
+/**
+ * `input:` is a value the operator would otherwise type on camera — coordinates, a
+ * link, a long id. The caption shows it, and ⌘⌃⌥⇧I types it into whatever field is
+ * focused, which keeps a take from becoming a typing lesson.
+ */
+const STEP_KEYS = new Set(["title", "pause", "hold", "note", "input"]);
 
 const ROOT_KEYS = new Set([
 	"title",
@@ -171,6 +176,7 @@ export function parseScenario(text, source = "scenario.yaml") {
 			title: String(s.title),
 			pause: duration(s.pause, defaultPause),
 			hold: s.hold === true,
+			input: s.input === undefined ? null : String(s.input),
 		})),
 	};
 }

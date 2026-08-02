@@ -13,13 +13,44 @@ import { FolderSuggest } from "../ui/folderSuggest";
 import { normalizeFolderPath } from "./settings";
 
 export class FileclassSettingTab extends PluginSettingTab {
+	/** Windows already watched for a blanked pane (one listener each). */
+	private readonly watched = new WeakSet<Window>();
+
 	constructor(app: App, private readonly plugin: FileclassPlugin) {
 		super(app, plugin);
 	}
 
+	/**
+	 * Rebuilds this pane if something emptied it while it was on screen.
+	 *
+	 * Opening the system colour popover from *Custom colors* does exactly that on
+	 * Obsidian 1.13.4 — the tab stays selected with nothing in it. Dismissing the
+	 * popover with Escape fires no `change`, so nothing else would bring it back and
+	 * the operator has to click the tab again.
+	 *
+	 * Deliberately narrow: only when the container is still in a document that has
+	 * the settings UI in it, and only when it is genuinely empty — switching to
+	 * another tab fills the same element, and closing settings takes it away.
+	 */
+	private readonly restoreIfBlank = (): void => {
+		const el = this.containerEl;
+		if (!el.isConnected || el.childElementCount > 0) return;
+		if (!el.doc.querySelector(".vertical-tab-header")) return;
+		this.display();
+	};
+
 	display(): void {
 		const { containerEl } = this;
 		containerEl.empty();
+
+		// The pane can be blanked from outside; catch it when the window comes back.
+		// Registered through the plugin so unload takes it with it, and once per
+		// window, since settings may live in a popout.
+		const win = containerEl.win;
+		if (!this.watched.has(win)) {
+			this.watched.add(win);
+			this.plugin.registerDomEvent(win, "focus", this.restoreIfBlank);
+		}
 
 		new Setting(containerEl)
 			.setName("Class files folder")

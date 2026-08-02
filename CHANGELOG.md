@@ -15,12 +15,14 @@ All notable changes to Fileclass are documented here. The format follows
   belongs, on the field's own control under Alt.
 
 - **Adding a custom colour no longer leaves the settings pane blank.** On Obsidian
-  1.13.4, opening the system colour panel from *Custom colors* empties the settings
+  1.13.4, opening the system colour popover from *Custom colors* empties the settings
   pane behind it: the tab stays selected with nothing in it until you click it again.
-  The pane now rebuilds itself when the colour comes back, so picking one restores
-  what you were looking at. The blanking itself comes from outside the plugin and
-  could not be reproduced without a hand on the mouse — a synthesized click doesn't
-  open the panel — so this treats the symptom, deliberately.
+  The pane now rebuilds itself — when the colour is picked, and when the window comes
+  back after the popover was dismissed with Escape, which fires no event at all. The
+  blanking comes from outside the plugin and could not be reproduced without a hand
+  on the mouse, so this treats the symptom, deliberately and narrowly: the rebuild
+  only happens for a container that is still on screen, empty, and in a document that
+  still holds the settings UI.
 
 - **The icon picker shows the icon you already have.** It renders 240 of some 1900
   icons in alphabetical order, so a value like `rocket` was simply absent from the

@@ -8,6 +8,13 @@ All notable changes to Fileclass are documented here. The format follows
 
 ### Fixed
 
+- **The coordinates box reads what you actually paste.** It accepted the canonical
+  `lat,lon` and nothing else — a Google or Apple Maps link, an OpenStreetMap link, a
+  `geo:` URI, a degree-marked pair like `48.8584° N, 2.2945° E`, even a space between
+  the two numbers all filled **nothing at all, without a word**. All of those are read
+  now; text that holds no pair says so, and a pair that is off the globe is told apart
+  from one that couldn't be read, because those are different mistakes.
+
 - **The "Set next date" button had no label.** `setIcon()` on an Obsidian button
   replaces its content, so the text set just before it never rendered: the picker
   showed an icon with no name — nothing on hover, nothing for a screen reader. It

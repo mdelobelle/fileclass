@@ -185,5 +185,16 @@
     "durationSeconds": 117,
     "recordedWith": "0.1.1",
     "privacyStatus": "public"
+  },
+  "016": {
+    "id": "OmUgluPZal0",
+    "url": "https://www.youtube.com/watch?v=OmUgluPZal0",
+    "title": "Fileclass #016 · A field with a fixed shape",
+    "subject": "A field with a fixed shape",
+    "scenario": "016_templated_input",
+    "doc": "fields/#input-templates",
+    "durationSeconds": 173,
+    "recordedWith": "0.2.1",
+    "privacyStatus": "public"
   }
 }

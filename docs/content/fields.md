@@ -115,6 +115,8 @@ dropped those keystrokes silently, leaving an empty field and no explanation.
 
 ## Input templates
 
+{{< video "016" >}}
+
 > **A template is a shape, not a list of allowed values.** For *"this field may only
 > be fiction, non-fiction or essay"*, the field type is `Select` (one value) or
 > `Multi` (several), and the values come from its **Values list** — or from a note, a

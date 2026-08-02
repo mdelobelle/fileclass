@@ -196,5 +196,16 @@
     "durationSeconds": 173,
     "recordedWith": "0.2.1",
     "privacyStatus": "public"
+  },
+  "016b": {
+    "id": "2eVs2J0vv6A",
+    "url": "https://www.youtube.com/watch?v=2eVs2J0vv6A",
+    "title": "Fileclass #016b · Dates that link to your daily notes",
+    "subject": "Dates that link to your daily notes",
+    "scenario": "016b_dates_as_links",
+    "doc": "fields/#linking-to-a-daily-note",
+    "durationSeconds": 115,
+    "recordedWith": "0.2.2",
+    "privacyStatus": "public"
   }
 }

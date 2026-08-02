@@ -335,6 +335,8 @@ Editing a date opens a **native picker** (calendar / clock) with **Today** and
 
 ### Linking to a daily note
 
+{{< video "016b" >}}
+
 The **Link path** may contain **braced moment tokens**, which follow the date — so
 a link can be filed the way daily notes usually are. Only what's inside the braces
 is formatted, which is why the literal words survive (a raw moment format would

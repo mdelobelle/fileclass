@@ -9,5 +9,7 @@ views:
         direction: ASC
     order:
       - file.name
+      - icon
+      - color
       - starts
       - doors

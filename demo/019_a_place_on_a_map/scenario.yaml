@@ -22,6 +22,11 @@
 # step 11 has to bite on. Icon ids checked in the app: book-open, pen-line, film,
 # shopping-basket.
 #
+# Activities.base shows `icon` and `color` as columns, so the values driving the
+# markers are on screen before the map exists — which is what step 13 points back to.
+# A native table shows them as their text (`film`, `#7852ee`), not as a glyph and a
+# swatch: that is Bases rendering an ordinary string, and it is the honest framing.
+#
 # Coordinates to use on camera — Belgium, since the whole library is Franco-Belgian.
 # Approximate to a few hundred metres, from memory rather than from a gazetteer: step
 # 7 opens each pair in a browser, which is exactly where a wrong corner would show.

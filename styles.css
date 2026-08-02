@@ -569,19 +569,37 @@ input.fileclass-color-circle {
 	-webkit-appearance: none;
 	background: transparent;
 	/* element+class, because Obsidian styles input[type="color"] itself and its
-	   26x22 would otherwise sit in a row of 30px circles. */
+	   26x22 would otherwise sit in a row of 30px circles — and a swatch with a 50%
+	   radius on a non-square box is an ellipse, which is exactly what showed up. */
+	box-sizing: border-box;
 	width: 30px;
 	height: 30px;
+	padding: 0;
 }
 
 input.fileclass-color-circle::-webkit-color-swatch-wrapper {
 	padding: 0;
+	width: 100%;
+	height: 100%;
 }
 
 input.fileclass-color-circle::-webkit-color-swatch {
+	width: 100%;
+	height: 100%;
 	border: none;
 	border-radius: 50%;
 	corner-shape: round;
+}
+
+/* The two pickers in a field's palette do different things, so they must not look
+   alike: "add" keeps its dashed ring and plus, "custom" keeps its rainbow ring.
+   Both inset their swatch so the ring stays visible around the chosen colour. */
+input.fileclass-color-circle.is-add::-webkit-color-swatch-wrapper,
+input.fileclass-color-circle.is-custom::-webkit-color-swatch-wrapper {
+	padding: 5px;
+	width: 100%;
+	height: 100%;
+	box-sizing: border-box;
 }
 
 /* A corner mark for "add", over the swatch but never in the way of the click. */

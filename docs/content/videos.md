@@ -80,3 +80,7 @@ other. Captions are English; YouTube translates them into your language.
 ## A field with a fixed shape
 
 {{< video "016" >}}
+
+## Dates that link to your daily notes
+
+{{< video "016b" >}}

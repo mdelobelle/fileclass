@@ -138,8 +138,12 @@ export class DateInputModal extends Modal {
 				.setDesc("Advance this date by the interval, and cycle it to the next value.")
 				.addButton((b) =>
 					b
+						// Text, not text + icon: ButtonComponent.setIcon() replaces the
+						// button's content, so the label set just before it never rendered
+						// and the control was an icon with no accessible name. The
+						// skip-forward icon lives on the field's control, under Alt.
 						.setButtonText("Set next date")
-						.setIcon("skip-forward")
+						.setTooltip("Advance this date by the interval")
 						.onClick(async () => {
 							const base = this.inputEl.value || moment().format(this.nativeFormat);
 							if (await apply(base)) this.close();

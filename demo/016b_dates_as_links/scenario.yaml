@@ -1,0 +1,61 @@
+# Narration for take 016b — see ../SCENARIO.md for the format.
+# Second of arc 4. Starts where 016 ended: Book carries the templated `shelf`
+# field and the three books wear its shape. Turns `Book.review` into a link to the
+# daily note of the day it falls on.
+#
+# Why `review` and not `published`, which the roadmap first named: nobody has a
+# daily note for the 1st of August 1965. A review date is a day in your own
+# calendar, and the field already carries its interval — which is what makes the
+# last third of the take work.
+#
+# Facts the script leans on, all verified in the app before scripting:
+#  - only the braced tokens go through moment, so `Daily/{{YYYY}}/{{MM}}/` keeps the
+#    word Daily intact — a raw moment format would read its D and its a;
+#  - the field options show the link as it will be written, refreshed as you type;
+#  - "Set next date" advances 2028-04-21 by P90D to 2028-07-20 and rewrites the whole
+#    link, folder token included: `[[Daily/2028/07/2028-07-20|2028-07-20]]`. That
+#    crossing of a month boundary is the point of step 9;
+#  - reopening the field reads the link back: the picker shows the date, and the
+#    icon says it is stored as a link. One click puts it back to raw text.
+#
+# The fixture ships the daily notes those links point at — 2028-04-20 to -22, and
+# 2028-07-20 — so step 8 opens a note instead of offering to create one, and the
+# vault's own daily-notes setting files them the same way the link path does.
+#
+# No `dateFormat` on the field: the native date keeps the file names plain, and this
+# take is about the link, not about formats (take 007 covers those).
+title: "Fileclass — Dates that link to your daily notes"
+description: "A date stored as a link, filed under the folder its own date names."
+doc: "fields/#linking-to-a-daily-note" # deep link used in the description
+tags: "date, daily notes, wikilink, link path, alias"
+vault_name: "Demo"
+plugin: true
+settings:
+  classFilesPath: "Classes/"
+  fileClassAlias: "fileClass"
+initial_pause: 1500
+default_pause: 900
+
+steps:
+  - title: "A review date is a day — and that day already has a note of its own"
+    pause: 1800
+  - title: "Open the review field's settings and store it as a link"
+    pause: 1700
+  - title: "The link path can follow the date itself: Daily, then year, then month"
+    pause: 1900
+  - title: "Only what sits between braces goes through the date: the word Daily stays the word Daily"
+    pause: 2000
+  - title: "The preview shows the link that will be written, as you type it"
+    pause: 1800
+  - title: "An alias, so the value reads as the date instead of its whole path"
+    pause: 1800
+  - title: "On Atomic Habits, pick the review date: the value becomes a link"
+    pause: 1900
+  - title: "Follow it, and you land on that day's note, filed under its own month"
+    pause: 2000
+  - title: "Advance the review by its interval: the link follows, into another month's folder"
+    pause: 2100
+  - title: "Reopen the field and the date is right there, still stored as a link"
+    pause: 1800
+  - title: "One click on the icon puts it back to plain text, losing nothing"
+    pause: 2000

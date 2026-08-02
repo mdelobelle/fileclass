@@ -41,3 +41,19 @@ describe("spokenText — what the narrator actually says", () => {
 		expect(spoken("YAML", { YAML: "why a m l" })).toBe("why a m l");
 	});
 });
+
+describe("coordinates are said, not clipped", () => {
+	it("reads lat, lon as latitude and longitude", () => {
+		expect(spoken("what is stored stays a plain lat, lon")).toBe(
+			"what is stored stays a plain latitude and longitude"
+		);
+		expect(spoken("a plain lat,lon pair")).toBe("a plain latitude and longitude pair");
+	});
+
+	it("leaves the caption's own words alone otherwise", () => {
+		// "latitude" and "longitude" spelled out already must not be doubled up.
+		expect(spoken("Two fields, latitude and longitude, each checked as you type")).toBe(
+			"Two fields, latitude and longitude, each checked as you type"
+		);
+	});
+});

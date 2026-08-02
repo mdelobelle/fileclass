@@ -25,8 +25,7 @@ All notable changes to Fileclass are documented here. The format follows
   the ellipse a 50% radius draws on Obsidian's 26x22 default, and the two pickers in
   a field's palette keep their distinct rings — dashed for *add to my colors*,
   rainbow for a one-off shade — with the chosen colour inset inside them. Three places changed: the palette in the settings, the field picker, and
-  the canvas colour options. The settings pane also rebuilds itself if it is ever
-  found blank — a belt-and-braces that should now never fire.
+  the canvas colour options.
 
 - **The icon picker shows the icon you already have.** It renders 240 of some 1900
   icons in alphabetical order, so a value like `rocket` was simply absent from the

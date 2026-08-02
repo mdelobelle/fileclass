@@ -24,7 +24,7 @@ import {
 import type FileclassPlugin from "../../main";
 import { isRootField } from "../schema/field";
 import { FileClassOptions, parseFileClass } from "../schema/fileClass";
-import { buildBaseYaml, isBaseViewSynced, mirrorBaseView } from "./baseYaml";
+import { buildBaseYaml, ClassScope, isBaseViewSynced, mirrorBaseView } from "./baseYaml";
 
 export type BaseSyncStatus = "none" | "synced" | "diverged";
 
@@ -33,6 +33,24 @@ function liveOptions(plugin: FileclassPlugin, name: string): FileClassOptions | 
 	const file = plugin.index.getFileClassFile(name);
 	if (!file) return undefined;
 	return parseFileClass(name, plugin.app.metadataCache.getFileCache(file)?.frontmatter).options;
+}
+
+/**
+ * What the generated view filters on: the class property, plus every folder and
+ * tag that binds a note to this class. Read live, like the rest of `liveOptions`
+ * — a class mapped to a folder a second ago must produce a view that sees it.
+ */
+function classScope(plugin: FileclassPlugin, name: string): ClassScope {
+	const options = liveOptions(plugin, name);
+	const tags = [...(options?.tagNames ?? [])];
+	// `mapWithTag` means the class name itself is the tag (single-word only).
+	if (options?.mapWithTag && !name.includes(" ")) tags.push(name);
+	return {
+		alias: plugin.settings.fileClassAlias,
+		name,
+		tags,
+		folders: options?.filesPaths ?? [],
+	};
 }
 
 /** Managed view name for a fileClass (its `baseView`, else its own name). */
@@ -73,7 +91,12 @@ export async function baseSyncStatus(plugin: FileclassPlugin, name: string): Pro
 	if (!(file instanceof TFile)) return "diverged"; // missing → needs sync (create)
 	try {
 		const base: unknown = parseYaml(await plugin.app.vault.read(file));
-		return isBaseViewSynced(base, managedViewName(plugin, name), rootFieldNames(plugin, name))
+		return isBaseViewSynced(
+			base,
+			managedViewName(plugin, name),
+			rootFieldNames(plugin, name),
+			classScope(plugin, name)
+		)
 			? "synced"
 			: "diverged";
 	} catch {
@@ -94,12 +117,12 @@ export async function applyBaseSync(
 ): Promise<void> {
 	const app = plugin.app;
 	const fields = rootFieldNames(plugin, name);
-	const alias = plugin.settings.fileClassAlias;
+	const scope = classScope(plugin, name);
 	const file = app.vault.getFileByPath(path);
 
 	if (!(file instanceof TFile)) {
 		await ensureParentFolder(plugin, path);
-		await app.vault.create(path, buildBaseYaml(name, fields, alias, view));
+		await app.vault.create(path, buildBaseYaml(scope, fields, view));
 		new Notice(`Fileclass: created ${path}`);
 		return;
 	}
@@ -121,11 +144,11 @@ export async function applyBaseSync(
 	// Empty or malformed on disk (no views): initialize a full base rather than
 	// silently doing nothing.
 	if (!isBaseWithViews(base)) {
-		await app.vault.modify(file, buildBaseYaml(name, fields, alias, view));
+		await app.vault.modify(file, buildBaseYaml(scope, fields, view));
 		new Notice(`Fileclass: initialized ${path}`);
 		return;
 	}
-	if (mirrorBaseView(base, view, fields, name, alias)) {
+	if (mirrorBaseView(base, view, fields, scope)) {
 		await app.vault.modify(file, stringifyYaml(base));
 	}
 	new Notice(`Fileclass: synced ${path}`);

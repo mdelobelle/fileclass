@@ -1,10 +1,20 @@
 import { describe, expect, it } from "vitest";
 
-import { buildBaseYaml, isBaseViewSynced, mirrorBaseView } from "../../src/views/baseYaml";
+import {
+	buildBaseYaml,
+	fileClassPredicates,
+	fileClassViewFilter,
+	isBaseViewSynced,
+	isGeneratedScopeFilter,
+	mirrorBaseView,
+} from "../../src/views/baseYaml";
+
+/** The common case: a class its notes name in frontmatter, nothing else. */
+const byProperty = (name: string, alias = "fileClass") => ({ alias, name });
 
 describe("buildBaseYaml", () => {
 	it("filters at the view level (issue #55) and lists file.name + fields", () => {
-		const yaml = buildBaseYaml("Book", ["author", "rating"], "fileClass");
+		const yaml = buildBaseYaml(byProperty("Book"), ["author", "rating"]);
 		expect(yaml).toBe(
 			[
 				"views:",
@@ -23,14 +33,14 @@ describe("buildBaseYaml", () => {
 	});
 
 	it("carries no base-wide filter, so other views aren't shadowed (#55)", () => {
-		const yaml = buildBaseYaml("Book", ["author"], "fileClass");
+		const yaml = buildBaseYaml(byProperty("Book"), ["author"]);
 		// The class filter lives under the view, not at the top level.
 		expect(yaml).not.toMatch(/^filters:/m);
 		expect(yaml.indexOf("    filters:")).toBeGreaterThan(yaml.indexOf("views:"));
 	});
 
 	it("YAML-quotes field names that aren't bare identifiers (bare property name, #37)", () => {
-		const yaml = buildBaseYaml("FC", ["due date"], "fileClass");
+		const yaml = buildBaseYaml(byProperty("FC"), ["due date"]);
 		// Bare quoted name — Bases normalizes to note.due date; NOT note["due date"]
 		// (which Bases would re-prefix to note.note["due date"]).
 		expect(yaml).toContain('      - "due date"');
@@ -38,11 +48,11 @@ describe("buildBaseYaml", () => {
 	});
 
 	it("respects a custom alias", () => {
-		expect(buildBaseYaml("X", [], "class")).toContain('        - class == "X"');
+		expect(buildBaseYaml(byProperty("X", "class"), [])).toContain('        - class == "X"');
 	});
 
 	it("names the view after the managed view name when given", () => {
-		const yaml = buildBaseYaml("Article", ["author"], "fileClass", "fileclass");
+		const yaml = buildBaseYaml(byProperty("Article"), ["author"], "fileclass");
 		expect(yaml).toContain('    name: "fileclass"'); // managed view name, not "Article"
 		expect(yaml).toContain('        - fileClass == "Article"'); // filter still on the class
 	});
@@ -56,7 +66,7 @@ describe("mirrorBaseView", () => {
 				{ type: "table", name: "My view", order: ["file.name", "custom"] },
 			],
 		};
-		const changed = mirrorBaseView(base, "Book", ["author", "rating"], "Book", "fileClass");
+		const changed = mirrorBaseView(base, "Book", ["author", "rating"], byProperty("Book", "fileClass"));
 		expect(changed).toBe(true);
 		// Managed "Book" view = file.name + current fields (old dropped, rating added).
 		expect(base.views[0].order).toEqual(["file.name", "author", "rating"]);
@@ -70,7 +80,7 @@ describe("mirrorBaseView", () => {
 			filters: { and: ['fileClass == "Book"'] },
 			views: [{ type: "table", name: "Book", order: ["file.name", "old"] }],
 		} as Record<string, unknown> & { views: Array<Record<string, unknown>> };
-		mirrorBaseView(base, "Book", ["author"], "Book", "fileClass");
+		mirrorBaseView(base, "Book", ["author"], byProperty("Book", "fileClass"));
 		// Base-wide filter preserved as-is; the view gains no filter behind the user's back.
 		expect(base.filters).toEqual({ and: ['fileClass == "Book"'] });
 		expect(base.views[0].filters).toBeUndefined();
@@ -78,12 +88,12 @@ describe("mirrorBaseView", () => {
 
 	it("reports no change when already mirrored", () => {
 		const base = { views: [{ type: "table", name: "Book", order: ["file.name", "author"] }] };
-		expect(mirrorBaseView(base, "Book", ["author"], "Book", "fileClass")).toBe(false);
+		expect(mirrorBaseView(base, "Book", ["author"], byProperty("Book", "fileClass"))).toBe(false);
 	});
 
 	it("creates the managed view (editable type) with a view-level filter when missing (#55)", () => {
 		const base = { views: [{ type: "table", name: "Other", order: ["file.name"] }] };
-		expect(mirrorBaseView(base, "Book", ["a"], "Book", "fileClass")).toBe(true);
+		expect(mirrorBaseView(base, "Book", ["a"], byProperty("Book", "fileClass"))).toBe(true);
 		expect(base.views).toHaveLength(2);
 		expect(base.views[1]).toEqual({
 			type: "fileclass-table",
@@ -95,24 +105,24 @@ describe("mirrorBaseView", () => {
 
 	it("recognizes an editable fileclass-table view (keeps its type)", () => {
 		const base = { views: [{ type: "fileclass-table", name: "Book", order: ["file.name"] }] };
-		expect(mirrorBaseView(base, "Book", ["a"], "Book", "fileClass")).toBe(true);
+		expect(mirrorBaseView(base, "Book", ["a"], byProperty("Book", "fileClass"))).toBe(true);
 		expect(base.views[0]).toEqual({ type: "fileclass-table", name: "Book", order: ["file.name", "a"] });
 	});
 
 	it("uses bare property names in order (stringifyYaml handles quoting; #37)", () => {
 		const base = { views: [{ type: "table", name: "FC", order: [] }] };
-		mirrorBaseView(base, "FC", ["due date"], "FC", "fileClass");
+		mirrorBaseView(base, "FC", ["due date"], byProperty("FC", "fileClass"));
 		expect(base.views[0].order).toEqual(["file.name", "due date"]);
 	});
 
 	it("is idempotent for spaced field names — no perpetual re-sync (#37)", () => {
 		const fields = ["due date", "Playing style"];
 		const base = { views: [{ type: "table", name: "FC", order: [] }] };
-		mirrorBaseView(base, "FC", fields, "FC", "fileClass");
+		mirrorBaseView(base, "FC", fields, byProperty("FC", "fileClass"));
 		expect(base.views[0].order).toEqual(["file.name", "due date", "Playing style"]);
 		// A base already carrying the bare names reports synced and isn't rewritten.
 		expect(isBaseViewSynced(base, "FC", fields)).toBe(true);
-		expect(mirrorBaseView(base, "FC", fields, "FC", "fileClass")).toBe(false);
+		expect(mirrorBaseView(base, "FC", fields, byProperty("FC", "fileClass"))).toBe(false);
 	});
 
 	it("keeps two fileClasses' views scoped independently across a re-sync (#55)", () => {
@@ -135,7 +145,7 @@ describe("mirrorBaseView", () => {
 			],
 		};
 		// Sync the Book view with a new field.
-		expect(mirrorBaseView(base, "Book", ["title", "rating"], "Book", "fileClass")).toBe(true);
+		expect(mirrorBaseView(base, "Book", ["title", "rating"], byProperty("Book", "fileClass"))).toBe(true);
 		expect(base.views[0].order).toEqual(["file.name", "title", "rating"]);
 		// The Book scope is preserved and the other fileClass's view is untouched.
 		expect(base.views[0].filters).toEqual({ and: ['fileClass == "Book"'] });
@@ -166,5 +176,141 @@ describe("isBaseViewSynced", () => {
 	});
 	it("false when the managed view is missing", () => {
 		expect(isBaseViewSynced(base, "Nope", ["author"])).toBe(false);
+	});
+});
+
+describe("the filter scopes the view to what actually binds a note", () => {
+	it("adds a folder predicate, because a folder-bound note has no class property", () => {
+		// The bug take 000 filmed: Author is mapped to Authors/, its notes carry no
+		// `fileClass`, and the generated view returned nothing at all.
+		expect(fileClassPredicates({ alias: "fileClass", name: "Author", folders: ["Authors"] })).toEqual([
+			'fileClass == "Author"',
+			'file.inFolder("Authors")',
+		]);
+	});
+
+	it("uses inFolder, not folder equality, since binding is by prefix", () => {
+		// `file.folder == "Authors"` leaves out Authors/Deep/…, which IS bound.
+		const [, folder] = fileClassPredicates({ alias: "fileClass", name: "A", folders: ["Authors/"] });
+		expect(folder).toBe('file.inFolder("Authors")'); // trailing slash trimmed
+	});
+
+	it("adds a tag predicate per binding tag, hash optional", () => {
+		expect(fileClassPredicates({ alias: "fileClass", name: "A", tags: ["author", "#writer"] })).toEqual([
+			'fileClass == "A"',
+			'file.hasTag("author")',
+			'file.hasTag("writer")',
+		]);
+	});
+
+	it("skips tags that can never bind (whitespace) and empty folders", () => {
+		expect(
+			fileClassPredicates({ alias: "fileClass", name: "A", tags: ["two words", " "], folders: ["", "  "] })
+		).toEqual(['fileClass == "A"']);
+	});
+
+	it("keeps one predicate flat and groups several under or", () => {
+		expect(fileClassViewFilter(byProperty("Book"))).toEqual({ and: ['fileClass == "Book"'] });
+		expect(fileClassViewFilter({ alias: "fileClass", name: "Author", folders: ["Authors"] })).toEqual({
+			and: [{ or: ['fileClass == "Author"', 'file.inFolder("Authors")'] }],
+		});
+	});
+
+	it("writes the or group as YAML Bases parses", () => {
+		const yaml = buildBaseYaml({ alias: "fileClass", name: "Author", folders: ["Authors"] }, ["language"]);
+		expect(yaml).toContain(
+			["    filters:", "      and:", "        - or:", '            - fileClass == "Author"', '            - file.inFolder("Authors")'].join("\n")
+		);
+	});
+});
+
+describe("repairing a base generated before its class was mapped", () => {
+	interface TestView {
+		type: string;
+		name: string;
+		filters: unknown;
+		order: string[];
+	}
+	const legacy = (): { views: TestView[] } => ({
+		views: [
+			{
+				type: "fileclass-table",
+				name: "Author",
+				filters: { and: ['fileClass == "Author"'] },
+				order: ["file.name", "language"],
+			},
+		],
+	});
+
+	it("brings an untouched generated filter up to date", () => {
+		const base = legacy();
+		const changed = mirrorBaseView(base, "Author", ["language"], {
+			alias: "fileClass",
+			name: "Author",
+			folders: ["Authors"],
+		});
+		expect(changed).toBe(true);
+		expect(base.views[0].filters).toEqual({
+			and: [{ or: ['fileClass == "Author"', 'file.inFolder("Authors")'] }],
+		});
+	});
+
+	it("leaves a hand-edited filter alone", () => {
+		const base = legacy();
+		base.views[0].filters = { and: ['fileClass == "Author"', 'language != "German"'] };
+		const changed = mirrorBaseView(base, "Author", ["language"], {
+			alias: "fileClass",
+			name: "Author",
+			folders: ["Authors"],
+		});
+		expect(changed).toBe(false);
+		expect(base.views[0].filters).toEqual({ and: ['fileClass == "Author"', 'language != "German"'] });
+	});
+
+	it("changes nothing when the filter is already right", () => {
+		const base = legacy();
+		base.views[0].filters = { and: [{ or: ['fileClass == "Author"', 'file.inFolder("Authors")'] }] };
+		expect(
+			mirrorBaseView(base, "Author", ["language"], {
+				alias: "fileClass",
+				name: "Author",
+				folders: ["Authors"],
+			})
+		).toBe(false);
+	});
+
+	it("recognizes its own filters and nothing else", () => {
+		const scope = { alias: "fileClass", name: "A", folders: ["F"] };
+		expect(isGeneratedScopeFilter({ and: ['fileClass == "A"'] }, scope)).toBe(true);
+		expect(isGeneratedScopeFilter({ and: [{ or: ['fileClass == "A"', 'file.hasTag("a")'] }] }, scope)).toBe(true);
+		expect(isGeneratedScopeFilter({ and: [{ or: ['fileClass == "A"', 'rating > 3'] }] }, scope)).toBe(false);
+		expect(isGeneratedScopeFilter({ and: ['fileClass == "Other"'] }, scope)).toBe(false);
+		expect(isGeneratedScopeFilter({ or: ['fileClass == "A"'] }, scope)).toBe(false);
+	});
+});
+
+describe("sync status notices a scope that moved", () => {
+	const base = (filters: unknown) => ({
+		views: [{ type: "fileclass-table", name: "Author", filters, order: ["file.name", "language"] }],
+	});
+	const mapped = { alias: "fileClass", name: "Author", folders: ["Authors"] };
+
+	it("reports out of sync when the class gained a folder after the base was made", () => {
+		// The columns still match — mapping a class to a folder changes no field — so
+		// comparing `order` alone said "synced" over a view returning nothing, and the
+		// Sync button stayed disabled.
+		const b = base({ and: ['fileClass == "Author"'] });
+		expect(isBaseViewSynced(b, "Author", ["language"])).toBe(true); // fields only
+		expect(isBaseViewSynced(b, "Author", ["language"], mapped)).toBe(false);
+	});
+
+	it("reports synced once the filter carries the folder", () => {
+		const b = base({ and: [{ or: ['fileClass == "Author"', 'file.inFolder("Authors")'] }] });
+		expect(isBaseViewSynced(b, "Author", ["language"], mapped)).toBe(true);
+	});
+
+	it("never calls a hand-edited filter out of sync", () => {
+		const b = base({ and: ['fileClass == "Author"', 'language != "German"'] });
+		expect(isBaseViewSynced(b, "Author", ["language"], mapped)).toBe(true);
 	});
 });

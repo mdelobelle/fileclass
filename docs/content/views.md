@@ -22,6 +22,34 @@ listing `file.name` and the fields — and records the choices on the fileClass
 (`baseFile`/`baseView`). Pointing at an **existing** base is safe: only the
 managed view is added or updated — your other views are left untouched.
 
+### What the managed view filters on
+
+The filter matches **every way a note can be bound to the class**, not just the
+frontmatter property:
+
+- `fileClass == "Author"` — the note names the class (whatever your *fileClass
+  alias* is);
+- `file.inFolder("Authors")` — one clause per **Files paths** folder. `inFolder`
+  rather than an equality on the folder, because binding is by prefix: a note in
+  `Authors/Deep/` is bound too;
+- `file.hasTag("author")` — one clause per **tag name**, and the class name itself
+  when *Map with tag* is on.
+
+With more than one of those, they are `or`-ed inside the view's filter group, which
+is where a [dependent field](../fields/#conditional-candidates-dependent-fields)
+adds its own predicate. A class bound **only by folder or tag** leaves no property
+on its notes at all: filtering on the property alone returned an empty view, which
+is what a generated base used to do for every folder-mapped class.
+
+Two bindings have no Bases equivalent and are therefore outside the filter:
+**bookmark groups**, and a class named by a **Base view**. Notes bound only that
+way won't appear in the generated view — add a clause of your own, and sync will
+leave it alone.
+
+A base generated before its class gained a folder or a tag is **repaired on the
+next sync**, but only when its filter is still exactly what Fileclass wrote. Edit
+that filter yourself and it becomes yours: sync then never touches it.
+
 The fileClass filter is written **on the managed view** (Bases' *"This view"*
 scope), not base-wide. So you can add a **second view for another fileClass** to
 the same base — e.g. a `bookAuthor` view inside your `book` base — and it shows

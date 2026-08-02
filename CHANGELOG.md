@@ -8,6 +8,30 @@ All notable changes to Fileclass are documented here. The format follows
 
 ### Fixed
 
+- **A generated base returned nothing for a class bound by folder or tag.** The
+  managed view filtered on the class property alone — `fileClass == "Author"` — and
+  a note bound by **Files paths** or by tag carries no such property, so the view
+  was empty for every folder-mapped class. The filter now matches every binding it
+  can express: the property, `file.inFolder()` per mapped folder (by prefix, so
+  subfolders count — an equality on the folder missed them), and `file.hasTag()` per
+  tag, `or`-ed together. Bases generated before their class was mapped are repaired
+  on the next sync, unless their filter was edited by hand, in which case it is left
+  alone. Bookmark groups and Base-view bindings have no Bases equivalent and stay
+  outside the filter; the docs say which.
+
+- **A nested tag now binds to the class its parent tag maps.** A note tagged
+  `#author/french` was left untyped while a class mapped on `author` claimed
+  `#author`, and the generated view listed it anyway — Bases' `file.hasTag()`
+  includes children, as do Obsidian's tag search and tag pane. The resolver now
+  matches a tag and every tag it nests under, most specific first, so the view and
+  the binding agree. More notes are typed; none loses its typing.
+
+- **The `Template` option said what it was, not what it wasn't.** It read *"compose
+  each value from fixed parts"* — which is what someone defining a list of allowed
+  values believes they want — and never mentioned `Select`/`Multi`. Both the setting
+  and the docs now name the two types that limit a field to values you choose,
+  before explaining template syntax.
+
 - **Turning Bases on after Fileclass no longer needs a restart.** Feature detection
   ran once, at layout-ready, and nothing re-ran it: a vault where the core Bases
   plugin was switched on later kept File/Media candidates and generated views

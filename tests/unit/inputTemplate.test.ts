@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { parseTemplate, renderTemplate } from "../../src/fields/inputTemplate";
+import { matchTemplate, parseTemplate, renderTemplate } from "../../src/fields/inputTemplate";
 
 describe("parseTemplate", () => {
 	it("returns no parts for a plain string", () => {
@@ -76,5 +76,54 @@ describe("renderTemplate", () => {
 
 	it("collapses newlines to a comma so the value stays a scalar", () => {
 		expect(renderTemplate("{{a}}\n{{b}}", { a: "1", b: "2" })).toBe("1, 2");
+	});
+});
+
+describe("matchTemplate — reading a stored value back into its parts", () => {
+	it("recovers each part when separators make it unambiguous", () => {
+		expect(matchTemplate("{{room}} · {{unit}}-{{level}}", "Study · A-3")).toEqual({
+			room: "Study",
+			unit: "A",
+			level: "3",
+		});
+	});
+
+	it("is what keeps an edit of one part from wiping the others", () => {
+		// The regression: controls started blank, so changing `level` re-rendered
+		// "{{room}} · {{unit}}-{{level}}" from empty parts and stored " · -4".
+		const stored = matchTemplate("{{room}} · {{unit}}-{{level}}", "Study · A-3");
+		expect(renderTemplate("{{room}} · {{unit}}-{{level}}", { ...stored, level: "4" })).toBe(
+			"Study · A-4"
+		);
+	});
+
+	it("matches a dropdown part against its own choices, not any text", () => {
+		const template = '{{room:["Study","Living room"]}}/{{shelf}}';
+		expect(matchTemplate(template, "Living room/B-2")).toEqual({ room: "Living room", shelf: "B-2" });
+		expect(matchTemplate(template, "Cellar/B-2")).toBeNull(); // not an offered choice
+	});
+
+	it("handles a name that recurs, one control driving both", () => {
+		expect(matchTemplate("{{code}}-{{code}}", "AA-AA")).toEqual({ code: "AA" });
+		expect(matchTemplate("{{code}}-{{code}}", "AA-BB")).toBeNull();
+	});
+
+	it("escapes regex metacharacters in the literal parts", () => {
+		expect(matchTemplate("({{a}}) [{{b}}]", "(x) [y]")).toEqual({ a: "x", b: "y" });
+	});
+
+	it("returns null on a value that doesn't fit, so the form falls back to empty", () => {
+		expect(matchTemplate("{{room}} · {{unit}}", "typed by hand")).toBeNull();
+		expect(matchTemplate("{{room}} · {{unit}}", "")).toBeNull();
+	});
+
+	it("treats a whitespace-named placeholder as nothing, and an empty one as literal", () => {
+		// `{{ }}` has a (blank) name, so it renders as "" and matches "".
+		expect(matchTemplate("{{ }}{{room}}", "Study")).toEqual({ room: "Study" });
+		// `{{}}` isn't a placeholder at all — the parser needs at least one character
+		// — so it stays literal on both sides. Checked against renderTemplate rather
+		// than assumed.
+		expect(renderTemplate("{{}}{{room}}", { room: "Study" })).toBe("{{}}Study");
+		expect(matchTemplate("{{}}{{room}}", "{{}}Study")).toEqual({ room: "Study" });
 	});
 });

@@ -9,8 +9,15 @@
  * can be checked without launching anything.
  */
 
-/** A step that tells the viewer to run something. */
-const CLAIMS_COMMAND = /\b(run|command palette|palette)\b/i;
+/**
+ * A step that tells the viewer to run something.
+ *
+ * A bare "palette" used to count: in a vault of field types it only ever meant the
+ * command palette. Take 018 gives the word its other meaning — a colour palette —
+ * so only "command palette" claims a command now. "run" still does the work for
+ * "run this and…", and a step that names a real command is never flagged anyway.
+ */
+const CLAIMS_COMMAND = /\b(run|command palette)\b/i;
 /**
  * A step that *sets* something in the settings — "open the settings" is
  * navigation and names nothing, which is fine; "set X in the settings" should

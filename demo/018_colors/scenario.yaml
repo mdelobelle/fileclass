@@ -1,0 +1,55 @@
+# Narration for take 018 — see ../SCENARIO.md for the format.
+# Fourth of arc 4. Starts where 017 ended: Series carries an Icon field and each of
+# the five series wears a glyph. Adds `Series.color`.
+#
+# Why Series rather than the `Book.genre` the roadmap first named: genre is a
+# Select, and a Select doesn't take a colour — while the five series just gained
+# their glyphs, so a colour lands on notes the viewer already recognises.
+#
+# Facts the script leans on, all verified in the app before scripting:
+#  - the picker offers "No color", the six canvas swatches, then your own colours,
+#    then the value already on the note if it isn't one of those — and marks the
+#    current one, so step 6 has something to show;
+#  - the plus pins a colour to the saved palette and the picker re-renders with it
+#    straight away (measured: nine circles become ten, and settings.customColors
+#    holds the new value);
+#  - Fileclass's settings list each saved colour with a remove button, under
+#    "Custom colors";
+#  - the stored value is a plain CSS colour, and the swatch beside it is Fileclass
+#    rendering that string — the same honesty as the icon id in take 017.
+#
+# The field is `color`, not `colour`: the plugin's own labels say "No color" and
+# "Custom color…", and two spellings on one screen would read as a mistake.
+title: "Fileclass — Colors, and your own palette"
+description: "A palette you can extend, and a plain CSS value in the note."
+doc: "fields/#color" # deep link used in the description
+tags: "color, palette, swatches, custom colors"
+vault_name: "Demo"
+plugin: true
+settings:
+  classFilesPath: "Classes/"
+  fileClassAlias: "fileClass"
+initial_pause: 1500
+default_pause: 900
+
+steps:
+  - title: "Five series, five glyphs — a colour would separate them faster still"
+    pause: 1800
+  - title: "Add a field named color to Series, type Color"
+    pause: 1700
+  - title: "Its option chooses the palette the field will offer"
+    pause: 1800
+  - title: "On Tintin, the picker opens on that palette"
+    pause: 1700
+  - title: "Choose the green: what gets stored is an ordinary CSS colour, with its swatch beside it"
+    pause: 2000
+  - title: "Reopen it and the picker marks the colour this note already carries"
+    pause: 1900
+  - title: "Custom color reaches your system's own picker, for a one-off shade"
+    pause: 1900
+  - title: "The plus pins a shade to your palette — it shows up in the picker at once"
+    pause: 2000
+  - title: "Your colours live in Fileclass's settings, and you can drop one there"
+    pause: 1900
+  - title: "One for each series, and the library reads by colour as much as by name"
+    pause: 2200

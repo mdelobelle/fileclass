@@ -84,7 +84,7 @@ thread, and a tight smoke test of that type's input path.
 | 016 | Templated input | `Input` template (`{{placeholder}}`) | `Book.shelf` | ✅ [published](https://www.youtube.com/watch?v=OmUgluPZal0) |
 | 016b | Dates as links to your daily notes | `Date` insert-as-link, templated `Link path`, `Link alias` | `Book.review` as a daily-note link, `Daily/` | ✅ [published](https://www.youtube.com/watch?v=2eVs2J0vv6A) |
 | 017 | Pick an icon | `Icon` | `Series.icon`, five series told apart | ✅ [published](https://www.youtube.com/watch?v=TvkZfCN5rgo) |
-| 018 | Colors, and your own palette | `Color`, custom colors | `Book.genre` color | |
+| 018 | Colors, and your own palette | `Color`, custom colors | `Series.color`, a saved palette | |
 | 019 | A place on a map | `Location` | `Activity.branch` | |
 | 020 | A group of fields inside a field | `Object` | detailed `Book.publisher` | |
 | 021 | A list of grouped fields | `ObjectList`, display template | `Book.editions` | |

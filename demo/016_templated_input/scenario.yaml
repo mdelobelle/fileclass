@@ -19,7 +19,12 @@
 # "living room, B2", "shelf C 1" — because that is what a vault looks like before a
 # shape exists, and it is why sorting them is useless at step 2.
 #
-# No base in this take, and none in the fixture. The payoff was going to be a sorted
+# The fixture ships Books.base — a plain table view over the class, named the way
+# Authors.base and Series.base are — so the vault keeps looking like a vault. It is
+# not filmed here, and it carries no `shelf` column: the field doesn't exist until
+# this take creates it.
+#
+# No base is opened in this take. The payoff was going to be a sorted
 # base, but the only view whose cells can be edited is `fileclass-table`, which no
 # take has introduced yet — a take about templates is not where that belongs. Every
 # value here is set from the note-fields modal, already familiar by now; in-cell

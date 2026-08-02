@@ -85,7 +85,7 @@ thread, and a tight smoke test of that type's input path.
 | 016b | Dates as links to your daily notes | `Date` insert-as-link, templated `Link path`, `Link alias` | `Book.review` as a daily-note link, `Daily/` | ✅ [published](https://www.youtube.com/watch?v=2eVs2J0vv6A) |
 | 017 | Pick an icon | `Icon` | `Series.icon`, five series told apart | ✅ [published](https://www.youtube.com/watch?v=TvkZfCN5rgo) |
 | 018 | Colors, and your own palette | `Color`, custom colors | `Series.color`, a saved palette | ✅ [published](https://www.youtube.com/watch?v=8t8ZaCpv9ks) |
-| 019 | A place on a map | `Location` | `Activity.branch` | |
+| 019 | A place on a map | `Location`, the Maps plugin | `Activity.branch`, four located dates | |
 | 020 | A group of fields inside a field | `Object` | detailed `Book.publisher` | |
 | 021 | A list of grouped fields | `ObjectList`, display template | `Book.editions` | |
 | 022 | When raw is the honest answer | `JSON`, `YAML` | `Album.credits` | |

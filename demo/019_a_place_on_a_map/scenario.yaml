@@ -1,0 +1,62 @@
+# Narration for take 019 — see ../SCENARIO.md for the format.
+# Closes arc 4. Starts where 018 ended: Series carries its Color field and the five
+# series wear one. Adds `Activity.branch`, and ends on a map.
+#
+# Facts the script leans on, all verified before scripting:
+#  - the paste box reads Google/Apple/OpenStreetMap links, geo: URIs, degree pairs
+#    and space-separated pairs, and says so when it can't read something — measured
+#    in the app, and the reason step 5 can film a paste rather than typing digits;
+#  - the two number fields validate live, −90..90 and −180..180;
+#  - "Open in map" builds an OpenStreetMap URL from the pair;
+#  - Bases has NO map layout of its own here: its registered views are table, cards
+#    and list (plus fileclass-table). The map comes from **Maps**, the Obsidian
+#    team's community plugin, which is why step 9 installs it on camera;
+#  - Maps reads a text property `"lat, lng"` — what Location stores — and takes each
+#    marker's icon from a Lucide id and its colour from a CSS colour. Which is
+#    exactly what takes 017 and 018 introduced. Its own example base writes
+#    `coordinates:`, `markerIcon:`, `markerColor:` into the view.
+#
+# The fixture gives Activity its `icon` and `color` already filled: both types were
+# introduced in the two takes before this one, so a vault would plausibly have them
+# by now, and re-filming "add an Icon field" would be a rerun. Their values are what
+# step 11 has to bite on. Icon ids checked in the app: book-open, pen-line, film,
+# shopping-basket.
+#
+# The alternative — pulling icon and colour from a linked note through a formula,
+# the way Maps' own example does — is in the docs, not on camera: filming formula
+# editing is what issue #19 taught us to avoid.
+title: "Fileclass — A place on a map"
+description: "Coordinates typed once, and a map that reads them."
+doc: "fields/#location" # deep link used in the description
+tags: "location, coordinates, map, bases"
+vault_name: "Demo"
+plugin: true
+settings:
+  classFilesPath: "Classes/"
+  fileClassAlias: "fileClass"
+initial_pause: 1500
+default_pause: 900
+
+steps:
+  - title: "Four dates in the library's calendar, each one somewhere else"
+    pause: 1800
+  - title: "Where they happen only exists in the prose, and no map can read prose"
+    pause: 1900
+  - title: "Add a field named branch to Activity, type Location"
+    pause: 1700
+  - title: "Two fields, latitude and longitude, each checked as you type"
+    pause: 1800
+  - title: "Or paste what you just copied: a map link fills them both"
+    pause: 1900
+  - title: "What it can't read, it says — instead of quietly doing nothing"
+    pause: 1900
+  - title: "Open in map sends the pair to your browser, to check you have the right street corner"
+    pause: 2000
+  - title: "The other three follow, and what is stored stays a plain lat, lon"
+    pause: 1900
+  - title: "Bases has no map of its own: Maps, from the Obsidian team, adds one"
+    pause: 2000
+  - title: "Add a Map view, point Marker coordinates at branch — four markers appear"
+    pause: 2100
+  - title: "Marker colour and icon read properties too: the ones the last two takes put there"
+    pause: 2300

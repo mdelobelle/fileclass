@@ -73,8 +73,13 @@ are combined in this priority order (fields de-duplicated by id):
 
 1. **Frontmatter alias** — the `fileClass:` key on the note (the alias is
    configurable). Accepts a single value or a list.
-2. **Tag match** — a note tag equals a fileClass's `mapWithTag` name or one of
-   its `tagNames`.
+2. **Tag match** — a note tag equals a fileClass's `mapWithTag` name or one of its
+   `tagNames`, **or nests under one**: a note tagged `#author/french` binds to the
+   class mapped on `author`, the way Obsidian's tag search and tag pane treat nested
+   tags — and the way a [generated view](../views/#what-the-managed-view-filters-on)
+   sees them, since Bases' `file.hasTag()` includes children. When both a tag and
+   its parent are mapped, the most specific class comes first and the parent still
+   applies. Frontmatter tags and inline `#tags` both count.
 3. **Path match** — the note lives under one of a fileClass's `filesPaths`.
 4. **Bookmark group match** — the note is in a mapped bookmark group.
 5. **Base-view match** — the note is returned by a fileClass's bound Base view

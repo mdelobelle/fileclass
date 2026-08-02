@@ -141,11 +141,26 @@ export function mirrorOrder(fieldNames: string[]): string[] {
  * i.e. it exists, is a table, and its `order` equals `file.name` + the fields.
  * Used to report the sync status without writing.
  */
-export function isBaseViewSynced(base: unknown, viewName: string, fieldNames: string[]): boolean {
+export function isBaseViewSynced(
+	base: unknown,
+	viewName: string,
+	fieldNames: string[],
+	scope?: ClassScope
+): boolean {
 	const views = (base as BaseObject)?.views;
 	if (!Array.isArray(views)) return false;
 	const view = (views as BaseView[]).find((v) => isManagedTable(v, viewName));
 	if (!view || !Array.isArray(view.order)) return false;
+	// Mapping a class to a folder changes no field, so comparing columns alone
+	// reported "synced" while the view filtered on a property those notes don't
+	// have — the Sync button stayed disabled over a view returning nothing.
+	if (
+		scope &&
+		isGeneratedScopeFilter(view.filters, scope) &&
+		JSON.stringify(view.filters) !== JSON.stringify(fileClassViewFilter(scope))
+	) {
+		return false;
+	}
 	const desired = mirrorOrder(fieldNames);
 	return view.order.length === desired.length && view.order.every((v, i) => v === desired[i]);
 }

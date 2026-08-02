@@ -1,7 +1,12 @@
 import { describe, expect, it } from "vitest";
 
 import { Field } from "../../src/schema/field";
-import { FileBinding, FileClassRegistry, resolveBinding } from "../../src/schema/resolver";
+import {
+	FileBinding,
+	FileClassRegistry,
+	resolveBinding,
+	tagAncestry,
+} from "../../src/schema/resolver";
 
 const field = (id: string, fileClassName: string): Field => ({
 	id,
@@ -74,5 +79,41 @@ describe("resolveBinding priority", () => {
 			"preset"
 		);
 		expect(resolveBinding(emptyBinding, makeRegistry()).source).toBe("none");
+	});
+});
+
+describe("a nested tag binds to the class its parent tag maps", () => {
+	it("lists a tag and the tags it nests under, most specific first", () => {
+		expect(tagAncestry("author/french/poetry")).toEqual([
+			"author/french/poetry",
+			"author/french",
+			"author",
+		]);
+		expect(tagAncestry("book")).toEqual(["book"]);
+		expect(tagAncestry("")).toEqual([]);
+	});
+
+	it("binds #book/fiction to the class mapped on book", () => {
+		// Obsidian's tag search and Bases' file.hasTag() both include children, so a
+		// generated view showed such notes while the resolver left them untyped.
+		const r = resolveBinding({ ...emptyBinding, tags: ["book/fiction"] }, makeRegistry());
+		expect(r.fileClassNames).toEqual(["Book"]);
+		expect(r.source).toBe("fileClass");
+	});
+
+	it("prefers the most specific mapping when both levels are mapped", () => {
+		const registry = makeRegistry({
+			tagBindings: new Map([
+				["book", "Book"],
+				["book/todo", "Todo"],
+			]),
+		});
+		const r = resolveBinding({ ...emptyBinding, tags: ["book/todo"] }, registry);
+		expect(r.fileClassNames).toEqual(["Todo", "Book"]); // specific first, parent still applies
+	});
+
+	it("does not bind a sibling branch", () => {
+		const r = resolveBinding({ ...emptyBinding, tags: ["notebook/fiction"] }, makeRegistry());
+		expect(r.fileClassNames).toEqual([]);
 	});
 });

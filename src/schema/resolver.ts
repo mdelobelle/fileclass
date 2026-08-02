@@ -46,6 +46,20 @@ export interface Resolution {
 	source: BindingSource;
 }
 
+/**
+ * A note tag and the tags it is nested under, most specific first:
+ * `author/french/poetry` → `author/french/poetry`, `author/french`, `author`.
+ *
+ * Obsidian treats nested tags as a hierarchy everywhere else — tag search and the
+ * tag pane include children — and so does Bases: `file.hasTag("author")` matches
+ * `#author/french`. A class mapped on `author` therefore claims `#author/french`
+ * too, which is what makes a generated view and the binding agree.
+ */
+export function tagAncestry(tag: string): string[] {
+	const parts = tag.split("/").filter(Boolean);
+	return parts.map((_, i) => parts.slice(0, parts.length - i).join("/"));
+}
+
 /** Bound fileClass names in priority order, keeping only those in the registry. */
 function collectBoundNames(binding: FileBinding, registry: FileClassRegistry): string[] {
 	const names: string[] = [];
@@ -55,8 +69,10 @@ function collectBoundNames(binding: FileBinding, registry: FileClassRegistry): s
 
 	// 1. inner (frontmatter alias)
 	binding.innerNames.forEach(add);
-	// 2. tag match
-	binding.tags.forEach((tag) => add(registry.tagBindings.get(tag)));
+	// 2. tag match, a nested tag counting as its ancestors
+	for (const tag of binding.tags) {
+		for (const candidate of tagAncestry(tag)) add(registry.tagBindings.get(candidate));
+	}
 	// 3. path match (folder path is under a mapped prefix)
 	for (const [prefix, name] of registry.pathBindings) {
 		if (binding.folderPath === prefix || binding.folderPath.startsWith(prefix)) add(name);

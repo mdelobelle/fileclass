@@ -288,3 +288,29 @@ describe("repairing a base generated before its class was mapped", () => {
 		expect(isGeneratedScopeFilter({ or: ['fileClass == "A"'] }, scope)).toBe(false);
 	});
 });
+
+describe("sync status notices a scope that moved", () => {
+	const base = (filters: unknown) => ({
+		views: [{ type: "fileclass-table", name: "Author", filters, order: ["file.name", "language"] }],
+	});
+	const mapped = { alias: "fileClass", name: "Author", folders: ["Authors"] };
+
+	it("reports out of sync when the class gained a folder after the base was made", () => {
+		// The columns still match — mapping a class to a folder changes no field — so
+		// comparing `order` alone said "synced" over a view returning nothing, and the
+		// Sync button stayed disabled.
+		const b = base({ and: ['fileClass == "Author"'] });
+		expect(isBaseViewSynced(b, "Author", ["language"])).toBe(true); // fields only
+		expect(isBaseViewSynced(b, "Author", ["language"], mapped)).toBe(false);
+	});
+
+	it("reports synced once the filter carries the folder", () => {
+		const b = base({ and: [{ or: ['fileClass == "Author"', 'file.inFolder("Authors")'] }] });
+		expect(isBaseViewSynced(b, "Author", ["language"], mapped)).toBe(true);
+	});
+
+	it("never calls a hand-edited filter out of sync", () => {
+		const b = base({ and: ['fileClass == "Author"', 'language != "German"'] });
+		expect(isBaseViewSynced(b, "Author", ["language"], mapped)).toBe(true);
+	});
+});

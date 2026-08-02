@@ -13,7 +13,7 @@ import { parseFileClass } from "../schema/fileClass";
 import { writeOptions } from "../schema/fileClassIo";
 import { buildOptionUpdates, EditableOptions } from "../schema/fileClassWrite";
 import { applyBaseSync } from "../views/baseSync";
-import { isBaseViewSynced } from "../views/baseYaml";
+import { ClassScope, isBaseViewSynced } from "../views/baseYaml";
 import { BaseFileSuggest } from "./baseSuggest";
 import { IconSuggest, paintIcon } from "./iconSuggest";
 import { makeStickyFooter } from "./modalFooter";
@@ -100,7 +100,10 @@ export class FileClassOptionsModal extends Modal {
 			.setName("Map with tag")
 			.setDesc("Bind notes tagged with this fileClass's name.")
 			.addToggle((t) =>
-				t.setValue(!!this.opts.mapWithTag).onChange((v) => (this.opts.mapWithTag = v))
+				t.setValue(!!this.opts.mapWithTag).onChange((v) => {
+					this.opts.mapWithTag = v;
+					void this.updateStatus();
+				})
 			);
 
 		this.csvSetting("Tag names", "tagNames");
@@ -134,10 +137,24 @@ export class FileClassOptionsModal extends Modal {
 				.getResolvedFields(this.name)
 				.filter((f) => isRootField(f))
 				.map((f) => f.name);
-			return isBaseViewSynced(base, view, fields) ? "synced" : "diverged";
+			// The scope comes from the form, not from the saved note: the status must
+			// answer "would Sync change anything?" for what is on screen now.
+			return isBaseViewSynced(base, view, fields, this.draftScope()) ? "synced" : "diverged";
 		} catch {
 			return "diverged";
 		}
+	}
+
+	/** What binds a note to this class, per the options currently in the form. */
+	private draftScope(): ClassScope {
+		const tags = [...(this.opts.tagNames ?? [])];
+		if (this.opts.mapWithTag && !this.name.includes(" ")) tags.push(this.name);
+		return {
+			alias: this.plugin.settings.fileClassAlias,
+			name: this.name,
+			tags,
+			folders: this.opts.filesPaths ?? [],
+		};
 	}
 
 	private async updateStatus(): Promise<void> {
@@ -172,7 +189,12 @@ export class FileClassOptionsModal extends Modal {
 			.setName(name)
 			.setDesc(desc)
 			.addText((t) =>
-				t.setValue((this.opts[key] ?? []).join(", ")).onChange((v) => (this.opts[key] = csv(v)))
+				t.setValue((this.opts[key] ?? []).join(", ")).onChange((v) => {
+					this.opts[key] = csv(v);
+					// filesPaths/tagNames decide what the view filters on, so the Sync
+					// button has to light up as soon as they change.
+					void this.updateStatus();
+				})
 			);
 	}
 

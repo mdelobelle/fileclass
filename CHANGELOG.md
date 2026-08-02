@@ -19,6 +19,13 @@ All notable changes to Fileclass are documented here. The format follows
   alone. Bookmark groups and Base-view bindings have no Bases equivalent and stay
   outside the filter; the docs say which.
 
+- **A nested tag now binds to the class its parent tag maps.** A note tagged
+  `#author/french` was left untyped while a class mapped on `author` claimed
+  `#author`, and the generated view listed it anyway — Bases' `file.hasTag()`
+  includes children, as do Obsidian's tag search and tag pane. The resolver now
+  matches a tag and every tag it nests under, most specific first, so the view and
+  the binding agree. More notes are typed; none loses its typing.
+
 - **The `Template` option said what it was, not what it wasn't.** It read *"compose
   each value from fixed parts"* — which is what someone defining a list of allowed
   values believes they want — and never mentioned `Select`/`Multi`. Both the setting

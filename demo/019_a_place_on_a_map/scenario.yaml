@@ -22,6 +22,20 @@
 # step 11 has to bite on. Icon ids checked in the app: book-open, pen-line, film,
 # shopping-basket.
 #
+# Coordinates to use on camera — Belgium, since the whole library is Franco-Belgian.
+# Approximate to a few hundred metres, from memory rather than from a gazetteer: step
+# 7 opens each pair in a browser, which is exactly where a wrong corner would show.
+#
+#   Reading group              KBR, Mont des Arts, Brussels      50.8434, 4.3564
+#   Signing — Blake & Mortimer Belgian Comic Strip Center        50.8503, 4.3583
+#   Film club — Dune           Cinéma Palace, bd Anspach         50.8484, 4.3505
+#   Library book sale          Louvain-la-Neuve, by Musée Hergé  50.6690, 4.6114
+#
+# Step 5 films a paste rather than typing digits, so copy a link for that one:
+#   https://www.google.com/maps/@50.8503,4.3583,17z
+# Three of them sit within a few streets and the fourth is 25 km out, which is what
+# makes zooming out at step 10 say something.
+#
 # The alternative — pulling icon and colour from a linked note through a formula,
 # the way Maps' own example does — is in the docs, not on camera: filming formula
 # editing is what issue #19 taught us to avoid.

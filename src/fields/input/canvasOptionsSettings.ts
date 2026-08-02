@@ -11,6 +11,7 @@ import { BaseFileSuggest, BaseViewSuggest, CanvasFileSuggest } from "../../ui/ba
 import { parseCanvas } from "../canvas/canvasGraph";
 import { customColors } from "../customPalette";
 import { OptionsDraft } from "../optionsDraft";
+import { colorCircleInput } from "../../ui/colorInput";
 
 type ArrayKey = "edgeColors" | "edgeFromSides" | "edgeToSides" | "edgeLabels" | "nodeColors" | "groupColors" | "groupLabels";
 
@@ -116,16 +117,14 @@ function colorSelect(
 				render();
 			});
 		}
-		const add = row.createEl("label", {
-			cls: "fileclass-color-circle is-add",
-			attr: { title: "Add a color…", "aria-label": "Add a color…" },
-		});
-		setIcon(add, "plus");
-		const input = add.createEl("input", { cls: "fileclass-color-hidden", attr: { type: "color" } });
-		input.value = "#000000";
-		input.addEventListener("change", () => {
-			if (!get(draft, key).includes(input.value)) toggle(draft, key, input.value);
-			render();
+		colorCircleInput(row, {
+			label: "Add a color…",
+			cls: "is-add",
+			badge: "plus",
+			onPick: (value) => {
+				if (!get(draft, key).includes(value)) toggle(draft, key, value);
+				render();
+			},
 		});
 	};
 	render();

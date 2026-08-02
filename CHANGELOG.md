@@ -14,6 +14,20 @@ All notable changes to Fileclass are documented here. The format follows
   reads *Set next date* again, with a tooltip; the skip-forward icon stays where it
   belongs, on the field's own control under Alt.
 
+- **Colour pickers open the way Obsidian's own does.** Every colour control was an
+  invisible `<input type="color">` (`opacity: 0`, absolutely positioned) inside a
+  `<label>` that activated it — and opening its popover from the settings window
+  emptied the settings pane behind it, leaving the tab selected with nothing in it.
+  Obsidian's accent-colour setting, which behaves, is a plain **visible** input
+  sitting directly in its row; ours are now the same thing, shaped into the same
+  circles by CSS, with the "add" mark moved to a corner badge that never takes the
+  click. The swatch inside each one fills a square box, so it is a circle rather than
+  the ellipse a 50% radius draws on Obsidian's 26x22 default, and the two pickers in
+  a field's palette keep their distinct rings — dashed for *add to my colors*,
+  rainbow for a one-off shade — with the chosen colour inset inside them. Three places changed: the palette in the settings, the field picker, and
+  the canvas colour options. The settings pane also rebuilds itself if it is ever
+  found blank — a belt-and-braces that should now never fire.
+
 - **The icon picker shows the icon you already have.** It renders 240 of some 1900
   icons in alphabetical order, so a value like `rocket` was simply absent from the
   first screen: the picker never displayed the value it was editing, and you had to

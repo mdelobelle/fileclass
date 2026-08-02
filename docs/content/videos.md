@@ -88,3 +88,7 @@ other. Captions are English; YouTube translates them into your language.
 ## Pick an icon
 
 {{< video "017" >}}
+
+## Colors, and your own palette
+
+{{< video "018" >}}

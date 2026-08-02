@@ -218,5 +218,16 @@
     "durationSeconds": 128,
     "recordedWith": "0.2.2",
     "privacyStatus": "public"
+  },
+  "018": {
+    "id": "8t8ZaCpv9ks",
+    "url": "https://www.youtube.com/watch?v=8t8ZaCpv9ks",
+    "title": "Fileclass #018 · Colors, and your own palette",
+    "subject": "Colors, and your own palette",
+    "scenario": "018_colors",
+    "doc": "fields/#color",
+    "durationSeconds": 114,
+    "recordedWith": "0.2.2",
+    "privacyStatus": "public"
   }
 }

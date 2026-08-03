@@ -1,0 +1,54 @@
+# Narration for take 020 — see ../SCENARIO.md for the format.
+# Sixth of arc 4 (021 and 022 still follow). Starts where 019 ended: the four
+# activities carry their coordinates and Activities.base has its map view. Turns
+# `Book.publisher` from a name into a group — nested properties, which is the thing
+# the community asks for most often and what the Object type answers.
+#
+# Facts the script leans on, all measured in the app before scripting:
+#  - a value the field held before it became a group is now shown, flagged ("must be
+#    a group of properties") and kept when an empty group is saved. Before this
+#    take's surfaces pass it was invisible, unflagged, and overwritten with `{}`;
+#  - the editor announces it as "Current value, not a group yet", so step 5 has
+#    something to point at;
+#  - Bases does NOT resolve a dotted nested column: `publisher.city` in `order:`
+#    shows nothing. What works is a column on the whole group — which renders the
+#    mapping — and a one-line formula, `note.publisher.city`. Both are in Books.base
+#    already, so step 9 shows a result instead of filming YAML (the lesson of #19).
+#
+# Activities.base carries the map view the previous take built. It needs the Maps
+# community plugin, which a staged vault doesn't ship, so it renders as an unknown
+# view type until someone installs it — the same shape of problem `fileclass-table`
+# had, and the reason no take opens that base.
+title: "Fileclass — A group of fields inside a field"
+description: "Nested properties, typed and filled without writing YAML."
+doc: "fields/#nested-fields-object--objectlist" # deep link used in the description
+tags: "object, nested properties, frontmatter, groups"
+vault_name: "Demo"
+plugin: true
+settings:
+  classFilesPath: "Classes/"
+  fileClassAlias: "fileClass"
+initial_pause: 1500
+default_pause: 900
+
+steps:
+  - title: "For every book, the publisher is just a name — and a publisher has a city, and a year"
+    pause: 2000
+  - title: "Obsidian's properties are flat: nested properties are what people ask for most"
+    pause: 2000
+  - title: "Change publisher's type to Object — a group of properties inside one property"
+    pause: 1900
+  - title: "Declare what the group holds: name, city, founded, each with its own type"
+    pause: 1900
+  - title: "Dune already held a bare name: it is shown, flagged, and not thrown away"
+    pause: 2000
+  - title: "Fill the group — one control per property, each checked by its own type"
+    pause: 1900
+  - title: "Saved, the frontmatter holds a real nested mapping, not a flattened string"
+    pause: 1900
+  - title: "The row shows the group, and one click opens it again"
+    pause: 1800
+  - title: "A base shows the whole group as a column, or pulls one part out with a one-line formula"
+    pause: 2100
+  - title: "Nested properties, typed and filled, without writing a line of YAML"
+    pause: 2200

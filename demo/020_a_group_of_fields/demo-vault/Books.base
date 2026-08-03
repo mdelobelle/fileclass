@@ -1,0 +1,17 @@
+formulas:
+  Publisher city: note.publisher.city
+views:
+  - type: table
+    name: All books
+    filters:
+      and:
+        - fileClass == "Book"
+    sort:
+      - property: published
+        direction: ASC
+    order:
+      - file.name
+      - publisher
+      - formula.Publisher city
+      - genre
+      - published

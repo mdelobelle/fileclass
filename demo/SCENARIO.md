@@ -208,6 +208,11 @@ Over budget with every step earning its place? Shorten the **words**: the
 says "ISO". Or merge two steps into one idea. Never shave the pauses — those are what
 make a take readable.
 
+A few things are pronounced for you, in `lib/voice.mjs`: identifiers (`fileClass` →
+"file class"), `id` as two letters, `lat, lon` in full — and a **take number written
+`016` is read "sixteen"**, since `say` otherwise spells the padded form out digit by
+digit. Versions and dates are left alone.
+
 ## 5. Build `demo-vault/` — the smallest vault that makes the story possible
 
 - Only what the viewer sees: notes, folders, `.base` files. Two or three notes is
@@ -316,7 +321,10 @@ Obsidian, restores your vault list and wipes the demo vault.
 
 If a caption covers what the step is about — a setting low in a pane, the controls of a picker — **⌘⌃⌥⇧U** lifts it to the top of the screen, and the key badge with it. Press it again to drop it back; the next subtitle starts at the bottom either way, so a raised caption never leaks into the following step.
 
-A step may also carry an **`input:`** — a value the operator would otherwise type on camera, like coordinates or a link. The caption shows it in yellow, set apart from the sentence, and **⌘⌃⌥⇧I** types it into whatever field is focused: real keystrokes, so the field's own handlers run and the viewer sees the text appear. It is spoken nowhere — the narration reads the step's title, not eighteen digits.
+A step may also carry values, shown in the caption and spoken nowhere — the narration reads the step's title, not eighteen digits. Two kinds, told apart by colour:
+
+- **`input:`** — what the operator would otherwise type on camera: coordinates, a link, a long id. Shown in **yellow**, and **⌘⌃⌥⇧I** types it into whatever field is focused: real keystrokes, so the field's own handlers run and the viewer sees the text appear. Several values in one step are written `input: "Attic | B | 1"` and served **one per press**, struck through in the caption as they go — a step that fills three boxes must not dump all three into the first one. ` | ` is the separator precisely because a single value may hold a comma and a space.
+- **`values:`** — short words the operator types by hand. Shown in **blue**, so it is obvious at a glance that no chord will insert them and there is nothing to wait for. Same ` | ` list. Use these when a take fills more boxes than the cue is worth: pressing a chord eleven times has its own rhythm cost.
 
 **Keys you press show up on screen.** A badge under the caption names the special
 keys as they happen — `⏎`, `⌥⏎`, `⇥`, `⎋`, and `⏎ ×3` when you chain the same one —

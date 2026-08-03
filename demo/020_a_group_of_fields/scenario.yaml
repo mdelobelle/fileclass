@@ -43,8 +43,9 @@
 #   The Tiara of Oribal    Study        A-2
 #   The Yellow M           Study        C-4
 #
-# Step 7 fills the first album, step 11 the other two. Each carries its values as
-# `input:`, so ⌘⌃⌥⇧I types them.
+# Step 7 fills the first album, step 11 the other two. The values are short words, so
+# they ride along as `values:` — shown in blue in the caption, spoken nowhere, and typed
+# by hand: this take fills too many boxes for the ⌘⌃⌥⇧I cue to be worth the rhythm.
 #
 # The vault opens on Dune, whose shelf string step 1 reads before the comics take over.
 #
@@ -74,22 +75,22 @@ steps:
   - title: "Give Comic a storage field, of type Object: a group of properties inside one property"
     pause: 2000
   - title: "Its children are declared from the field itself — room, from a list of values"
-    input: "Attic, Living room, Study"
+    values: "Attic | Living room | Study"
     pause: 2100
   - title: "And shelf, a group in its turn, holding unit and level as a number"
     pause: 2000
   - title: "Fill it on Tintin in Tibet: room offers what you allowed, level refuses anything that isn't a number"
-    input: "Attic / B / 1"
+    values: "Attic | B | 1"
     pause: 2200
-  - title: "Saved, the frontmatter holds two real levels of structure — no YAML typed"
-    pause: 1900
-  - title: "A display template on each group: unit dash level, then room, middle dot, shelf"
-    input: "{{unit}}-{{level}} then {{room}} · {{shelf}}"
-    pause: 2100
+  - title: "Saved, the frontmatter holds two real levels of structure — no YAML typed, and not really human readable either"
+    pause: 2400
+  - title: "So give each group a display template: unit dash level for the shelf, then room, middle dot, shelf for the whole thing"
+    values: "{{unit}}-{{level}} | {{room}} · {{shelf}}"
+    pause: 2300
   - title: "Which lands on the very text the books carry as a string — same reading, structure underneath"
     pause: 2200
   - title: "The other two albums follow: the Tiara in the Study, and the Yellow M above it"
-    input: "Study / A / 2 — then Study / C / 4"
+    values: "Study | A | 2 | Study | C | 4"
     pause: 2200
-  - title: "And a base sorts the comics by room, then by level: what no single string could do"
-    pause: 2300
+  - title: "And with the help of formulas a base sorts the comics by room, then by level: what no single string could do"
+    pause: 2400

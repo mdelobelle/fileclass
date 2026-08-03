@@ -196,9 +196,15 @@ function install(cueCode) {
 				font-family:-apple-system,BlinkMacSystemFont,sans-serif;pointer-events:none;
 				user-select:none;opacity:0;transition:opacity .16s ease,transform .16s ease}
 			#fc-demo-keys.fc-show{opacity:1;transform:translateX(-50%) translateY(0)}
-			#fc-demo-subtitle .fc-input{display:inline-block;margin-left:.5em;padding:0 .4em;
-				border-radius:6px;background:rgba(224,172,0,.16);color:#ffd75e;
+			#fc-demo-subtitle .fc-input,#fc-demo-subtitle .fc-typed{display:inline-block;
+				margin-left:.5em;padding:0 .4em;border-radius:6px;
 				font-variant-numeric:tabular-nums;letter-spacing:.4px}
+			/* Yellow: a chord will type this. Blue: you type it yourself. Two colours so
+			   the operator never waits for a value that nothing is going to insert. */
+			#fc-demo-subtitle .fc-input{background:rgba(224,172,0,.16);color:#ffd75e}
+			#fc-demo-subtitle .fc-input.is-done{background:rgba(224,172,0,.07);color:#8d7a3c;
+				text-decoration:line-through}
+			#fc-demo-subtitle .fc-typed{background:rgba(0,183,211,.16);color:#7fdcf0}
 			#fc-demo-subtitle.fc-top:not(.fc-title){bottom:auto;top:6vh}
 			#fc-demo-keys.fc-top{bottom:auto;top:2vh}`;
 		document.head.appendChild(style);
@@ -222,8 +228,9 @@ class Stage {
 		this.seen = new Map(); // page → order of appearance (newest window wins ties)
 		this.seq = 0;
 		this.focused = null; // the ONE window currently showing the caption
-		this.caption = { text: "", title: false, input: null };
+		this.caption = { text: "", title: false, input: [], values: [] };
 		this.inserts = 0; // insert-chord presses already served
+		this.typed = 0; // values of this step already typed by the chord
 	}
 
 	/**
@@ -321,26 +328,31 @@ class Stage {
 
 	/** Paints the caption on the focused window and blanks it on every other. */
 	async paint() {
-		const { text, title, input } = this.caption;
+		const { text, title, input, values } = this.caption;
 		await Promise.all(
 			this.pages.map((page) =>
 				page
 					.evaluate(
-						(t, isTitle, focused, showKeys, value) => {
+						(t, isTitle, focused, showKeys, chips) => {
 							const el = document.getElementById("fc-demo-subtitle");
 							if (!el) return;
 							// A different line means the next step: back to the bottom.
 							// Repaints of the same line (focus moved windows) keep it where
-							// the operator put it.
-							if (el.textContent !== t && window.__fcDemo) window.__fcDemo.top = false;
+							// the operator put it. The chips repaint with it, which is how a
+							// typed value gets struck through as it is served.
+							const sentence = el.dataset.line ?? "";
+							if (sentence !== t && window.__fcDemo) window.__fcDemo.top = false;
 							el.textContent = t;
-							// The value the operator can have typed for them, set apart so
-							// it reads as data rather than as part of the sentence.
-							if (t && value) {
-								const chip = document.createElement("span");
-								chip.className = "fc-input";
-								chip.textContent = value;
-								el.appendChild(chip);
+							el.dataset.line = t;
+							// The values, set apart so they read as data rather than as part
+							// of the sentence: yellow ones a chord types, blue ones you type.
+							if (t) {
+								for (const c of chips) {
+									const chip = document.createElement("span");
+									chip.className = c.done ? "fc-input is-done" : c.cls;
+									chip.textContent = c.value;
+									el.appendChild(chip);
+								}
 							}
 							el.classList.toggle("fc-title", !!isTitle);
 							el.classList.toggle("fc-show", !!t);
@@ -355,22 +367,26 @@ class Stage {
 						title,
 						page === this.focused,
 						this.showKeys,
-						input ?? ""
+						[
+							...input.map((value, i) => ({ value, cls: "fc-input", done: i < this.typed })),
+							...values.map((value) => ({ value, cls: "fc-typed", done: false })),
+						]
 					)
 					.catch(() => {})
 			)
 		);
 	}
 
-	async show(text, { title = false, input = null } = {}) {
-		this.caption = { text, title, input };
+	async show(text, { title = false, input = [], values = [] } = {}) {
+		this.caption = { text, title, input, values };
+		this.typed = 0;
 		this.inserts = await this.insertCount(); // ignore anything pressed before now
 		await this.syncFocus(); // land it on the window that's actually in front
 		await this.paint();
 	}
 
 	async hide() {
-		this.caption = { text: "", title: false, input: null };
+		this.caption = { text: "", title: false, input: [], values: [] };
 		await this.paint();
 	}
 
@@ -381,17 +397,26 @@ class Stage {
 	}
 
 	/**
-	 * Types this step's `input` wherever the operator is, if they asked for it since
-	 * the last check. Real keystrokes rather than a value assignment: Obsidian's
-	 * fields listen for input events, and a take should show the text appearing.
+	 * Types the next of this step's `input` values wherever the operator is, if they
+	 * asked for it since the last check. Real keystrokes rather than a value
+	 * assignment: Obsidian's fields listen for input events, and a take should show
+	 * the text appearing.
+	 *
+	 * One press serves one value, in order: a step that fills a room, a unit and a
+	 * level has three boxes, and typing all three into the first one is worse than
+	 * typing nothing. Served values are struck through in the caption, so the
+	 * operator can see how far the chord has got.
 	 */
 	async typeRequestedInput() {
-		const value = this.caption.input;
-		if (!value || !this.focused) return false;
+		const queue = this.caption.input;
+		if (this.typed >= queue.length || !this.focused) return false;
 		const pressed = await this.insertCount();
 		if (pressed <= this.inserts) return false;
 		this.inserts = pressed;
+		const value = queue[this.typed];
+		this.typed += 1;
 		await this.focused.keyboard.type(value, { delay: 12 }).catch(() => {});
+		await this.paint();
 		return true;
 	}
 

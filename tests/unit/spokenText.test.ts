@@ -42,6 +42,25 @@ describe("spokenText — what the narrator actually says", () => {
 	});
 });
 
+describe("a take number is read, not spelled", () => {
+	it("says sixteen where the script writes 016", () => {
+		// `say` reads the padded form digit by digit ("oh one six"), which is nobody's
+		// way of naming a take.
+		expect(spoken("Since take 016 a book says where it is shelved")).toBe(
+			"Since take 16 a book says where it is shelved"
+		);
+		expect(spoken("take 007")).toBe("take 7");
+	});
+
+	it("keeps the letter of a b-take, as a separate word", () => {
+		expect(spoken("as take 016b showed")).toBe("as take 16 b showed");
+	});
+
+	it("leaves versions and dates alone", () => {
+		expect(spoken("0.2.3 shipped on 2028-04-20")).toBe("0.2.3 shipped on 2028-04-20");
+	});
+});
+
 describe("coordinates are said, not clipped", () => {
 	it("reads lat, lon as latitude and longitude", () => {
 		expect(spoken("what is stored stays a plain lat, lon")).toBe(

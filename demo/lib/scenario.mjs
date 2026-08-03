@@ -15,9 +15,23 @@ import { basename, join } from "node:path";
 /**
  * `input:` is a value the operator would otherwise type on camera — coordinates, a
  * link, a long id. The caption shows it, and ⌘⌃⌥⇧I types it into whatever field is
- * focused, which keeps a take from becoming a typing lesson.
+ * focused, which keeps a take from becoming a typing lesson. Several values in one
+ * step are separated by ` | ` and typed one per press, since a step that fills three
+ * boxes must not dump all three into the first one.
+ *
+ * `values:` is the other half: values short enough that the operator types them by
+ * hand. The caption shows them, in a different colour so it is obvious no chord will
+ * type them, and the narration doesn't read them out.
  */
-const STEP_KEYS = new Set(["title", "pause", "hold", "note", "input"]);
+const STEP_KEYS = new Set(["title", "pause", "hold", "note", "input", "values"]);
+
+/** Splits a ` | `-separated list of values; a single value stays a one-item list. */
+export function splitValues(raw) {
+	return String(raw)
+		.split(" | ")
+		.map((v) => v.trim())
+		.filter(Boolean);
+}
 
 const ROOT_KEYS = new Set([
 	"title",
@@ -176,7 +190,8 @@ export function parseScenario(text, source = "scenario.yaml") {
 			title: String(s.title),
 			pause: duration(s.pause, defaultPause),
 			hold: s.hold === true,
-			input: s.input === undefined ? null : String(s.input),
+			input: s.input === undefined ? [] : splitValues(s.input),
+			values: s.values === undefined ? [] : splitValues(s.values),
 		})),
 	};
 }

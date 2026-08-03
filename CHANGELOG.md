@@ -14,6 +14,15 @@ All notable changes to Fileclass are documented here. The format follows
   own settings now carry the action, for `Object` and `ObjectList`, and it appears as
   soon as you pick one of those types rather than after a save and a detour.
 
+- **The arrow keys move through a field list.** Every row of the schema editor
+  contributes four or five tab stops — fifty-five in a class of a dozen fields — so
+  reaching the eighth field's *Edit* was thirty-odd presses of Tab. ↓ / ↑ now move to
+  the same action on the next field, → / ← between that field's actions, Home / End to
+  the ends, and the whole list is a single tab stop. Moving down keeps the *action*,
+  not the column: a group carries an extra **Children** button, so ↓ from *Edit* lands
+  on *Edit* rather than sliding onto *Remove*. Applies to the schema editor and to an
+  object's children list, which is the same list scoped to a field.
+
 - **A valid group is no longer painted as a warning.** Obsidian can't interpret a
   nested property, so it colours the value in `--text-warning` — right for a value
   nobody can make sense of, wrong for a group a fileClass declares and validates. The

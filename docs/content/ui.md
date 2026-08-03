@@ -143,6 +143,26 @@ CLI's `set-where`:
 > Dry-run first: nothing is written until you Apply. As always, writes go
 > straight to your vault — keep regular backups.
 
+## Moving through a field list
+
+The **schema editor**'s field list — and the same list scoped to an
+[object's children](../fields/#nested-fields-object--objectlist) — is navigated with
+the arrow keys:
+
+| key | effect |
+|-----|--------|
+| ↓ / ↑ | the **same action** on the next / previous field |
+| → / ← | the next / previous action of that field |
+| Home / End | the first / last field, keeping the action |
+| Enter or Space | activates it, as any button |
+
+The list is a **single tab stop**: Tab reaches it, the arrows move inside it, Tab
+leaves for the footer. A class of a dozen fields used to put fifty-five stops between
+you and the Save button.
+
+Moving down keeps the *action*, not the column: a group field carries an extra
+**Children** button, so ↓ from *Edit* lands on *Edit* — never on *Remove*.
+
 ## Field indicator
 
 A small clickable **icon** appears next to a note's name whenever a fileClass

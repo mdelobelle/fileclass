@@ -8,6 +8,7 @@
 import { EventRef, Modal, Notice, Setting, TFile } from "obsidian";
 
 import { modalTitle } from "./modalTitle";
+import { attachRowGrid } from "./rowGridKeyboard";
 
 import type FileclassPlugin from "../../main";
 import { childPathOf, Field } from "../schema/field";
@@ -31,6 +32,9 @@ import { pickAndCreateBase } from "../views/baseFileGenerator";
 import { fileClassBaseFile, openFileClassBase } from "../views/baseSync";
 
 export class FileClassSchemaModal extends Modal {
+	/** Detaches the arrow-key grid of the current render. */
+	private detachGrid?: () => void;
+
 	private changeRef?: EventRef;
 
 	constructor(
@@ -56,6 +60,7 @@ export class FileClassSchemaModal extends Modal {
 	}
 
 	onClose(): void {
+		this.detachGrid?.();
 		if (this.changeRef) this.app.metadataCache.offref(this.changeRef);
 		this.contentEl.empty();
 	}
@@ -126,8 +131,12 @@ export class FileClassSchemaModal extends Modal {
 		const fields = this.ownFields();
 		if (!fields.length) contentEl.createEl("p", { text: "No fields yet." });
 
+		// The field rows live in their own container: the arrow-key grid must not
+		// reach the class-level actions above them.
+		const listEl = contentEl.createDiv({ cls: "fileclass-field-list" });
+
 		fields.forEach((field, i) => {
-			const setting = new Setting(contentEl)
+			const setting = new Setting(listEl)
 				.setName(field.name)
 				.setDesc(field.type)
 				.addExtraButton((b) =>
@@ -163,6 +172,13 @@ export class FileClassSchemaModal extends Modal {
 				.addExtraButton((b) =>
 					b.setIcon("trash").setTooltip("Remove").onClick(() => this.remove(field.id))
 				);
+		});
+
+		this.detachGrid?.();
+		this.detachGrid = attachRowGrid(listEl, {
+			rowSelector: ":scope > .setting-item",
+			actionSelector: "button, .clickable-icon",
+			preferred: "Edit",
 		});
 
 		new Setting(makeStickyFooter(contentEl)).addButton((b) =>

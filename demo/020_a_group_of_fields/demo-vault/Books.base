@@ -1,17 +1,20 @@
 formulas:
-  Publisher city: note.publisher.headquarter.city
+  Room: note.storage.room
+  Level: note.storage.shelf.level
 views:
   - type: table
-    name: All books
+    name: By room
     filters:
       and:
         - fileClass == "Book"
     sort:
-      - property: published
+      - property: formula.Room
+        direction: ASC
+      - property: formula.Level
         direction: ASC
     order:
       - file.name
-      - publisher
-      - formula.Publisher city
+      - storage
+      - formula.Room
+      - formula.Level
       - genre
-      - published

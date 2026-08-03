@@ -613,6 +613,10 @@ Editing opens a **draft editor**:
 Only **root** fields appear in the field picker; nested fields are reached by
 editing their parent object.
 
+A group's **children** are edited from the field itself: open its settings — the
+schema editor's *Edit*, or Alt-clicking its type icon anywhere a value is shown — and
+use **Children**. The schema screen keeps its own shortcut for the same thing.
+
 ### Display template
 
 Object/ObjectList fields have a **Display template** (in the schema editor)

@@ -18,6 +18,8 @@ import { mutateFields } from "../schema/fileClassIo";
 import { updateFieldDef } from "../schema/fileClassWrite";
 import { Field } from "../schema/field";
 import { applyConditional } from "../views/conditionalSync";
+import { FileClassSchemaModal } from "./fileClassSchemaModal";
+import { childPathOf } from "../schema/field";
 import { FieldDefModal, FieldDefResult } from "./fieldDefModal";
 
 /**
@@ -57,6 +59,8 @@ export function openFieldSettings(plugin: FileclassPlugin, field: Field): void {
 		dateDefaults: dateFormatDefaults(plugin.settings),
 		classFields: plugin.index.getResolvedFields(owner),
 		initial: { name: field.name, type: field.type, options: field.options },
+		onEditChildren: () =>
+			new FileClassSchemaModal(plugin, owner, file, childPathOf(field)).open(),
 		onSubmit: (r) => {
 			void mutateFields(plugin.app, file, (fields) =>
 				updateFieldDef(fields, field.id, { name: r.name, type: r.type, options: r.options })

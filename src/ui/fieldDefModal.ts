@@ -66,6 +66,13 @@ export class FieldDefModal extends Modal {
 			 * "Next interval field" from the compatible ones by name.
 			 */
 			classFields?: readonly Pick<Field, "name" | "type">[];
+			/**
+			 * Opens the child-fields editor of an Object/ObjectList field. Passed by
+			 * every door that edits an existing field, so the group's children are
+			 * reachable from the field itself — they used to be a button on the schema
+			 * screen only, which Alt-clicking a field's icon never goes through.
+			 */
+			onEditChildren?: () => void;
 		}
 	) {
 		super(app);
@@ -102,8 +109,24 @@ export class FieldDefModal extends Modal {
 			d.setValue(this.type).onChange((v) => {
 				this.type = v as FieldType;
 				renderOptions();
+				renderChildren();
 			});
 		});
+
+		// Shown for a group, refreshed when the type changes — picking Object here
+		// should offer its children without a trip through the schema screen.
+		const childrenEl = contentEl.createDiv();
+		const renderChildren = () => {
+			childrenEl.empty();
+			if (!this.opts.onEditChildren) return;
+			if (this.type !== "Object" && this.type !== "ObjectList") return;
+			new Setting(childrenEl)
+				.setName("Children")
+				.setDesc("The fields inside this group.")
+				.addButton((b) =>
+					b.setButtonText("Edit children").onClick(() => this.opts.onEditChildren?.())
+				);
+		};
 
 		new Setting(contentEl)
 			.setName("Required")
@@ -111,6 +134,7 @@ export class FieldDefModal extends Modal {
 			.addToggle((t) => t.setValue(this.required).onChange((v) => (this.required = v)));
 
 		renderOptions();
+		renderChildren();
 
 		new Setting(makeStickyFooter(contentEl)).addButton((b) =>
 			b

@@ -198,6 +198,8 @@ export class FileClassSchemaModal extends Modal {
 			dateDefaults: dateFormatDefaults(this.plugin.settings),
 			classFields: this.plugin.index.getResolvedFields(this.name),
 			initial: { name: field.name, type: field.type, options: field.options },
+			onEditChildren: () =>
+				new FileClassSchemaModal(this.plugin, this.name, this.file, childPathOf(field)).open(),
 			onSubmit: (r) => {
 				void mutateFields(this.app, this.file, (fields) =>
 					updateFieldDef(fields, field.id, {

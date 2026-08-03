@@ -8,6 +8,12 @@ All notable changes to Fileclass are documented here. The format follows
 
 ### Fixed
 
+- **A group's children are reachable from the field itself.** *Children* was a button
+  on the schema screen only, so the other doors into a field's definition — Alt-clicking
+  its type icon in the note-fields modal, above all — could not get to them. The field's
+  own settings now carry the action, for `Object` and `ObjectList`, and it appears as
+  soon as you pick one of those types rather than after a save and a detour.
+
 - **A group's display template now reaches Obsidian's Properties panel.** A nested
   property showed there as raw JSON — `{"name":"Chilton Books","city":"Philadelphia"}`
   — while every Fileclass surface showed the template's summary. When a display

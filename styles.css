@@ -990,13 +990,21 @@ input.fileclass-color-circle.is-custom::-webkit-color-swatch-wrapper {
 	scroll-padding-top: var(--size-4-4);
 }
 
-/* "Unsaved changes", beside the Save button of a modal holding a draft. Hidden until
-   the draft actually differs, so its appearance is the signal. */
+/* "Unsaved changes", in the sticky footer and on the same line as Save, pushed to the
+   left edge. In the footer because it is the one part of a long list that is always on
+   screen — a line above the buttons scrolls out of sight exactly when it matters. */
+.fileclass-sticky-footer > .setting-item {
+	display: flex;
+	align-items: center;
+	gap: var(--size-4-2);
+}
+
 .fileclass-unsaved-hint {
 	display: none;
 	margin-right: auto;
 	color: var(--text-warning);
 	font-size: var(--font-ui-small);
+	white-space: nowrap;
 }
 
 .fileclass-unsaved-hint.is-visible {

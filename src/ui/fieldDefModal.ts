@@ -178,8 +178,9 @@ export class FieldDefModal extends Modal {
 		renderChildren();
 
 		const footer = makeStickyFooter(contentEl);
-		this.guard.mountHint(footer);
-		new Setting(footer).addButton((b) =>
+		const footerRow = new Setting(footer);
+		this.guard.mountHint(footerRow.settingEl);
+		footerRow.addButton((b) =>
 			b
 				.setButtonText("Save")
 				.setCta()

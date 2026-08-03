@@ -28,8 +28,9 @@ All notable changes to Fileclass are documented here. The format follows
 
 - **Closing a modal with unsaved changes asks instead of discarding.** Nothing said
   whether Save was needed, so Escape or the close button threw a half-filled field
-  definition away in silence. A modal holding a draft now shows **Unsaved changes**
-  beside its Save button the moment the draft differs from what it opened on, and
+  definition away in silence. A modal holding a draft now shows **Unsaved changes** at
+  the left of its pinned footer, on the Save button's line, the moment the draft differs
+  from what it opened on — so a long list can't scroll the warning out of sight — and
   closing it offers *Keep editing*, *Discard* or *Save* — Escape, the X and a click
   outside all go through the same door. An untouched modal still closes without a word.
   So far: a field's definition, a group's values, and an `ObjectList`'s items.

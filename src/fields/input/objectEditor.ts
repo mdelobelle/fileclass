@@ -133,8 +133,9 @@ export class ObjectFieldsEditorModal extends Modal {
 		});
 
 		const footer = makeStickyFooter(contentEl);
-		this.guard.mountHint(footer);
-		new Setting(footer).addButton((b) =>
+		const footerRow = new Setting(footer);
+		this.guard.mountHint(footerRow.settingEl);
+		footerRow.addButton((b) =>
 			b
 				.setButtonText("Save")
 				.setCta()
@@ -248,8 +249,9 @@ export class ObjectListEditorModal extends Modal {
 		});
 
 		const footer = makeStickyFooter(contentEl);
-		this.guard.mountHint(footer);
-		new Setting(footer)
+		const footerRow = new Setting(footer);
+		this.guard.mountHint(footerRow.settingEl);
+		footerRow
 			.addButton((b) =>
 				b.setButtonText("Add item").onClick(() => {
 					this.draft.push({});

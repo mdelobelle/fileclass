@@ -147,7 +147,8 @@ CLI's `set-where`:
 
 A modal that holds a draft — a field's definition, a group's values, a list's items —
 says so as soon as the draft differs from what it opened on: **Unsaved changes**
-appears beside its Save button. Closing it then asks rather than discarding, with the
+appears at the left of its footer, on the same line as Save — the footer is pinned, so
+the warning stays on screen however long the list is. Closing it then asks rather than discarding, with the
 three answers that exist: **Keep editing**, **Discard**, or **Save**. That covers
 Escape, the close button and a click outside, since Obsidian routes all three through
 the same close.

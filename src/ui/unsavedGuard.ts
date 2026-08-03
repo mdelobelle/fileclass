@@ -31,7 +31,11 @@ export interface UnsavedGuardOptions {
 export interface UnsavedGuard {
 	/** Re-reads dirtiness and updates the footer line. Call after a change. */
 	refresh: () => void;
-	/** Puts the "unsaved changes" line in `parent` (usually the footer). */
+	/**
+	 * Puts the "unsaved changes" line at the left of a footer row — call it with the
+	 * `Setting`'s element so it shares the line with the buttons, which is the part of
+	 * a long list that stays on screen.
+	 */
 	mountHint: (parent: HTMLElement) => void;
 }
 
@@ -81,6 +85,7 @@ export function attachUnsavedGuard(
 		refresh,
 		mountHint: (parent: HTMLElement): void => {
 			hintEl = parent.createDiv({ cls: HINT_CLASS, text: "Unsaved changes" });
+			parent.prepend(hintEl); // first item of the row: `margin-right: auto` pins it left
 			refresh();
 		},
 	};

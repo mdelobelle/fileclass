@@ -6,6 +6,8 @@ All notable changes to Fileclass are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.2.5] - 2026-08-03
+
 ### Fixed
 
 - **A property control acts on the note in front of you.** Obsidian recycles the rows of

@@ -677,6 +677,8 @@ use **Children**. The schema screen keeps its own shortcut for the same thing.
 
 ### Display template
 
+{{< video "021" >}}
+
 Object/ObjectList fields have a **Display template** (in the schema editor)
 controlling how an item is summarized in the modal and the list editor:
 

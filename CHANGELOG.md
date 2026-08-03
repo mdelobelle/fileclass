@@ -14,6 +14,13 @@ All notable changes to Fileclass are documented here. The format follows
   own settings now carry the action, for `Object` and `ObjectList`, and it appears as
   soon as you pick one of those types rather than after a save and a detour.
 
+- **A valid group is no longer painted as a warning.** Obsidian can't interpret a
+  nested property, so it colours the value in `--text-warning` — right for a value
+  nobody can make sense of, wrong for a group a fileClass declares and validates. The
+  warning colour is dropped when the field is an `Object`/`ObjectList` **and** the
+  value passes validation; a group that doesn't keeps it, because there the warning is
+  the truth.
+
 - **A group's display template now reaches Obsidian's Properties panel.** A nested
   property showed there as raw JSON — `{"name":"Chilton Books","city":"Philadelphia"}`
   — while every Fileclass surface showed the template's summary. When a display

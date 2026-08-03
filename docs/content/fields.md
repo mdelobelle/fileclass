@@ -613,6 +613,11 @@ Editing opens a **draft editor**:
 Only **root** fields appear in the field picker; nested fields are reached by
 editing their parent object.
 
+Obsidian has no editor for a nested property, so its **Properties** panel prints the
+value and colours it as a warning. When the field is declared as a group *and* its
+value validates, Fileclass drops that colour — the value is understood here, even if
+Obsidian can't edit it. A group whose value doesn't fit keeps the warning.
+
 A group's **children** are edited from the field itself: open its settings — the
 schema editor's *Edit*, or Alt-clicking its type icon anywhere a value is shown — and
 use **Children**. The schema screen keeps its own shortcut for the same thing.

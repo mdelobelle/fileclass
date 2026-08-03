@@ -963,3 +963,10 @@ input.fileclass-color-circle.is-custom::-webkit-color-swatch-wrapper {
 	width: var(--icon-s);
 	height: var(--icon-s);
 }
+
+/* A nested group Obsidian can't interpret, but that a fileClass declares and
+   validates: it paints those in --text-warning, which is right for a value nobody
+   can make sense of and wrong here. An invalid group keeps the warning. */
+.metadata-property-value-item.mod-unknown.fileclass-group-ok {
+	color: inherit;
+}

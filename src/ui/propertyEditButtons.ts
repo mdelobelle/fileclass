@@ -35,6 +35,7 @@ import { AddFileClassModal } from "./addFileClassModal";
 import { attachAltAffordance } from "./altAffordance";
 import { openFileClassSchema } from "./fileClassSchemaModal";
 import { describeField, displayTemplateOf } from "../fields/objectDisplay";
+import { validateField } from "../fields/validate";
 import { makeDisplayDeps } from "../fields/displayDeps";
 import { makeValuePreview } from "./valuePreview";
 
@@ -44,6 +45,8 @@ const PREVIEW_CLASS = "fileclass-prop-preview";
 const ACTIONS_CLASS = "fileclass-prop-actions";
 /** The "open this class's schema" button, on the fileClass row (#23). */
 const CLASS_CLASS = "fileclass-prop-class";
+/** Marks a nested value Obsidian can't interpret but this plugin declares and validates. */
+const GROUP_OK_CLASS = "fileclass-group-ok";
 /** Leaf types whose views render a native Properties editor. */
 const LEAF_TYPES = ["markdown", "file-properties"];
 
@@ -279,14 +282,21 @@ export class PropertyEditButtons extends Component {
 	 * touches the shape Obsidian renders today: make nested properties editable in a
 	 * future version and this quietly stops.
 	 */
-	private applyGroupTemplate(valueEl: HTMLElement, field: Field, file: TFile): void {
+	private decorateGroupValue(valueEl: HTMLElement, field: Field, file: TFile): void {
 		if (field.type !== "Object" && field.type !== "ObjectList") return;
-		if (!displayTemplateOf(field)) return;
 		const item = valueEl.querySelector<HTMLElement>(
 			":scope > .metadata-property-value-item.mod-unknown"
 		);
 		if (!item) return;
 		const raw = readFieldValue(this.plugin.app, file, field);
+
+		// Obsidian paints an uninterpreted value in --text-warning, which is right for
+		// a value nobody can make sense of and wrong for a group this class declares
+		// and validates. Drop the warning colour only when both hold; an invalid group
+		// keeps it, because there the warning is the truth.
+		item.classList.toggle(GROUP_OK_CLASS, validateField(field, raw).ok);
+
+		if (!displayTemplateOf(field)) return;
 		const text = describeField(field, raw, makeDisplayDeps(this.plugin.index.getFields(file)));
 		if (!text || item.dataset.fcTemplate === text) return; // settled: no new mutation
 		item.dataset.fcRaw ??= item.textContent ?? "";
@@ -339,7 +349,7 @@ export class PropertyEditButtons extends Component {
 				button.after(preview);
 			}
 		}
-		this.applyGroupTemplate(valueEl, field, file);
+		this.decorateGroupValue(valueEl, field, file);
 	}
 
 	private makeButton(file: TFile, field: Field, key: string): HTMLElement {

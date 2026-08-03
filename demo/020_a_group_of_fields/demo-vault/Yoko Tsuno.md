@@ -1,7 +1,7 @@
 ---
+fileClass: Series
 color: "#7852ee"
 icon: cpu
-fileClass: Series
 publisher: Dupuis
 started: 1970-09-24
 ---

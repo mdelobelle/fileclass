@@ -1,6 +1,6 @@
 ---
-shelf: Living room · B-2
 fileClass: Book
+shelf: Living room · B-2
 publisher: ""
 pages: ""
 genre: Fantasy

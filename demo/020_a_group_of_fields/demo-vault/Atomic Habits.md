@@ -1,6 +1,6 @@
 ---
-shelf: Study · C-1
 fileClass: Book
+shelf: Study · C-1
 publisher: Avery
 pages: 320
 genre: 

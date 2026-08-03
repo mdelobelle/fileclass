@@ -1,6 +1,6 @@
 ---
-shelf: Study · A-3
 fileClass: Book
+shelf: Study · A-3
 publisher: Chilton Books
 pages: 412
 genre: Science fiction

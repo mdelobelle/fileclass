@@ -1,7 +1,7 @@
 ---
+fileClass: Series
 color: "#ec7500"
 icon: plane
-fileClass: Series
 publisher: Casterman
 started: 1952-11-13
 ---

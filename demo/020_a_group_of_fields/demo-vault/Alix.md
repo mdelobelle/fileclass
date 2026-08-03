@@ -1,7 +1,7 @@
 ---
+fileClass: Series
 color: "#e0ac00"
 icon: swords
-fileClass: Series
 publisher: Casterman
 started: 1948-09-16
 ---

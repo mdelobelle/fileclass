@@ -240,5 +240,16 @@
     "durationSeconds": 184,
     "recordedWith": "0.2.2",
     "privacyStatus": "public"
+  },
+  "020": {
+    "id": "9fRoZEE2xfI",
+    "url": "https://www.youtube.com/watch?v=9fRoZEE2xfI",
+    "title": "Fileclass #020 · A group of fields inside a field",
+    "subject": "A group of fields inside a field",
+    "scenario": "020_a_group_of_fields",
+    "doc": "fields/#nested-fields-object--objectlist",
+    "durationSeconds": 211,
+    "recordedWith": "0.2.3",
+    "privacyStatus": "public"
   }
 }

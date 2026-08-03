@@ -596,6 +596,8 @@ comma-separated entry).
 
 ## Nested fields (Object / ObjectList)
 
+{{< video "020" >}}
+
 An **Object** field groups typed sub-fields into a nested structure; an
 **ObjectList** is an array of such objects. Sub-fields are declared in the same
 fileClass with a `path` pointing at their parent — nesting can go several levels
@@ -612,6 +614,30 @@ Editing opens a **draft editor**:
 
 Only **root** fields appear in the field picker; nested fields are reached by
 editing their parent object.
+
+### Sorting and filtering on a child, in Bases
+
+A nested value is real structure, so a base can order rows by it — through a
+**formula**, not a dotted property. Bases resolves neither `storage.room` nor
+`note.storage.room` as a column or as a `sort:` property (both leave the order
+untouched), while a one-line formula does:
+
+```yaml
+formulas:
+  Room: note.storage.room
+  Level: note.storage.shelf.level
+views:
+  - type: table
+    name: By room
+    sort:
+      - property: formula.Room
+        direction: ASC
+      - property: formula.Level
+        direction: ASC
+```
+
+This is the half a well-shaped string can't give you: `Study · A-3` in a plain
+`Input` reads the same on screen and sorts as one opaque piece of text.
 
 Obsidian has no editor for a nested property, so its **Properties** panel prints the
 value and colours it as a warning. When the field is declared as a group *and* its

@@ -8,6 +8,16 @@ All notable changes to Fileclass are documented here. The format follows
 
 ### Fixed
 
+- **A property control acts on the note in front of you.** Obsidian recycles the rows of
+  its Properties panel — switching notes keeps the elements and rewrites their contents —
+  and Fileclass only rebuilt its button when the property *name* changed. So on two notes
+  sharing a property, the button stayed behind with the first note captured inside it:
+  the `editions` control of one book opened another book's list (reported from a real
+  vault), and a `Cycle` or a `Boolean` would have written to the wrong note **in
+  silence**, with no modal to show it. The note and the field are now read from the row
+  at the moment of the click, and the button is rebuilt when either the note or the
+  field's type changes — which also keeps its icon and its label honest.
+
 - **A child field whose name matches a root field no longer disappears.** A class holds
   its nested children in the same list as its root fields, told apart by their `path`,
   and the resolver de-duplicated that list by **name alone**. So a `Book` with a

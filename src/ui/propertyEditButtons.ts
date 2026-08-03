@@ -321,9 +321,21 @@ export class PropertyEditButtons extends Component {
 			return;
 		}
 		let button = existing;
-		if (!button || button.dataset.fcKey !== key) {
+		// The row is Obsidian's, and it recycles it: switching notes keeps the element
+		// and rewrites its contents. A button reused on the strength of its key alone
+		// therefore survived onto another note still carrying the first one — so the
+		// control of `editions` on one book opened the editions of another, and a Cycle
+		// would have advanced the wrong note's value in silence. The file is part of a
+		// button's identity, and its type is too: the same key on another class can be
+		// another field, with another icon and another gesture.
+		if (
+			!button ||
+			button.dataset.fcKey !== key ||
+			button.dataset.fcFile !== file.path ||
+			button.dataset.fcType !== field.type
+		) {
 			button?.remove();
-			button = this.makeButton(file, field, key);
+			button = this.makeButton(file, field, key, row);
 			row.insertBefore(button, valueEl);
 		}
 		// Type preview (Color swatch / Icon glyph) right after the button (between
@@ -352,16 +364,24 @@ export class PropertyEditButtons extends Component {
 		this.decorateGroupValue(valueEl, field, file);
 	}
 
-	private makeButton(file: TFile, field: Field, key: string): HTMLElement {
+	private makeButton(file: TFile, field: Field, key: string, row: HTMLElement): HTMLElement {
 		const btn = createSpan({ cls: `${BTN_CLASS} clickable-icon` });
 		btn.dataset.fcKey = key;
+		btn.dataset.fcFile = file.path;
+		btn.dataset.fcType = field.type;
 		// The label names the gesture this type performs, not a generic "edit":
 		// a Cycle advances and a Boolean flips, here as in every other surface.
-		const ctxOf = (): EditContext => ({
-			host: this.plugin,
-			file,
-			allFields: this.plugin.index.getFields(file),
-		});
+		// The note is read from the row at call time rather than captured: the row
+		// outlives the note shown in it, and no click may land on a stale file.
+		const fileNow = (): TFile => this.fileForEl(row) ?? file;
+		const ctxOf = (): EditContext => {
+			const current = fileNow();
+			return {
+				host: this.plugin,
+				file: current,
+				allFields: this.plugin.index.getFields(current),
+			};
+		};
 		const { verb, alt } = controlLabel(controlActionFor(field.type));
 		const icon = fieldTypeIcon(field.type);
 		let hint = alt ? " (Alt-click to pick a value)" : "";
@@ -386,7 +406,12 @@ export class PropertyEditButtons extends Component {
 		btn.addEventListener("click", (e) => {
 			e.preventDefault();
 			e.stopPropagation();
-			void runControlAction(ctxOf(), field, { alt: e.altKey });
+			const ctx = ctxOf();
+			// The field is resolved from the note being shown now, for the same reason
+			// the file is: on another note this key may be another field, or none.
+			const current = this.editableField(ctx.file, key);
+			if (!current) return;
+			void runControlAction(ctx, current, { alt: e.altKey });
 		});
 		return btn;
 	}

@@ -64,11 +64,11 @@ steps:
   - title: "Its children are declared as a group's are: format from a list, year as a number, and publisher"
     values: "Hardcover | Paperback | Ebook"
     pause: 2200
-  - title: "The first item: the 1965 hardcover — an item is filled with the very editor a group uses"
-    values: "Hardcover | 1965 | Chilton Books"
+  - title: "The first item, the 1965 hardcover: filled with the very editor a group uses"
+    values: "Hardcover · 1965 · Chilton Books"
     pause: 2300
   - title: "A second one, the paperback on the shelf today, and each item carries its rank"
-    values: "Paperback | 1990 | Ace Books"
+    values: "Paperback · 1990 · Ace Books"
     pause: 2200
   - title: "Saved, the frontmatter holds a real list of groups, and not one line of YAML typed"
     pause: 2100
@@ -77,10 +77,10 @@ steps:
     pause: 2200
   - title: "The order is yours: the paperback moves up, the ranks follow it, and Remove takes one away"
     pause: 2300
-  - title: "The Lord of the Rings gets the two it deserves — the second one only half filled, as libraries are"
-    values: "Hardcover | 1954 | Allen & Unwin — then Paperback | 1991"
+  - title: "The Lord of the Rings gets its two, the second only half filled — as libraries are"
+    values: "Hardcover · 1954 · Allen & Unwin | Paperback · 1991"
     pause: 2400
-  - title: "And a base counts them, most editions first: three for Dune, two for Tolkien, nothing yet for the third"
+  - title: "And a base counts them, most first: three for Dune, two for Tolkien, none yet for the third"
     pause: 2400
-  - title: "It even reaches inside the first item, for the year — a list of groups is data, not a paragraph"
+  - title: "It even reaches into the first item for its year: a list of groups is data, not a paragraph"
     pause: 2400

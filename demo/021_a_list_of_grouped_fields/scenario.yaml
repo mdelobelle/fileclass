@@ -14,6 +14,10 @@
 #    without a caveat;
 #  - an item with nothing in it now displays as (empty) rather than as the template's
 #    leftover `·`, from the same pass;
+#  - a child may carry the same name as a root field, which step 4 relies on: Book has a
+#    `publisher`, and each edition has its own. Until this was fixed the child was
+#    dropped from the resolved schema and never offered when adding an item — reported
+#    from a real vault, and it would have happened on camera at step 5;
 #  - what Bases does with a list of groups, measured over three books:
 #      note.editions.length      → 3 · 2 · empty where the key is absent
 #      note.editions[0].year     → indexing works, and reaches a child

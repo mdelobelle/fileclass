@@ -619,6 +619,12 @@ Editing opens a **draft editor**:
 Only **root** fields appear in the field picker; nested fields are reached by
 editing their parent object.
 
+A child may carry the **same name as a root field** — a `Book` with a `publisher`, whose
+`editions` each have their own — because a field is identified by its name *at its
+level*. The same holds for inheritance (a subclass overrides a child at that child's
+level) and for `excludes`, which name a class's own fields, the root ones; a group's
+children go with their parent.
+
 ### Sorting and filtering on a child, in Bases
 
 A nested value is real structure, so a base can order rows by it — through a

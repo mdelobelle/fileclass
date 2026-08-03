@@ -47,3 +47,35 @@ describe("a value that isn't a group", () => {
 		expect(describeField(list, "Chilton Books", deps)).toBe("Chilton Books");
 	});
 });
+
+describe("a group inside a group", () => {
+	const publisher: Field = {
+		id: "pub", name: "publisher", type: "Object", path: "", fileClassName: "Book",
+		options: { displayTemplate: "{{name}} - {{headquarter}}" },
+	};
+	const name: Field = { id: "nm", name: "name", type: "Input", path: "pub", fileClassName: "Book", options: {} };
+	const hq: Field = {
+		id: "hq", name: "headquarter", type: "Object", path: "pub", fileClassName: "Book",
+		options: { displayTemplate: "{{city}} ({{country}})" },
+	};
+	const city: Field = { id: "ct", name: "city", type: "Input", path: "pub____hq", fileClassName: "Book", options: {} };
+	const country: Field = { id: "cy", name: "country", type: "Input", path: "pub____hq", fileClassName: "Book", options: {} };
+	const d = { allFields: [publisher, name, hq, city, country], formatMoment: (iso: string) => iso };
+	const value = { name: "Chilton Books", headquarter: { city: "Philadelphia", country: "United States" } };
+
+	it("renders a nested group through that group's own template", () => {
+		// One mechanism, not two: a token naming a child group defers to its template,
+		// which is why reaching a grandchild needs no path syntax of its own.
+		expect(describeField(publisher, value, d)).toBe("Chilton Books - Philadelphia (United States)");
+	});
+
+	it("renders nothing for a token that names no child, and keeps the rest", () => {
+		const wrong = { ...publisher, options: { displayTemplate: "{{name}} - {{zip}}" } };
+		expect(describeField(wrong, value, d)).toBe("Chilton Books -");
+	});
+
+	it("falls back to the first non-empty child when no template is set", () => {
+		const bare = { ...publisher, options: {} };
+		expect(describeField(bare, value, d)).toBe("Chilton Books");
+	});
+});

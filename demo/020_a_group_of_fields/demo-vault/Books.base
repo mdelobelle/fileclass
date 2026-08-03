@@ -1,5 +1,5 @@
 formulas:
-  Publisher city: note.publisher.city
+  Publisher city: note.publisher.headquarter.city
 views:
   - type: table
     name: All books

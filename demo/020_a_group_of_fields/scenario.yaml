@@ -1,24 +1,33 @@
 # Narration for take 020 — see ../SCENARIO.md for the format.
 # Sixth of arc 4 (021 and 022 still follow). Starts where 019 ended: the four
 # activities carry their coordinates and Activities.base has its map view. Turns
-# `Book.publisher` from a name into a group — nested properties, which is the thing
+# `Book.publisher` into two levels of group — nested properties, which is the thing
 # the community asks for most often and what the Object type answers.
 #
 # Facts the script leans on, all measured in the app before scripting:
-#  - a value the field held before it became a group is now shown, flagged ("must be
-#    a group of properties") and kept when an empty group is saved. Before this
-#    take's surfaces pass it was invisible, unflagged, and overwritten with `{}`;
-#  - the editor announces it as "Current value, not a group yet", so step 5 has
-#    something to point at;
-#  - Bases does NOT resolve a dotted nested column: `publisher.city` in `order:`
-#    shows nothing. What works is a column on the whole group — which renders the
-#    mapping — and a one-line formula, `note.publisher.city`. Both are in Books.base
-#    already, so step 9 shows a result instead of filming YAML (the lesson of #19).
+#  - a value the field held before it became a group is shown, flagged ("must be a
+#    group of properties") and kept when an empty group is saved. Before this take's
+#    surfaces pass it was invisible, unflagged, and overwritten with `{}`;
+#  - a group's children are reachable from the field's own settings, so step 3 and 4
+#    never leave the modal — that too came out of this take's pass;
+#  - a token naming a child group defers to THAT group's template: `{{name}} -
+#    {{headquarter}}` over `{{city}} ({{country}})` renders "Chilton Books -
+#    Philadelphia (United States)". There is deliberately no path syntax like
+#    `{{headquarter.country}}` — one mechanism is easier to explain and to maintain,
+#    and composition already covers the need;
+#  - with a template set, that summary also replaces the raw JSON in Obsidian's own
+#    Properties panel, and a valid group loses the warning colour Obsidian paints on
+#    a value it can't interpret;
+#  - Bases reaches two levels through a formula — `note.publisher.headquarter.city`
+#    shows Philadelphia — and a column on the whole group renders both levels. Both
+#    ship in Books.base, so step 11 shows a result rather than filming YAML (#19).
 #
-# Activities.base carries the map view the previous take built. It needs the Maps
-# community plugin, which a staged vault doesn't ship, so it renders as an unknown
-# view type until someone installs it — the same shape of problem `fileclass-table`
-# had, and the reason no take opens that base.
+# The vault opens on Dune, the book the take works on.
+#
+# Activities.base keeps the map view take 019 built. It needs the Maps community
+# plugin, which a staged vault doesn't ship, so it renders as an unknown view type
+# until someone installs it — the same shape of problem `fileclass-table` had. No
+# take opens that base.
 title: "Fileclass — A group of fields inside a field"
 description: "Nested properties, typed and filled without writing YAML."
 doc: "fields/#nested-fields-object--objectlist" # deep link used in the description
@@ -32,23 +41,27 @@ initial_pause: 1500
 default_pause: 900
 
 steps:
-  - title: "For every book, the publisher is just a name — and a publisher has a city, and a year"
-    pause: 2000
+  - title: "For every book the publisher is just a name — and a publisher has a headquarters, with a city and a country"
+    pause: 2100
   - title: "Obsidian's properties are flat: nested properties are what people ask for most"
     pause: 2000
-  - title: "Change publisher's type to Object — a group of properties inside one property"
-    pause: 1900
-  - title: "Declare what the group holds: name, city, founded, each with its own type"
-    pause: 1900
+  - title: "Change publisher to Object, and declare its children from the field itself: name, and headquarter"
+    pause: 2100
+  - title: "And headquarter is a group in its turn: city, country"
+    pause: 1800
   - title: "Dune already held a bare name: it is shown, flagged, and not thrown away"
     pause: 2000
-  - title: "Fill the group — one control per property, each checked by its own type"
+  - title: "Fill it — one control per property, each checked by its own type"
     pause: 1900
-  - title: "Saved, the frontmatter holds a real nested mapping, not a flattened string"
-    pause: 1900
-  - title: "The row shows the group, and one click opens it again"
+  - title: "Saved, the frontmatter holds two real levels"
     pause: 1800
-  - title: "A base shows the whole group as a column, or pulls one part out with a one-line formula"
+  - title: "Give headquarter a display template: city, then country in brackets"
+    pause: 1900
+  - title: "And publisher: name, then headquarter — each group renders through its own template"
+    pause: 2100
+  - title: "That summary is what every surface shows, Obsidian's own properties panel included"
+    pause: 2000
+  - title: "A base shows the group as a column, or pulls one value out with a one-line formula"
     pause: 2100
   - title: "Nested properties, typed and filled, without writing a line of YAML"
     pause: 2200

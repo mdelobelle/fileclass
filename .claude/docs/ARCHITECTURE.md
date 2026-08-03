@@ -435,6 +435,72 @@ fields/user docs (first-write warning), not in a migration guide.
   order-preservation (§3.2). If a canary fails on a new Obsidian version,
   `basesAdapter` is the only file expected to change.
 
+### 14.1 Planned: the demo harness as the e2e runner
+
+**Status: designed, not built** (decided 2026-08-04, deferred). Nothing below
+exists yet; `tests/e2e/canary.mjs` and `demo/` are what exist.
+
+**Why.** Every defect found in the week of 0.2.2 → 0.2.5 lived in the *glue* with
+Obsidian, where 467 unit tests are blind by construction: a Properties row
+recycled onto another note (a control writing to the wrong note — silent for a
+`Cycle`), a name-only de-duplication dropping a child field, an item pushed into
+a draft before its editor opened. Each was found by playing the surface by hand
+before filming it — 13 fix commits attribute themselves to that pass, against 3
+to a user report. The pass is the most productive quality instrument in the
+project and the least durable: it lives in a person's hands.
+
+Meanwhile the two halves of an automated version already exist apart:
+
+| Exists | Missing |
+|--------|---------|
+| `tests/e2e/canary.mjs` — assertions, exit codes (0 / 1 / 2), a dependency-free CDP client | it asks a human to launch Obsidian, open the vault and enable the plugins |
+| `demo/lib/stage.mjs` + `probe.mjs` — stage a vault, launch with the debug port, accept the trust prompt, wait for the plugin, wipe and restore the vault registry in a `finally` | it has no notion of failure: a probe prints, it does not assert |
+
+So the work is a marriage, not a construction.
+
+**1. Runner.** `tests/e2e/run.mjs` takes `probe.mjs`'s lifecycle and serves specs
+with it. A spec declares the vault it needs — a demo fixture by number, or a
+purpose-built one — and the runner **groups specs by vault** so Obsidian is
+launched once per group (~15 s, the only real cost). `npm run test:e2e` then runs
+with no human hands.
+
+**2. Driving vocabulary.** One file of helpers, everything the manual passes do:
+open a note, run a command, read a note's frontmatter, click a row's action *by
+its accessible name*, type, press, read the top modal. Plus the `waitUntil` the
+probes lack — they wait with `sleep`, which is the obvious flakiness source.
+One measured trap: **Obsidian menus ignore a DOM `.click()`** (the Bases view
+switcher did, 2026-08-03); they need CDP Input events at coordinates, because
+they listen for trusted events only.
+
+**3. First specs — one per defect of that week**, the first being the one that
+matters: *clicking a control on note B writes B and leaves A byte-identical*.
+Then the phantom item, a child homonym of a root field offered when adding an
+item, a stray value kept, the warning colour rule, one write per action with key
+order preserved.
+
+**4. A free sweep.** The 24 demo fixtures are 24 known, coherent states: opening
+each and asserting that the index resolves every class and that **every declared
+child is reachable** would have caught the homonym bug the day take 021's fixture
+existed, with no dedicated test written.
+
+**Rules that keep it affordable.**
+
+- **Assert on data, never on pixels** — frontmatter, the index, the untouched
+  neighbour file. Confine the DOM to the helper file, so an Obsidian update moves
+  one file.
+- **No test hook to reach what the OS forbids** (native colour popover, file
+  dialogs, real drag). Testing through the API would stop testing the wiring, and
+  the wiring is where every one of these bugs lived. The run **prints what it did
+  not attempt** instead: a suite that skips in silence is worse than an absent
+  one.
+- **Don't duplicate the unit suite**: only the glue — recycled rows, modal
+  lifecycles, index resolution after a write.
+- **Not CI, at first.** Obsidian under xvfb is feasible but is a maintenance
+  post. The right framing is not "coverage in CI" but *the gate run before every
+  tag*.
+- Demo scenarios stay narrative; only their **fixtures** and the stage machinery
+  are shared.
+
 ## 15. Delivery phases (each = code + unit tests + doc page)
 
 - **P0 Foundations**: scaffold following the official
@@ -488,6 +554,7 @@ fields/user docs (first-write warning), not in a migration guide.
 |------|------------|
 | Bases internals drift on Obsidian update | D4 isolation + canary tests; only basesAdapter changes; graceful degradation path |
 | O(vault) per query run on huge vaults | queryCache, debounced reads; benchmark fixture in e2e |
+| Defects in the glue with Obsidian, invisible to unit tests | the pre-filming surfaces pass finds them today, by hand; automating it is designed in §14.1 — until then the pass is a person's habit, not a gate |
 | Users with YAML comments / custom formatting | documented normalization (§3.2), first-write warning in user docs |
 | Legacy fileClasses with dv options | options ignored silently (never crash on them, §13) |
 | DOM-injected indicators drift on Obsidian update (§19) | isolate the injection layer; per-surface settings flags; defensive selectors that no-op on a miss; core features (modal, menus, commands) never depend on it |

@@ -963,3 +963,50 @@ input.fileclass-color-circle.is-custom::-webkit-color-swatch-wrapper {
 	width: var(--icon-s);
 	height: var(--icon-s);
 }
+
+/* A nested group Obsidian can't interpret, but that a fileClass declares and
+   validates: it paints those in --text-warning, which is right for a value nobody
+   can make sense of and wrong here. An invalid group keeps the warning. */
+.metadata-property-value-item.mod-unknown.fileclass-group-ok {
+	color: inherit;
+}
+
+/*
+ * Room for the first row's focus ring, and for the one the arrows scroll to.
+ *
+ * A modal's title is sticky with an opaque background and a z-index, so it paints
+ * *over* the scrolling list: the top 3px of the first row's focus ring disappeared
+ * under it. Measured on pixels rather than eyeballed — the ring's top edge was a flat
+ * 101px line, and 8px of padding brings back the rounded corners.
+ *
+ * `scroll-padding-top` is the same problem in motion: arrowing down to a row below
+ * the fold would otherwise park it under the title.
+ */
+.fileclass-field-list {
+	padding-top: var(--size-4-2);
+}
+
+.fileclass-scroll-body {
+	scroll-padding-top: var(--size-4-4);
+}
+
+/* "Unsaved changes", in the sticky footer and on the same line as Save, pushed to the
+   left edge. In the footer because it is the one part of a long list that is always on
+   screen — a line above the buttons scrolls out of sight exactly when it matters. */
+.fileclass-sticky-footer > .setting-item {
+	display: flex;
+	align-items: center;
+	gap: var(--size-4-2);
+}
+
+.fileclass-unsaved-hint {
+	display: none;
+	margin-right: auto;
+	color: var(--text-warning);
+	font-size: var(--font-ui-small);
+	white-space: nowrap;
+}
+
+.fileclass-unsaved-hint.is-visible {
+	display: block;
+}

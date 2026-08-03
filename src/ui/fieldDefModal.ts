@@ -6,6 +6,7 @@
 import { App, Modal, Notice, Setting } from "obsidian";
 
 import { modalTitle } from "./modalTitle";
+import { attachUnsavedGuard, snapshot, UnsavedGuard } from "./unsavedGuard";
 
 import { renderFieldOptionsSettings } from "../fields/input/fieldOptionsSettings";
 import { DateFormatDefaults } from "../fields/dateFormats";
@@ -48,6 +49,9 @@ export interface FieldDefResult {
 }
 
 export class FieldDefModal extends Modal {
+	/** Snapshot of the draft as the modal opened, or as it was last saved. */
+	private opened = "";
+	private guard!: UnsavedGuard;
 	private name: string;
 	private type: FieldType;
 	private draft: OptionsDraft;
@@ -66,6 +70,13 @@ export class FieldDefModal extends Modal {
 			 * "Next interval field" from the compatible ones by name.
 			 */
 			classFields?: readonly Pick<Field, "name" | "type">[];
+			/**
+			 * Opens the child-fields editor of an Object/ObjectList field. Passed by
+			 * every door that edits an existing field, so the group's children are
+			 * reachable from the field itself — they used to be a button on the schema
+			 * screen only, which Alt-clicking a field's icon never goes through.
+			 */
+			onEditChildren?: () => void;
 		}
 	) {
 		super(app);
@@ -76,9 +87,46 @@ export class FieldDefModal extends Modal {
 		this.required = !!io && !Array.isArray(io) && (io.required === true || io.required === "true");
 	}
 
+	/** Everything the operator can change here, as one comparable value. */
+	private state(): unknown {
+		return { name: this.name.trim(), type: this.type, required: this.required, draft: this.draft };
+	}
+
+	private isDirty(): boolean {
+		return snapshot(this.state()) !== this.opened;
+	}
+
+	/** Commits the draft. False when it can't be saved, so the caller stays open. */
+	private commit(): boolean {
+		const name = this.name.trim();
+		if (!name) {
+			new Notice("Fileclass: a field name is required.");
+			return false;
+		}
+		this.opts.onSubmit({
+			name,
+			type: this.type,
+			options: this.withRequired(buildFieldOptions(this.type, this.draft)),
+		});
+		this.opened = snapshot(this.state()); // saved: no longer dirty
+		return true;
+	}
+
 	onOpen(): void {
 		const { contentEl } = this;
 		modalTitle(contentEl, this.opts.title);
+		this.opened = snapshot(this.state());
+		this.guard = attachUnsavedGuard(this.app, this, {
+			isDirty: () => this.isDirty(),
+			save: () => this.commit(),
+			subject: "field",
+		});
+		// Any control, including the per-type options another module renders: the
+		// listener runs after the control's own handler, so the draft is already
+		// updated when dirtiness is re-read.
+		for (const type of ["input", "change", "click"] as const) {
+			contentEl.addEventListener(type, () => this.guard.refresh());
+		}
 
 		new Setting(contentEl).setName("Name").addText((t) =>
 			t.setValue(this.name).onChange((v) => {
@@ -102,8 +150,24 @@ export class FieldDefModal extends Modal {
 			d.setValue(this.type).onChange((v) => {
 				this.type = v as FieldType;
 				renderOptions();
+				renderChildren();
 			});
 		});
+
+		// Shown for a group, refreshed when the type changes — picking Object here
+		// should offer its children without a trip through the schema screen.
+		const childrenEl = contentEl.createDiv();
+		const renderChildren = () => {
+			childrenEl.empty();
+			if (!this.opts.onEditChildren) return;
+			if (this.type !== "Object" && this.type !== "ObjectList") return;
+			new Setting(childrenEl)
+				.setName("Children")
+				.setDesc("The fields inside this group.")
+				.addButton((b) =>
+					b.setButtonText("Edit children").onClick(() => this.opts.onEditChildren?.())
+				);
+		};
 
 		new Setting(contentEl)
 			.setName("Required")
@@ -111,23 +175,17 @@ export class FieldDefModal extends Modal {
 			.addToggle((t) => t.setValue(this.required).onChange((v) => (this.required = v)));
 
 		renderOptions();
+		renderChildren();
 
-		new Setting(makeStickyFooter(contentEl)).addButton((b) =>
+		const footer = makeStickyFooter(contentEl);
+		const footerRow = new Setting(footer);
+		this.guard.mountHint(footerRow.settingEl);
+		footerRow.addButton((b) =>
 			b
 				.setButtonText("Save")
 				.setCta()
 				.onClick(() => {
-					const name = this.name.trim();
-					if (!name) {
-						new Notice("Fileclass: a field name is required.");
-						return;
-					}
-					this.opts.onSubmit({
-						name,
-						type: this.type,
-						options: this.withRequired(buildFieldOptions(this.type, this.draft)),
-					});
-					this.close();
+					if (this.commit()) this.close();
 				})
 		);
 	}

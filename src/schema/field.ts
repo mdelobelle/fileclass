@@ -97,6 +97,16 @@ export function parentFieldId(path: string): string | undefined {
 }
 
 /** The `path` value a direct child of `parent` must carry. */
+/**
+ * The names of the fields a `path` runs through, outermost first — the trail a
+ * breadcrumb needs. An id the class no longer declares is kept as itself rather than
+ * dropped: a trail with a hole in it should look wrong, not look shorter.
+ */
+export function pathFieldNames(fields: readonly Field[], path: string): string[] {
+	if (!path) return [];
+	return path.split(PATH_SEPARATOR).map((id) => fields.find((f) => f.id === id)?.name ?? id);
+}
+
 export function childPathOf(parent: Pick<Field, "id" | "path">): string {
 	return parent.path ? `${parent.path}${PATH_SEPARATOR}${parent.id}` : parent.id;
 }

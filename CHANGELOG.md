@@ -4,6 +4,70 @@ All notable changes to Fileclass are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); this project uses
 [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Fixed
+
+- **A group's children are reachable from the field itself.** *Children* was a button
+  on the schema screen only, so the other doors into a field's definition — Alt-clicking
+  its type icon in the note-fields modal, above all — could not get to them. The field's
+  own settings now carry the action, for `Object` and `ObjectList`, and it appears as
+  soon as you pick one of those types rather than after a save and a detour.
+
+- **The first row's focus ring is no longer cut off.** A modal's title is sticky with
+  an opaque background, so it painted *over* the top of the ring on the first field —
+  not a clipping problem but an overlap, which is why it only ever affected that one
+  row. The field list keeps room for it now, and `scroll-padding` means a row the arrow
+  keys scroll to doesn't park under the title either.
+
+- **The breadcrumb names the group you are in.** Editing the children of a nested
+  group said *Book › children* at every depth, so two levels of nesting looked
+  identical — and the children of a group are exactly where you need to know which
+  group. It now reads *Book › publisher › headquarter › children*, and the field
+  editor's title names the field instead of saying "Edit field".
+
+- **Closing a modal with unsaved changes asks instead of discarding.** Nothing said
+  whether Save was needed, so Escape or the close button threw a half-filled field
+  definition away in silence. A modal holding a draft now shows **Unsaved changes** at
+  the left of its pinned footer, on the Save button's line, the moment the draft differs
+  from what it opened on — so a long list can't scroll the warning out of sight — and
+  closing it offers *Keep editing*, *Discard* or *Save* — Escape, the X and a click
+  outside all go through the same door. An untouched modal still closes without a word.
+  So far: a field's definition, a group's values, and an `ObjectList`'s items.
+
+- **The arrow keys move through a field list.** Every row of the schema editor
+  contributes four or five tab stops — fifty-five in a class of a dozen fields — so
+  reaching the eighth field's *Edit* was thirty-odd presses of Tab. ↓ / ↑ now move to
+  the same action on the next field, → / ← between that field's actions, Home / End to
+  the ends, and the whole list is a single tab stop. Moving down keeps the *action*,
+  not the column: a group carries an extra **Children** button, so ↓ from *Edit* lands
+  on *Edit* rather than sliding onto *Remove*. Every modal that lists rows carrying the
+  same actions has it: the note-fields modal, the schema editor, an object's children
+  list, and the value editors of an `Object` and an `ObjectList`.
+
+- **A valid group is no longer painted as a warning.** Obsidian can't interpret a
+  nested property, so it colours the value in `--text-warning` — right for a value
+  nobody can make sense of, wrong for a group a fileClass declares and validates. The
+  warning colour is dropped when the field is an `Object`/`ObjectList` **and** the
+  value passes validation; a group that doesn't keeps it, because there the warning is
+  the truth.
+
+- **A group's display template now reaches Obsidian's Properties panel.** A nested
+  property showed there as raw JSON — `{"name":"Chilton Books","city":"Philadelphia"}`
+  — while every Fileclass surface showed the template's summary. When a display
+  template is set, the panel shows that summary too, keeping the JSON in the tooltip.
+  Obsidian types a mapping as `unknown` and renders it read-only, so nothing editable
+  is replaced; without a template, the panel is left exactly as it was.
+
+- **A value that isn't a group is no longer thrown away.** Give a field the `Object`
+  type and the value it already held — a plain string, say `publisher: Chilton Books`
+  — became invisible: the row showed nothing, validation called it fine, the editor
+  opened empty, and the next save replaced it with `{}` without a word. It is now
+  shown wherever values show, reported as a violation ("must be a group of
+  properties"), displayed in the editor as **Current value, not a group yet**, and
+  kept when you save an empty group — removing it takes an explicit *Clear*. Same for
+  `ObjectList`, whole and per item.
+
 ## [0.2.3] - 2026-08-03
 
 ### Fixed

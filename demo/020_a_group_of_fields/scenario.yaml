@@ -1,0 +1,96 @@
+# Narration for take 020 — see ../SCENARIO.md for the format.
+# Sixth of arc 4 (021 and 022 still follow). Starts where 019 ended: the four
+# activities carry their coordinates and Activities.base has its map view. Models the
+# shelf location a second time — on Comic, which has no such field yet — as a group of
+# groups. Nested properties, which is the thing the community asks for most often and
+# what the Object type answers.
+#
+# Why on Comic and not by converting `Book.shelf`: converting means renaming, and
+# renaming a field today rewrites the class note only — every note keeps the old key
+# with its value (issue #108, whose fix needs a Save of its own that lists the notes it
+# is about to rewrite). Modelling the same information a second time, on a class that
+# never had it, owes nothing to that bug and gives the take a better spine: the books
+# hold their location as one well-formed string, the comics hold it as structure, and
+# step 12 shows what only the second one can do.
+#
+# Why storage and not the publisher this take first used: an Object is for a value with
+# no identity of its own. A publisher has one — it deserves a note, backlinks, a base —
+# so using it as a group teaches the wrong criterion, and an attentive viewer would ask
+# why it isn't a class. A shelf location exists only as an attribute of the album, which
+# is exactly what the type is for.
+#
+# Facts the script leans on, all measured in the app before scripting:
+#  - a group's children are reachable from the field's own settings, so steps 4 to 7
+#    never leave the modal — that came out of this take's surfaces pass;
+#  - a token naming a child group defers to THAT group's template: `{{room}} ·
+#    {{shelf}}` over `{{unit}}-{{level}}` rebuilds the very string take 016 produced.
+#    There is deliberately no path syntax like `{{shelf.level}}` — one mechanism is
+#    easier to explain and to maintain, and composition already covers the need;
+#  - with a template set, that summary also replaces the raw JSON in Obsidian's own
+#    Properties panel, and a valid group loses the warning colour Obsidian paints on a
+#    value it can't interpret;
+#  - Bases does NOT resolve a dotted nested path, in a column or in a sort:
+#    `storage.room` and `note.storage.room` both leave the order untouched. A one-line
+#    formula does. Comics.base ships those two formulas, so step 12 shows a result
+#    rather than filming YAML (#19).
+#
+# The three albums, and the rooms to type on camera. They are chosen so the sort says
+# something: by title the order is Tiara, Yellow M, Tintin; by room and level it is
+# Tintin, Tiara, Yellow M — and the two in the Study are separated by their level
+# alone, which is the half a plain string could never do.
+#
+#   Tintin in Tibet        Attic        B-1
+#   The Tiara of Oribal    Study        A-2
+#   The Yellow M           Study        C-4
+#
+# Step 7 fills the first album, step 11 the other two. The values are short words, so
+# they ride along as `values:` — shown in blue in the caption, spoken nowhere, and typed
+# by hand: this take fills too many boxes for the ⌘⌃⌥⇧I cue to be worth the rhythm.
+#
+# The vault opens on Dune, whose shelf string step 1 reads before the comics take over.
+#
+# Activities.base keeps the map view take 019 built. It needs the Maps community
+# plugin, which a staged vault doesn't ship, so it renders as an unknown view type
+# until someone installs it — the same shape of problem `fileclass-table` had. No take
+# opens that base.
+title: "Fileclass — A group of fields inside a field"
+description: "Nested properties, typed and filled without writing YAML."
+doc: "fields/#nested-fields-object--objectlist" # deep link used in the description
+tags: "object, nested properties, frontmatter, groups"
+vault_name: "Demo"
+plugin: true
+settings:
+  classFilesPath: "Classes/"
+  fileClassAlias: "fileClass"
+initial_pause: 1500
+default_pause: 900
+
+steps:
+  - title: "Since take 016 a book says where it is shelved in one well-formed string: Study, middle dot, A dash 3"
+    pause: 2100
+  - title: "The comics have no such field yet, so let's explore another way to model the same thing"
+    pause: 2100
+  - title: "Obsidian's properties are flat, and nested properties are what people ask for most"
+    pause: 2000
+  - title: "Give Comic a storage field, of type Object: a group of properties inside one property"
+    pause: 2000
+  - title: "Its children are declared from the field itself — room, from a list of values"
+    values: "Attic | Living room | Study"
+    pause: 2100
+  - title: "And shelf, a group in its turn, holding unit and level as a number"
+    pause: 2000
+  - title: "Fill it on Tintin in Tibet: room offers what you allowed, level refuses anything that isn't a number"
+    values: "Attic | B | 1"
+    pause: 2200
+  - title: "Saved, the frontmatter holds two real levels of structure — no YAML typed, and not really human readable either"
+    pause: 2400
+  - title: "So give each group a display template: unit dash level for the shelf, then room, middle dot, shelf for the whole thing"
+    values: "{{unit}}-{{level}} | {{room}} · {{shelf}}"
+    pause: 2300
+  - title: "Which lands on the very text the books carry as a string — same reading, structure underneath"
+    pause: 2200
+  - title: "The other two albums follow: the Tiara in the Study, and the Yellow M above it"
+    values: "Study | A | 2 | Study | C | 4"
+    pause: 2200
+  - title: "And with the help of formulas a base sorts the comics by room, then by level: what no single string could do"
+    pause: 2400

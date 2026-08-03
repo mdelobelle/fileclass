@@ -15,7 +15,7 @@ import { contiguousGroups } from "./baseOrder";
 import { AdapterHost, Candidate, isMediaType, resolveCandidates } from "./candidates";
 import { controlActionFor } from "./controlAction";
 import { makeDisplayDeps } from "./displayDeps";
-import { describeField } from "./objectDisplay";
+import { describeField, strayText } from "./objectDisplay";
 import {
 	ChildPrompt,
 	ObjectFieldsEditorModal,
@@ -439,6 +439,7 @@ export async function promptFieldValue(
 				promptChild,
 				deps: makeDisplayDeps(ctx.allFields),
 				initial: asObjectValue(current),
+				stray: strayText(current),
 				onSave: (obj) => onValue(obj),
 			}).open();
 			return;
@@ -451,6 +452,7 @@ export async function promptFieldValue(
 				promptChild,
 				deps: makeDisplayDeps(ctx.allFields),
 				initial: asListValue(current),
+				stray: strayText(current),
 				onSave: (arr) => onValue(arr),
 			}).open();
 			return;

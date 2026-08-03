@@ -143,6 +143,39 @@ CLI's `set-where`:
 > Dry-run first: nothing is written until you Apply. As always, writes go
 > straight to your vault — keep regular backups.
 
+## Unsaved changes
+
+A modal that holds a draft — a field's definition, a group's values, a list's items —
+says so as soon as the draft differs from what it opened on: **Unsaved changes**
+appears at the left of its footer, on the same line as Save — the footer is pinned, so
+the warning stays on screen however long the list is. Closing it then asks rather than discarding, with the
+three answers that exist: **Keep editing**, **Discard**, or **Save**. That covers
+Escape, the close button and a click outside, since Obsidian routes all three through
+the same close.
+
+A modal you haven't changed still closes on Escape without a word.
+
+## Moving through a field list
+
+Every modal that lists rows carrying the same actions is navigated with the arrow
+keys — the **note-fields modal**, the **schema editor**, the same list scoped to an
+[object's children](../fields/#nested-fields-object--objectlist), and the **value
+editors** of an `Object` and an `ObjectList`:
+
+| key | effect |
+|-----|--------|
+| ↓ / ↑ | the **same action** on the next / previous field |
+| → / ← | the next / previous action of that field |
+| Home / End | the first / last field, keeping the action |
+| Enter or Space | activates it, as any button |
+
+The list is a **single tab stop**: Tab reaches it, the arrows move inside it, Tab
+leaves for the footer. A class of a dozen fields used to put fifty-five stops between
+you and the Save button.
+
+Moving down keeps the *action*, not the column: a group field carries an extra
+**Children** button, so ↓ from *Edit* lands on *Edit* — never on *Remove*.
+
 ## Field indicator
 
 A small clickable **icon** appears next to a note's name whenever a fileClass

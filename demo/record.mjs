@@ -196,8 +196,14 @@ async function main() {
 		`\n${bold("Start your screen recorder, then press")} ${bold(CUE_LABEL)} ${bold("in Obsidian to begin.")}\n` +
 			dim(`The same chord advances every step · Enter here also works · q aborts\n`) +
 			dim(`${LIFT_LABEL} lifts the caption to the top when it covers what you need · next step puts it back\n`) +
-			(scenario.steps.some((s) => s.input)
-				? dim(`${INSERT_LABEL} types the value shown in yellow into whatever field is focused\n`)
+			(scenario.steps.some((s) => s.input.length)
+				? dim(
+						`${INSERT_LABEL} types the next value shown in yellow into whatever field is focused` +
+							` — one press per value\n`
+					)
+				: "") +
+			(scenario.steps.some((s) => s.values.length)
+				? dim(`Values shown in blue are yours to type: no chord will insert them\n`)
 				: "")
 	);
 	// "ready", out loud, before the cue. It tells the operator the take is armed
@@ -232,7 +238,7 @@ async function main() {
 	}
 
 	for (const [i, step] of scenario.steps.entries()) {
-		await stage.show(step.title, { input: step.input });
+		await stage.show(step.title, { input: step.input, values: step.values });
 		const shownAt = at();
 		console.log(`${dim(`${String(i + 1).padStart(2)}/${total}`)}  ${step.title}`);
 		const line = voice ? speak(spokenText(step.title, scenario.pronounce), { voice, rate }) : null;

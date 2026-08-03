@@ -8,9 +8,10 @@
 import { EventRef, Modal, Notice, Setting, TFile } from "obsidian";
 
 import { modalTitle } from "./modalTitle";
+import { attachRowGrid } from "./rowGridKeyboard";
 
 import type FileclassPlugin from "../../main";
-import { childPathOf, Field } from "../schema/field";
+import { childPathOf, Field, pathFieldNames } from "../schema/field";
 import { parseFileClass } from "../schema/fileClass";
 import { dateFormatDefaults } from "../settings/settings";
 import { mutateFields } from "../schema/fileClassIo";
@@ -31,6 +32,9 @@ import { pickAndCreateBase } from "../views/baseFileGenerator";
 import { fileClassBaseFile, openFileClassBase } from "../views/baseSync";
 
 export class FileClassSchemaModal extends Modal {
+	/** Detaches the arrow-key grid of the current render. */
+	private detachGrid?: () => void;
+
 	private changeRef?: EventRef;
 
 	constructor(
@@ -56,6 +60,7 @@ export class FileClassSchemaModal extends Modal {
 	}
 
 	onClose(): void {
+		this.detachGrid?.();
 		if (this.changeRef) this.app.metadataCache.offref(this.changeRef);
 		this.contentEl.empty();
 	}
@@ -110,15 +115,26 @@ export class FileClassSchemaModal extends Modal {
 	}
 
 	/** Fields at the current level (root or an object's children), read fresh. */
+	private frontmatter(): Record<string, unknown> | undefined {
+		return this.app.metadataCache.getFileCache(this.file)?.frontmatter;
+	}
+
 	private ownFields(): Field[] {
-		const fm = this.app.metadataCache.getFileCache(this.file)?.frontmatter;
-		return parseFileClass(this.name, fm).fields.filter((f) => f.path === this.parentPath);
+		return parseFileClass(this.name, this.frontmatter()).fields.filter(
+			(f) => f.path === this.parentPath
+		);
 	}
 
 	private render(): void {
 		const { contentEl } = this;
 		contentEl.empty();
-		const heading = this.parentPath ? `${this.name} › children` : `Schema — ${this.name}`;
+		// "Book › publisher › headquarter › children" rather than "Book › children":
+		// two levels of nesting look identical without the trail, and the children of a
+		// group are exactly where you need to know which group you are in.
+		const trail = pathFieldNames(parseFileClass(this.name, this.frontmatter()).fields, this.parentPath);
+		const heading = this.parentPath
+			? [this.name, ...trail, "children"].join(" › ")
+			: `Schema — ${this.name}`;
 		modalTitle(contentEl, heading);
 
 		if (!this.parentPath) this.renderClassActions(contentEl);
@@ -126,8 +142,12 @@ export class FileClassSchemaModal extends Modal {
 		const fields = this.ownFields();
 		if (!fields.length) contentEl.createEl("p", { text: "No fields yet." });
 
+		// The field rows live in their own container: the arrow-key grid must not
+		// reach the class-level actions above them.
+		const listEl = contentEl.createDiv({ cls: "fileclass-field-list" });
+
 		fields.forEach((field, i) => {
-			const setting = new Setting(contentEl)
+			const setting = new Setting(listEl)
 				.setName(field.name)
 				.setDesc(field.type)
 				.addExtraButton((b) =>
@@ -165,6 +185,13 @@ export class FileClassSchemaModal extends Modal {
 				);
 		});
 
+		this.detachGrid?.();
+		this.detachGrid = attachRowGrid(listEl, {
+			rowSelector: ":scope > .setting-item",
+			actionSelector: "button, .clickable-icon",
+			preferred: "Edit",
+		});
+
 		new Setting(makeStickyFooter(contentEl)).addButton((b) =>
 			b.setButtonText("Add field").setCta().onClick(() => this.addField())
 		);
@@ -194,10 +221,12 @@ export class FileClassSchemaModal extends Modal {
 
 	private editField(field: Field): void {
 		new FieldDefModal(this.app, {
-			title: "Edit field",
+			title: `Edit ${field.name}`,
 			dateDefaults: dateFormatDefaults(this.plugin.settings),
 			classFields: this.plugin.index.getResolvedFields(this.name),
 			initial: { name: field.name, type: field.type, options: field.options },
+			onEditChildren: () =>
+				new FileClassSchemaModal(this.plugin, this.name, this.file, childPathOf(field)).open(),
 			onSubmit: (r) => {
 				void mutateFields(this.app, this.file, (fields) =>
 					updateFieldDef(fields, field.id, {

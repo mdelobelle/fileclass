@@ -96,3 +96,7 @@ other. Captions are English; YouTube translates them into your language.
 ## A place on a map
 
 {{< video "019" >}}
+
+## A group of fields inside a field
+
+{{< video "020" >}}

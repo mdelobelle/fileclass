@@ -96,6 +96,12 @@ export function spokenText(title, extra = null) {
 	for (const from of Object.keys(PRONUNCIATION_WORDS).sort((a, b) => b.length - a.length)) {
 		text = swapWord(text, from, PRONUNCIATION_WORDS[from]);
 	}
+	// A take is filed as `016` and read "sixteen": the leading zero is a filing
+	// convention, and `say` spells the padded form out digit by digit ("oh one six").
+	// `016b` becomes "16 b", which is how the operator says it too.
+	text = text.replace(/\b0(\d\d)([a-z])?\b/g, (_, digits, suffix) =>
+		suffix ? `${Number(digits)} ${suffix}` : String(Number(digits))
+	);
 	return text
 		.replace(/\s*—\s*/g, ", ")
 		.replace(/[“”]/g, "")

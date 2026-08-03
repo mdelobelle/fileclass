@@ -47,6 +47,14 @@ enableGitInfo = true
 [markup.goldmark.renderer]
   unsafe = true
 
+# The on-page outline in the right column. h2 and h3 only: the pages that need it
+# are long because they have many sections, not because they nest deeply, and an
+# outline you have to scroll is no longer a position indicator.
+[markup.tableOfContents]
+  startLevel = 2
+  endLevel = 3
+  ordered = false
+
 [markup.highlight]
   # github-dark: light tokens on a dark background, matching the always-dark
   # code blocks in the theme (readable in both light and dark page modes).

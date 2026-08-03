@@ -8,6 +8,13 @@ All notable changes to Fileclass are documented here. The format follows
 
 ### Fixed
 
+- **A group's display template now reaches Obsidian's Properties panel.** A nested
+  property showed there as raw JSON — `{"name":"Chilton Books","city":"Philadelphia"}`
+  — while every Fileclass surface showed the template's summary. When a display
+  template is set, the panel shows that summary too, keeping the JSON in the tooltip.
+  Obsidian types a mapping as `unknown` and renders it read-only, so nothing editable
+  is replaced; without a template, the panel is left exactly as it was.
+
 - **A value that isn't a group is no longer thrown away.** Give a field the `Object`
   type and the value it already held — a plain string, say `publisher: Chilton Books`
   — became invisible: the row showed nothing, validation called it fine, the editor

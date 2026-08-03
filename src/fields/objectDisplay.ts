@@ -33,7 +33,7 @@ const ITEM_SEP = "  ·  ";
 // {{ name }} or {{ name | format }} — name is a child field name.
 const TOKEN_RE = /\{\{\s*([^}|]+?)\s*(?:\|\s*([^}]*?)\s*)?\}\}/g;
 
-function displayTemplateOf(field: Field): string | undefined {
+export function displayTemplateOf(field: Field): string | undefined {
 	if (Array.isArray(field.options)) return undefined;
 	const t = field.options.displayTemplate;
 	return typeof t === "string" && t.trim() ? t : undefined;

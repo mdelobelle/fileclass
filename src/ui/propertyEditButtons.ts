@@ -34,6 +34,8 @@ import { hasFieldKey, readFieldValue } from "../io/read";
 import { AddFileClassModal } from "./addFileClassModal";
 import { attachAltAffordance } from "./altAffordance";
 import { openFileClassSchema } from "./fileClassSchemaModal";
+import { describeField, displayTemplateOf } from "../fields/objectDisplay";
+import { makeDisplayDeps } from "../fields/displayDeps";
 import { makeValuePreview } from "./valuePreview";
 
 const BTN_CLASS = "fileclass-prop-edit";
@@ -267,6 +269,32 @@ export class PropertyEditButtons extends Component {
 		else host.appendChild(btn);
 	}
 
+	/**
+	 * For an `Object`/`ObjectList` field that defines a display template, shows that
+	 * template's text where Obsidian shows the raw JSON.
+	 *
+	 * Safe because Obsidian types a nested mapping as `unknown` and prints it in a
+	 * read-only span — nothing is being edited there, so nothing is taken away, and
+	 * the JSON stays one hover away. The `mod-unknown` guard means this only ever
+	 * touches the shape Obsidian renders today: make nested properties editable in a
+	 * future version and this quietly stops.
+	 */
+	private applyGroupTemplate(valueEl: HTMLElement, field: Field, file: TFile): void {
+		if (field.type !== "Object" && field.type !== "ObjectList") return;
+		if (!displayTemplateOf(field)) return;
+		const item = valueEl.querySelector<HTMLElement>(
+			":scope > .metadata-property-value-item.mod-unknown"
+		);
+		if (!item) return;
+		const raw = readFieldValue(this.plugin.app, file, field);
+		const text = describeField(field, raw, makeDisplayDeps(this.plugin.index.getFields(file)));
+		if (!text || item.dataset.fcTemplate === text) return; // settled: no new mutation
+		item.dataset.fcRaw ??= item.textContent ?? "";
+		item.title = item.dataset.fcRaw;
+		item.dataset.fcTemplate = text;
+		item.setText(text);
+	}
+
 	private injectRow(row: HTMLElement): void {
 		const key = row.getAttribute("data-property-key");
 		const valueEl = row.querySelector<HTMLElement>(":scope > .metadata-property-value");
@@ -311,6 +339,7 @@ export class PropertyEditButtons extends Component {
 				button.after(preview);
 			}
 		}
+		this.applyGroupTemplate(valueEl, field, file);
 	}
 
 	private makeButton(file: TFile, field: Field, key: string): HTMLElement {

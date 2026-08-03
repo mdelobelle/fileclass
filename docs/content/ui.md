@@ -145,9 +145,10 @@ CLI's `set-where`:
 
 ## Moving through a field list
 
-The **schema editor**'s field list — and the same list scoped to an
-[object's children](../fields/#nested-fields-object--objectlist) — is navigated with
-the arrow keys:
+Every modal that lists rows carrying the same actions is navigated with the arrow
+keys — the **note-fields modal**, the **schema editor**, the same list scoped to an
+[object's children](../fields/#nested-fields-object--objectlist), and the **value
+editors** of an `Object` and an `ObjectList`:
 
 | key | effect |
 |-----|--------|

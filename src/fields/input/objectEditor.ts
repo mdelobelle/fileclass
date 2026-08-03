@@ -15,6 +15,7 @@ import { Field } from "../../schema/field";
 import { describeField, DisplayDeps, renderObjectItem } from "../objectDisplay";
 import { cloneDraft, validateObjectDraft } from "../objectDraft";
 import { makeStickyFooter } from "../../ui/modalFooter";
+import { attachRowGrid } from "../../ui/rowGridKeyboard";
 
 /** Opens the input for a child field, calling back with its new value. */
 export type ChildPrompt = (
@@ -41,6 +42,8 @@ interface ObjectEditorOptions {
 /** Edits a single object's fields. */
 export class ObjectFieldsEditorModal extends Modal {
 	private readonly draft: Record<string, unknown>;
+	/** Detaches the arrow-key grid of the current render. */
+	private detachGrid?: () => void;
 
 	constructor(
 		app: App,
@@ -67,9 +70,13 @@ export class ObjectFieldsEditorModal extends Modal {
 		}
 		showStray(contentEl, this.opts.stray);
 
+		// The value rows live in their own container so the arrow keys can walk them
+		// without reaching the footer.
+		const listEl = contentEl.createDiv({ cls: "fileclass-field-list" });
+
 		for (const child of this.opts.childFields) {
 			const value = this.draft[child.name];
-			new Setting(contentEl)
+			new Setting(listEl)
 				.setName(child.name)
 				.setDesc(child.type)
 				.then((s) => s.controlEl.createSpan({ text: describeField(child, value, this.opts.deps) }))
@@ -93,6 +100,13 @@ export class ObjectFieldsEditorModal extends Modal {
 				);
 		}
 
+		this.detachGrid?.();
+		this.detachGrid = attachRowGrid(listEl, {
+			rowSelector: ":scope > .setting-item",
+			actionSelector: "button, .clickable-icon",
+			preferred: "Edit",
+		});
+
 		new Setting(makeStickyFooter(contentEl)).addButton((b) =>
 			b
 				.setButtonText("Save")
@@ -111,6 +125,7 @@ export class ObjectFieldsEditorModal extends Modal {
 	}
 
 	onClose(): void {
+		this.detachGrid?.();
 		this.contentEl.empty();
 	}
 }
@@ -118,6 +133,8 @@ export class ObjectFieldsEditorModal extends Modal {
 /** Manages an array of objects: add, edit, remove, reorder. */
 export class ObjectListEditorModal extends Modal {
 	private readonly draft: Record<string, unknown>[];
+	/** Detaches the arrow-key grid of the current render. */
+	private detachGrid?: () => void;
 
 	constructor(
 		app: App,
@@ -162,8 +179,10 @@ export class ObjectListEditorModal extends Modal {
 		modalTitle(contentEl, this.opts.title);
 		showStray(contentEl, this.opts.stray);
 
+		const listEl = contentEl.createDiv({ cls: "fileclass-field-list" });
+
 		this.draft.forEach((item, index) => {
-			new Setting(contentEl)
+			new Setting(listEl)
 				.setName(`Item ${index + 1}`)
 				.setDesc(renderObjectItem(this.opts.field, item, this.opts.deps) || "(empty)")
 				.addExtraButton((b) =>
@@ -182,6 +201,13 @@ export class ObjectListEditorModal extends Modal {
 							this.render();
 						})
 				);
+		});
+
+		this.detachGrid?.();
+		this.detachGrid = attachRowGrid(listEl, {
+			rowSelector: ":scope > .setting-item",
+			actionSelector: "button, .clickable-icon",
+			preferred: "Edit",
 		});
 
 		new Setting(makeStickyFooter(contentEl))
@@ -204,6 +230,7 @@ export class ObjectListEditorModal extends Modal {
 	}
 
 	onClose(): void {
+		this.detachGrid?.();
 		this.contentEl.empty();
 	}
 }

@@ -9,6 +9,7 @@
 import { EventRef, Modal, Setting, setIcon, TFile } from "obsidian";
 
 import { modalTitle } from "./modalTitle";
+import { attachRowGrid } from "./rowGridKeyboard";
 
 import type FileclassPlugin from "../../main";
 import { insertMissingFields } from "../commands/insertMissingFields";
@@ -54,10 +55,14 @@ export class NoteFieldsModal extends Modal {
 	}
 
 	onClose(): void {
+		this.detachGrid?.();
 		if (this.changeRef) this.app.metadataCache.offref(this.changeRef);
 		if (this.indexRef) this.plugin.index.offref(this.indexRef);
 		this.contentEl.empty();
 	}
+
+	/** Detaches the arrow-key grid of the current render. */
+	private detachGrid?: () => void;
 
 	private render(): void {
 		const { contentEl } = this;
@@ -73,9 +78,19 @@ export class NoteFieldsModal extends Modal {
 			contentEl.createEl("p", { text: "No fields apply to this note." });
 		}
 
+		// The field rows in their own container: the arrow keys walk them without
+		// reaching "Insert missing fields" or the fileClass footer.
+		const listEl = contentEl.createDiv({ cls: "fileclass-field-list" });
 		for (const field of rootFields) {
-			this.renderFieldRow(ctx, deps, field);
+			this.renderFieldRow(ctx, deps, field, listEl);
 		}
+
+		this.detachGrid?.();
+		this.detachGrid = attachRowGrid(listEl, {
+			rowSelector: ":scope > .setting-item",
+			actionSelector: "button, .clickable-icon",
+			preferred: "Edit",
+		});
 
 		new Setting(contentEl)
 			.addButton((b) =>
@@ -128,11 +143,16 @@ export class NoteFieldsModal extends Modal {
 		});
 	}
 
-	private renderFieldRow(ctx: EditContext, deps: DisplayDeps, field: Field): void {
+	private renderFieldRow(
+		ctx: EditContext,
+		deps: DisplayDeps,
+		field: Field,
+		parent?: HTMLElement
+	): void {
 		const raw = readFieldValue(this.app, this.file, field);
 		const value = describeField(field, raw, deps);
 		// Compact row: the type is shown as a leading icon, not a text label.
-		const setting = new Setting(this.contentEl).setName(field.name);
+		const setting = new Setting(parent ?? this.contentEl).setName(field.name);
 		setting.settingEl.addClass("fileclass-field-row");
 		setting.settingEl.dataset.fcOwner = field.fileClassName; // for footer hover highlight
 		const typeIcon = createSpan({ cls: "fileclass-type-icon" });

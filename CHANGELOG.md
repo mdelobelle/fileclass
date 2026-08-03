@@ -32,8 +32,9 @@ All notable changes to Fileclass are documented here. The format follows
   the same action on the next field, → / ← between that field's actions, Home / End to
   the ends, and the whole list is a single tab stop. Moving down keeps the *action*,
   not the column: a group carries an extra **Children** button, so ↓ from *Edit* lands
-  on *Edit* rather than sliding onto *Remove*. Applies to the schema editor and to an
-  object's children list, which is the same list scoped to a field.
+  on *Edit* rather than sliding onto *Remove*. Every modal that lists rows carrying the
+  same actions has it: the note-fields modal, the schema editor, an object's children
+  list, and the value editors of an `Object` and an `ObjectList`.
 
 - **A valid group is no longer painted as a warning.** Obsidian can't interpret a
   nested property, so it colours the value in `--text-warning` — right for a value

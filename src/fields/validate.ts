@@ -102,6 +102,11 @@ export function isRequired(field: Field): boolean {
 	);
 }
 
+/** True for a YAML mapping — not a list, not a scalar, not null. */
+function isPlainObject(value: unknown): boolean {
+	return !!value && typeof value === "object" && !Array.isArray(value);
+}
+
 export function validateField(
 	field: Field,
 	value: unknown,
@@ -180,6 +185,22 @@ export function validateField(
 			return validateDatePattern(value, field, DATETIME_RE);
 		case "Time":
 			return validateDatePattern(value, field, TIME_RE);
+		case "Object":
+			// A value left over from before the field became a group — a plain string,
+			// say — was reported as fine, shown as nothing, and overwritten on the next
+			// save. Flagging it is what makes it visible anywhere at all.
+			return isPlainObject(value)
+				? VALID
+				: invalid(`"${field.name}" must be a group of properties`);
+		case "ObjectList": {
+			if (!Array.isArray(value)) return invalid(`"${field.name}" must be a list of groups`);
+			for (const item of value) {
+				if (!isPlainObject(item)) {
+					return invalid(`"${field.name}" items must be groups of properties`);
+				}
+			}
+			return VALID;
+		}
 		default:
 			// Types handled in later waves are not constrained here.
 			return VALID;

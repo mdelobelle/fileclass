@@ -41,14 +41,36 @@ function displayTemplateOf(field: Field): string | undefined {
 
 /** Value → display string, honoring Object templates, ranks, and date formats. */
 export function describeField(field: Field, value: unknown, deps: DisplayDeps): string {
-	if (field.type === "Object") return renderObjectItem(field, asObjectValue(value), deps);
+	if (field.type === "Object") {
+		// A value that is not a group at all — a string the field held before it
+		// became one — rendered as nothing, so every surface showed an empty row over
+		// a frontmatter that had a value in it. Show it as it stands; validation says
+		// it doesn't fit.
+		const stray = strayText(value);
+		if (stray !== null) return stray;
+		return renderObjectItem(field, asObjectValue(value), deps);
+	}
 	if (field.type === "ObjectList") {
+		const stray = strayText(value);
+		if (stray !== null) return stray;
 		const items = asListValue(value);
 		if (!items.length) return "";
-		return items.map((it, i) => `${i + 1}. ${renderObjectItem(field, it, deps)}`).join(ITEM_SEP);
+		return items
+			.map((it, i) => `${i + 1}. ${strayText(it) ?? renderObjectItem(field, it, deps)}`)
+			.join(ITEM_SEP);
 	}
 	if (DATE_TYPES.has(field.type)) return formatDate(field, value, undefined, deps);
 	return displayValue(field, value);
+}
+
+/**
+ * The text of a value that isn't a group (nor a list, for an ObjectList), or null
+ * when the value has the right shape. Empty stays empty.
+ */
+export function strayText(value: unknown): string | null {
+	if (value === undefined || value === null || value === "") return null;
+	if (typeof value === "object") return null;
+	return String(value);
 }
 
 /** One object's display: its template, or the first non-empty child value. */

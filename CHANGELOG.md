@@ -4,6 +4,19 @@ All notable changes to Fileclass are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); this project uses
 [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Fixed
+
+- **A value that isn't a group is no longer thrown away.** Give a field the `Object`
+  type and the value it already held — a plain string, say `publisher: Chilton Books`
+  — became invisible: the row showed nothing, validation called it fine, the editor
+  opened empty, and the next save replaced it with `{}` without a word. It is now
+  shown wherever values show, reported as a violation ("must be a group of
+  properties"), displayed in the editor as **Current value, not a group yet**, and
+  kept when you save an empty group — removing it takes an explicit *Clear*. Same for
+  `ObjectList`, whole and per item.
+
 ## [0.2.3] - 2026-08-03
 
 ### Fixed

@@ -25,6 +25,12 @@ export type ChildPrompt = (
 
 interface ObjectEditorOptions {
 	title: string;
+	/**
+	 * The text of a value that isn't a group at all — what the field held before it
+	 * became one. Shown, and protected: saving an untouched empty draft over it used
+	 * to replace it with `{}` without a word.
+	 */
+	stray?: string | null;
 	/** The Object/ObjectList field being edited (for its display template). */
 	field: Field;
 	childFields: Field[];
@@ -59,6 +65,7 @@ export class ObjectFieldsEditorModal extends Modal {
 		if (!this.opts.childFields.length) {
 			contentEl.createEl("p", { text: "This object has no fields defined." });
 		}
+		showStray(contentEl, this.opts.stray);
 
 		for (const child of this.opts.childFields) {
 			const value = this.draft[child.name];
@@ -91,6 +98,7 @@ export class ObjectFieldsEditorModal extends Modal {
 				.setButtonText("Save")
 				.setCta()
 				.onClick(() => {
+					if (keptStray(this.opts.stray, Object.keys(this.draft).length)) return;
 					const error = validateObjectDraft(this.opts.childFields, this.draft);
 					if (error) {
 						new Notice(`Fileclass: ${error}`);
@@ -152,6 +160,7 @@ export class ObjectListEditorModal extends Modal {
 		const { contentEl } = this;
 		contentEl.empty();
 		modalTitle(contentEl, this.opts.title);
+		showStray(contentEl, this.opts.stray);
 
 		this.draft.forEach((item, index) => {
 			new Setting(contentEl)
@@ -187,6 +196,7 @@ export class ObjectListEditorModal extends Modal {
 					.setButtonText("Save")
 					.setCta()
 					.onClick(() => {
+						if (keptStray(this.opts.stray, this.draft.length)) return;
 						this.opts.onSave(this.draft);
 						this.close();
 					})
@@ -196,4 +206,23 @@ export class ObjectListEditorModal extends Modal {
 	onClose(): void {
 		this.contentEl.empty();
 	}
+}
+
+/** Shows the value the field holds when that value isn't a group. */
+function showStray(contentEl: HTMLElement, stray?: string | null): void {
+	if (!stray) return;
+	const line = contentEl.createDiv({ cls: "fileclass-current-value" });
+	line.createSpan({ text: "Current value, not a group yet: ", cls: "fileclass-current-value-label" });
+	line.createSpan({ text: stray });
+}
+
+/**
+ * True when the save should be refused: nothing was entered and the field holds a
+ * value that isn't a group. Writing then would destroy it silently; Clear on the
+ * field is how you remove a value on purpose.
+ */
+function keptStray(stray: string | null | undefined, entries: number): boolean {
+	if (!stray || entries > 0) return false;
+	new Notice("Fileclass: nothing entered — the current value is kept. Use Clear to remove it.");
+	return true;
 }

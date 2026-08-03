@@ -14,6 +14,12 @@ All notable changes to Fileclass are documented here. The format follows
   own settings now carry the action, for `Object` and `ObjectList`, and it appears as
   soon as you pick one of those types rather than after a save and a detour.
 
+- **The breadcrumb names the group you are in.** Editing the children of a nested
+  group said *Book › children* at every depth, so two levels of nesting looked
+  identical — and the children of a group are exactly where you need to know which
+  group. It now reads *Book › publisher › headquarter › children*, and the field
+  editor's title names the field instead of saying "Edit field".
+
 - **The arrow keys move through a field list.** Every row of the schema editor
   contributes four or five tab stops — fifty-five in a class of a dozen fields — so
   reaching the eighth field's *Edit* was thirty-odd presses of Tab. ↓ / ↑ now move to

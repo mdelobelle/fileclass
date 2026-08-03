@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { Field } from "../../src/schema/field";
+import { Field, pathFieldNames } from "../../src/schema/field";
 import { describeField, strayText } from "../../src/fields/objectDisplay";
 import { validateField } from "../../src/fields/validate";
 
@@ -77,5 +77,27 @@ describe("a group inside a group", () => {
 	it("falls back to the first non-empty child when no template is set", () => {
 		const bare = { ...publisher, options: {} };
 		expect(describeField(bare, value, d)).toBe("Chilton Books");
+	});
+});
+
+describe("the trail a breadcrumb needs", () => {
+	const publisher: Field = { id: "pub", name: "publisher", type: "Object", path: "", fileClassName: "Book", options: {} };
+	const hq: Field = { id: "hq", name: "headquarter", type: "Object", path: "pub", fileClassName: "Book", options: {} };
+	const city: Field = { id: "ct", name: "city", type: "Input", path: "pub____hq", fileClassName: "Book", options: {} };
+	const all = [publisher, hq, city];
+
+	it("names every field the path runs through, outermost first", () => {
+		// "Book › publisher › headquarter › children", not "Book › children".
+		expect(pathFieldNames(all, "pub____hq")).toEqual(["publisher", "headquarter"]);
+		expect(pathFieldNames(all, "pub")).toEqual(["publisher"]);
+	});
+
+	it("has nothing to say about a root field", () => {
+		expect(pathFieldNames(all, "")).toEqual([]);
+	});
+
+	it("keeps an unknown id rather than dropping it", () => {
+		// A trail with a hole should look wrong, not look shorter.
+		expect(pathFieldNames(all, "pub____gone")).toEqual(["publisher", "gone"]);
 	});
 });

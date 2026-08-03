@@ -29,17 +29,29 @@
 # The editions to type, and how honest each one is:
 #   Dune                    Hardcover · 1965 · Chilton Books   ← the real first edition
 #                           Paperback · 1990 · Ace Books       ← this library's own copy
-#   The Lord of the Rings   Hardcover · 1954 · Allen & Unwin   ← the real first edition
-#                           Paperback · 1991                   ← the copy its own note
-#                                                                already describes
-# The vault's prose says "Mine is the 1991 paperback set, spines long gone", which is
-# where the second Tolkien item comes from; its publisher is deliberately left empty,
-# because the note doesn't name one and the take invents nothing. That also puts a
-# partially filled item on screen, which is the honest state of most real libraries.
+#                           Ebook · 2011 · Ace Books           ← typed, then removed at
+#                                                                step 9
+#   The Lord of the Rings   Paperback · 1991                   ← the copy its own note
+#                                                                describes, publisher
+#                                                                left empty
+#
+# The counts are what make step 11 say something, so they are load-bearing: Dune goes to
+# three and comes back to **two**, which is what gives Remove an honest victim instead of
+# a step that only names it. Tolkien gets **one** — the most faithful reading of its own
+# prose, "Allen & Unwin brought it out in three volumes from 1954" being a fact about the
+# work while "Mine is the 1991 paperback set, spines long gone" is the copy on the shelf.
+# Its publisher is deliberately left empty, because the note doesn't name one and the take
+# invents nothing; that also puts a partially filled item on screen, which is the honest
+# state of most real libraries.
+#
+# What the FirstYear column will read on camera, given the reordering at step 9: 1990 for
+# Dune (the paperback is first now, not the 1965 hardcover), 1991 for Tolkien, nothing for
+# Atomic Habits. Step 12 says "whichever you moved there" for exactly that reason — the
+# column follows the order the operator chose two steps earlier, which is the point.
 #
 # Atomic Habits keeps no editions at all: at step 11 its count cell is simply empty,
 # which is what a base does with a note that hasn't got the property — better shown
-# than claimed.
+# than claimed, and measured: an empty count sorts last under DESC.
 #
 # The vault opens on Dune, whose single publisher and single year step 1 reads.
 title: "Fileclass — A list of grouped fields"
@@ -67,20 +79,20 @@ steps:
   - title: "The first item, the 1965 hardcover: filled with the very editor a group uses"
     values: "Hardcover · 1965 · Chilton Books"
     pause: 2300
-  - title: "A second one, the paperback on the shelf today, and each item carries its rank"
-    values: "Paperback · 1990 · Ace Books"
+  - title: "Two more: the paperback on the shelf today, and an ebook — and each item carries its rank"
+    values: "Paperback · 1990 · Ace Books | Ebook · 2011 · Ace Books"
     pause: 2200
   - title: "Saved, the frontmatter holds a real list of groups, and not one line of YAML typed"
     pause: 2100
   - title: "A display template brings each item back to one line: format, middle dot, year"
     values: "{{format}} · {{year}}"
     pause: 2200
-  - title: "The order is yours: the paperback moves up, the ranks follow it, and Remove takes one away"
+  - title: "The order is yours, and so is what leaves: the paperback moves up, the ebook goes away"
     pause: 2300
-  - title: "The Lord of the Rings gets its two, the second only half filled — as libraries are"
-    values: "Hardcover · 1954 · Allen & Unwin | Paperback · 1991"
+  - title: "The Lord of the Rings gets the copy its note describes: the 1991 paperback, publisher unknown"
+    values: "Paperback · 1991"
     pause: 2400
-  - title: "And a base counts them, most first: three for Dune, two for Tolkien, none yet for the third"
+  - title: "And a base counts them, most first: two for Dune, one for Tolkien, none yet for the third"
     pause: 2400
-  - title: "It even reaches into the first item for its year: a list of groups is data, not a paragraph"
+  - title: "It even reaches into the first item — whichever you moved there — for its year: data, not a paragraph"
     pause: 2400

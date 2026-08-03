@@ -6,6 +6,21 @@ All notable changes to Fileclass are documented here. The format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- **An item you start and abandon is no longer written.** *Add item* on an `ObjectList`
+  pushed an empty item into the draft **before** opening its editor, and cancelling that
+  editor didn't take it back: nothing showed it — the list still read two rows, the
+  *Unsaved changes* line stayed quiet — and the next Save wrote `{}` into the
+  frontmatter, where it came back as a phantom third item. An item now exists only once
+  its editor is saved.
+
+- **An empty item reads as empty, not as punctuation.** With a display template, an item
+  holding nothing rendered as the template's own separators — a lone `·` — which reads
+  as a value. A template with nothing to fill it now renders nothing, so the surfaces
+  say *(empty)* in their own words, and a list summarises such an item as
+  `2. (empty)` rather than as a bare rank.
+
 ## [0.2.4] - 2026-08-03
 
 ### Fixed

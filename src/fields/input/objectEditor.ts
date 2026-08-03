@@ -190,15 +190,37 @@ export class ObjectListEditorModal extends Modal {
 	}
 
 	private editItem(index: number): void {
+		this.openItem(index, this.draft[index] ?? {}, (object) => {
+			this.draft[index] = object;
+		});
+	}
+
+	/**
+	 * A new item exists only once its editor is saved. Pushing it first and editing
+	 * in place looked equivalent and wasn't: cancelling the editor left an empty item
+	 * in the draft that no row showed — the list still read "2 items" — and the next
+	 * Save wrote `{}` into the frontmatter.
+	 */
+	private addItem(): void {
+		this.openItem(this.draft.length, {}, (object) => {
+			this.draft.push(object);
+		});
+	}
+
+	private openItem(
+		index: number,
+		initial: Record<string, unknown>,
+		place: (object: Record<string, unknown>) => void
+	): void {
 		new ObjectFieldsEditorModal(this.app, {
 			title: `${this.opts.title} — item ${index + 1}`,
 			field: this.opts.field,
 			childFields: this.opts.childFields,
 			promptChild: this.opts.promptChild,
 			deps: this.opts.deps,
-			initial: this.draft[index] ?? {},
+			initial,
 			onSave: (object) => {
-				this.draft[index] = object;
+				place(object);
 				this.render();
 			},
 		}).open();
@@ -253,10 +275,7 @@ export class ObjectListEditorModal extends Modal {
 		this.guard.mountHint(footerRow.settingEl);
 		footerRow
 			.addButton((b) =>
-				b.setButtonText("Add item").onClick(() => {
-					this.draft.push({});
-					this.editItem(this.draft.length - 1);
-				})
+				b.setButtonText("Add item").onClick(() => this.addItem())
 			)
 			.addButton((b) =>
 				b

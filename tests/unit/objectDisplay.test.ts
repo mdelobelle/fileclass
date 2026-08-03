@@ -85,6 +85,33 @@ describe("describeField — ObjectList", () => {
 		const list: Field = { id: "addrs", name: "addrs", type: "ObjectList", options: {}, path: "", fileClassName: "T" };
 		expect(describeField(list, [], deps([list]))).toBe("");
 	});
+
+	it("names an item with nothing in it instead of leaving a bare rank", () => {
+		const list: Field = { id: "addrs", name: "addrs", type: "ObjectList", options: { displayTemplate: "{{ville}} · {{pays}}" }, path: "", fileClassName: "T" };
+		const all = [list, field("ville", "Input", {}, "addrs"), field("pays", "Input", {}, "addrs")];
+		const value = [{ ville: "Paris", pays: "FR" }, {}];
+		expect(describeField(list, value, deps(all))).toBe("1. Paris · FR  ·  2. (empty)");
+	});
+});
+
+describe("a template with nothing to fill it", () => {
+	it("renders nothing rather than its own punctuation", () => {
+		// An empty item used to display as "·": the separators of the template with no
+		// values between them, which reads as a value rather than as an absence.
+		const { obj, all } = addressSchema({ displayTemplate: "{{ville}} · {{pays}}" });
+		expect(renderObjectItem(obj, {}, deps(all))).toBe("");
+		expect(renderObjectItem(obj, { ville: "", pays: "" }, deps(all))).toBe("");
+	});
+
+	it("keeps punctuation that sits next to a value", () => {
+		const { obj, all } = addressSchema({ displayTemplate: "{{ville}} · {{pays}}" });
+		expect(renderObjectItem(obj, { ville: "Paris" }, deps(all))).toBe("Paris ·");
+	});
+
+	it("counts a digit as content, so a numeric-only item shows", () => {
+		const { obj, all } = addressSchema({ displayTemplate: "{{ville}}" });
+		expect(renderObjectItem(obj, { ville: "1965" }, deps(all))).toBe("1965");
+	});
 });
 
 describe("renderObjectItem — nested object", () => {

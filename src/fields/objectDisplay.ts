@@ -56,7 +56,12 @@ export function describeField(field: Field, value: unknown, deps: DisplayDeps): 
 		const items = asListValue(value);
 		if (!items.length) return "";
 		return items
-			.map((it, i) => `${i + 1}. ${strayText(it) ?? renderObjectItem(field, it, deps)}`)
+			.map((it, i) => {
+				// An item with nothing in it is named as an absence rather than left as a
+				// bare rank ("3. "), which reads as a numbering accident.
+				const text = strayText(it) ?? renderObjectItem(field, it, deps);
+				return `${i + 1}. ${text || "(empty)"}`;
+			})
 			.join(ITEM_SEP);
 	}
 	if (DATE_TYPES.has(field.type)) return formatDate(field, value, undefined, deps);
@@ -90,13 +95,23 @@ export function renderObjectItem(
 		return "";
 	}
 
-	return template
+	const filled = template
 		.replace(TOKEN_RE, (_m, rawName: string, rawFmt?: string) => {
 			const child = children.find((c) => c.name === rawName.trim());
 			if (!child) return "";
 			return childDisplay(child, object[child.name], rawFmt?.trim() || undefined, deps);
 		})
 		.trim();
+	// Every token came back empty, so what is left is the template's own punctuation:
+	// an item with nothing in it displayed as "·", which reads as a value rather than
+	// as an absence. An empty item has an empty display, and the surfaces that show
+	// one say "(empty)" in their own words.
+	return hasContent(filled) ? filled : "";
+}
+
+/** True when a rendered template has something of the value left in it. */
+function hasContent(text: string): boolean {
+	return /[\p{L}\p{N}]/u.test(text);
 }
 
 function childDisplay(

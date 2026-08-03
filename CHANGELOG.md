@@ -6,6 +6,44 @@ All notable changes to Fileclass are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.2.5] - 2026-08-03
+
+### Fixed
+
+- **A property control acts on the note in front of you.** Obsidian recycles the rows of
+  its Properties panel — switching notes keeps the elements and rewrites their contents —
+  and Fileclass only rebuilt its button when the property *name* changed. So on two notes
+  sharing a property, the button stayed behind with the first note captured inside it:
+  the `editions` control of one book opened another book's list (reported from a real
+  vault), and a `Cycle` or a `Boolean` would have written to the wrong note **in
+  silence**, with no modal to show it. The note and the field are now read from the row
+  at the moment of the click, and the button is rebuilt when either the note or the
+  field's type changes — which also keeps its icon and its label honest.
+
+- **A child field whose name matches a root field no longer disappears.** A class holds
+  its nested children in the same list as its root fields, told apart by their `path`,
+  and the resolver de-duplicated that list by **name alone**. So a `Book` with a
+  `publisher` and an `editions` list whose items each have their own `publisher` lost
+  the child: it was absent from the resolved schema, and nothing offered it when adding
+  an item — reported from a real vault. A field is now identified by its name **at its
+  level**, so the same word can name a root field and a child of a group. Overriding an
+  inherited child still works, at its own level. `excludes` follow the same rule: they
+  name a field of a class, which is a root field, and a group's children go with their
+  parent rather than with a word.
+
+- **An item you start and abandon is no longer written.** *Add item* on an `ObjectList`
+  pushed an empty item into the draft **before** opening its editor, and cancelling that
+  editor didn't take it back: nothing showed it — the list still read two rows, the
+  *Unsaved changes* line stayed quiet — and the next Save wrote `{}` into the
+  frontmatter, where it came back as a phantom third item. An item now exists only once
+  its editor is saved.
+
+- **An empty item reads as empty, not as punctuation.** With a display template, an item
+  holding nothing rendered as the template's own separators — a lone `·` — which reads
+  as a value. A template with nothing to fill it now renders nothing, so the surfaces
+  say *(empty)* in their own words, and a list summarises such an item as
+  `2. (empty)` rather than as a bare rank.
+
 ## [0.2.4] - 2026-08-03
 
 ### Fixed

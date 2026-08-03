@@ -251,5 +251,16 @@
     "durationSeconds": 211,
     "recordedWith": "0.2.3",
     "privacyStatus": "public"
+  },
+  "021": {
+    "id": "xHIVXu8LiEE",
+    "url": "https://www.youtube.com/watch?v=xHIVXu8LiEE",
+    "title": "Fileclass #021 · A list of grouped fields",
+    "subject": "A list of grouped fields",
+    "scenario": "021_a_list_of_grouped_fields",
+    "doc": "fields/#nested-fields-object--objectlist",
+    "durationSeconds": 225,
+    "recordedWith": "0.2.4",
+    "privacyStatus": "public"
   }
 }

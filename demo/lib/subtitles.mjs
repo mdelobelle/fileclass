@@ -196,9 +196,14 @@ function install(cueCode) {
 				font-family:-apple-system,BlinkMacSystemFont,sans-serif;pointer-events:none;
 				user-select:none;opacity:0;transition:opacity .16s ease,transform .16s ease}
 			#fc-demo-keys.fc-show{opacity:1;transform:translateX(-50%) translateY(0)}
-			#fc-demo-subtitle .fc-input,#fc-demo-subtitle .fc-typed{display:inline-block;
-				margin-left:.5em;padding:0 .4em;border-radius:6px;
-				font-variant-numeric:tabular-nums;letter-spacing:.4px}
+			/* The values live on their own row, wrapping and centred. Appended inline
+			   after the sentence, one long value pushed the line past the caption's own
+			   width and the end of it disappeared off the window. */
+			#fc-demo-subtitle .fc-chips{display:flex;flex-wrap:wrap;justify-content:center;
+				gap:.35em .5em;margin-top:.5em}
+			#fc-demo-subtitle .fc-input,#fc-demo-subtitle .fc-typed{padding:0 .4em;
+				border-radius:6px;font-variant-numeric:tabular-nums;letter-spacing:.4px;
+				overflow-wrap:anywhere}
 			/* Yellow: a chord will type this. Blue: you type it yourself. Two colours so
 			   the operator never waits for a value that nothing is going to insert. */
 			#fc-demo-subtitle .fc-input{background:rgba(224,172,0,.16);color:#ffd75e}
@@ -346,13 +351,17 @@ class Stage {
 							el.dataset.line = t;
 							// The values, set apart so they read as data rather than as part
 							// of the sentence: yellow ones a chord types, blue ones you type.
-							if (t) {
+							// On their own row, so no value can push the sentence off the box.
+							if (t && chips.length) {
+								const row = document.createElement("div");
+								row.className = "fc-chips";
 								for (const c of chips) {
 									const chip = document.createElement("span");
 									chip.className = c.done ? "fc-input is-done" : c.cls;
 									chip.textContent = c.value;
-									el.appendChild(chip);
+									row.appendChild(chip);
 								}
+								el.appendChild(row);
 							}
 							el.classList.toggle("fc-title", !!isTitle);
 							el.classList.toggle("fc-show", !!t);

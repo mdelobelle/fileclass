@@ -105,6 +105,13 @@ async function inspect(stage) {
 				path: f.path,
 				classes: p.index.getFileClasses(f),
 				fields: p.index.getFields(f).map((x) => `${x.name}:${x.type}`),
+				// Root fields only, for the "not yet inserted" line: a group's children
+				// live inside their parent's value, not as frontmatter keys, so listing
+				// them as missing said a note lacked what it actually held.
+				rootFields: p.index
+					.getFields(f)
+					.filter((x) => !x.path)
+					.map((x) => x.name),
 				keys: Object.keys(app.metadataCache.getFileCache(f)?.frontmatter ?? {}),
 			}))
 			.sort((a, b) => a.path.localeCompare(b.path));
@@ -132,7 +139,7 @@ function report(facts) {
 
 	console.log(`\n${bold("Vault as the take will find it")}`);
 	for (const n of facts.notes) {
-		const declared = n.fields.map((f) => f.split(":")[0]);
+		const declared = n.rootFields ?? n.fields.map((f) => f.split(":")[0]);
 		const missing = n.classes.length ? declared.filter((name) => !n.keys.includes(name)) : [];
 		const bits = [
 			n.classes.length ? `class ${n.classes.join("+")}` : dim("no class"),

@@ -40,16 +40,37 @@ export function resolveInheritedFields(
 ): Field[] {
 	const excluded = new Set<string>(excludesOf(name));
 	const result: Field[] = [];
-	const seenNames = new Set<string>();
+	const seen = new Set<string>();
 
 	for (const cls of [name, ...ancestors]) {
 		for (const field of ownFieldsOf(cls)) {
-			if (excluded.has(field.name) || seenNames.has(field.name)) continue;
+			// Identity is name **and** level. A class's `fields[]` holds its nested
+			// children flat, told apart only by `path`, so de-duplicating on the name
+			// alone made a child vanish whenever a root field carried the same word —
+			// `editions.publisher` beside a plain `publisher`, which is the natural way
+			// to model a book. The child was dropped from the resolved set, so nothing
+			// offered it when adding an item.
+			const key = fieldKey(field);
+			// Excludes name a field of a class, which is a root field: a group's children
+			// go with their parent. Applying them at every level would drop
+			// `editions.publisher` the day a class excludes an inherited `publisher`.
+			if ((!field.path && excluded.has(field.name)) || seen.has(key)) continue;
 			result.push(field);
-			seenNames.add(field.name);
+			seen.add(key);
 		}
 		// Deeper ancestors also lose the names this class excludes.
 		for (const ex of excludesOf(cls)) excluded.add(ex);
 	}
 	return result;
+}
+
+/**
+ * What makes two declarations the same field: its name at its level. A nested child
+ * shares the `path` of its parent's id, which an inheriting class inherits unchanged,
+ * so overriding a child in a subclass still works.
+ */
+function fieldKey(field: Field): string {
+	// NUL as the separator: no id, path or field name can contain one, so a name with
+	// a space in it ("next interval") can never blur into the path in front of it.
+	return `${field.path}\u0000${field.name}`;
 }

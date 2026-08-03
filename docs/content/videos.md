@@ -100,3 +100,7 @@ other. Captions are English; YouTube translates them into your language.
 ## A group of fields inside a field
 
 {{< video "020" >}}
+
+## A list of grouped fields
+
+{{< video "021" >}}

@@ -612,10 +612,18 @@ Editing opens a **draft editor**:
   **single** `processFrontMatter` call.
 - The editor mutates a clone of your existing value, so **unknown keys are
   preserved** — Fileclass never regenerates an object from the schema.
-- ObjectList items can be added, edited, reordered, and removed.
+- ObjectList items can be added, edited, reordered, and removed. A **new item exists
+  only once its editor is saved** — starting one and cancelling leaves the list exactly
+  as it was.
 
 Only **root** fields appear in the field picker; nested fields are reached by
 editing their parent object.
+
+A child may carry the **same name as a root field** — a `Book` with a `publisher`, whose
+`editions` each have their own — because a field is identified by its name *at its
+level*. The same holds for inheritance (a subclass overrides a child at that child's
+level) and for `excludes`, which name a class's own fields, the root ones; a group's
+children go with their parent.
 
 ### Sorting and filtering on a child, in Bases
 
@@ -641,6 +649,23 @@ views:
 This is the half a well-shaped string can't give you: `Study · A-3` in a plain
 `Input` reads the same on screen and sorts as one opaque piece of text.
 
+An `ObjectList` answers the same way, and further — measured in a base over three
+books, one with three editions:
+
+```yaml
+formulas:
+  Count: note.editions.length            # 3 · 2 · empty where the key is absent
+  FirstFormat: note.editions[0].format   # indexing works, and reaches a child
+  FirstYear: note.editions[0].year
+  # Formats: note.editions.map(e => e.format).join(", ")   ← renders nothing
+```
+
+So a list is countable, sortable by its count, and reachable item by item. Mapping
+over it is not available: an arrow function produces an **empty cell** rather than an
+error, which is worth knowing before you build a view on one. The property itself,
+used as a plain column, shows the raw JSON — Bases has no editor for a list of
+mappings either.
+
 Obsidian has no editor for a nested property, so its **Properties** panel prints the
 value and colours it as a warning. When the field is declared as a group *and* its
 value validates, Fileclass drops that colour — the value is understood here, even if
@@ -651,6 +676,8 @@ schema editor's *Edit*, or Alt-clicking its type icon anywhere a value is shown 
 use **Children**. The schema screen keeps its own shortcut for the same thing.
 
 ### Display template
+
+{{< video "021" >}}
 
 Object/ObjectList fields have a **Display template** (in the schema editor)
 controlling how an item is summarized in the modal and the list editor:

@@ -26,6 +26,14 @@ All notable changes to Fileclass are documented here. The format follows
   group. It now reads *Book › publisher › headquarter › children*, and the field
   editor's title names the field instead of saying "Edit field".
 
+- **Closing a modal with unsaved changes asks instead of discarding.** Nothing said
+  whether Save was needed, so Escape or the close button threw a half-filled field
+  definition away in silence. A modal holding a draft now shows **Unsaved changes**
+  beside its Save button the moment the draft differs from what it opened on, and
+  closing it offers *Keep editing*, *Discard* or *Save* — Escape, the X and a click
+  outside all go through the same door. An untouched modal still closes without a word.
+  So far: a field's definition, a group's values, and an `ObjectList`'s items.
+
 - **The arrow keys move through a field list.** Every row of the schema editor
   contributes four or five tab stops — fifty-five in a class of a dozen fields — so
   reaching the eighth field's *Edit* was thirty-odd presses of Tab. ↓ / ↑ now move to

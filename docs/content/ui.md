@@ -143,6 +143,17 @@ CLI's `set-where`:
 > Dry-run first: nothing is written until you Apply. As always, writes go
 > straight to your vault — keep regular backups.
 
+## Unsaved changes
+
+A modal that holds a draft — a field's definition, a group's values, a list's items —
+says so as soon as the draft differs from what it opened on: **Unsaved changes**
+appears beside its Save button. Closing it then asks rather than discarding, with the
+three answers that exist: **Keep editing**, **Discard**, or **Save**. That covers
+Escape, the close button and a click outside, since Obsidian routes all three through
+the same close.
+
+A modal you haven't changed still closes on Escape without a word.
+
 ## Moving through a field list
 
 Every modal that lists rows carrying the same actions is navigated with the arrow

@@ -16,6 +16,7 @@ import { describeField, DisplayDeps, renderObjectItem } from "../objectDisplay";
 import { cloneDraft, validateObjectDraft } from "../objectDraft";
 import { makeStickyFooter } from "../../ui/modalFooter";
 import { attachRowGrid } from "../../ui/rowGridKeyboard";
+import { attachUnsavedGuard, snapshot, UnsavedGuard } from "../../ui/unsavedGuard";
 
 /** Opens the input for a child field, calling back with its new value. */
 export type ChildPrompt = (
@@ -44,6 +45,9 @@ export class ObjectFieldsEditorModal extends Modal {
 	private readonly draft: Record<string, unknown>;
 	/** Detaches the arrow-key grid of the current render. */
 	private detachGrid?: () => void;
+	/** Snapshot of the draft as opened, or as last saved. */
+	private opened = "";
+	private guard!: UnsavedGuard;
 
 	constructor(
 		app: App,
@@ -57,7 +61,28 @@ export class ObjectFieldsEditorModal extends Modal {
 	}
 
 	onOpen(): void {
+		this.opened = snapshot(this.draft);
+		// Attached once: render() rebuilds the content, and wrapping close on every
+		// render would nest one wrapper per keystroke.
+		this.guard = attachUnsavedGuard(this.app, this, {
+			isDirty: () => snapshot(this.draft) !== this.opened,
+			save: () => this.commit(),
+			subject: "group",
+		});
 		this.render();
+	}
+
+	/** Commits the draft. False when it can't be saved, so the caller stays open. */
+	private commit(): boolean {
+		if (keptStray(this.opts.stray, Object.keys(this.draft).length)) return false;
+		const error = validateObjectDraft(this.opts.childFields, this.draft);
+		if (error) {
+			new Notice(`Fileclass: ${error}`);
+			return false;
+		}
+		this.opts.onSave(this.draft);
+		this.opened = snapshot(this.draft);
+		return true;
 	}
 
 	private render(): void {
@@ -107,19 +132,14 @@ export class ObjectFieldsEditorModal extends Modal {
 			preferred: "Edit",
 		});
 
-		new Setting(makeStickyFooter(contentEl)).addButton((b) =>
+		const footer = makeStickyFooter(contentEl);
+		this.guard.mountHint(footer);
+		new Setting(footer).addButton((b) =>
 			b
 				.setButtonText("Save")
 				.setCta()
 				.onClick(() => {
-					if (keptStray(this.opts.stray, Object.keys(this.draft).length)) return;
-					const error = validateObjectDraft(this.opts.childFields, this.draft);
-					if (error) {
-						new Notice(`Fileclass: ${error}`);
-						return;
-					}
-					this.opts.onSave(this.draft);
-					this.close();
+					if (this.commit()) this.close();
 				})
 		);
 	}
@@ -135,6 +155,9 @@ export class ObjectListEditorModal extends Modal {
 	private readonly draft: Record<string, unknown>[];
 	/** Detaches the arrow-key grid of the current render. */
 	private detachGrid?: () => void;
+	/** Snapshot of the draft as opened, or as last saved. */
+	private opened = "";
+	private guard!: UnsavedGuard;
 
 	constructor(
 		app: App,
@@ -148,7 +171,21 @@ export class ObjectListEditorModal extends Modal {
 	}
 
 	onOpen(): void {
+		this.opened = snapshot(this.draft);
+		this.guard = attachUnsavedGuard(this.app, this, {
+			isDirty: () => snapshot(this.draft) !== this.opened,
+			save: () => this.commit(),
+			subject: "list",
+		});
 		this.render();
+	}
+
+	/** Commits the draft. False when it can't be saved, so the caller stays open. */
+	private commit(): boolean {
+		if (keptStray(this.opts.stray, this.draft.length)) return false;
+		this.opts.onSave(this.draft);
+		this.opened = snapshot(this.draft);
+		return true;
 	}
 
 	private editItem(index: number): void {
@@ -210,7 +247,9 @@ export class ObjectListEditorModal extends Modal {
 			preferred: "Edit",
 		});
 
-		new Setting(makeStickyFooter(contentEl))
+		const footer = makeStickyFooter(contentEl);
+		this.guard.mountHint(footer);
+		new Setting(footer)
 			.addButton((b) =>
 				b.setButtonText("Add item").onClick(() => {
 					this.draft.push({});
@@ -222,9 +261,7 @@ export class ObjectListEditorModal extends Modal {
 					.setButtonText("Save")
 					.setCta()
 					.onClick(() => {
-						if (keptStray(this.opts.stray, this.draft.length)) return;
-						this.opts.onSave(this.draft);
-						this.close();
+						if (this.commit()) this.close();
 					})
 			);
 	}

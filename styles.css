@@ -989,3 +989,16 @@ input.fileclass-color-circle.is-custom::-webkit-color-swatch-wrapper {
 .fileclass-scroll-body {
 	scroll-padding-top: var(--size-4-4);
 }
+
+/* "Unsaved changes", beside the Save button of a modal holding a draft. Hidden until
+   the draft actually differs, so its appearance is the signal. */
+.fileclass-unsaved-hint {
+	display: none;
+	margin-right: auto;
+	color: var(--text-warning);
+	font-size: var(--font-ui-small);
+}
+
+.fileclass-unsaved-hint.is-visible {
+	display: block;
+}

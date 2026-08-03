@@ -10,34 +10,36 @@ field types and the commands that set values. Everything is written to
 
 ## Available field types
 
+Every type name below links to the section that covers it.
+
 | Type | Stores | Input | Validation |
 |------|--------|-------|------------|
-| **Input** | text | text prompt (or [guided template](#input-templates)) | must be scalar text |
-| **MultiInput** | list of text | list editor (add/remove/reorder; each item plain or [templated](#input-templates)) | a list of scalar text items |
-| **Number** | number | text prompt with − / + buttons stepping by `step` ([details](#number-fields)) | numeric; optional `min`/`max` |
-| **Boolean** | true/false | toggle | boolean |
-| **Select** | one value | value picker | must be an allowed value (if a list is defined) |
-| **Cycle** | one value | one click advances to the next value ([details](../ui/#one-gesture-per-field-type)) | must be an allowed value |
-| **Multi** | list | toggle list | each item must be allowed |
-| **Date** | date | date picker | `YYYY-MM-DD` (unless a custom format is set) |
-| **DateTime** | date+time | date-time picker | `YYYY-MM-DDTHH:mm` |
-| **Time** | time | time picker | `HH:mm` |
-| **Duration** | length of time | duration builder | an RFC 5545 `DURATION` (`P1W`, `PT1H30M`) |
-| **CycleDuration** | list of durations | duration list editor | a list of durations |
-| **Location** | `"lat,lon"` | coordinate inputs + paste | lat −90..90, lon −180..180 |
-| **Icon** | icon id | [searchable icon grid](#icon) | a registered icon id |
-| **Color** | CSS color | [swatch palette + custom](#color) | a valid CSS color |
-| **File** | link | note picker | a link string |
-| **MultiFile** | list of links | toggle list | a list of links |
-| **Media** | link | file picker (with thumbnails) | a link string |
-| **MultiMedia** | list | toggle list | a list of links |
-| **Object** | nested object | draft editor | each known child validates |
-| **ObjectList** | list of objects | draft editor | each item's children validate |
-| **JSON** | free-form value | monospace textarea | must parse as JSON |
-| **YAML** | free-form value | monospace textarea | must parse as YAML |
-| **Canvas** | list of links | auto-filled from a `.canvas` | — |
-| **CanvasGroup** | list of group names | auto-filled from a `.canvas` | — |
-| **CanvasGroupLink** | list of links | auto-filled from a `.canvas` | — |
+| [**Input**](#input-templates) | text | text prompt (or a guided template) | must be scalar text |
+| [**MultiInput**](#multiinput--a-list-of-templated-values) | list of text | list editor (add/remove/reorder; each item plain or templated) | a list of scalar text items |
+| [**Number**](#number-fields) | number | text prompt with − / + buttons stepping by `step` | numeric; optional `min`/`max` |
+| [**Boolean**](#one-value-or-several) | true/false | toggle | boolean |
+| [**Select**](#where-allowed-values-come-from) | one value | value picker | must be an allowed value (if a list is defined) |
+| [**Cycle**](#where-allowed-values-come-from) | one value | one click advances to the next value ([the gesture](../ui/#one-gesture-per-field-type)) | must be an allowed value |
+| [**Multi**](#one-value-or-several) | list | toggle list | each item must be allowed |
+| [**Date**](#date-fields-date--datetime--time) | date | date picker | `YYYY-MM-DD` (unless a custom format is set) |
+| [**DateTime**](#date-fields-date--datetime--time) | date+time | date-time picker | `YYYY-MM-DDTHH:mm` |
+| [**Time**](#date-fields-date--datetime--time) | time | time picker | `HH:mm` |
+| [**Duration**](#durations--interval-cycling) | length of time | duration builder | an RFC 5545 `DURATION` (`P1W`, `PT1H30M`) |
+| [**CycleDuration**](#an-interval-sequence-cycleduration) | list of durations | duration list editor | a list of durations |
+| [**Location**](#location) | `"lat,lon"` | coordinate inputs + paste | lat −90..90, lon −180..180 |
+| [**Icon**](#icon) | icon id | searchable icon grid | a registered icon id |
+| [**Color**](#color) | CSS color | swatch palette + custom | a valid CSS color |
+| [**File**](#link-fields-file--media) | link | note picker | a link string |
+| [**MultiFile**](#link-fields-file--media) | list of links | toggle list | a list of links |
+| [**Media**](#link-fields-file--media) | link | file picker (with thumbnails) | a link string |
+| [**MultiMedia**](#link-fields-file--media) | list | toggle list | a list of links |
+| [**Object**](#nested-fields-object--objectlist) | nested object | draft editor | each known child validates |
+| [**ObjectList**](#nested-fields-object--objectlist) | list of objects | draft editor | each item's children validate |
+| [**JSON**](#structured-fields-json--yaml) | free-form value | monospace textarea | must parse as JSON |
+| [**YAML**](#structured-fields-json--yaml) | free-form value | monospace textarea | must parse as YAML |
+| [**Canvas**](#canvas-fields-canvas--canvasgroup--canvasgrouplink) | list of links | auto-filled from a `.canvas` | — |
+| [**CanvasGroup**](#canvas-fields-canvas--canvasgroup--canvasgrouplink) | list of group names | auto-filled from a `.canvas` | — |
+| [**CanvasGroupLink**](#canvas-fields-canvas--canvasgroup--canvasgrouplink) | list of links | auto-filled from a `.canvas` | — |
 
 Empty values are always valid — a field is optional unless a constraint says
 otherwise. `Lookup` and `Formula` (computed fields) are **out of scope** for

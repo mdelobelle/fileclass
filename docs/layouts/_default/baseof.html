@@ -20,6 +20,7 @@
       --code-fg: #e6edf3;
       --sidebar-w: 16rem;
       --content-w: 44rem;
+      --toc-w: 15rem;
       --radius: 8px;
     }
     @media (prefers-color-scheme: dark) {
@@ -76,9 +77,40 @@
     .content { padding: 3rem 2rem 5rem; }
     article { max-width: var(--content-w); margin: 0 auto; }
 
+    /* A long page gets its outline in a third column. The article keeps its own
+       measure — the outline is added beside it, not carved out of it. */
+    .page.has-toc {
+      display: grid;
+      grid-template-columns: minmax(0, var(--content-w)) var(--toc-w);
+      gap: 3rem; justify-content: center;
+    }
+    .page.has-toc article { margin: 0; }
+
+    .toc { position: sticky; top: 2.5rem; align-self: start; max-height: calc(100vh - 5rem);
+      overflow-y: auto; font-size: .87rem; line-height: 1.45; }
+    .toc .toc-head {
+      margin: 0 0 .6rem; padding-left: .9rem;
+      font-size: .72rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+      color: var(--fg-muted);
+    }
+    .toc ul { list-style: none; margin: 0; padding: 0; }
+    /* The rail: a continuous line the active marker sits on, so the highlight reads
+       as a position in the page rather than as a selected menu item. */
+    .toc > nav > ul { border-left: 2px solid var(--border); }
+    .toc ul ul { border-left: none; }
+    .toc li { margin: 0; }
+    .toc a {
+      display: block; padding: .22rem 0 .22rem .9rem; margin-left: -2px;
+      border-left: 2px solid transparent;
+      color: var(--fg-muted); text-decoration: none;
+    }
+    .toc ul ul a { padding-left: 1.9rem; font-size: .95em; }
+    .toc a:hover { color: var(--fg); }
+    .toc a.active { color: var(--accent); font-weight: 650; border-left-color: var(--accent); }
+
     article h1 { font-size: 2.1rem; line-height: 1.2; letter-spacing: -.02em; margin: 0 0 1.25rem; }
-    article h2 { font-size: 1.5rem; letter-spacing: -.01em; margin: 2.75rem 0 1rem; padding-bottom: .35rem; border-bottom: 1px solid var(--border); }
-    article h3 { font-size: 1.2rem; margin: 2rem 0 .75rem; }
+    article h2 { font-size: 1.5rem; letter-spacing: -.01em; margin: 2.75rem 0 1rem; padding-bottom: .35rem; border-bottom: 1px solid var(--border); scroll-margin-top: 1.5rem; }
+    article h3 { font-size: 1.2rem; margin: 2rem 0 .75rem; scroll-margin-top: 1.5rem; }
     article p, article li { color: var(--fg); }
     article a { color: var(--accent); text-decoration: none; }
     article a:hover { text-decoration: underline; }
@@ -148,6 +180,12 @@
       border-radius: var(--radius); background: #000;
     }
     .fc-video-embed figcaption { margin-top: .5rem; color: var(--fg-muted); font-size: .93rem; }
+
+    /* Not enough room for three columns: the outline goes, the prose stays. */
+    @media (max-width: 1180px) {
+      .page.has-toc { display: block; }
+      .toc { display: none; }
+    }
 
     /* Mobile: sidebar becomes a top bar */
     @media (max-width: 800px) {

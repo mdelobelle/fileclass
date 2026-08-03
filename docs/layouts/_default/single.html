@@ -1,6 +1,78 @@
 {{ define "main" }}
-<article>
-  <h1>{{ .Title }}</h1>
-  {{ .Content }}
-</article>
+{{/* The outline shows on any page with more than a handful of sections; a page can
+     opt out with `toc: false` in its front matter. `fields.md` is the reason it
+     exists — twenty-eight sections is more than a reader can hold in their head. */}}
+{{ $headings := findRE `<h[23] id=` .Content }}
+{{ $showToc := and (ne .Params.toc false) (ge (len $headings) 6) }}
+<div class="page{{ if $showToc }} has-toc{{ end }}">
+  <article>
+    <h1>{{ .Title }}</h1>
+    {{ .Content }}
+  </article>
+  {{ if $showToc }}
+  <aside class="toc" aria-label="On this page">
+    <p class="toc-head">On this page</p>
+    {{ .TableOfContents }}
+  </aside>
+  {{ end }}
+</div>
+{{ if $showToc }}
+<script>
+	/*
+	 * Which section you are in. Hugo builds the outline, but "where am I" is a scroll
+	 * position, which only the browser knows — hence these few lines rather than a
+	 * dependency.
+	 *
+	 * The rule is "the last heading that has passed the reading line", not "the
+	 * heading currently on screen": with an IntersectionObserver alone, a section
+	 * taller than the viewport leaves nothing highlighted while you read it.
+	 */
+	(() => {
+		const links = Array.from(document.querySelectorAll(".toc a[href^='#']"));
+		if (!links.length) return;
+		const targets = links
+			.map((a) => ({ a, el: document.getElementById(decodeURIComponent(a.hash.slice(1))) }))
+			.filter((t) => t.el);
+		if (!targets.length) return;
+		const READING_LINE = 120; // px from the top: where the eye actually is
+		let queued = false;
+		let last = null;
+
+		const mark = () => {
+			queued = false;
+			let current = targets[0];
+			for (const t of targets) {
+				if (t.el.getBoundingClientRect().top <= READING_LINE) current = t;
+				else break;
+			}
+			// At the very bottom the last section may never cross the line — a page
+			// scrolled to the end is reading its last heading.
+			if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 4) {
+				current = targets[targets.length - 1];
+			}
+			for (const t of targets) {
+				t.a.classList.toggle("active", t === current);
+				if (t === current) t.a.setAttribute("aria-current", "true");
+				else t.a.removeAttribute("aria-current");
+			}
+			// An outline of twenty-eight entries scrolls on its own, so the marker can
+			// end up out of sight — which is the one thing it exists not to be.
+			// `nearest` keeps the page itself still.
+			if (current !== last) {
+				last = current;
+				current.a.scrollIntoView({ block: "nearest" });
+			}
+		};
+
+		const onScroll = () => {
+			if (queued) return;
+			queued = true;
+			requestAnimationFrame(mark);
+		};
+		addEventListener("scroll", onScroll, { passive: true });
+		addEventListener("resize", onScroll, { passive: true });
+		mark();
+	})();
+</script>
+{{ end }}
 {{ end }}

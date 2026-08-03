@@ -6,6 +6,8 @@ All notable changes to Fileclass are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.2.4] - 2026-08-03
+
 ### Fixed
 
 - **A group's children are reachable from the field itself.** *Children* was a button
@@ -23,8 +25,8 @@ All notable changes to Fileclass are documented here. The format follows
 - **The breadcrumb names the group you are in.** Editing the children of a nested
   group said *Book › children* at every depth, so two levels of nesting looked
   identical — and the children of a group are exactly where you need to know which
-  group. It now reads *Book › publisher › headquarter › children*, and the field
-  editor's title names the field instead of saying "Edit field".
+  group. It now reads *Comic › storage › shelf › children*, and the field editor's
+  title names the field instead of saying "Edit field".
 
 - **Closing a modal with unsaved changes asks instead of discarding.** Nothing said
   whether Save was needed, so Escape or the close button threw a half-filled field

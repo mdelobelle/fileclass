@@ -1,22 +1,27 @@
 # Narration for take 020 — see ../SCENARIO.md for the format.
 # Sixth of arc 4 (021 and 022 still follow). Starts where 019 ended: the four
-# activities carry their coordinates and Activities.base has its map view. Turns
-# `Book.shelf` — the templated string take 016 built — into `storage`, a group of
+# activities carry their coordinates and Activities.base has its map view. Models the
+# shelf location a second time — on Comic, which has no such field yet — as a group of
 # groups. Nested properties, which is the thing the community asks for most often and
 # what the Object type answers.
 #
-# Why storage and not the publisher this take first used: an Object is for a value
-# with no identity of its own. A publisher has one — it deserves a note, backlinks, a
-# base — so using it as a group teaches the wrong criterion, and an attentive viewer
-# would ask why it isn't a class. A shelf location exists only as an attribute of the
-# book, which is exactly what the type is for.
+# Why on Comic and not by converting `Book.shelf`: converting means renaming, and
+# renaming a field today rewrites the class note only — every note keeps the old key
+# with its value (issue #108, whose fix needs a Save of its own that lists the notes it
+# is about to rewrite). Modelling the same information a second time, on a class that
+# never had it, owes nothing to that bug and gives the take a better spine: the books
+# hold their location as one well-formed string, the comics hold it as structure, and
+# step 12 shows what only the second one can do.
+#
+# Why storage and not the publisher this take first used: an Object is for a value with
+# no identity of its own. A publisher has one — it deserves a note, backlinks, a base —
+# so using it as a group teaches the wrong criterion, and an attentive viewer would ask
+# why it isn't a class. A shelf location exists only as an attribute of the album, which
+# is exactly what the type is for.
 #
 # Facts the script leans on, all measured in the app before scripting:
-#  - the old value `Study · A-3` does not fit the new shape, and is shown, flagged
-#    ("must be a group of properties") and kept when an empty group is saved. Before
-#    this take's surfaces pass it was invisible, unflagged, and overwritten with `{}`;
 #  - a group's children are reachable from the field's own settings, so steps 4 to 7
-#    never leave the modal — that too came out of this take's pass;
+#    never leave the modal — that came out of this take's surfaces pass;
 #  - a token naming a child group defers to THAT group's template: `{{room}} ·
 #    {{shelf}}` over `{{unit}}-{{level}}` rebuilds the very string take 016 produced.
 #    There is deliberately no path syntax like `{{shelf.level}}` — one mechanism is
@@ -26,10 +31,22 @@
 #    value it can't interpret;
 #  - Bases does NOT resolve a dotted nested path, in a column or in a sort:
 #    `storage.room` and `note.storage.room` both leave the order untouched. A one-line
-#    formula does — sorting on `formula.Room` gives Attic, Living room, Study. Books.base
-#    ships those formulas, so step 12 shows a result rather than filming YAML (#19).
+#    formula does. Comics.base ships those two formulas, so step 12 shows a result
+#    rather than filming YAML (#19).
 #
-# The vault opens on Dune, the book the take works on.
+# The three albums, and the rooms to type on camera. They are chosen so the sort says
+# something: by title the order is Tiara, Yellow M, Tintin; by room and level it is
+# Tintin, Tiara, Yellow M — and the two in the Study are separated by their level
+# alone, which is the half a plain string could never do.
+#
+#   Tintin in Tibet        Attic        B-1
+#   The Tiara of Oribal    Study        A-2
+#   The Yellow M           Study        C-4
+#
+# Step 7 fills the first album, step 11 the other two. Each carries its values as
+# `input:`, so ⌘⌃⌥⇧I types them.
+#
+# The vault opens on Dune, whose shelf string step 1 reads before the comics take over.
 #
 # Activities.base keeps the map view take 019 built. It needs the Maps community
 # plugin, which a staged vault doesn't ship, so it renders as an unknown view type
@@ -48,27 +65,31 @@ initial_pause: 1500
 default_pause: 900
 
 steps:
-  - title: "Since take 016 the shelf is a well-formed string: Study, middle dot, A dash 3"
-    pause: 2000
-  - title: "But the room, the unit and the level are only text in there — nothing to sort, nothing to filter"
+  - title: "Since take 016 a book says where it is shelved in one well-formed string: Study, middle dot, A dash 3"
     pause: 2100
-  - title: "Obsidian's properties are flat: nested properties are what people ask for most"
-    pause: 2000
-  - title: "Change shelf's type to Object, and rename it storage"
-    pause: 1900
-  - title: "The old value doesn't fit that shape: it is shown, flagged, and not thrown away"
-    pause: 2000
-  - title: "Declare what the group holds: room, from a list of values — and shelf"
-    pause: 2000
-  - title: "And shelf is a group in its turn: unit, and level as a number"
-    pause: 1900
-  - title: "Fill it: room offers what you allowed, level refuses anything that isn't a number"
-    pause: 2000
-  - title: "Saved, the frontmatter holds two real levels"
-    pause: 1800
-  - title: "A template on each group: unit dash level, then room, middle dot, shelf"
-    pause: 2000
-  - title: "The display comes back to the string we started from — same text, structure underneath"
+  - title: "The comics have no such field yet, so let's explore another way to model the same thing"
     pause: 2100
-  - title: "And a base sorts by room, then by level: what no string could ever do"
+  - title: "Obsidian's properties are flat, and nested properties are what people ask for most"
+    pause: 2000
+  - title: "Give Comic a storage field, of type Object: a group of properties inside one property"
+    pause: 2000
+  - title: "Its children are declared from the field itself — room, from a list of values"
+    input: "Attic, Living room, Study"
+    pause: 2100
+  - title: "And shelf, a group in its turn, holding unit and level as a number"
+    pause: 2000
+  - title: "Fill it on Tintin in Tibet: room offers what you allowed, level refuses anything that isn't a number"
+    input: "Attic / B / 1"
     pause: 2200
+  - title: "Saved, the frontmatter holds two real levels of structure — no YAML typed"
+    pause: 1900
+  - title: "A display template on each group: unit dash level, then room, middle dot, shelf"
+    input: "{{unit}}-{{level}} then {{room}} · {{shelf}}"
+    pause: 2100
+  - title: "Which lands on the very text the books carry as a string — same reading, structure underneath"
+    pause: 2200
+  - title: "The other two albums follow: the Tiara in the Study, and the Yellow M above it"
+    input: "Study / A / 2 — then Study / C / 4"
+    pause: 2200
+  - title: "And a base sorts the comics by room, then by level: what no single string could do"
+    pause: 2300

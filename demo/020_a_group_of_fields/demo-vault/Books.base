@@ -1,20 +1,16 @@
-formulas:
-  Room: note.storage.room
-  Level: note.storage.shelf.level
 views:
   - type: table
-    name: By room
+    name: All books
     filters:
       and:
         - fileClass == "Book"
     sort:
-      - property: formula.Room
-        direction: ASC
-      - property: formula.Level
+      - property: published
         direction: ASC
     order:
       - file.name
-      - storage
-      - formula.Room
-      - formula.Level
+      - shelf
+      - author
+      - publisher
       - genre
+      - published

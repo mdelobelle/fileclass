@@ -970,3 +970,22 @@ input.fileclass-color-circle.is-custom::-webkit-color-swatch-wrapper {
 .metadata-property-value-item.mod-unknown.fileclass-group-ok {
 	color: inherit;
 }
+
+/*
+ * Room for the first row's focus ring, and for the one the arrows scroll to.
+ *
+ * A modal's title is sticky with an opaque background and a z-index, so it paints
+ * *over* the scrolling list: the top 3px of the first row's focus ring disappeared
+ * under it. Measured on pixels rather than eyeballed — the ring's top edge was a flat
+ * 101px line, and 8px of padding brings back the rounded corners.
+ *
+ * `scroll-padding-top` is the same problem in motion: arrowing down to a row below
+ * the fold would otherwise park it under the title.
+ */
+.fileclass-field-list {
+	padding-top: var(--size-4-2);
+}
+
+.fileclass-scroll-body {
+	scroll-padding-top: var(--size-4-4);
+}

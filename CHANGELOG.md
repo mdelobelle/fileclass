@@ -14,6 +14,12 @@ All notable changes to Fileclass are documented here. The format follows
   own settings now carry the action, for `Object` and `ObjectList`, and it appears as
   soon as you pick one of those types rather than after a save and a detour.
 
+- **The first row's focus ring is no longer cut off.** A modal's title is sticky with
+  an opaque background, so it painted *over* the top of the ring on the first field —
+  not a clipping problem but an overlap, which is why it only ever affected that one
+  row. The field list keeps room for it now, and `scroll-padding` means a row the arrow
+  keys scroll to doesn't park under the title either.
+
 - **The breadcrumb names the group you are in.** Editing the children of a nested
   group said *Book › children* at every depth, so two levels of nesting looked
   identical — and the children of a group are exactly where you need to know which

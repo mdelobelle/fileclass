@@ -89,6 +89,14 @@ All notable changes to Fileclass are documented here. The format follows
 
 ### Fixed
 
+- **A field button's tooltip names the plugin the way its commands do.** It read
+  `Edit "author" — File (Fileclass)`, and that trailing parenthesis was taken for a
+  placeholder left unsubstituted — reasonably, since in this plugin's vocabulary a
+  parenthesis after a field is where a **fileClass name** would belong. It now reads
+  `Fileclass: Edit "author" — File`, like every entry the plugin puts in the command
+  palette. Same fix on the schema shortcut, the next-date affordance and the field-settings
+  wrench.
+
 - **Raw text no longer disappears on Escape.** The `JSON`/`YAML` editor is where the most
   typing happens and it was the last one without a guard: Escape or the close button threw
   a blob away in silence. It now shows **Unsaved changes** in its footer and asks — *Keep

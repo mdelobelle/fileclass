@@ -166,7 +166,7 @@ export class NoteFieldsModal extends Modal {
 		attachAltAffordance(
 			typeIcon,
 			{ icon: fieldTypeIcon(field.type), label: typeLabel },
-			() => ({ icon: "wrench", label: `Edit "${field.name}" settings (Fileclass)` })
+			() => ({ icon: "wrench", label: `Fileclass: Edit "${field.name}" settings` })
 		);
 		typeIcon.addEventListener("click", (e) => {
 			if (!e.altKey) return;

@@ -194,7 +194,7 @@ export class PropertyEditButtons extends Component {
 		// spacing (styles.css) so no Obsidian selector can pick this up as its own.
 		const btn = createDiv({ cls: "text-icon-button fileclass-prop-action" });
 		btn.tabIndex = 0;
-		btn.setAttribute("aria-label", `${hint} (Fileclass)`);
+		btn.setAttribute("aria-label", `Fileclass: ${hint}`);
 		setIcon(btn.createSpan({ cls: "text-button-icon" }), icon);
 		btn.createSpan({ cls: "text-button-label", text: label });
 		const run = (e: Event) => {
@@ -267,7 +267,7 @@ export class PropertyEditButtons extends Component {
 		existing?.remove();
 		const btn = createSpan({ cls: `${CLASS_CLASS} clickable-icon` });
 		btn.dataset.fcName = name;
-		btn.setAttribute("aria-label", `Open "${name}" schema (Fileclass)`);
+		btn.setAttribute("aria-label", `Fileclass: Open "${name}" schema`);
 		setIcon(btn, "wrench");
 		btn.addEventListener("click", (e) => {
 			// Inside a pill, a click would otherwise start editing the value.
@@ -446,8 +446,11 @@ export class PropertyEditButtons extends Component {
 		btn.dataset.fcKey = key;
 		btn.dataset.fcFile = file.path;
 		btn.dataset.fcType = field.type;
-		// The label names the gesture this type performs, not a generic "edit":
-		// a Cycle advances and a Boolean flips, here as in every other surface.
+		// The label names the gesture this type performs, not a generic "edit": a Cycle
+		// advances and a Boolean flips, here as in every other surface. It is prefixed with
+		// the plugin's name the way its commands are ("Fileclass: …") — a trailing
+		// "(Fileclass)" was read as a placeholder left unsubstituted, since in this plugin's
+		// vocabulary that parenthesis is where a fileClass name would belong.
 		// The note is read from the row at call time rather than captured: the row
 		// outlives the note shown in it, and no click may land on a stale file.
 		const fileNow = (): TFile => this.fileForEl(row) ?? file;
@@ -466,7 +469,7 @@ export class PropertyEditButtons extends Component {
 		// says so — and shows the date it would write while Alt is held.
 		const hasNextDate = !!nextDateActionFor(ctxOf(), field);
 		if (hasNextDate) hint = " (Alt-click to set the next date)";
-		const label = `${verb} "${field.name}" — ${field.type} (Fileclass)${hint}`;
+		const label = `Fileclass: ${verb} "${field.name}" — ${field.type}${hint}`;
 		btn.setAttribute("aria-label", label);
 		setIcon(btn, icon);
 		if (hasNextDate) {
@@ -475,7 +478,7 @@ export class PropertyEditButtons extends Component {
 				return next
 					? {
 							icon: "skip-forward",
-							label: `Set "${field.name}" to ${next.next} (+${next.interval}) (Fileclass)`,
+							label: `Fileclass: Set "${field.name}" to ${next.next} (+${next.interval})`,
 						}
 					: null;
 			});

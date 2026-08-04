@@ -1089,7 +1089,15 @@ body.fileclass-movable-modals .modal-container ~ .modal-container .modal-bg {
 body.fileclass-movable-modals .modal-container ~ .modal-container {
 	pointer-events: none;
 }
-body.fileclass-movable-modals .modal-container ~ .modal-container > .modal {
+/*
+ * Everything the container holds except its backdrop takes the pointer back. Naming
+ * `.modal` alone was a bug the operator found in a minute: a picker's container holds a
+ * `.prompt`, not a `.modal` (measured: children are `modal-bg` + `prompt`), so every
+ * suggestion in a File field's picker was unclickable — the click fell through to the
+ * modal underneath. Whatever Obsidian puts in there is interactive; only the backdrop is
+ * not.
+ */
+body.fileclass-movable-modals .modal-container ~ .modal-container > *:not(.modal-bg) {
 	pointer-events: auto;
 }
 /*

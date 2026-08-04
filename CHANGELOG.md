@@ -41,7 +41,9 @@ All notable changes to Fileclass are documented here. The format follows
 
 - **Any modal of a stack can be moved, not just the top one.** Those full-window backdrops
   swallowed every click aimed at a modal underneath even once invisible — and so did their
-  containers. Both are click-through now, with each modal put back in the way. One
+  containers. Both are click-through now, with **everything they hold** put back in the way —
+  a picker is a `prompt`, not a `modal`, and naming only the latter made every suggestion in
+  a File field's picker unclickable. One
   deliberate consequence: while modals are stacked, clicking the dim area closes nothing,
   since the click would otherwise land on the modal at the bottom of the stack — the one the
   others were opened from. A single modal still closes on an outside click, and Escape always

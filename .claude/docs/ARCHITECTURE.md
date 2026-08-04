@@ -476,7 +476,9 @@ they listen for trusted events only.
 matters: *clicking a control on note B writes B and leaves A byte-identical*.
 Then the phantom item, a child homonym of a root field offered when adding an
 item, a stray value kept, the warning colour rule, one write per action with key
-order preserved.
+order preserved — and *a suggestion in a picker opened over a modal can be
+clicked*, which is the shape of bug CSS regressions take: unit tests cannot see
+it, and it takes a real click to find.
 
 **4. A free sweep.** The 24 demo fixtures are 24 known, coherent states: opening
 each and asserting that the index resolves every class and that **every declared

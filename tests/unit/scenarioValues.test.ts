@@ -30,3 +30,15 @@ describe("splitValues — a step's values, one per box", () => {
 		expect(split("")).toEqual([]);
 	});
 });
+
+describe("splitValues — a block typed in one go", () => {
+	it("turns a \\n escape into a real newline, keeping the value whole", () => {
+		// The credits of an album are one value in one box: the chord must send the line
+		// breaks, and the caption shows them as ⏎ so it stays two lines tall.
+		expect(split("producer: Teo\\nengineer: Fred")).toEqual(["producer: Teo\nengineer: Fred"]);
+	});
+
+	it("still separates values on ` | ` around a multi-line one", () => {
+		expect(split("a: 1\\nb: 2 | c: 3")).toEqual(["a: 1\nb: 2", "c: 3"]);
+	});
+});

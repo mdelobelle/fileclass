@@ -1,15 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import {
-	addDuration,
-	buildDuration,
-	durationMs,
-	formatDuration,
-	isValidDuration,
-	parseDuration,
-	parseDurationInput,
-	parseHuman,
-} from "../../src/fields/duration";
+import { addDuration, buildDuration, durationMs, formatDuration, humanDurationsFor, isValidDuration, parseDuration, parseDurationInput, parseHuman } from "../../src/fields/duration";
 
 describe("parseDuration", () => {
 	it("parses the week form", () => {
@@ -129,5 +120,31 @@ describe("addDuration", () => {
 	it("returns null on bad input", () => {
 		expect(addDuration("not-a-date", "P1D")).toBeNull();
 		expect(addDuration("2026-07-22", "nope")).toBeNull();
+	});
+});
+
+describe("humanDurationsFor — the reading shown beside the stored value", () => {
+	it("reads a single stored duration", () => {
+		expect(humanDurationsFor("PT45M44S", "PT45M44S")).toBe("45m 44s");
+	});
+
+	it("reads a sequence, separated so the rotation is legible", () => {
+		expect(humanDurationsFor(["P90D", "P180D", "P360D"], "P90D, P180D, P360D")).toBe(
+			"90d · 180d · 360d"
+		);
+	});
+
+	it("says nothing where the surface already reads well", () => {
+		// The note-fields modal displays the formatted value; repeating it is clutter.
+		expect(humanDurationsFor("PT45M44S", "45m 44s")).toBe("");
+		expect(humanDurationsFor(["P90D", "P180D"], "90d, 180d")).toBe("");
+	});
+
+	it("says nothing rather than half of something", () => {
+		// A value being typed, or a list with one item that doesn't parse yet.
+		expect(humanDurationsFor("PT45", "PT45")).toBe("");
+		expect(humanDurationsFor(["P90D", "nonsense"], "P90D, nonsense")).toBe("");
+		expect(humanDurationsFor("", "")).toBe("");
+		expect(humanDurationsFor([], "")).toBe("");
 	});
 });

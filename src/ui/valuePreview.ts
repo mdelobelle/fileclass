@@ -9,6 +9,7 @@ import { App } from "obsidian";
 
 import { Field } from "../schema/field";
 import { isValidCssColor } from "../fields/color";
+import { humanDurationsFor } from "../fields/duration";
 import { paintIcon } from "./iconSuggest";
 import { thumbForValue } from "./mediaThumb";
 
@@ -58,6 +59,15 @@ export function makeValuePreview(
 		const glyph = createSpan({ cls: "fileclass-value-icon" });
 		paintIcon(glyph, value);
 		return glyph;
+	}
+	// A duration is stored as an RFC 5545 string, which is right on disk and unreadable
+	// on screen. The reading is shown *beside* the stored value, never over it: Obsidian's
+	// own value is an editable text property, and overwriting its text would risk writing
+	// "45m 44s" back into the frontmatter.
+	if (field.type === "Duration" || field.type === "CycleDuration") {
+		const text = humanDurationsFor(field.type === "CycleDuration" ? ctx?.raw : value, value);
+		if (!text) return null;
+		return createSpan({ cls: "fileclass-duration-human", text });
 	}
 	return null;
 }

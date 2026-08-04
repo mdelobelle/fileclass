@@ -25,11 +25,17 @@ import { basename, join } from "node:path";
  */
 const STEP_KEYS = new Set(["title", "pause", "hold", "note", "input", "values"]);
 
-/** Splits a ` | `-separated list of values; a single value stays a one-item list. */
+/**
+ * Splits a ` | `-separated list of values; a single value stays a one-item list.
+ *
+ * A `\n` inside a value becomes a real newline: a YAML or JSON block is typed into one
+ * box in one go, so it is one value — not one per line — and the chord must send the
+ * line breaks with it.
+ */
 export function splitValues(raw) {
 	return String(raw)
 		.split(" | ")
-		.map((v) => v.trim())
+		.map((v) => v.trim().replace(/\\n/g, "\n"))
 		.filter(Boolean);
 }
 

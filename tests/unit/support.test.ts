@@ -53,9 +53,19 @@ describe("defaultValueFor", () => {
 
 describe("displayValue for nested types", () => {
 	it("summarizes Object and ObjectList", () => {
-		expect(displayValue(make("Object"), { a: 1 })).toBe("{…}");
+		// How much is in there beats a mute `{…}`: the raw value is shown raw where
+		// there is room for it, and named by its size where there isn't.
+		expect(displayValue(make("Object"), { a: 1 })).toBe("1 key");
+		expect(displayValue(make("Object"), { a: 1, b: 2 })).toBe("2 keys");
+		expect(displayValue(make("Object"), {})).toBe("{}");
 		expect(displayValue(make("ObjectList"), [{}, {}])).toBe("2 items");
 		expect(displayValue(make("ObjectList"), [{}])).toBe("1 item");
 		expect(displayValue(make("ObjectList"), [])).toBe("");
+	});
+
+	it("sizes a free-form JSON/YAML value the same way", () => {
+		expect(displayValue(make("YAML"), { producer: "Teo", engineer: "Fred" })).toBe("2 keys");
+		expect(displayValue(make("JSON"), [1, 2, 3])).toBe("3 items");
+		expect(displayValue(make("JSON"), "just text")).toBe("just text");
 	});
 });

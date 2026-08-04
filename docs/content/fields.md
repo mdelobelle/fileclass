@@ -401,6 +401,13 @@ phrases like *"next friday"* into the picker.
 
 ## Durations & interval cycling
 
+A duration is stored as an RFC 5545 string (`PT45M44S`, `P90D`) — the interoperable form,
+and not one anybody reads. Wherever Fileclass shows a value it shows the reading instead
+(`45m 44s`); in **Obsidian's own Properties panel**, where the stored string is what the
+editor holds, the reading is added next to it rather than replacing it, so nothing can
+write the reading back into your note. An interval sequence is a list of pills there, and
+each pill carries its own reading — `P180D 180d` — left of its remove button.
+
 {{< video "009" >}}
 
 A `Duration` field stores a **length of time** as an RFC 5545 `DURATION` string —
@@ -699,11 +706,28 @@ tooltip. Without a template, the panel is left exactly as Obsidian renders it.
 
 ## Structured fields (JSON / YAML)
 
+{{< video "022" >}}
+
 **JSON** and **YAML** hold a **free-form nested value** with no declared schema —
 the escape hatch for structures Object/ObjectList don't model. Editing opens a
-**monospace textarea** (Cmd/Ctrl+Enter saves); the text must parse as JSON (resp.
-YAML) or the modal shows the parser error. The parsed value is written to
-frontmatter as-is; clearing the text removes the field.
+**monospace textarea** (Cmd/Ctrl+Enter saves); the parser answers as you type, naming the
+line and column it stumbled on, and clearing the text removes the field.
+
+The two types differ in **what they store**, which is how you choose between them:
+
+| | Stored as | Bases can reach inside | Keeps your formatting |
+|---|---|---|---|
+| **YAML** | the parsed structure (real frontmatter keys) | yes, through a formula (`note.credits.producer`) | no — Obsidian rewrites it as YAML |
+| **JSON** | the **text**, as a block scalar (`tech: |-`) | no: it is a string | yes, byte for byte |
+
+So YAML is for structure you will query, JSON for a payload you want kept as it came — an
+API response, a snippet from elsewhere. Verified against Obsidian: a multi-line string is
+written as a block scalar, an existing block survives writes to other keys, and what comes
+back is the exact text.
+
+Changing a field's type doesn't rewrite what it holds, so a `JSON` field can open on YAML
+(or the reverse). The editor offers **Convert from YAML** / **Convert from JSON** whenever
+the text reads as the other notation, and hides the offer as soon as it doesn't.
 
 Use Object/ObjectList when the shape is known and you want typed, guided input;
 use JSON/YAML for arbitrary or externally-defined blobs. For the fuller decision

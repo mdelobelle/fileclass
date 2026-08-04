@@ -262,5 +262,16 @@
     "durationSeconds": 225,
     "recordedWith": "0.2.4",
     "privacyStatus": "public"
+  },
+  "022": {
+    "id": "X3s8wtbPSTU",
+    "url": "https://www.youtube.com/watch?v=X3s8wtbPSTU",
+    "title": "Fileclass #022 · When raw is the honest answer",
+    "subject": "When raw is the honest answer",
+    "scenario": "022_when_raw_is_the_honest_answer",
+    "doc": "fields/#structured-fields-json--yaml",
+    "durationSeconds": 185,
+    "recordedWith": "0.2.5",
+    "privacyStatus": "public"
   }
 }

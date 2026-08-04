@@ -6,6 +6,67 @@ All notable changes to Fileclass are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.2.6] - 2026-08-04
+
+### Changed
+
+- **A `JSON` field stores JSON.** It used to parse your text and hand the *structure* to
+  frontmatter, which Obsidian then wrote as YAML — so nothing on disk was ever JSON and the
+  type was a notation for the editor only. A `JSON` field now stores the **text**, which
+  Obsidian writes as a block scalar (`tech: |-`), so a payload keeps the formatting it came
+  with. Measured: a multi-line string is emitted as a block, a block already in the file
+  survives a write elsewhere in the note untouched, and the cache gives the exact text back.
+  The trade-off is the point of having two types: **YAML** stores a real structure, which a
+  base can reach into through a formula; **JSON** keeps the bytes and is opaque to Bases. A
+  field that already holds a mapping keeps working — it opens as pretty-printed JSON, and
+  becomes text on the next save.
+
+### Added
+
+- **Convert between the two notations, when it applies.** Changing a field's type doesn't
+  rewrite what it holds, so a `JSON` field can open on YAML (and the reverse). The editor
+  then offers *Convert from YAML* — and the offer appears and disappears as you type, since
+  it is only ever shown for text that reads as the other notation.
+
+### Added
+
+- **A duration reads as a duration in Obsidian's Properties panel.** `PT45M44S` is the
+  right thing on disk and unreadable on screen, so the human form is now shown next to the
+  stored value — never over it: Obsidian's value there stays editable, and overwriting its
+  text would risk writing `45m 44s` back into your frontmatter. A single value gets its
+  reading beside it; an **interval sequence gets one reading inside each pill**, just left
+  of the pill's remove button, so it names the value it reads instead of summarising the
+  list from a distance. Surfaces that already read well — the note-fields modal, a field
+  menu — show nothing extra, and the editable `fileclass-table` gains the reading like the
+  panel.
+
+- **A field's edit button stays on the property's first line.** It was centred in the row,
+  so on a property whose value is a stacked list it drifted to the middle line, away from
+  the name it acts on.
+
+### Fixed
+
+- **Raw text no longer disappears on Escape.** The `JSON`/`YAML` editor is where the most
+  typing happens and it was the last one without a guard: Escape or the close button threw
+  a blob away in silence. It now shows **Unsaved changes** in its footer and asks — *Keep
+  editing*, *Discard* or *Save* — like every other editor since 0.2.4.
+
+- **The parser answers while you type.** An invalid document was only reported when you
+  asked to save, so a mistake twenty lines up was learned about on the way out. The error
+  — with its line, its column and a caret under the spot — now appears as you type, and an
+  empty box stays what it is: the way to clear the field.
+
+### Changed
+
+- **A declared raw field is not a warning.** Obsidian paints a nested value it can't
+  interpret in its warning colour. That is right for a value nobody can make sense of and
+  wrong for a `JSON`/`YAML` field a class declares and round-trips through an editor — as
+  it already was for groups. The value itself stays raw on screen, which for these two
+  types is the honest answer.
+
+- **A structured value says how much is inside.** `{…}` told you nothing; a value now
+  reads as **3 keys** or **5 items** wherever there is no room to show it whole.
+
 ## [0.2.5] - 2026-08-03
 
 ### Fixed

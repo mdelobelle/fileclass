@@ -358,7 +358,16 @@ class Stage {
 								for (const c of chips) {
 									const chip = document.createElement("span");
 									chip.className = c.done ? "fc-input is-done" : c.cls;
-									chip.textContent = c.value;
+									// A multi-line value is one value, shown on one line: the caption is
+									// two lines tall, not twelve. The keystrokes keep the newlines.
+									const flat = c.value.replace(/\n+/g, " ⏎ ");
+									// A yellow value is typed by the chord, so it only has to be
+									// recognisable — measured: past ~44 characters the chip takes a second
+									// line and the caption grows to the height of a three-line one. A blue
+									// value is read in order to be typed, and stays whole.
+									const long = c.cls === "fc-input" && flat.length > 44;
+									chip.textContent = long ? `${flat.slice(0, 44)}…` : flat;
+									if (long) chip.title = c.value;
 									row.appendChild(chip);
 								}
 								el.appendChild(row);

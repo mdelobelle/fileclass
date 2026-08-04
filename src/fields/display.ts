@@ -16,9 +16,31 @@ export function displayValue(field: Field, value: unknown): string {
 		const n = Array.isArray(value) ? value.length : 0;
 		return n ? `${n} item${n > 1 ? "s" : ""}` : "";
 	}
+	// A JSON field stores its text, so what it holds is read to be summarised — a
+	// payload's first line is no more informative than its size.
+	if (field.type === "JSON" && typeof value === "string") {
+		try {
+			const parsed: unknown = JSON.parse(value);
+			if (Array.isArray(parsed)) {
+				return `${parsed.length} item${parsed.length > 1 ? "s" : ""}`;
+			}
+			if (parsed && typeof parsed === "object") {
+				const n = Object.keys(parsed).length;
+				return n ? `${n} key${n > 1 ? "s" : ""}` : "{}";
+			}
+			return String(parsed);
+		} catch {
+			return value.length > 40 ? `${value.slice(0, 40)}…` : value;
+		}
+	}
 	if (field.type === "Object" || field.type === "JSON" || field.type === "YAML") {
-		if (Array.isArray(value)) return `[…] (${value.length})`;
-		if (value && typeof value === "object") return "{…}";
+		// How much is in there, rather than a mute `{…}`: a raw value is shown raw
+		// wherever there is room for it, and named by its size where there isn't.
+		if (Array.isArray(value)) return `${value.length} item${value.length > 1 ? "s" : ""}`;
+		if (value && typeof value === "object") {
+			const n = Object.keys(value).length;
+			return n ? `${n} key${n > 1 ? "s" : ""}` : "{}";
+		}
 		return String(value);
 	}
 	if (isListType(field.type) || Array.isArray(value)) {

@@ -125,6 +125,27 @@ export function formatDuration(str: string): string {
 	return tokens.join(" ");
 }
 
+/**
+ * The human reading of a stored duration — or of a sequence of them — for display
+ * *beside* the stored value: `PT45M44S` → `45m 44s`, `[P90D, P180D]` → `90d · 180d`.
+ *
+ * Returns "" when there is nothing to add, which is either of two cases: something
+ * doesn't parse (a value being typed shows no half-reading), or `shown` — the text the
+ * surface already displays — is that same reading, so repeating it would only clutter.
+ * That one comparison is what lets every surface call this blindly: the Properties panel
+ * shows the raw ISO and gets the reading, the note-fields modal already reads well and
+ * gets nothing.
+ */
+export function humanDurationsFor(raw: unknown, shown: string): string {
+	const items = Array.isArray(raw) ? raw : [raw];
+	if (!items.length) return "";
+	const parts = items.map((item) => formatDuration(String(item ?? ""))).filter(Boolean);
+	if (parts.length !== items.length) return "";
+	const text = parts.join(" · ");
+	const bare = (s: string) => s.replace(/[\s,·]+/g, "");
+	return bare(shown).includes(bare(text)) ? "" : text;
+}
+
 /** Total milliseconds a duration represents. */
 export function durationMs(parts: DurationParts): number {
 	return (

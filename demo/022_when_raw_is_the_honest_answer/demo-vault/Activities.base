@@ -1,0 +1,24 @@
+views:
+  - type: table
+    name: All activities
+    filters:
+      and:
+        - fileClass == "Activity"
+    sort:
+      - property: starts
+        direction: ASC
+    order:
+      - file.name
+      - icon
+      - color
+      - starts
+      - doors
+  - type: map
+    name: Where they happen
+    filters:
+      and:
+        - fileClass == "Activity"
+    coordinates: note.branch
+    markerIcon: note.icon
+    markerColor: note.color
+    defaultZoom: 11

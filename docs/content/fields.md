@@ -706,6 +706,8 @@ tooltip. Without a template, the panel is left exactly as Obsidian renders it.
 
 ## Structured fields (JSON / YAML)
 
+{{< video "022" >}}
+
 **JSON** and **YAML** hold a **free-form nested value** with no declared schema —
 the escape hatch for structures Object/ObjectList don't model. Editing opens a
 **monospace textarea** (Cmd/Ctrl+Enter saves); the parser answers as you type, naming the

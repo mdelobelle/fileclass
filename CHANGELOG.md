@@ -6,6 +6,8 @@ All notable changes to Fileclass are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.2.6] - 2026-08-04
+
 ### Changed
 
 - **A `JSON` field stores JSON.** It used to parse your text and hand the *structure* to

@@ -6,6 +6,17 @@ All notable changes to Fileclass are documented here. The format follows
 
 ## [Unreleased]
 
+### Changed
+
+- **A class's options are in three sections that mean something.** The modal had exactly one
+  heading, `Sync to base`, and it sat above the base rows *and* the four binding rows — so
+  `Map with tag`, `Tag names`, `Files paths` and `Bookmark groups` read as settings of a base
+  they have nothing to do with. Now: **Identity** (Extends, Excludes, Icon), **Bound notes**
+  (how notes other than those naming it get the class), **Sync to base** (the base file, its
+  managed view, and the sync status). Each heading says what it covers, and the
+  order follows the questions — what the class is, which notes carry it, where its fields are
+  mirrored.
+
 ### Added
 
 - **`Excludes` picks from the parent's fields.** The inherited fields a class drops were a

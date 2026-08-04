@@ -153,10 +153,14 @@ fileClass**) or its indicator icon, and the fileClass name in the footer of a no
 - **Fields** — add, edit, remove, and reorder field definitions. A field has a
   **name**, a **type**, and type-specific settings; its stable id is generated
   automatically.
-- **Options…** — edit the fileClass options: `icon` (a Lucide name), `extends`
-  (parent fileClass), **Sync to base** (mirror the fields into a `.base`, see
-  [Views](../views/)), `mapWithTag`, `tagNames`, `filesPaths`, `bookmarksGroups`,
-  and `excludes`.
+- **Options…** — edit the fileClass options, in three sections:
+  - **Identity** — **Extends** (its parent, picked from the classes you have, with a
+    button through to that parent's schema), **Excludes** (the inherited fields it
+    drops, picked from the parent's own), and **Icon** (a Lucide name).
+  - **Bound notes** — which notes carry the class beyond those naming it in their
+    frontmatter: **Map with tag**, **Tag names**, **Files paths**, **Bookmark
+    groups**.
+  - **Sync to base** — mirror the fields into a `.base`; see [Views](../views/).
 
 ### Type-specific field settings
 

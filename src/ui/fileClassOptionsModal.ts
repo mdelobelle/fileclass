@@ -79,6 +79,10 @@ export class FileClassOptionsModal extends Modal {
 		 * fields only, since showing an ancestor's would beg the question of which copy you
 		 * are editing.
 		 */
+		new Setting(contentEl)
+			.setName("Identity")
+			.setDesc("What this class is: the one it extends, what it drops from it, and the icon it shows.")
+			.setHeading();
 		const parentRow = new Setting(contentEl)
 			.setName("Extends")
 			.setDesc("Parent fileClass — its fields are inherited by this one.");
@@ -124,7 +128,36 @@ export class FileClassOptionsModal extends Modal {
 		});
 		paintPreview(this.opts.icon ?? "");
 
-		new Setting(contentEl).setName("Sync to base").setHeading();
+		/*
+		 * Three sections, each holding only what its title covers. `Sync to base` used to be
+		 * the modal's single heading, sitting above the base rows AND the four bindings — so
+		 * `Map with tag` and the three lists read as base settings, which they have never been.
+		 *
+		 * The order is the order of the questions: what is this class, which notes carry it,
+		 * and where are its fields mirrored. The base section comes last so its action button
+		 * sits next to Save.
+		 */
+		new Setting(contentEl)
+			.setName("Bound notes")
+			.setDesc("Which notes carry this fileClass, besides those naming it in their frontmatter.")
+			.setHeading();
+		new Setting(contentEl)
+			.setName("Map with tag")
+			.setDesc("Bind notes tagged with this fileClass's name.")
+			.addToggle((t) =>
+				t.setValue(!!this.opts.mapWithTag).onChange((v) => {
+					this.opts.mapWithTag = v;
+					void this.updateStatus();
+				})
+			);
+		this.csvSetting("Tag names", "tagNames");
+		this.csvSetting("Files paths", "filesPaths");
+		this.csvSetting("Bookmark groups", "bookmarksGroups");
+
+		new Setting(contentEl)
+			.setName("Sync to base")
+			.setDesc("A .base view kept in step with this fileClass's fields.")
+			.setHeading();
 		new Setting(contentEl)
 			.setName("Base file")
 			.setDesc("A .base whose managed view mirrors this fileClass's fields. Blank to disable.")
@@ -151,20 +184,6 @@ export class FileClassOptionsModal extends Modal {
 				this.statusBtn = b;
 				b.onClick(() => void this.doSync());
 			});
-
-		new Setting(contentEl)
-			.setName("Map with tag")
-			.setDesc("Bind notes tagged with this fileClass's name.")
-			.addToggle((t) =>
-				t.setValue(!!this.opts.mapWithTag).onChange((v) => {
-					this.opts.mapWithTag = v;
-					void this.updateStatus();
-				})
-			);
-
-		this.csvSetting("Tag names", "tagNames");
-		this.csvSetting("Files paths", "filesPaths");
-		this.csvSetting("Bookmark groups", "bookmarksGroups");
 
 		/*
 		 * The same guard every other editing modal here carries: this one holds a draft of a

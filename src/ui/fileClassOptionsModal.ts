@@ -18,6 +18,7 @@ import { BaseFileSuggest } from "./baseSuggest";
 import { openFileClassSchema } from "./fileClassSchemaModal";
 import { IconSuggest, paintIcon } from "./iconSuggest";
 import { makeStickyFooter } from "./modalFooter";
+import { attachUnsavedGuard, snapshot, UnsavedGuard } from "./unsavedGuard";
 
 const csv = (v: string): string[] => v.split(",").map((s) => s.trim()).filter(Boolean);
 
@@ -26,6 +27,9 @@ export class FileClassOptionsModal extends Modal {
 	private statusBtn?: ButtonComponent;
 	/** The "open the parent's schema" affordance beside `Extends`. */
 	private parentLink?: ExtraButtonComponent;
+	/** The options as this modal opened on them, or as last saved. */
+	private opened = "";
+	private guard?: UnsavedGuard;
 	private readonly refreshStatus = debounce(() => void this.updateStatus(), 250, true);
 
 	constructor(
@@ -51,6 +55,7 @@ export class FileClassOptionsModal extends Modal {
 
 	onOpen(): void {
 		const { contentEl } = this;
+		this.opened = snapshot(this.opts);
 		modalTitle(contentEl, `Options — ${this.name}`);
 
 		/*
@@ -95,6 +100,7 @@ export class FileClassOptionsModal extends Modal {
 			t.setValue(this.opts.icon ?? "").onChange((v) => {
 				this.opts.icon = v;
 				paintPreview(v);
+				this.guard?.refresh();
 			});
 			new IconSuggest(this.app, t.inputEl);
 		});
@@ -153,15 +159,32 @@ export class FileClassOptionsModal extends Modal {
 		this.csvSetting("Bookmark groups", "bookmarksGroups");
 		this.csvSetting("Excludes", "excludes", "Inherited field names to drop.");
 
-		new Setting(makeStickyFooter(contentEl)).addButton((b) =>
-			b
-				.setButtonText("Save")
-				.setCta()
-				.onClick(async () => {
-					await writeOptions(this.app, this.file, buildOptionUpdates(this.opts));
-					this.close();
-				})
-		);
+		/*
+		 * The same guard every other editing modal here carries: this one holds a draft of a
+		 * class's options and commits it on Save, so Escape used to throw a changed parent or
+		 * a new binding away without a word. `opened` is the comparison point, and it moves
+		 * to what was last written — otherwise Save would commit and then ask.
+		 */
+		const footerRow = new Setting(makeStickyFooter(contentEl));
+		const commit = (): boolean => {
+			const updates = buildOptionUpdates(this.opts);
+			this.opened = snapshot(this.opts);
+			void writeOptions(this.app, this.file, updates).then(() => this.close());
+			return true;
+		};
+		this.guard = attachUnsavedGuard(this.app, this, {
+			isDirty: () => snapshot(this.opts) !== this.opened,
+			save: commit,
+			subject: "options",
+		});
+		this.guard.mountHint(footerRow.settingEl);
+		// One hook rather than one per control: this form has eight of them and will grow, and
+		// a hint that only some of them light up is worse than none. `input` covers the text
+		// boxes, `change` the dropdown and the toggles.
+		for (const type of ["input", "change"]) {
+			contentEl.addEventListener(type, () => this.guard?.refresh());
+		}
+		footerRow.addButton((b) => b.setButtonText("Save").setCta().onClick(() => void commit()));
 
 		void this.updateStatus();
 	}

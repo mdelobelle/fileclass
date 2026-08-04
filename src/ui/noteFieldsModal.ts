@@ -21,6 +21,7 @@ import {
 	nextDateActionFor,
 	runControlAction,
 } from "../fields/fieldActions";
+import { isEmpty, isRequired } from "../fields/validate";
 import { describeField, DisplayDeps } from "../fields/objectDisplay";
 import { isInputSupported } from "../fields/support";
 import { fieldTypeIcon } from "../fields/typeIcons";
@@ -165,7 +166,7 @@ export class NoteFieldsModal extends Modal {
 		attachAltAffordance(
 			typeIcon,
 			{ icon: fieldTypeIcon(field.type), label: typeLabel },
-			() => ({ icon: "wrench", label: `Edit "${field.name}" settings (Fileclass)` })
+			() => ({ icon: "wrench", label: `Fileclass: Edit "${field.name}" settings` })
 		);
 		typeIcon.addEventListener("click", (e) => {
 			if (!e.altKey) return;
@@ -187,7 +188,12 @@ export class NoteFieldsModal extends Modal {
 		});
 		if (preview) valueEl.prepend(preview);
 
-		this.addRowActions(ctx, setting, field);
+
+		// A required field with nothing in it colours its own action, rather than adding a
+		// chip beside the value: the affordance you would use to fix it is the one that
+		// says something is missing. A word in a red box was tried first and looked like
+		// an error banner sitting in a table.
+		this.addRowActions(ctx, setting, field, isRequired(field) && isEmpty(raw));
 	}
 
 	/**
@@ -196,7 +202,12 @@ export class NoteFieldsModal extends Modal {
 	 * table cells all do the same thing to a given type — and Alt-click opens the
 	 * input wherever the gesture writes a value directly.
 	 */
-	private addRowActions(ctx: EditContext, setting: Setting, field: Field): void {
+	private addRowActions(
+		ctx: EditContext,
+		setting: Setting,
+		field: Field,
+		unmetRequired = false
+	): void {
 		if (isInputSupported(field.type)) {
 			const action = controlActionFor(field.type);
 			const { icon, verb, alt } = controlLabel(action);
@@ -209,7 +220,8 @@ export class NoteFieldsModal extends Modal {
 					? `${verb} (Alt-click to pick a value)`
 					: verb;
 			setting.addExtraButton((b) => {
-				b.setIcon(icon).setTooltip(tooltip);
+				b.setIcon(icon).setTooltip(unmetRequired ? `${tooltip} — required` : tooltip);
+				b.extraSettingsEl.toggleClass("is-required-empty", unmetRequired);
 				if (hasNextDate) {
 					attachAltAffordance(b.extraSettingsEl, { icon, label: tooltip }, () => {
 						const next = nextDateActionFor(ctx, field);

@@ -1089,7 +1089,15 @@ body.fileclass-movable-modals .modal-container ~ .modal-container .modal-bg {
 body.fileclass-movable-modals .modal-container ~ .modal-container {
 	pointer-events: none;
 }
-body.fileclass-movable-modals .modal-container ~ .modal-container > .modal {
+/*
+ * Everything the container holds except its backdrop takes the pointer back. Naming
+ * `.modal` alone was a bug the operator found in a minute: a picker's container holds a
+ * `.prompt`, not a `.modal` (measured: children are `modal-bg` + `prompt`), so every
+ * suggestion in a File field's picker was unclickable — the click fell through to the
+ * modal underneath. Whatever Obsidian puts in there is interactive; only the backdrop is
+ * not.
+ */
+body.fileclass-movable-modals .modal-container ~ .modal-container > *:not(.modal-bg) {
 	pointer-events: auto;
 }
 /*
@@ -1102,4 +1110,22 @@ body.fileclass-movable-modals .modal-container ~ .modal-container > .modal {
  */
 body.fileclass-movable-modals:has(.modal-container ~ .modal-container) .modal-container .modal-bg {
 	pointer-events: none;
+}
+
+
+
+/*
+ * An unmet requirement colours the field's own action — in the note-fields modal and in
+ * Obsidian's Properties panel alike. The control you would use to fix it is the one that
+ * says something is missing; a word in a red box, tried first, read as an error banner
+ * dropped into the row. The tooltip says "required" for anyone who needs the words.
+ */
+.fileclass-field-row .setting-item-control .clickable-icon.is-required-empty,
+.metadata-property > .fileclass-prop-edit.is-required-empty {
+	color: var(--text-error);
+}
+.fileclass-field-row .setting-item-control .clickable-icon.is-required-empty:hover,
+.metadata-property > .fileclass-prop-edit.is-required-empty:hover {
+	color: var(--text-error);
+	opacity: 0.8;
 }

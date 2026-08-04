@@ -8,6 +8,15 @@ All notable changes to Fileclass are documented here. The format follows
 
 ### Added
 
+- **A required field says so where it matters.** `required` lived only inside a field's own
+  definition modal, so a class of a dozen fields hid which ones were mandatory behind a dozen
+  clicks — and the surfaces where fields actually get filled said nothing at all. A schema row
+  now reads `File · required`, and a required field with no value **colours its own action
+  icon red**, in the note-fields modal and in Obsidian's Properties panel, with *required* in
+  the tooltip. Nothing is blocked, as before: the flag is a statement, not a gate.
+
+### Added
+
 - **Movable modals, behind a setting** (*Settings → Fileclass → Movable modals*), **off by
   default.** Everything in the three entries below is that one toggle: it is experimental,
   desktop-only, and its CSS half neutralises Obsidian's own full-window modal backdrops — a
@@ -32,7 +41,9 @@ All notable changes to Fileclass are documented here. The format follows
 
 - **Any modal of a stack can be moved, not just the top one.** Those full-window backdrops
   swallowed every click aimed at a modal underneath even once invisible — and so did their
-  containers. Both are click-through now, with each modal put back in the way. One
+  containers. Both are click-through now, with **everything they hold** put back in the way —
+  a picker is a `prompt`, not a `modal`, and naming only the latter made every suggestion in
+  a File field's picker unclickable. One
   deliberate consequence: while modals are stacked, clicking the dim area closes nothing,
   since the click would otherwise land on the modal at the bottom of the stack — the one the
   others were opened from. A single modal still closes on an outside click, and Escape always
@@ -77,6 +88,14 @@ All notable changes to Fileclass are documented here. The format follows
   the name it acts on.
 
 ### Fixed
+
+- **A field button's tooltip names the plugin the way its commands do.** It read
+  `Edit "author" — File (Fileclass)`, and that trailing parenthesis was taken for a
+  placeholder left unsubstituted — reasonably, since in this plugin's vocabulary a
+  parenthesis after a field is where a **fileClass name** would belong. It now reads
+  `Fileclass: Edit "author" — File`, like every entry the plugin puts in the command
+  palette. Same fix on the schema shortcut, the next-date affordance and the field-settings
+  wrench.
 
 - **Raw text no longer disappears on Escape.** The `JSON`/`YAML` editor is where the most
   typing happens and it was the last one without a guard: Escape or the close button threw

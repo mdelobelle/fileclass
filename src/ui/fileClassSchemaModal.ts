@@ -23,6 +23,7 @@ import {
 	updateFieldDef,
 } from "../schema/fileClassWrite";
 import { ChoiceSuggestModal } from "../fields/input/valueModals";
+import { isRequired } from "../fields/validate";
 import { FieldDefModal, FieldDefResult } from "./fieldDefModal";
 import { writeFieldDependency } from "./fieldSettings";
 import { makeStickyFooter } from "./modalFooter";
@@ -149,7 +150,10 @@ export class FileClassSchemaModal extends Modal {
 		fields.forEach((field, i) => {
 			const setting = new Setting(listEl)
 				.setName(field.name)
-				.setDesc(field.type)
+				// A field's type, and whether it may be left empty. Until now `required`
+				// lived only inside the field's own modal, so a class of a dozen fields
+				// hid which ones were mandatory behind a dozen clicks.
+				.setDesc(isRequired(field) ? `${field.type} · required` : field.type)
 				.addExtraButton((b) =>
 					b
 						.setIcon("chevron-up")

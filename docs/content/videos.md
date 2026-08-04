@@ -108,3 +108,7 @@ other. Captions are English; YouTube translates them into your language.
 ## When raw is the honest answer
 
 {{< video "022" >}}
+
+## Fields you can't leave empty
+
+{{< video "023" >}}

@@ -118,6 +118,13 @@ be a bare line (`- Save the schema`), and durations accept `1500`, `"1.5s"` or
 `"800ms"`. Quote any title containing a colon. Unknown keys are an error, on
 purpose — a typo'd key must not silently do nothing.
 
+**`doc:` must resolve.** Its value becomes the *Docs:* line of the published YouTube
+description, so a wrong page leaves the site through a channel nobody re-reads — take 023
+went out pointing at `schema/#required-fields` when the section lives in `fields.md`.
+`smoke.mjs` now prints a **Docs link** line and names the page that does hold the anchor,
+computing the slug the way Hugo does (checked against all 101 headings of the docs, no
+mismatch). Check it before recording, not after uploading.
+
 **How a take is clocked:** the operator arms the screen recorder and cues once to
 start — nothing runs on a timer before that. `initial_pause` is the blank beat
 between that starting cue and subtitle #1.
@@ -214,6 +221,17 @@ A few things are pronounced for you, in `lib/voice.mjs`: identifiers (`fileClass
 digit. Versions and dates are left alone.
 
 ## 5. Build `demo-vault/` — the smallest vault that makes the story possible
+
+- **Open the vault where the take starts.** Set `.obsidian/workspace.json` so the first
+  frame already shows the most relevant thing: the note the take works on, or the base view
+  it is about. A take that opens on last take's note spends its first seconds navigating,
+  and navigation is the one thing no viewer needs to watch. A leaf on a base reads
+  `{"type":"bases","state":{"file":"Books.base","viewName":"No author yet"}}` — measured, and
+  the `viewName` matters: without it the base opens on its first view.
+- **Only show what earlier takes have introduced.** The series is cumulative, so a surface
+  that has its own take later must not carry a step here — `fileclass-table` and its
+  validation columns belong to arc 7, so take 023 makes its point with a plain Bases view and
+  a filter instead. An incidental appearance on screen is fine; a step built on it is not.
 
 - Only what the viewer sees: notes, folders, `.base` files. Two or three notes is
   usually plenty, and their content should be prose that *wants* structure (the

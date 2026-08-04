@@ -1,0 +1,80 @@
+# Narration for take 023 — see ../SCENARIO.md for the format.
+# First of arc 5 (modelling a class). Starts where 022 ended: Album carries `credits` in
+# YAML and `import` in JSON, Kind of Blue and A Love Supreme credited their own way.
+#
+# Marks `Book.author` required — not a `title`, which would only repeat the note's name and
+# teach the wrong reflex. Two of the three books have no author key at all, measured in the
+# fixture: Dune has Frank Herbert, The Lord of the Rings and Atomic Habits have nothing. So
+# the contrast is there without inventing data.
+#
+# The fixture gains **James Clear** as an Author note — Atomic Habits' author, missing from
+# the vault, which would have left step 9 with nothing to pick.
+#
+# The vault **opens on Books.base, view "No author yet"** (filter `author.isEmpty()`), which
+# is what the take works from and against. That is now a standing rule for every take: open
+# on the most relevant view, so the first frame isn't navigation.
+#
+# Nothing here shows `fileclass-table` or its `valid`/`errors` columns: those are arc 7's
+# subject, and a take must not spend a later take's material. The verdict is shown with an
+# ordinary Bases view instead.
+#
+# Facts the script leans on, all measured in the app before scripting:
+#  - `author.isEmpty()` is the filter that catches both cases — the key absent AND the key
+#    present with an empty value. `!author` matches nothing, `author == ""` and
+#    `author.length == 0` miss the absent key. That is the whole reason step 8 works;
+#  - **Insert missing fields** writes `author: ""` — the key arrives, empty — and the note
+#    stays in violation. That is step 7, and it is the subtlety of `required`: a value, not
+#    a key;
+#  - the row's **Clear**, by contrast, removes the key entirely. So "fill it then empty it"
+#    would NOT have shown a present-but-empty key: an earlier draft of step 7 claimed it
+#    would, and the app said otherwise;
+#  - the Required toggle lives in the field's own modal and its wording is honest: "Flag the
+#    note as invalid when this field has no value." Nothing is ever blocked;
+#  - a schema row now reads `File · required`, and a required field with no value colours
+#    its own action icon red — in the note-fields modal and in Obsidian's Properties panel,
+#    with `required` in the tooltip. Both were added for this take: the flag used to be
+#    invisible outside a base, which made the idea unfilmable. A word in a red box was tried
+#    first and thrown away — it read as an error banner dropped into the row;
+#  - `author` is the FIRST field of Book in the fixture, so nothing has to be scrolled to on
+#    camera;
+#  - the sort that an earlier draft promised, on a `valid` column, does nothing: the row
+#    order is identical before and after. Dropped rather than filmed.
+title: "Fileclass — Fields you can't leave empty"
+description: "Required fields: what they flag, and what they never block."
+doc: "fields/#required-fields" # deep link used in the description (the section lives in fields.md)
+tags: "required, validation, schema, bases"
+vault_name: "Demo"
+plugin: true
+settings:
+  classFilesPath: "Classes/"
+  fileClassAlias: "fileClass"
+initial_pause: 1500
+default_pause: 900
+
+steps:
+  - title: "A view can show which books have no author — but nothing says a book must have one"
+    pause: 2400
+  - title: "In Book's schema, open author and turn Required on"
+    pause: 2100
+  - title: "In the option's own words: the note is flagged as invalid — nothing is ever blocked"
+    pause: 2300
+  - title: "The schema now says which fields cannot be left empty"
+    pause: 2100
+  - title: "And a required field with nothing in it turns its own action red, in the note and in the properties panel"
+    pause: 2300
+  - title: "Fill Tolkien's: the picker only offers notes that are authors, and the mark goes"
+    values: "J.R.R. Tolkien"
+    pause: 2300
+  - title: "On the last book, insert the missing fields: the key arrives empty, and the mark stays"
+    pause: 2500
+  - title: "The view agrees, and keeps it: a key with nothing in it is still nothing"
+    pause: 2300
+  - title: "So give it its author, from the note itself"
+    values: "James Clear"
+    pause: 2200
+  - title: "And the view empties: the promise the class makes is kept"
+    pause: 2200
+  - title: "Nothing was ever in your way — a note can be saved, left and come back to, still invalid"
+    pause: 2400
+  - title: "That is what required is: a promise you make to yourself, visible in the class, in the note, and in a view"
+    pause: 2500

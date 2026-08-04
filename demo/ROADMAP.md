@@ -94,7 +94,7 @@ thread, and a tight smoke test of that type's input path.
 
 | # | Take | Feature | Vault gains | Status |
 | - | ---- | ------- | ----------- | ------ |
-| 023 | Fields you can't leave empty | required fields | `Book.title` required | |
+| 023 | Fields you can't leave empty | required fields | `Book.author` required, James Clear | ✅ [published](https://www.youtube.com/watch?v=7F5BvcUbUAc) |
 | 024 | One parent class, three children | inheritance (`extends`) | `Media` → `Book`/`Album`/`Comic` | |
 | 025 | Two classes on one note | multiple binding, global class, alias | `Article` class | |
 

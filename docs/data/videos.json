@@ -273,5 +273,16 @@
     "durationSeconds": 185,
     "recordedWith": "0.2.5",
     "privacyStatus": "public"
+  },
+  "023": {
+    "id": "7F5BvcUbUAc",
+    "url": "https://www.youtube.com/watch?v=7F5BvcUbUAc",
+    "title": "Fileclass #023 · Fields you can't leave empty",
+    "subject": "Fields you can't leave empty",
+    "scenario": "023_fields_you_cant_leave_empty",
+    "doc": "fields/#required-fields",
+    "durationSeconds": 114,
+    "recordedWith": "0.2.6",
+    "privacyStatus": "public"
   }
 }

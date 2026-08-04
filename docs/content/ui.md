@@ -143,6 +143,20 @@ CLI's `set-where`:
 > Dry-run first: nothing is written until you Apply. As always, writes go
 > straight to your vault — keep regular backups.
 
+## Moving a modal out of the way
+
+A modal is centred, and what it covers is often what you are filling it in from — the
+note's own properties, a base's rows, the value behind it. **Drag a modal by its title**
+to move it; the cursor over the title says so. It cannot be dropped out of reach: a
+recognisable piece of it always stays on screen, and its title never goes above the top
+edge, since that is what you would grab to bring it back.
+
+Position is per-modal and not remembered: the next one you open is centred again.
+
+**Desktop only.** On mobile the handle would have to take over touch gestures on the
+title, which would cost you scrolling the modal with your thumb — a real loss for a
+gesture that isn't worth much on a phone.
+
 ## Unsaved changes
 
 A modal that holds a draft — a field's definition, a group's values, a list's items —

@@ -6,6 +6,16 @@ All notable changes to Fileclass are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- **Modals can be moved.** A modal is centred, and what it hides is often what you need to
+  read while filling it in. Drag one **by its title**; the cursor over the title says so.
+  It can't be lost: a recognisable piece always stays on screen — 120px, chosen by looking
+  at 48px and finding that the modal read as *gone* — and the title never goes above the
+  top edge, since that is what you would grab to bring it back. Position isn't remembered:
+  the next modal opens centred. **Desktop only**, because the handle would otherwise take
+  over touch gestures on the title and cost you scrolling a modal with your thumb.
+
 ## [0.2.6] - 2026-08-04
 
 ### Changed

@@ -1045,3 +1045,16 @@ input.fileclass-color-circle.is-custom::-webkit-color-swatch-wrapper {
 .modal button.is-hidden-fc {
 	display: none;
 }
+
+/* A modal's title is its drag handle (modalDrag.ts): a centred modal often covers the
+   very thing you are filling it in from. The cursor is the whole affordance — no extra
+   chrome on a title that is also a heading. */
+.fileclass-drag-handle {
+	cursor: grab;
+	user-select: none;
+	/* The pointer must not be captured by a text selection mid-drag. */
+	touch-action: none;
+}
+.fileclass-drag-handle.is-dragging {
+	cursor: grabbing;
+}

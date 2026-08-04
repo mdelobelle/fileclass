@@ -8,6 +8,14 @@ All notable changes to Fileclass are documented here. The format follows
 
 ### Added
 
+- **`Excludes` picks from the parent's fields.** The inherited fields a class drops were a
+  comma-separated box, where a misspelling excluded nothing and said nothing — the same silence
+  `Extends` had. What a class may exclude is a finite, known list, so the list is now the
+  interface: a picker over its ancestors' field names, with the count and the current
+  exclusions readable on the row. With no parent it says so instead of offering an empty box.
+  An exclusion that no longer resolves stays offered and marked, because dropping it would
+  silently re-inherit a field somebody deliberately removed.
+
 - **`Extends` is a dropdown, and opens the class it names.** It was a free-text box, and a
   wrong parent was completely silent: `extends: Medai` inherited nothing, listed an ancestor
   nothing answers to, and said not a word. There is no case for typing a free name — a parent

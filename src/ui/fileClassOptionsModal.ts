@@ -3,7 +3,7 @@
  * and writes them in one processFrontMatter on Save, leaving `fields` and other
  * keys untouched. Reads current values from the live frontmatter (fresh).
  */
-import { ButtonComponent, ExtraButtonComponent, Modal, Setting, TFile, debounce, normalizePath, parseYaml } from "obsidian";
+import { ButtonComponent, ExtraButtonComponent, Modal, Notice, Setting, TFile, debounce, normalizePath, parseYaml } from "obsidian";
 
 import { modalTitle } from "./modalTitle";
 
@@ -17,6 +17,7 @@ import { ClassScope, isBaseViewSynced } from "../views/baseYaml";
 import { BaseFileSuggest } from "./baseSuggest";
 import { openFileClassSchema } from "./fileClassSchemaModal";
 import { IconSuggest, paintIcon } from "./iconSuggest";
+import { MultiSelectModal } from "../fields/input/valueModals";
 import { makeStickyFooter } from "./modalFooter";
 import { attachUnsavedGuard, snapshot, UnsavedGuard } from "./unsavedGuard";
 
@@ -30,6 +31,8 @@ export class FileClassOptionsModal extends Modal {
 	/** The options as this modal opened on them, or as last saved. */
 	private opened = "";
 	private guard?: UnsavedGuard;
+	/** Redraws the Excludes row — the parent it reads from can change under it. */
+	private repaintExcludes?: () => void;
 	private readonly refreshStatus = debounce(() => void this.updateStatus(), 250, true);
 
 	constructor(
@@ -91,6 +94,7 @@ export class FileClassOptionsModal extends Modal {
 			d.setValue(current).onChange((v) => {
 				this.opts.extends = v;
 				this.refreshParentLink();
+				this.repaintExcludes?.();
 
 		const iconSetting = new Setting(contentEl).setName("Icon").setDesc("Lucide icon name.");
 		const preview = iconSetting.controlEl.createSpan({ cls: "fileclass-icon-preview" });
@@ -157,7 +161,7 @@ export class FileClassOptionsModal extends Modal {
 		this.csvSetting("Tag names", "tagNames");
 		this.csvSetting("Files paths", "filesPaths");
 		this.csvSetting("Bookmark groups", "bookmarksGroups");
-		this.csvSetting("Excludes", "excludes", "Inherited field names to drop.");
+		this.excludesSetting();
 
 		/*
 		 * The same guard every other editing modal here carries: this one holds a draft of a
@@ -268,6 +272,66 @@ export class FileClassOptionsModal extends Modal {
 		return index.fileClassNames.filter(
 			(name) => name !== this.name && !index.getAncestors(name).includes(this.name)
 		);
+	}
+
+	/**
+	 * `Excludes` — the inherited fields this class drops — picked from the parent's own
+	 * fields rather than typed.
+	 *
+	 * It used to be a comma-separated box, where a misspelling excluded nothing and said
+	 * nothing: the same silence `Extends` had. What a class can exclude is a finite, known
+	 * list — its ancestors' field names — so the list is the interface. A name that no longer
+	 * resolves (the parent changed, the note was hand-edited) is kept and marked, because
+	 * dropping it would silently re-inherit a field somebody deliberately excluded.
+	 */
+	private excludesSetting(): void {
+		const row = new Setting(this.contentEl).setName("Excludes");
+		const paint = () => {
+			const chosen = this.opts.excludes ?? [];
+			const available = this.inheritedFieldNames();
+			row.setDesc(
+				available.length
+					? chosen.length
+						? `Dropped from ${this.opts.extends}: ${chosen.join(", ")}`
+						: `Inherited fields to drop. ${available.length} available from ${this.opts.extends}.`
+					: "Nothing to exclude: this class has no parent."
+			);
+		};
+		row.addButton((b) =>
+			b.setButtonText("Choose…").onClick(() => {
+				const available = this.inheritedFieldNames();
+				const chosen = this.opts.excludes ?? [];
+				// A stale exclusion stays offered, so saving cannot quietly undo it.
+				const allowed = [...available, ...chosen.filter((n) => !available.includes(n))];
+				if (!allowed.length) {
+					new Notice("Fileclass: no parent, so there is nothing to exclude.");
+					return;
+				}
+				new MultiSelectModal(this.app, {
+					title: `Excludes — inherited by ${this.name}`,
+					allowed,
+					selected: chosen,
+					onSubmit: (values) => {
+						this.opts.excludes = values;
+						paint();
+						this.guard?.refresh();
+						void this.updateStatus();
+					},
+				}).open();
+			})
+		);
+		paint();
+		this.repaintExcludes = paint;
+	}
+
+	/** The field names this class inherits — what it may exclude, and nothing else. */
+	private inheritedFieldNames(): string[] {
+		const parent = (this.opts.extends ?? "").trim();
+		if (!parent || !this.plugin.index.fileClassNames.includes(parent)) return [];
+		return this.plugin.index
+			.getResolvedFields(parent)
+			.filter((f) => !f.path)
+			.map((f) => f.name);
 	}
 
 	private csvSetting(

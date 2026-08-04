@@ -72,6 +72,10 @@ inherits nothing, so there is nothing to gain from typing a name; a value that n
 resolves (a renamed class, a hand-edited note) stays in the list marked *no such fileClass*,
 so the declaration is visible rather than lost.
 
+`Excludes` — the inherited fields this class drops — is picked from the parent's own fields,
+never typed: a misspelled name excluded nothing and said nothing. With no parent, there is
+nothing to choose and the row says so.
+
 Beside it, a link opens the parent's schema — a class's editor lists its **own** fields only,
 since showing an ancestor's there would leave you wondering which copy you were editing. The
 link appears only when the name resolves.

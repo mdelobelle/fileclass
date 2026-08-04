@@ -151,7 +151,15 @@ to move it; the cursor over the title says so. It cannot be dropped out of reach
 recognisable piece of it always stays on screen, and its title never goes above the top
 edge, since that is what you would grab to bring it back.
 
+A modal opening **over** another lands slightly off it — down and to the right — so a
+stack reads as a stack and you can still see, and grab, the one underneath. The offset
+stops growing after a few levels, and dragging a modal replaces it.
+
 Position is per-modal and not remembered: the next one you open is centred again.
+
+Stacked modals also **dim the app once**, not once per modal. Obsidian gives each one its
+own backdrop, so three modals used to darken the window three times over and wash out the
+modals below; only the first backdrop is kept now.
 
 **Desktop only.** On mobile the handle would have to take over touch gestures on the
 title, which would cost you scrolling the modal with your thumb — a real loss for a

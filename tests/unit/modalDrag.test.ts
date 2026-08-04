@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { clampOffset } from "../../src/ui/modalDrag";
+import { cascadeOffset, clampOffset } from "../../src/ui/modalDrag";
 
 // A modal 400×300 sitting centred in a 1000×800 viewport, with no drag applied yet.
 const box = { left: 300, top: 250, width: 400, height: 300 };
@@ -38,5 +38,25 @@ describe("clampOffset — a dragged modal stays reachable", () => {
 		const o = clampOffset(box, none, { x: -500, y: -500 }, tiny);
 		expect(Number.isFinite(o.x)).toBe(true);
 		expect(Number.isFinite(o.y)).toBe(true);
+	});
+});
+
+describe("cascadeOffset — a stack reads as a stack", () => {
+	it("leaves the first modal where Obsidian centred it", () => {
+		expect(cascadeOffset(0)).toEqual({ x: 0, y: 0 });
+	});
+
+	it("steps down and to the right for each modal above", () => {
+		expect(cascadeOffset(1)).toEqual({ x: 28, y: 28 });
+		expect(cascadeOffset(3)).toEqual({ x: 84, y: 84 });
+	});
+
+	it("stops growing so a deep stack cannot march off-screen", () => {
+		expect(cascadeOffset(4)).toEqual({ x: 112, y: 112 });
+		expect(cascadeOffset(12)).toEqual({ x: 112, y: 112 });
+	});
+
+	it("treats a modal it cannot place as the first one", () => {
+		expect(cascadeOffset(-1)).toEqual({ x: 0, y: 0 });
 	});
 });

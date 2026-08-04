@@ -61,6 +61,31 @@ export function clampOffset(
 	};
 }
 
+/** How far each modal of a stack sits from the one below it, in px. */
+const CASCADE_STEP = 28;
+/** Past this depth the cascade stops growing, or a deep stack marches off-screen. */
+const CASCADE_MAX_STEPS = 4;
+
+/**
+ * Where the `depth`-th modal of a stack should sit: down and to the right of the one
+ * below, so you can see there are several and grab the one underneath. The first is
+ * centred, as Obsidian left it.
+ */
+export function cascadeOffset(depth: number): { x: number; y: number } {
+	const steps = Math.min(Math.max(depth, 0), CASCADE_MAX_STEPS);
+	return { x: steps * CASCADE_STEP, y: steps * CASCADE_STEP };
+}
+
+/** True when this modal has never been placed — neither cascaded nor dragged. */
+export function hasOffset(el: HTMLElement): boolean {
+	return el.dataset.fcDragX !== undefined;
+}
+
+/** Places a modal at `offset` (also the origin any later drag adds to). */
+export function setOffset(el: HTMLElement, offset: { x: number; y: number }): void {
+	applyOffset(el, offset);
+}
+
 /** Reads the offset a previous drag left on the element. */
 function currentOffset(el: HTMLElement): { x: number; y: number } {
 	return { x: Number(el.dataset.fcDragX ?? 0), y: Number(el.dataset.fcDragY ?? 0) };

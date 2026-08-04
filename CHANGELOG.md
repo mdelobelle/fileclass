@@ -16,6 +16,14 @@ All notable changes to Fileclass are documented here. The format follows
   the next modal opens centred. **Desktop only**, because the handle would otherwise take
   over touch gestures on the title and cost you scrolling a modal with your thumb.
 
+- **A stack of modals reads as a stack.** A modal opening over another lands slightly off
+  it — down and to the right, stopping after a few levels — so you can see there are
+  several and grab the one underneath. Dragging one replaces that offset.
+
+- **And a stack dims the app once**, not once per modal. Obsidian gives every modal its own
+  backdrop covering the whole window, so three modals darkened it three times over and the
+  ones below came out washed out. Only the first backdrop is kept.
+
 ## [0.2.6] - 2026-08-04
 
 ### Changed

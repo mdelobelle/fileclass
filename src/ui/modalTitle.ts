@@ -14,7 +14,7 @@
  */
 import { Platform } from "obsidian";
 
-import { makeDraggable } from "./modalDrag";
+import { cascadeOffset, hasOffset, makeDraggable, setOffset } from "./modalDrag";
 
 /** Adds a sticky <h3> title to `contentEl` and returns it. */
 export function modalTitle(contentEl: HTMLElement, text: string): HTMLElement {
@@ -22,6 +22,17 @@ export function modalTitle(contentEl: HTMLElement, text: string): HTMLElement {
 	const title = contentEl.createEl("h3", { text, cls: "fileclass-modal-title" });
 	// `.modal` is the box Obsidian centres; without it there is nothing to move.
 	const modalEl = contentEl.closest<HTMLElement>(".modal");
-	if (modalEl && !Platform.isMobile) makeDraggable(modalEl, title);
+	if (modalEl && !Platform.isMobile) {
+		makeDraggable(modalEl, title);
+		// A modal opening over another lands slightly off it, so a stack reads as a stack
+		// and the one underneath can still be grabbed. Once only: our modals rebuild their
+		// content — and this title — on every render, and re-cascading would walk the modal
+		// across the screen. A drag counts as placed too, so it is never undone.
+		if (!hasOffset(modalEl)) {
+			const containers = Array.from(document.querySelectorAll(".modal-container"));
+			const depth = containers.findIndex((c) => c.contains(modalEl));
+			setOffset(modalEl, cascadeOffset(depth === -1 ? 0 : depth));
+		}
+	}
 	return title;
 }

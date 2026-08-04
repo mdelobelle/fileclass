@@ -1058,3 +1058,21 @@ input.fileclass-color-circle.is-custom::-webkit-color-swatch-wrapper {
 .fileclass-drag-handle.is-dragging {
 	cursor: grabbing;
 }
+
+/*
+ * Stacked modals dim the app once, not once per modal.
+ *
+ * Obsidian gives every `.modal-container` its own `.modal-bg` at 0.85, and each covers the
+ * whole window — so a stack of three darkens the app three times over, and each backdrop
+ * also washes out the modals below it. Measured: three containers, three identical
+ * backdrops. Keeping the first one (the app behind stays dimmed) and clearing the later
+ * ones (the modals below stay crisp) is the whole fix, and it needs no bookkeeping: the
+ * selector means "a container that has another container before it".
+ *
+ * `!important` is not decoration here, and it was measured before being used: Obsidian
+ * sets `style="opacity: 0.85"` **inline** on each backdrop as it animates it in, and an
+ * inline style beats every selector. Without it the rule matches — verified — and loses.
+ */
+.modal-container ~ .modal-container .modal-bg {
+	opacity: 0 !important;
+}

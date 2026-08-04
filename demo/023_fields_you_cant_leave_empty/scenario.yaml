@@ -41,7 +41,7 @@
 #    order is identical before and after. Dropped rather than filmed.
 title: "Fileclass — Fields you can't leave empty"
 description: "Required fields: what they flag, and what they never block."
-doc: "schema/#required-fields" # deep link used in the description
+doc: "fields/#required-fields" # deep link used in the description (the section lives in fields.md)
 tags: "required, validation, schema, bases"
 vault_name: "Demo"
 plugin: true

@@ -81,6 +81,8 @@ which is why *insert missing fields* leaves it blank rather than guessing.
 
 ## Required fields
 
+{{< video "023" >}}
+
 Any field can be marked **Required** in the schema editor (the toggle sits with
 the common field options, alongside the name and type). A required field with an
 empty value is reported as a violation, and the flag is visible without opening

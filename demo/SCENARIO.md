@@ -118,6 +118,13 @@ be a bare line (`- Save the schema`), and durations accept `1500`, `"1.5s"` or
 `"800ms"`. Quote any title containing a colon. Unknown keys are an error, on
 purpose — a typo'd key must not silently do nothing.
 
+**`doc:` must resolve.** Its value becomes the *Docs:* line of the published YouTube
+description, so a wrong page leaves the site through a channel nobody re-reads — take 023
+went out pointing at `schema/#required-fields` when the section lives in `fields.md`.
+`smoke.mjs` now prints a **Docs link** line and names the page that does hold the anchor,
+computing the slug the way Hugo does (checked against all 101 headings of the docs, no
+mismatch). Check it before recording, not after uploading.
+
 **How a take is clocked:** the operator arms the screen recorder and cues once to
 start — nothing runs on a timer before that. `initial_pause` is the blank beat
 between that starting cue and subtitle #1.

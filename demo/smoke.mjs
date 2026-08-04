@@ -34,6 +34,7 @@ import {
 	stageVault,
 	wipeVault,
 } from "./lib/stage.mjs";
+import { checkDocRef, collectAnchors } from "./lib/docsAnchors.mjs";
 import { fieldTypesFromSource, scanScript } from "./lib/scriptScan.mjs";
 import { waitForPlugin } from "./lib/trust.mjs";
 import { connect } from "./lib/subtitles.mjs";
@@ -148,6 +149,14 @@ function report(facts) {
 		console.log(`  ${n.path}\n    ${bits.join(" · ")}`);
 		if (missing.length) console.log(`    ${dim(`fields not yet inserted: ${missing.join(", ")}`)}`);
 	}
+
+	// The `doc:` value becomes the "Docs:" line of the published description, which nobody
+	// re-reads. Take 023 went out pointing at an anchor that lives on another page; reading
+	// the markdown catches that here, before the recording rather than after the upload.
+	const docs = checkDocRef(scenario.doc, collectAnchors(resolve(pluginDir, "docs/content")));
+	console.log(
+		`\n${bold("Docs link")}  ${docs.ok ? dim(docs.message) : warn(`✗ ${scenario.doc} — ${docs.message}`)}`
+	);
 
 	console.log(`\n${bold("What the script names")}`);
 	const scan = scanScript(scenario.steps, {

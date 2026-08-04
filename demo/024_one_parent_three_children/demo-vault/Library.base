@@ -1,0 +1,21 @@
+views:
+  - type: table
+    name: The whole library
+    filters:
+      and:
+        - fileClass.containsAny("Book", "Album", "Comic", "Movie")
+    sort:
+      - property: fileClass
+        direction: ASC
+    order:
+      - file.name
+      - fileClass
+      - publisher
+  - type: table
+    name: Anything that is a Media
+    filters:
+      and:
+        - fileClass == "Media"
+    order:
+      - file.name
+      - fileClass

@@ -1,0 +1,14 @@
+views:
+  - type: cards
+    name: All covers
+    filters:
+      and:
+        - file.ext == "png"
+    order:
+      - file.name
+    sort:
+      - property: file.name
+        direction: ASC
+    image: file.file
+    cardSize: 160
+    imageFit: contain

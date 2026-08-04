@@ -32,6 +32,7 @@ import { createFileclassApi, FileclassApi } from "./src/api/fileclassApi";
 import { CanvasEngine } from "./src/fields/canvas/canvasEngine";
 import { FieldIndicator } from "./src/ui/indicator/fieldIndicator";
 import { LinkIndicator } from "./src/ui/indicator/linkIndicator";
+import { applyDraggableModals } from "./src/ui/modalDrag";
 import { registerPrimaryActionShortcut } from "./src/ui/primaryAction";
 import { PropertyEditButtons } from "./src/ui/propertyEditButtons";
 import { NoteFieldsModal } from "./src/ui/noteFieldsModal";
@@ -82,6 +83,10 @@ export default class FileclassPlugin extends Plugin {
 		this.api = createFileclassApi(this);
 
 		this.addSettingTab(new FileclassSettingTab(this.app, this));
+		// Movable modals are experimental and off by default; the CSS half is gated on a
+		// body class, and it goes away with the plugin.
+		applyDraggableModals(this.settings.enableDraggableModals);
+		this.register(() => applyDraggableModals(false));
 		this.addChild(new FileclassContextMenu(this));
 		this.indicator = this.addChild(new FieldIndicator(this));
 		this.linkIndicator = this.addChild(new LinkIndicator(this));

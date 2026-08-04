@@ -6,6 +6,38 @@ All notable changes to Fileclass are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- **Movable modals, behind a setting** (*Settings → Fileclass → Movable modals*), **off by
+  default.** Everything in the three entries below is that one toggle: it is experimental,
+  desktop-only, and its CSS half neutralises Obsidian's own full-window modal backdrops — a
+  surface every plugin shares — so it stays opt-in until it has been lived with. Off, nothing
+  about Obsidian's modals changes: measured, both ways.
+
+- **Modals can be moved.** A modal is centred, and what it hides is often what you need to
+  read while filling it in. Drag one **by its title**; the cursor over the title says so.
+  It can't be lost: a recognisable piece always stays on screen — 120px, chosen by looking
+  at 48px and finding that the modal read as *gone* — and the title never goes above the
+  top edge, since that is what you would grab to bring it back. Position isn't remembered:
+  the next modal opens centred. **Desktop only**, because the handle would otherwise take
+  over touch gestures on the title and cost you scrolling a modal with your thumb.
+
+- **A stack of modals reads as a stack.** A modal opening over another lands slightly off
+  it — down and to the right, stopping after a few levels — so you can see there are
+  several and grab the one underneath. Dragging one replaces that offset.
+
+- **And a stack dims the app once**, not once per modal. Obsidian gives every modal its own
+  backdrop covering the whole window, so three modals darkened it three times over and the
+  ones below came out washed out. Only the first backdrop is kept.
+
+- **Any modal of a stack can be moved, not just the top one.** Those full-window backdrops
+  swallowed every click aimed at a modal underneath even once invisible — and so did their
+  containers. Both are click-through now, with each modal put back in the way. One
+  deliberate consequence: while modals are stacked, clicking the dim area closes nothing,
+  since the click would otherwise land on the modal at the bottom of the stack — the one the
+  others were opened from. A single modal still closes on an outside click, and Escape always
+  closes the top one.
+
 ## [0.2.6] - 2026-08-04
 
 ### Changed

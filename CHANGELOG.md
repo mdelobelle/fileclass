@@ -24,6 +24,14 @@ All notable changes to Fileclass are documented here. The format follows
   backdrop covering the whole window, so three modals darkened it three times over and the
   ones below came out washed out. Only the first backdrop is kept.
 
+- **Any modal of a stack can be moved, not just the top one.** Those full-window backdrops
+  swallowed every click aimed at a modal underneath even once invisible — and so did their
+  containers. Both are click-through now, with each modal put back in the way. One
+  deliberate consequence: while modals are stacked, clicking the dim area closes nothing,
+  since the click would otherwise land on the modal at the bottom of the stack — the one the
+  others were opened from. A single modal still closes on an outside click, and Escape always
+  closes the top one.
+
 ## [0.2.6] - 2026-08-04
 
 ### Changed

@@ -1075,4 +1075,31 @@ input.fileclass-color-circle.is-custom::-webkit-color-swatch-wrapper {
  */
 .modal-container ~ .modal-container .modal-bg {
 	opacity: 0 !important;
+	/* And it must not catch the pointer either: an invisible backdrop still intercepts
+	   every click, which is precisely why only the topmost modal could be touched — the
+	   element under the pointer over a lower modal's title was measured to be this. */
+	pointer-events: none;
+}
+/*
+ * The container above is full-window too, and once its backdrop stopped catching clicks it
+ * was the next thing to catch them (measured, in that order). So a stacked container is
+ * click-through, and its own modal is put back in the way — which is what makes every
+ * modal of a stack, not just the top one, clickable and draggable.
+ */
+.modal-container ~ .modal-container {
+	pointer-events: none;
+}
+.modal-container ~ .modal-container > .modal {
+	pointer-events: auto;
+}
+/*
+ * While modals are stacked, clicking the dim area closes nothing.
+ *
+ * With the upper backdrops made click-through, a click outside would otherwise fall to the
+ * FIRST container's backdrop and close the modal at the bottom of the stack — the one the
+ * others were opened from. A single modal keeps Obsidian's click-to-close; Escape still
+ * closes the top one either way.
+ */
+body:has(.modal-container ~ .modal-container) .modal-container .modal-bg {
+	pointer-events: none;
 }

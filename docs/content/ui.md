@@ -157,9 +157,18 @@ stops growing after a few levels, and dragging a modal replaces it.
 
 Position is per-modal and not remembered: the next one you open is centred again.
 
-Stacked modals also **dim the app once**, not once per modal. Obsidian gives each one its
-own backdrop, so three modals used to darken the window three times over and wash out the
-modals below; only the first backdrop is kept now.
+**Any modal of a stack can be moved**, not only the top one. Obsidian gives each modal a
+full-window backdrop, so an invisible one still swallowed every click aimed at a modal
+underneath; those upper backdrops are click-through now, and so are their containers, with
+each modal itself put back in the way.
+
+Stacked modals also **dim the app once**, not once per modal: three of them used to darken
+the window three times over and wash out the ones below.
+
+One consequence, deliberate: **while modals are stacked, clicking the dim area closes
+nothing** — otherwise the click would fall through to the bottom modal, the one the others
+were opened from. A single modal still closes on an outside click, and <kbd>Escape</kbd>
+always closes the top one.
 
 **Desktop only.** On mobile the handle would have to take over touch gestures on the
 title, which would cost you scrolling the modal with your thumb — a real loss for a

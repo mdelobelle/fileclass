@@ -29,7 +29,7 @@ import { controlActionFor, controlLabel } from "../fields/controlAction";
 import { EditContext, nextDateActionFor, runControlAction } from "../fields/fieldActions";
 import { isInputSupported } from "../fields/support";
 import { fieldTypeIcon } from "../fields/typeIcons";
-import { Field, isRootField } from "../schema/field";
+import { Field, FieldType, isRootField } from "../schema/field";
 import { hasFieldKey, readFieldValue } from "../io/read";
 import { AddFileClassModal } from "./addFileClassModal";
 import { attachAltAffordance } from "./altAffordance";
@@ -47,6 +47,8 @@ const ACTIONS_CLASS = "fileclass-prop-actions";
 const CLASS_CLASS = "fileclass-prop-class";
 /** Marks a nested value Obsidian can't interpret but this plugin declares and validates. */
 const GROUP_OK_CLASS = "fileclass-group-ok";
+/** Types whose value is a nested structure Obsidian cannot interpret, but we can. */
+const STRUCTURED_TYPES = new Set<FieldType>(["Object", "ObjectList", "JSON", "YAML"]);
 /** Leaf types whose views render a native Properties editor. */
 const LEAF_TYPES = ["markdown", "file-properties"];
 
@@ -283,7 +285,11 @@ export class PropertyEditButtons extends Component {
 	 * future version and this quietly stops.
 	 */
 	private decorateGroupValue(valueEl: HTMLElement, field: Field, file: TFile): void {
-		if (field.type !== "Object" && field.type !== "ObjectList") return;
+		// `JSON`/`YAML` join the groups here: Obsidian can't interpret a nested value,
+		// but a class that declares one as free-form structure understands it — it round
+		// -trips it through an editor. They have no display template, so what stays on
+		// screen is the raw value, which for these two types is the honest answer.
+		if (!STRUCTURED_TYPES.has(field.type)) return;
 		const item = valueEl.querySelector<HTMLElement>(
 			":scope > .metadata-property-value-item.mod-unknown"
 		);

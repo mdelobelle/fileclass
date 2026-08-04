@@ -6,6 +6,29 @@ All notable changes to Fileclass are documented here. The format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- **Raw text no longer disappears on Escape.** The `JSON`/`YAML` editor is where the most
+  typing happens and it was the last one without a guard: Escape or the close button threw
+  a blob away in silence. It now shows **Unsaved changes** in its footer and asks — *Keep
+  editing*, *Discard* or *Save* — like every other editor since 0.2.4.
+
+- **The parser answers while you type.** An invalid document was only reported when you
+  asked to save, so a mistake twenty lines up was learned about on the way out. The error
+  — with its line, its column and a caret under the spot — now appears as you type, and an
+  empty box stays what it is: the way to clear the field.
+
+### Changed
+
+- **A declared raw field is not a warning.** Obsidian paints a nested value it can't
+  interpret in its warning colour. That is right for a value nobody can make sense of and
+  wrong for a `JSON`/`YAML` field a class declares and round-trips through an editor — as
+  it already was for groups. The value itself stays raw on screen, which for these two
+  types is the honest answer.
+
+- **A structured value says how much is inside.** `{…}` told you nothing; a value now
+  reads as **3 keys** or **5 items** wherever there is no room to show it whole.
+
 ## [0.2.5] - 2026-08-03
 
 ### Fixed

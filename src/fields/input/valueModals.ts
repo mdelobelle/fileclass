@@ -17,6 +17,7 @@ import {
 import { makeStickyFooter } from "../../ui/modalFooter";
 import { modalTitle } from "../../ui/modalTitle";
 import { returnFocusTo } from "../../ui/listKeyboard";
+import { attachUnsavedGuard } from "../../ui/unsavedGuard";
 
 import { DisplayGroup, groupLabel } from "../baseOrder";
 import { matchTemplate, parseTemplate, renderTemplate } from "../inputTemplate";
@@ -147,7 +148,8 @@ export class TextAreaInputModal extends Modal {
 		});
 
 		const input = new TextAreaComponent(contentEl);
-		input.setValue(this.opts.initial ?? "").setPlaceholder(this.opts.placeholder ?? "");
+		const initial = this.opts.initial ?? "";
+		input.setValue(initial).setPlaceholder(this.opts.placeholder ?? "");
 		input.inputEl.rows = 10;
 		input.inputEl.setCssStyles({ width: "100%", fontFamily: "var(--font-monospace)" });
 		window.setTimeout(() => input.inputEl.focus(), 0);
@@ -157,11 +159,24 @@ export class TextAreaInputModal extends Modal {
 			const result = this.opts.validate?.(value);
 			if (result && !result.ok) {
 				errorEl.setText(result.message ?? "Invalid value");
-				return;
+				return false;
 			}
 			this.opts.onSubmit(value);
 			this.close();
+			return true;
 		};
+
+		// The parser answers as you type, not only when you ask to save: this is the
+		// one editor where a mistake can be twenty lines up, and learning about it on
+		// the way out is learning too late. An empty box is not an error — it clears
+		// the field.
+		const recheck = () => {
+			const text = input.getValue();
+			const result = text.trim() ? this.opts.validate?.(text) : { ok: true };
+			errorEl.setText(result && !result.ok ? (result.message ?? "Invalid value") : "");
+			guard.refresh(); // declared below; only ever called from an event
+		};
+		input.inputEl.addEventListener("input", recheck);
 
 		input.inputEl.addEventListener("keydown", (e) => {
 			if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
@@ -169,9 +184,17 @@ export class TextAreaInputModal extends Modal {
 				submit();
 			}
 		});
-		new Setting(contentEl)
+		const footer = new Setting(contentEl)
 			.setDesc("Cmd/Ctrl+Enter to save")
-			.addButton((b) => b.setButtonText("Save").setCta().onClick(submit));
+			.addButton((b) => b.setButtonText("Save").setCta().onClick(() => void submit()));
+		// Raw text is where the most typing happens, so it is the worst place to lose
+		// it: Escape used to discard a blob without a word.
+		const guard = attachUnsavedGuard(this.app, this, {
+			isDirty: () => input.getValue() !== initial,
+			save: submit,
+			subject: "value",
+		});
+		guard.mountHint(footer.settingEl);
 	}
 
 	onClose(): void {

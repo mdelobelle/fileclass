@@ -1,5 +1,12 @@
 ---
 fields:
+  - name: author
+    id: aU7hor
+    type: File
+    options:
+      baseFile: Authors.base
+      viewName: All authors
+    path: ""
   - name: editions
     id: eDitns
     type: ObjectList
@@ -108,13 +115,6 @@ fields:
     id: aW4rds
     type: MultiInput
     options: {}
-    path: ""
-  - name: author
-    id: aU7hor
-    type: File
-    options:
-      baseFile: Authors.base
-      viewName: All authors
     path: ""
   - name: cover
     id: cO1ver

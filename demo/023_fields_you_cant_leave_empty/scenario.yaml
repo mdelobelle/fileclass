@@ -30,9 +30,13 @@
 #    would, and the app said otherwise;
 #  - the Required toggle lives in the field's own modal and its wording is honest: "Flag the
 #    note as invalid when this field has no value." Nothing is ever blocked;
-#  - a schema row now reads `File · required`, and the note-fields modal marks an empty
-#    required field with the word `required`. Both were added for this take — the flag used
-#    to be invisible outside a base, which made the idea unfilmable;
+#  - a schema row now reads `File · required`, and a required field with no value colours
+#    its own action icon red — in the note-fields modal and in Obsidian's Properties panel,
+#    with `required` in the tooltip. Both were added for this take: the flag used to be
+#    invisible outside a base, which made the idea unfilmable. A word in a red box was tried
+#    first and thrown away — it read as an error banner dropped into the row;
+#  - `author` is the FIRST field of Book in the fixture, so nothing has to be scrolled to on
+#    camera;
 #  - the sort that an earlier draft promised, on a `valid` column, does nothing: the row
 #    order is identical before and after. Dropped rather than filmed.
 title: "Fileclass — Fields you can't leave empty"
@@ -56,7 +60,7 @@ steps:
     pause: 2300
   - title: "The schema now says which fields cannot be left empty"
     pause: 2100
-  - title: "And in a note's fields, an empty required one says so where you would fill it"
+  - title: "And a required field with nothing in it turns its own action red, in the note and in the properties panel"
     pause: 2300
   - title: "Fill Tolkien's: the picker only offers notes that are authors, and the mark goes"
     values: "J.R.R. Tolkien"

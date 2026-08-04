@@ -35,7 +35,7 @@ import { AddFileClassModal } from "./addFileClassModal";
 import { attachAltAffordance } from "./altAffordance";
 import { openFileClassSchema } from "./fileClassSchemaModal";
 import { describeField, displayTemplateOf } from "../fields/objectDisplay";
-import { validateField } from "../fields/validate";
+import { isEmpty, isRequired, validateField } from "../fields/validate";
 import { makeDisplayDeps } from "../fields/displayDeps";
 import { makeValuePreview } from "./valuePreview";
 import { humanDurationsFor } from "../fields/duration";
@@ -50,6 +50,8 @@ const CLASS_CLASS = "fileclass-prop-class";
 const GROUP_OK_CLASS = "fileclass-group-ok";
 /** The reading of a stored duration, inside its pill. */
 const PILL_HUMAN_CLASS = "fileclass-pill-human";
+/** Set on a field's button when the field is required and has no value. */
+const REQUIRED_CLASS = "is-required-empty";
 /** Types whose value is a nested structure Obsidian cannot interpret, but we can. */
 const STRUCTURED_TYPES = new Set<FieldType>(["Object", "ObjectList", "JSON", "YAML"]);
 /** Leaf types whose views render a native Properties editor. */
@@ -410,6 +412,33 @@ export class PropertyEditButtons extends Component {
 			}
 		}
 		this.decorateGroupValue(valueEl, field, file);
+		this.decorateRequired(row, field, file);
+	}
+
+	/**
+	 * A required field with nothing in it colours **its own button** red, rather than
+	 * adding a word beside the value: the control you would use to fix it is the one that
+	 * carries the signal, and a chip in a red box looked like an error banner dropped into
+	 * the row (looked at, then thrown away).
+	 *
+	 * Only when the key exists: Obsidian lists the keys a note has, so a required field
+	 * never written has no row here — that case is what "Insert N missing fields" is for.
+	 *
+	 * Idempotent, because this row is watched: the class and the label are set to what
+	 * they should be, which is a no-op once they already are.
+	 */
+	private decorateRequired(row: HTMLElement, field: Field, file: TFile): void {
+		const button = row.querySelector<HTMLElement>(`:scope > .${BTN_CLASS}`);
+		if (!button) return;
+		const unmet = isRequired(field) && isEmpty(readFieldValue(this.plugin.app, file, field));
+		if (button.hasClass(REQUIRED_CLASS) === unmet) return; // settled
+		button.toggleClass(REQUIRED_CLASS, unmet);
+		const label = button.getAttribute("aria-label") ?? "";
+		const suffix = " — required";
+		button.setAttribute(
+			"aria-label",
+			unmet ? (label.includes(suffix) ? label : label + suffix) : label.replace(suffix, "")
+		);
 	}
 
 	private makeButton(file: TFile, field: Field, key: string, row: HTMLElement): HTMLElement {

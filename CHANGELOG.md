@@ -10,10 +10,10 @@ All notable changes to Fileclass are documented here. The format follows
 
 - **A required field says so where it matters.** `required` lived only inside a field's own
   definition modal, so a class of a dozen fields hid which ones were mandatory behind a dozen
-  clicks — and the surface where fields actually get filled said nothing at all. A schema row
-  now reads `File · required`, and the note-fields modal marks a required field that has no
-  value with the word **required**, in the error colour. Nothing is blocked, as before: the
-  flag is a statement, not a gate.
+  clicks — and the surfaces where fields actually get filled said nothing at all. A schema row
+  now reads `File · required`, and a required field with no value **colours its own action
+  icon red**, in the note-fields modal and in Obsidian's Properties panel, with *required* in
+  the tooltip. Nothing is blocked, as before: the flag is a statement, not a gate.
 
 ### Added
 

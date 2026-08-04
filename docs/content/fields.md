@@ -84,8 +84,10 @@ which is why *insert missing fields* leaves it blank rather than guessing.
 Any field can be marked **Required** in the schema editor (the toggle sits with
 the common field options, alongside the name and type). A required field with an
 empty value is reported as a violation, and the flag is visible without opening
-anything: a schema row reads `File · required`, and in a note's fields an empty
-required field is marked **required** beside its (absent) value.
+anything: a schema row reads `File · required`, and where the field has no value its
+own **action icon turns red** — in a note's fields and in Obsidian's Properties panel
+alike. The control you would use to fill it is the one that says it is missing; its
+tooltip spells out *required*.
 
 Nothing is ever blocked. A note that violates its class can be saved, left, and come
 back to — `required` is a statement about your model, not a gate on your typing. What

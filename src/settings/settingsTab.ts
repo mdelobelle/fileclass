@@ -10,6 +10,7 @@ import { attachFormatPreview } from "../ui/dateFormatPreview";
 import type FileclassPlugin from "../../main";
 import { addCustomColor, removeCustomColor } from "../fields/customPalette";
 import { colorCircleInput } from "../ui/colorInput";
+import { applyDraggableModals } from "../ui/modalDrag";
 import { FolderSuggest } from "../ui/folderSuggest";
 import { normalizeFolderPath } from "./settings";
 
@@ -169,6 +170,23 @@ export class FileclassSettingTab extends PluginSettingTab {
 				toggle.setValue(this.plugin.settings.insertFieldsOnBind).onChange(async (value) => {
 					this.plugin.settings.insertFieldsOnBind = value;
 					await this.plugin.saveSettings();
+				})
+			);
+
+		new Setting(containerEl)
+			.setName("Movable modals (experimental)")
+			.setDesc(
+				"Drag a modal by its title, offset each modal opening over another, dim the app once " +
+					"instead of once per modal, and let every modal of a stack be clicked — not only the " +
+					"topmost. It works by neutralising Obsidian's own modal backdrops, which other plugins " +
+					"share, so it is off by default. Desktop only. While modals are stacked, clicking " +
+					"outside them closes nothing (Escape still closes the top one)."
+			)
+			.addToggle((toggle) =>
+				toggle.setValue(this.plugin.settings.enableDraggableModals).onChange(async (value) => {
+					this.plugin.settings.enableDraggableModals = value;
+					await this.plugin.saveSettings();
+					applyDraggableModals(value);
 				})
 			);
 

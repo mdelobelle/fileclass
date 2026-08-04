@@ -145,6 +145,10 @@ CLI's `set-where`:
 
 ## Moving a modal out of the way
 
+**Experimental, and off by default** — turn on *Movable modals* in Settings → Fileclass.
+The behaviour works by neutralising Obsidian's own full-window modal backdrops, which every
+plugin shares, so it stays opt-in until it has been lived with. Desktop only.
+
 A modal is centred, and what it covers is often what you are filling it in from — the
 note's own properties, a base's rows, the value behind it. **Drag a modal by its title**
 to move it; the cursor over the title says so. It cannot be dropped out of reach: a

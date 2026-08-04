@@ -34,6 +34,13 @@ export interface FileclassSettings {
 	enableContextMenu: boolean;
 	/** Insert a class's missing fields as soon as the class is bound to a note. */
 	insertFieldsOnBind: boolean;
+	/**
+	 * Let a modal be dragged by its title, cascade a stack of them, dim once and make
+	 * every modal of a stack clickable. Experimental and desktop-only: it works by
+	 * neutralising Obsidian's own full-window modal backdrops, which is a shared surface —
+	 * hence off by default.
+	 */
+	enableDraggableModals: boolean;
 	/** Show an edit button on matching rows of the native Properties editor. */
 	enablePropertyEditButtons: boolean;
 	/** Show "Add a class" / "Insert missing fields" next to "Add property". */
@@ -67,6 +74,7 @@ export const DEFAULT_SETTINGS: FileclassSettings = {
 	enableValidationColumns: true,
 	enableContextMenu: true,
 	insertFieldsOnBind: true,
+	enableDraggableModals: false,
 	enablePropertyEditButtons: true,
 	enablePropertyActionButtons: true,
 	enableTabHeaderIndicator: true,

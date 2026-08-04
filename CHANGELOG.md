@@ -8,6 +8,12 @@ All notable changes to Fileclass are documented here. The format follows
 
 ### Added
 
+- **Movable modals, behind a setting** (*Settings → Fileclass → Movable modals*), **off by
+  default.** Everything in the three entries below is that one toggle: it is experimental,
+  desktop-only, and its CSS half neutralises Obsidian's own full-window modal backdrops — a
+  surface every plugin shares — so it stays opt-in until it has been lived with. Off, nothing
+  about Obsidian's modals changes: measured, both ways.
+
 - **Modals can be moved.** A modal is centred, and what it hides is often what you need to
   read while filling it in. Drag one **by its title**; the cursor over the title says so.
   It can't be lost: a recognisable piece always stays on screen — 120px, chosen by looking

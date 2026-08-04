@@ -11,9 +11,13 @@
  * **Not on mobile**, and not only because dragging a sheet with a thumb is a poor
  * gesture: the handle sets `touch-action: none`, which would take away scrolling the
  * modal by dragging its title — a real loss in exchange for nothing.
+ *
+ * **Off by default** (`enableDraggableModals`): the behaviour's other half is CSS that
+ * neutralises Obsidian's own modal backdrops, a surface every plugin shares.
  */
 import { Platform } from "obsidian";
 
+import { getPlugin } from "../globals";
 import { cascadeOffset, hasOffset, makeDraggable, setOffset } from "./modalDrag";
 
 /** Adds a sticky <h3> title to `contentEl` and returns it. */
@@ -22,7 +26,8 @@ export function modalTitle(contentEl: HTMLElement, text: string): HTMLElement {
 	const title = contentEl.createEl("h3", { text, cls: "fileclass-modal-title" });
 	// `.modal` is the box Obsidian centres; without it there is nothing to move.
 	const modalEl = contentEl.closest<HTMLElement>(".modal");
-	if (modalEl && !Platform.isMobile) {
+	// Experimental, and off by default: see `enableDraggableModals`.
+	if (modalEl && !Platform.isMobile && getPlugin().settings.enableDraggableModals) {
 		makeDraggable(modalEl, title);
 		// A modal opening over another lands slightly off it, so a stack reads as a stack
 		// and the one underneath can still be grabbed. Once only: our modals rebuild their

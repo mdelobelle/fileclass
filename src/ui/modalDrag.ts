@@ -16,6 +16,19 @@
  */
 
 /**
+ * The class that turns the whole behaviour on, set on `<body>`: the CSS half — one dim for
+ * a stack, and the click-through that makes every modal of it reachable — neutralises
+ * Obsidian's own backdrops, which other plugins share. Gating the CSS on a class means the
+ * setting really is off, not merely half off.
+ */
+export const DRAGGABLE_MODALS_CLASS = "fileclass-movable-modals";
+
+/** Turns the CSS half on or off. Call on load and whenever the setting changes. */
+export function applyDraggableModals(enabled: boolean): void {
+	document.body.toggleClass(DRAGGABLE_MODALS_CLASS, enabled);
+}
+
+/**
  * How much of a dragged modal must stay on screen, in px. Looked at rather than reasoned
  * about: at 48px the modal reads as *gone* — a corner and three letters of its title —
  * even though it was technically grabbable. 120 keeps a piece you recognise.

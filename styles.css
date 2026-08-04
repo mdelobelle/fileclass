@@ -1073,7 +1073,7 @@ input.fileclass-color-circle.is-custom::-webkit-color-swatch-wrapper {
  * sets `style="opacity: 0.85"` **inline** on each backdrop as it animates it in, and an
  * inline style beats every selector. Without it the rule matches — verified — and loses.
  */
-.modal-container ~ .modal-container .modal-bg {
+body.fileclass-movable-modals .modal-container ~ .modal-container .modal-bg {
 	opacity: 0 !important;
 	/* And it must not catch the pointer either: an invisible backdrop still intercepts
 	   every click, which is precisely why only the topmost modal could be touched — the
@@ -1086,10 +1086,10 @@ input.fileclass-color-circle.is-custom::-webkit-color-swatch-wrapper {
  * click-through, and its own modal is put back in the way — which is what makes every
  * modal of a stack, not just the top one, clickable and draggable.
  */
-.modal-container ~ .modal-container {
+body.fileclass-movable-modals .modal-container ~ .modal-container {
 	pointer-events: none;
 }
-.modal-container ~ .modal-container > .modal {
+body.fileclass-movable-modals .modal-container ~ .modal-container > .modal {
 	pointer-events: auto;
 }
 /*
@@ -1100,6 +1100,6 @@ input.fileclass-color-circle.is-custom::-webkit-color-swatch-wrapper {
  * others were opened from. A single modal keeps Obsidian's click-to-close; Escape still
  * closes the top one either way.
  */
-body:has(.modal-container ~ .modal-container) .modal-container .modal-bg {
+body.fileclass-movable-modals:has(.modal-container ~ .modal-container) .modal-container .modal-bg {
 	pointer-events: none;
 }

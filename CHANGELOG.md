@@ -15,8 +15,6 @@ All notable changes to Fileclass are documented here. The format follows
   icon red**, in the note-fields modal and in Obsidian's Properties panel, with *required* in
   the tooltip. Nothing is blocked, as before: the flag is a statement, not a gate.
 
-### Added
-
 - **Movable modals, behind a setting** (*Settings → Fileclass → Movable modals*), **off by
   default.** Everything in the three entries below is that one toggle: it is experimental,
   desktop-only, and its CSS half neutralises Obsidian's own full-window modal backdrops — a
@@ -48,6 +46,16 @@ All notable changes to Fileclass are documented here. The format follows
   since the click would otherwise land on the modal at the bottom of the stack — the one the
   others were opened from. A single modal still closes on an outside click, and Escape always
   closes the top one.
+
+### Fixed
+
+- **A field button's tooltip names the plugin the way its commands do.** It read
+  `Edit "author" — File (Fileclass)`, and that trailing parenthesis was taken for a
+  placeholder left unsubstituted — reasonably, since in this plugin's vocabulary a
+  parenthesis after a field is where a **fileClass name** would belong. It now reads
+  `Fileclass: Edit "author" — File`, like every entry the plugin puts in the command
+  palette. Same fix on the schema shortcut, the next-date affordance and the field-settings
+  wrench.
 
 ## [0.2.6] - 2026-08-04
 
@@ -88,14 +96,6 @@ All notable changes to Fileclass are documented here. The format follows
   the name it acts on.
 
 ### Fixed
-
-- **A field button's tooltip names the plugin the way its commands do.** It read
-  `Edit "author" — File (Fileclass)`, and that trailing parenthesis was taken for a
-  placeholder left unsubstituted — reasonably, since in this plugin's vocabulary a
-  parenthesis after a field is where a **fileClass name** would belong. It now reads
-  `Fileclass: Edit "author" — File`, like every entry the plugin puts in the command
-  palette. Same fix on the schema shortcut, the next-date affordance and the field-settings
-  wrench.
 
 - **Raw text no longer disappears on Escape.** The `JSON`/`YAML` editor is where the most
   typing happens and it was the last one without a guard: Escape or the close button threw

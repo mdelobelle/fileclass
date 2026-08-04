@@ -129,6 +129,12 @@ export interface TextAreaOptions {
 	placeholder?: string;
 	validate?: (value: string) => ValidationResult;
 	onSubmit: (value: string) => void;
+	/**
+	 * Offers to rewrite the text in this field's own notation. Returns the converted
+	 * text, or null when there is nothing to offer — the button appears and disappears
+	 * with that answer as the text changes.
+	 */
+	convert?: { label: string; run: (text: string) => string | null };
 }
 
 /** Multi-line input with inline validation (JSON/YAML). Cmd/Ctrl+Enter saves. */
@@ -154,6 +160,11 @@ export class TextAreaInputModal extends Modal {
 		input.inputEl.setCssStyles({ width: "100%", fontFamily: "var(--font-monospace)" });
 		window.setTimeout(() => input.inputEl.focus(), 0);
 
+		// What the draft is compared against: what it opened on, then what was last
+		// saved. Without that second half, Save wrote the value and then asked about
+		// "unsaved changes" — the guard was comparing against the original text of a
+		// modal that had just been committed.
+		let baseline = initial;
 		const submit = () => {
 			const value = input.getValue();
 			const result = this.opts.validate?.(value);
@@ -162,6 +173,7 @@ export class TextAreaInputModal extends Modal {
 				return false;
 			}
 			this.opts.onSubmit(value);
+			baseline = value;
 			this.close();
 			return true;
 		};
@@ -175,6 +187,12 @@ export class TextAreaInputModal extends Modal {
 			const result = text.trim() ? this.opts.validate?.(text) : { ok: true };
 			errorEl.setText(result && !result.ok ? (result.message ?? "Invalid value") : "");
 			guard.refresh(); // declared below; only ever called from an event
+			// The offer follows the text: a JSON field holding YAML can be converted, the
+			// same field a keystroke later may not be.
+			if (convertBtn && this.opts.convert) {
+				const available = this.opts.convert.run(input.getValue()) !== null;
+				convertBtn.toggleClass("is-hidden-fc", !available);
+			}
 		};
 		input.inputEl.addEventListener("input", recheck);
 
@@ -184,17 +202,31 @@ export class TextAreaInputModal extends Modal {
 				submit();
 			}
 		});
-		const footer = new Setting(contentEl)
-			.setDesc("Cmd/Ctrl+Enter to save")
-			.addButton((b) => b.setButtonText("Save").setCta().onClick(() => void submit()));
+		const footer = new Setting(contentEl).setDesc("Cmd/Ctrl+Enter to save");
+		let convertBtn: HTMLButtonElement | null = null;
+		if (this.opts.convert) {
+			const convert = this.opts.convert;
+			footer.addButton((b) => {
+				convertBtn = b.buttonEl;
+				b.setButtonText(convert.label).onClick(() => {
+					const next = convert.run(input.getValue());
+					if (next === null) return;
+					input.setValue(next);
+					recheck();
+					input.inputEl.focus();
+				});
+			});
+		}
+		footer.addButton((b) => b.setButtonText("Save").setCta().onClick(() => void submit()));
 		// Raw text is where the most typing happens, so it is the worst place to lose
 		// it: Escape used to discard a blob without a word.
 		const guard = attachUnsavedGuard(this.app, this, {
-			isDirty: () => input.getValue() !== initial,
+			isDirty: () => input.getValue() !== baseline,
 			save: submit,
 			subject: "value",
 		});
 		guard.mountHint(footer.settingEl);
+		recheck();
 	}
 
 	onClose(): void {

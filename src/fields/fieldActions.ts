@@ -38,10 +38,11 @@ import {
 	TextAreaInputModal,
 } from "./input/valueModals";
 import {
-	parseStructured,
-	serializeStructured,
 	StructuredType,
 	YamlCodec,
+	convertNotation,
+	parseStructured,
+	serializeStructured,
 } from "./structuredText";
 import { formatLink, linkTargetPath } from "./links";
 import { thumbFor } from "../ui/mediaThumb";
@@ -316,6 +317,13 @@ function openStructuredPrompt(
 		onSubmit: (v) => {
 			const r = parseStructured(type, v, YAML_CODEC);
 			if (r.ok) onValue(r.value);
+		},
+		// Changing a field's type doesn't rewrite what it holds, so a `JSON` field can
+		// open on YAML (and the reverse). The offer to convert appears only while the
+		// text is readable as the other notation.
+		convert: {
+			label: type === "JSON" ? "Convert from YAML" : "Convert from JSON",
+			run: (text) => convertNotation(type, text, YAML_CODEC),
 		},
 	}).open();
 }

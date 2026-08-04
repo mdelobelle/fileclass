@@ -1039,3 +1039,9 @@ input.fileclass-color-circle.is-custom::-webkit-color-swatch-wrapper {
 	white-space: nowrap;
 	pointer-events: none;
 }
+
+/* A footer button that only applies to some content (the JSON/YAML conversion offer):
+   hidden rather than disabled, because a button that can never be pressed is noise. */
+.modal button.is-hidden-fc {
+	display: none;
+}

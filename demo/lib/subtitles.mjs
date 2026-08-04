@@ -358,7 +358,9 @@ class Stage {
 								for (const c of chips) {
 									const chip = document.createElement("span");
 									chip.className = c.done ? "fc-input is-done" : c.cls;
-									chip.textContent = c.value;
+									// A multi-line value is one value, shown on one line: the caption is
+									// two lines tall, not twelve. The keystrokes keep the newlines.
+									chip.textContent = c.value.replace(/\n+/g, " ⏎ ");
 									row.appendChild(chip);
 								}
 								el.appendChild(row);

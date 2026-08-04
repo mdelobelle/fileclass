@@ -6,6 +6,26 @@ All notable changes to Fileclass are documented here. The format follows
 
 ## [Unreleased]
 
+### Changed
+
+- **A `JSON` field stores JSON.** It used to parse your text and hand the *structure* to
+  frontmatter, which Obsidian then wrote as YAML — so nothing on disk was ever JSON and the
+  type was a notation for the editor only. A `JSON` field now stores the **text**, which
+  Obsidian writes as a block scalar (`tech: |-`), so a payload keeps the formatting it came
+  with. Measured: a multi-line string is emitted as a block, a block already in the file
+  survives a write elsewhere in the note untouched, and the cache gives the exact text back.
+  The trade-off is the point of having two types: **YAML** stores a real structure, which a
+  base can reach into through a formula; **JSON** keeps the bytes and is opaque to Bases. A
+  field that already holds a mapping keeps working — it opens as pretty-printed JSON, and
+  becomes text on the next save.
+
+### Added
+
+- **Convert between the two notations, when it applies.** Changing a field's type doesn't
+  rewrite what it holds, so a `JSON` field can open on YAML (and the reverse). The editor
+  then offers *Convert from YAML* — and the offer appears and disappears as you type, since
+  it is only ever shown for text that reads as the other notation.
+
 ### Added
 
 - **A duration reads as a duration in Obsidian's Properties panel.** `PT45M44S` is the

@@ -201,6 +201,16 @@ export function validateField(
 			}
 			return VALID;
 		}
+		case "JSON":
+			// A JSON field stores its text (§ structuredText), so what can be wrong is the
+			// text: a value from another tool, or an edit made in the note itself.
+			if (typeof value !== "string") return VALID; // a structure, from before or elsewhere
+			try {
+				JSON.parse(value);
+				return VALID;
+			} catch {
+				return invalid(`"${field.name}" must be valid JSON`);
+			}
 		default:
 			// Types handled in later waves are not constrained here.
 			return VALID;

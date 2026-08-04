@@ -95,6 +95,20 @@ export class FileClassOptionsModal extends Modal {
 				this.opts.extends = v;
 				this.refreshParentLink();
 				this.repaintExcludes?.();
+			});
+		});
+		parentRow.addExtraButton((b) => {
+			this.parentLink = b;
+			b.setIcon("external-link").onClick(() => {
+				const name = (this.opts.extends ?? "").trim();
+				if (name) openFileClassSchema(this.plugin, name);
+			});
+		});
+		this.refreshParentLink();
+
+		// Directly under the parent it depends on: what `Excludes` offers is the parent's own
+		// fields, so the two rows only make sense read together.
+		this.excludesSetting();
 
 		const iconSetting = new Setting(contentEl).setName("Icon").setDesc("Lucide icon name.");
 		const preview = iconSetting.controlEl.createSpan({ cls: "fileclass-icon-preview" });
@@ -109,16 +123,6 @@ export class FileClassOptionsModal extends Modal {
 			new IconSuggest(this.app, t.inputEl);
 		});
 		paintPreview(this.opts.icon ?? "");
-			});
-		});
-		parentRow.addExtraButton((b) => {
-			this.parentLink = b;
-			b.setIcon("external-link").onClick(() => {
-				const name = (this.opts.extends ?? "").trim();
-				if (name) openFileClassSchema(this.plugin, name);
-			});
-		});
-		this.refreshParentLink();
 
 		new Setting(contentEl).setName("Sync to base").setHeading();
 		new Setting(contentEl)
@@ -161,7 +165,6 @@ export class FileClassOptionsModal extends Modal {
 		this.csvSetting("Tag names", "tagNames");
 		this.csvSetting("Files paths", "filesPaths");
 		this.csvSetting("Bookmark groups", "bookmarksGroups");
-		this.excludesSetting();
 
 		/*
 		 * The same guard every other editing modal here carries: this one holds a draft of a

@@ -14,7 +14,9 @@ All notable changes to Fileclass are documented here. The format follows
   interface: a picker over its ancestors' field names, with the count and the current
   exclusions readable on the row. With no parent it says so instead of offering an empty box.
   An exclusion that no longer resolves stays offered and marked, because dropping it would
-  silently re-inherit a field somebody deliberately removed.
+  silently re-inherit a field somebody deliberately removed. It sits **directly under
+  `Extends`**, since what it offers is that parent's own fields: apart, the two rows read as
+  unrelated settings.
 
 - **`Extends` is a dropdown, and opens the class it names.** It was a free-text box, and a
   wrong parent was completely silent: `extends: Medai` inherited nothing, listed an ancestor

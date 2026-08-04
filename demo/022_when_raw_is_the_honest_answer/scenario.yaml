@@ -19,6 +19,9 @@
 #  - switching the field's type between YAML and JSON changes only the notation in the
 #    editor: the value on disk is untouched. That is step 7, and it is why the take can
 #    name both types while filming one;
+#  - incidental, and visible from step 1: Kind of Blue's `length` now shows `45m 44s`
+#    beside the stored `PT45M44S` in the Properties panel. No step names it — it is not
+#    this take's subject — but it will be on screen, so it is written down here;
 #  - what a base reaches inside a raw value, measured on screen: the formula
 #    `note.credits.producer` gives Teo Macero and `note.credits.personnel.length` gives 3,
 #    while the dotted column `credits.producer` renders EMPTY — the same rule as groups.

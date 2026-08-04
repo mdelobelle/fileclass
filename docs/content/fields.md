@@ -401,6 +401,13 @@ phrases like *"next friday"* into the picker.
 
 ## Durations & interval cycling
 
+A duration is stored as an RFC 5545 string (`PT45M44S`, `P90D`) — the interoperable form,
+and not one anybody reads. Wherever Fileclass shows a value it shows the reading instead
+(`45m 44s`); in **Obsidian's own Properties panel**, where the stored string is what the
+editor holds, the reading is added *beside* it rather than replacing it, so nothing can
+write the reading back into your note. An interval sequence reads as its rotation:
+`180d · 360d · 90d`.
+
 {{< video "009" >}}
 
 A `Duration` field stores a **length of time** as an RFC 5545 `DURATION` string —

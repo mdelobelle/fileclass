@@ -6,6 +6,16 @@ All notable changes to Fileclass are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- **A duration reads as a duration in Obsidian's Properties panel.** `PT45M44S` is the
+  right thing on disk and unreadable on screen, so the human form now sits *beside* the
+  stored value — `45m 44s`, and `180d · 360d · 90d` for an interval sequence. Beside, never
+  over: Obsidian's own value there is an editable text property, and overwriting its text
+  would risk writing `45m 44s` back into your frontmatter. Surfaces that already read well
+  — the note-fields modal, a field menu — show nothing extra, and the editable
+  `fileclass-table` gains the reading like the panel.
+
 ### Fixed
 
 - **Raw text no longer disappears on Escape.** The `JSON`/`YAML` editor is where the most

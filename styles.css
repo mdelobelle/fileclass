@@ -154,6 +154,11 @@
 	align-items: center;
 	margin: 0 2px;
 }
+/* A sequence stacks its pills, and a centred reading looked like it belonged to the
+   middle one — it summarises the whole list, so it starts on the first line. */
+.metadata-property > .fileclass-prop-preview.fileclass-duration-human {
+	align-self: flex-start;
+}
 .metadata-property > .fileclass-prop-edit svg {
 	width: 15px;
 	height: 15px;
@@ -647,6 +652,20 @@ input.fileclass-color-circle.is-custom::-webkit-color-swatch-wrapper {
 .fileclass-value-icon svg {
 	width: 1em;
 	height: 1em;
+}
+
+/* The human reading of a stored duration, beside the ISO value rather than over it. */
+.fileclass-duration-human {
+	align-self: flex-start;
+	margin-right: 0.4em;
+	padding: 0 0.35em;
+	border-radius: 4px;
+	background: var(--background-modifier-hover);
+	color: var(--text-muted);
+	font-size: 0.9em;
+	font-variant-numeric: tabular-nums;
+	white-space: nowrap;
+	flex: 0 0 auto;
 }
 
 /* Custom-colors palette editor (Settings, #43). */

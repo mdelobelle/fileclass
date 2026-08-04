@@ -12,14 +12,14 @@
 # Facts the script leans on, all measured in the app before scripting:
 #  - a JSON field stores its text and Obsidian writes it as a block scalar: `import: |-`
 #    with the JSON indented under it. A block already in a file survives a write to
-#    another key untouched, and the cache gives the exact text back. So step 11 can claim
-#    "kept as it came" and step 12 can show it on disk;
+#    another key untouched, and the cache gives the exact text back. So step 12 can claim
+#    "kept as it came" and show it on disk;
 #  - a YAML field stores real frontmatter keys, so `note.credits.producer` in a formula
 #    gives Teo Macero and `note.credits.personnel.length` gives 3, while the dotted column
 #    `credits.producer` renders EMPTY — the same rule as groups. Albums.base ships those
 #    formulas, so nothing films formula editing (#19);
 #  - a JSON field in a base is a string: the `import` column shows the payload as text and
-#    no formula reaches into it. That is the price of verbatim, and step 13 names it;
+#    no formula reaches into it. That is the price of verbatim, and steps 12 and 14 name it;
 #  - the parser answers while you type, naming the line, the column, and pointing a caret
 #    at the spot;
 #  - Escape asks instead of discarding — the raw editor was the last one without a guard;
@@ -27,7 +27,7 @@
 #    screen, which for these two types is the honest answer;
 #  - where a value can't be shown whole it reads `3 keys` / `5 items`, not `{…}`;
 #  - the editor offers *Convert from YAML* whenever a JSON field's text reads as YAML, and
-#    hides the offer as soon as it doesn't. Step 12 films exactly that mistake;
+#    hides the offer as soon as it doesn't. Step 13 films exactly that mistake;
 #  - incidental, visible from step 1: Kind of Blue's `length` shows `45m 44s` beside the
 #    stored `PT45M44S`. No step names it, but it will be on screen.
 #
@@ -42,6 +42,10 @@
 # personnel, the other its quartet and its studio. Step 10 admits the price on screen — the
 # `Personnel` column is full for one album and empty for the other, because nothing checks
 # the inside of a raw value.
+#
+# Fourteen steps rather than thirteen: naming the field to create belongs in the subtitle
+# (the operator reads it while recording, not this header), and "kept as it came" and "one
+# button converts it" are two gestures, so they are two steps.
 #
 # The `import` payload is invented, and reads as what a record shop's export would give:
 # a release id, a pressing, a matrix number. It is the one thing in this take that isn't a
@@ -83,11 +87,13 @@ steps:
     pause: 2400
   - title: "That structure is queryable: a base reaches inside it through a formula — never through a dotted column"
     pause: 2600
-  - title: "The other type is for what you don't want touched: a payload from another tool, in a JSON field"
+  - title: "Now the other type: give Album an import field, of type JSON, for a payload another tool produced"
     input: "{\n  \"release\": 1052166,\n  \"pressing\": \"1959 six-eye\",\n  \"matrix\": \"XSM 44903-1A\"\n}"
     pause: 2500
-  - title: "It is stored as it came, in a block of its own — and if you paste the wrong notation, one button converts it"
-    values: "sides: 2"
+  - title: "Saved, it is kept exactly as it came: a block of its own in the frontmatter, and a plain string in the base"
+    pause: 2500
+  - title: "Paste the wrong notation into it and the parser says so — and one button turns that YAML into JSON"
+    input: "sides: 2\nmastering: Van Gelder"
     pause: 2500
   - title: "So: a known shape gets Object or ObjectList, a shape you want to query gets YAML, and bytes you want kept get JSON"
     pause: 2500

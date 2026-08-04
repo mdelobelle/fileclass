@@ -3,7 +3,7 @@
  * and writes them in one processFrontMatter on Save, leaving `fields` and other
  * keys untouched. Reads current values from the live frontmatter (fresh).
  */
-import { ButtonComponent, Modal, Setting, TFile, debounce, normalizePath, parseYaml } from "obsidian";
+import { ButtonComponent, ExtraButtonComponent, Modal, Setting, TFile, debounce, normalizePath, parseYaml } from "obsidian";
 
 import { modalTitle } from "./modalTitle";
 
@@ -14,7 +14,8 @@ import { writeOptions } from "../schema/fileClassIo";
 import { buildOptionUpdates, EditableOptions } from "../schema/fileClassWrite";
 import { applyBaseSync } from "../views/baseSync";
 import { ClassScope, isBaseViewSynced } from "../views/baseYaml";
-import { BaseFileSuggest } from "./baseSuggest";
+import { BaseFileSuggest, FileClassSuggest } from "./baseSuggest";
+import { openFileClassSchema } from "./fileClassSchemaModal";
 import { IconSuggest, paintIcon } from "./iconSuggest";
 import { makeStickyFooter } from "./modalFooter";
 
@@ -23,6 +24,8 @@ const csv = (v: string): string[] => v.split(",").map((s) => s.trim()).filter(Bo
 export class FileClassOptionsModal extends Modal {
 	private readonly opts: EditableOptions;
 	private statusBtn?: ButtonComponent;
+	/** The "open the parent's schema" affordance beside `Extends`. */
+	private parentLink?: ExtraButtonComponent;
 	private readonly refreshStatus = debounce(() => void this.updateStatus(), 250, true);
 
 	constructor(
@@ -63,10 +66,33 @@ export class FileClassOptionsModal extends Modal {
 		});
 		paintPreview(this.opts.icon ?? "");
 
-		new Setting(contentEl)
+		/*
+		 * `Extends`, with a way through to the parent. The schema editor deliberately lists
+		 * a class's **own** fields only — duplicating an ancestor's would beg the question of
+		 * which copy you are editing — so the parent is one click away instead.
+		 *
+		 * The button appears only when the name resolves to a fileClass that exists, which
+		 * makes it a second signal too: a typo leaves no button. Before this, a wrong parent
+		 * was entirely silent — `extends: Medai` inherited nothing and said nothing.
+		 */
+		const openParent = new Setting(contentEl)
 			.setName("Extends")
-			.setDesc("Parent fileClass name.")
-			.addText((t) => t.setValue(this.opts.extends ?? "").onChange((v) => (this.opts.extends = v)));
+			.setDesc("Parent fileClass — its fields are inherited by this one. Blank for no parent.");
+		openParent.addText((t) => {
+			t.setValue(this.opts.extends ?? "").onChange((v) => {
+				this.opts.extends = v;
+				this.refreshParentLink();
+			});
+			new FileClassSuggest(this.app, t.inputEl, () => this.parentCandidates());
+		});
+		openParent.addExtraButton((b) => {
+			this.parentLink = b;
+			b.setIcon("external-link").onClick(() => {
+				const name = (this.opts.extends ?? "").trim();
+				if (name) openFileClassSchema(this.plugin, name);
+			});
+		});
+		this.refreshParentLink();
 
 		new Setting(contentEl).setName("Sync to base").setHeading();
 		new Setting(contentEl)
@@ -178,6 +204,31 @@ export class FileClassOptionsModal extends Modal {
 			this.opts.baseView?.trim() || this.name
 		);
 		await this.updateStatus();
+	}
+
+	/**
+	 * Shows the way through to the parent only when there is a parent to reach: the name
+	 * must be a fileClass the index knows. Its tooltip names the class, so the button says
+	 * where it goes rather than that it goes somewhere.
+	 */
+	private refreshParentLink(): void {
+		if (!this.parentLink) return;
+		const name = (this.opts.extends ?? "").trim();
+		const exists = !!name && this.plugin.index.fileClassNames.includes(name);
+		this.parentLink.extraSettingsEl.toggleClass("is-hidden-fc", !exists);
+		this.parentLink.setTooltip(exists ? `Open "${name}"'s schema` : "");
+	}
+
+	/**
+	 * The classes this one may extend: every fileClass except itself and its own
+	 * descendants. A descendant as a parent is a cycle — `computeAncestors` survives one,
+	 * but a suggester should not propose it.
+	 */
+	private parentCandidates(): string[] {
+		const index = this.plugin.index;
+		return index.fileClassNames.filter(
+			(name) => name !== this.name && !index.getAncestors(name).includes(this.name)
+		);
 	}
 
 	private csvSetting(

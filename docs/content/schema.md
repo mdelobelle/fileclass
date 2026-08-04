@@ -66,6 +66,13 @@ by field name** (the nearest declaration wins). `excludes` removes inherited
 fields and **accumulates down the chain**: a class's excluded names are dropped
 from that class and every deeper ancestor.
 
+`Extends` is picked from the fileClasses you have — never the class itself, and never one
+that already inherits from it (that would be a cycle). Beside it, a link opens the parent's
+schema: a class's editor lists its **own** fields only, since showing an ancestor's there
+would leave you wondering which copy you were editing. The link appears only when the name
+resolves to an existing class, so a typo shows up as a missing button rather than as fields
+that quietly never arrive.
+
 ## Binding a note to fileClass(es)
 
 A note can be bound to one or more fileClasses. When several sources apply, they

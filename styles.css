@@ -1040,9 +1040,11 @@ input.fileclass-color-circle.is-custom::-webkit-color-swatch-wrapper {
 	pointer-events: none;
 }
 
-/* A footer button that only applies to some content (the JSON/YAML conversion offer):
-   hidden rather than disabled, because a button that can never be pressed is noise. */
-.modal button.is-hidden-fc {
+/* A control that only applies to some content — the JSON/YAML conversion offer, the way
+   through to a parent class — hidden rather than disabled, because a button that can never
+   be pressed is noise. An `addExtraButton` is a div, not a <button>, hence both. */
+.modal button.is-hidden-fc,
+.modal .clickable-icon.is-hidden-fc {
 	display: none;
 }
 

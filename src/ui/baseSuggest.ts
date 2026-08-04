@@ -59,6 +59,34 @@ export class BaseFileSuggest extends InputSuggest {
 	}
 }
 
+/**
+ * Autocomplete for a **fileClass name**, for the `Extends` field.
+ *
+ * Why it matters more than convenience: a parent that doesn't exist is *silent*. Measured
+ * before adding this — `extends: Medai` leaves the class with its own fields, an ancestor
+ * list holding a name nothing answers to, and not one word anywhere. A typo cost you the
+ * whole inheritance and said nothing.
+ *
+ * The list drops the class itself and any class that already inherits from it: offering a
+ * descendant as a parent is a cycle, which the resolver survives but nobody wants.
+ */
+export class FileClassSuggest extends InputSuggest {
+	constructor(
+		app: App,
+		inputEl: HTMLInputElement,
+		private readonly candidates: () => string[]
+	) {
+		super(app, inputEl);
+	}
+
+	protected getSuggestions(query: string): string[] {
+		const q = query.toLowerCase();
+		return this.candidates()
+			.filter((name) => name.toLowerCase().includes(q))
+			.sort((a, b) => a.localeCompare(b));
+	}
+}
+
 /** Autocomplete for a `.canvas` file path (Canvas field family). */
 export class CanvasFileSuggest extends InputSuggest {
 	protected getSuggestions(query: string): string[] {

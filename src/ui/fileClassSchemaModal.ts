@@ -16,6 +16,7 @@ import { parseFileClass } from "../schema/fileClass";
 import { dateFormatDefaults } from "../settings/settings";
 import { mutateFields } from "../schema/fileClassIo";
 import {
+	RawFieldEntry,
 	addFieldDef,
 	collectFieldIds,
 	moveFieldDef,
@@ -211,11 +212,28 @@ export class FileClassSchemaModal extends Modal {
 					addFieldDef(
 						fields,
 						{ name: r.name, type: r.type, options: r.options, path: this.parentPath },
-						collectFieldIds(fields)
+						// Every id of the whole chain, not just this class's. Parentage of a
+						// nested field is a `path` — the parent's id — matched over the
+						// **resolved** field set, so two classes of one chain drawing the same
+						// six characters would hand one group the other's children. Measured
+						// before fixing: `childFieldsOf` returned Media's `producer` among
+						// Book's `storage` children.
+						this.chainIds(fields)
 					)
 				).then(() => this.writeDependency(r));
 			},
 		}).open();
+	}
+
+	/**
+	 * The ids a new field must avoid: this class's own (as written on disk) plus every id
+	 * reachable through `extends`. One in 56 billion per pair is not a reason to leave a
+	 * corruption reachable when the fix is one union.
+	 */
+	private chainIds(fields: RawFieldEntry[]): Set<string> {
+		const ids = collectFieldIds(fields);
+		for (const f of this.plugin.index.getResolvedFields(this.name)) ids.add(f.id);
+		return ids;
 	}
 
 	/** What saving a definition implies beyond the write — shared with the other door. */

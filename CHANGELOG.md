@@ -8,6 +8,16 @@ All notable changes to Fileclass are documented here. The format follows
 
 ### Added
 
+- **`Extends` picks from your fileClasses, and opens the one it names.** It was a free-text
+  box, and a wrong parent was completely silent: `extends: Medai` inherited nothing, listed an
+  ancestor nothing answers to, and said not a word. It now suggests the classes you have —
+  never itself, never one that already inherits from it, which would be a cycle — and carries
+  a **way through to the parent's schema** beside it. That button appears only when the name
+  resolves, so a typo leaves no button: the second signal the field was missing.
+
+  A class's schema still lists its **own** fields only. Showing an ancestor's there would beg
+  the question of which copy you are editing; one click to the parent answers it instead.
+
 - **A required field says so where it matters.** `required` lived only inside a field's own
   definition modal, so a class of a dozen fields hid which ones were mandatory behind a dozen
   clicks — and the surfaces where fields actually get filled said nothing at all. A schema row

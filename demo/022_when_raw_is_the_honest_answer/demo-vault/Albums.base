@@ -16,3 +16,4 @@ views:
       - credits.producer
       - formula.Producer
       - formula.Personnel
+      - import

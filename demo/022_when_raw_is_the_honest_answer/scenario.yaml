@@ -3,40 +3,49 @@
 # was left with (the paperback first, because step 9 of that take moved it there), Tolkien
 # has the single 1991 paperback its own note describes, and Books.base counts them.
 #
-# Adds `Album.credits` as raw structure — the answer when there is no shape worth
-# declaring — and closes the field types.
+# Adds two raw fields to Album and closes the field types. The two are NOT the same field
+# in two notations — that framing was wrong and the code has changed under it:
+#
+#   Album.credits   YAML   stores the parsed structure → a base reaches inside it
+#   Album.import    JSON   stores the text, as a block scalar → kept verbatim, opaque
 #
 # Facts the script leans on, all measured in the app before scripting:
-#  - the parser answers while you type: Obsidian's YAML error carries a line, a column and
-#    a caret under the offending spot. Before this take's surfaces pass it only spoke on
-#    Save, so a mistake twenty lines up was learned about on the way out;
-#  - Escape asks instead of discarding — the raw editor was the last one without that
-#    guard, and it is the one with the most typing in it;
-#  - a declared raw field loses Obsidian's warning colour (the plugin declares the value
-#    and round-trips it) while the raw value stays on screen, which for these two types is
-#    the honest answer;
+#  - a JSON field stores its text and Obsidian writes it as a block scalar: `import: |-`
+#    with the JSON indented under it. A block already in a file survives a write to
+#    another key untouched, and the cache gives the exact text back. So step 11 can claim
+#    "kept as it came" and step 12 can show it on disk;
+#  - a YAML field stores real frontmatter keys, so `note.credits.producer` in a formula
+#    gives Teo Macero and `note.credits.personnel.length` gives 3, while the dotted column
+#    `credits.producer` renders EMPTY — the same rule as groups. Albums.base ships those
+#    formulas, so nothing films formula editing (#19);
+#  - a JSON field in a base is a string: the `import` column shows the payload as text and
+#    no formula reaches into it. That is the price of verbatim, and step 13 names it;
+#  - the parser answers while you type, naming the line, the column, and pointing a caret
+#    at the spot;
+#  - Escape asks instead of discarding — the raw editor was the last one without a guard;
+#  - a declared raw field loses Obsidian's warning colour while its value stays raw on
+#    screen, which for these two types is the honest answer;
 #  - where a value can't be shown whole it reads `3 keys` / `5 items`, not `{…}`;
-#  - switching the field's type between YAML and JSON changes only the notation in the
-#    editor: the value on disk is untouched. That is step 7, and it is why the take can
-#    name both types while filming one;
-#  - incidental, and visible from step 1: Kind of Blue's `length` now shows `45m 44s`
-#    beside the stored `PT45M44S` in the Properties panel. No step names it — it is not
-#    this take's subject — but it will be on screen, so it is written down here;
-#  - what a base reaches inside a raw value, measured on screen: the formula
-#    `note.credits.producer` gives Teo Macero and `note.credits.personnel.length` gives 3,
-#    while the dotted column `credits.producer` renders EMPTY — the same rule as groups.
-#    Albums.base ships those two formulas, so nothing films formula editing (#19).
+#  - the editor offers *Convert from YAML* whenever a JSON field's text reads as YAML, and
+#    hides the offer as soon as it doesn't. Step 12 films exactly that mistake;
+#  - incidental, visible from step 1: Kind of Blue's `length` shows `45m 44s` beside the
+#    stored `PT45M44S`. No step names it, but it will be on screen.
 #
-# The credits to type, all real:
+# The credits to type, all real. Both are cued (`input:`), one press per box: they are
+# punctuation-heavy blocks, and a take should not become a typing lesson.
 #   Kind of Blue     producer: Teo Macero · engineer: Fred Plaut ·
 #                    personnel: Miles Davis, John Coltrane, Bill Evans
 #   A Love Supreme   producer: Bob Thiele · studio: Van Gelder Studio ·
 #                    quartet: John Coltrane, McCoy Tyner, Jimmy Garrison, Elvin Jones
 #
-# The two shapes disagree on purpose, and that is the argument of the whole take: one
-# credits its personnel, the other its quartet and its studio. Which is also what step 11
-# admits — the `Personnel` column is empty for A Love Supreme, because nothing checks the
-# inside of a raw value. Better shown than claimed.
+# The two shapes disagree on purpose, and that is the argument of the take: one credits its
+# personnel, the other its quartet and its studio. Step 10 admits the price on screen — the
+# `Personnel` column is full for one album and empty for the other, because nothing checks
+# the inside of a raw value.
+#
+# The `import` payload is invented, and reads as what a record shop's export would give:
+# a release id, a pressing, a matrix number. It is the one thing in this take that isn't a
+# fact about the records, which is fine — it stands for "something another tool produced".
 #
 # The vault opens on Kind of Blue, the note the take works on.
 title: "Fileclass — When raw is the honest answer"
@@ -56,27 +65,29 @@ steps:
     pause: 2300
   - title: "Declaring a class for that would pretend the shape is fixed. Sometimes raw is the honest answer"
     pause: 2200
-  - title: "Give Album a credits field, of type YAML — or JSON, the same field in the other notation"
+  - title: "Give Album a credits field, of type YAML — what you type lands as real frontmatter keys"
     pause: 2200
   - title: "A box in monospace, and the parser answers while you type: it names the line and the column"
-    values: "producer: Teo Macero | engineer: Fred Plaut | personnel:"
+    input: "producer: Teo Macero\nengineer: Fred Plaut\npersonnel:\n  - Miles Davis\n  - John Coltrane\n  - Bill Evans"
     pause: 2400
   - title: "And Escape no longer throws the work away — it asks"
     pause: 2100
   - title: "Saved, the frontmatter holds real structure, not a string that looks like one"
     pause: 2100
-  - title: "Switch the field to JSON: the value on disk doesn't move, only the notation you type in"
-    pause: 2200
   - title: "Obsidian shows it raw and read-only — but a field you declared isn't a warning"
     pause: 2200
   - title: "And where the value can't be shown whole, it says what it holds: three keys"
     pause: 2000
   - title: "A second album, credited its own way — nothing obliges two raw values to agree"
-    values: "producer: Bob Thiele | studio: Van Gelder Studio | quartet:"
+    input: "producer: Bob Thiele\nstudio: Van Gelder Studio\nquartet:\n  - John Coltrane\n  - McCoy Tyner\n  - Jimmy Garrison\n  - Elvin Jones"
     pause: 2400
-  - title: "That is the price: nothing checks the inside, so a column can be empty for one and full for the other"
-    pause: 2400
-  - title: "And what it keeps: a base still reaches in, through a formula — never through a dotted column"
-    pause: 2400
-  - title: "The rule, then: a known shape gets Object or ObjectList, a shape that varies gets JSON or YAML"
-    pause: 2400
+  - title: "That structure is queryable: a base reaches inside it through a formula — never through a dotted column"
+    pause: 2600
+  - title: "The other type is for what you don't want touched: a payload from another tool, in a JSON field"
+    input: "{\n  \"release\": 1052166,\n  \"pressing\": \"1959 six-eye\",\n  \"matrix\": \"XSM 44903-1A\"\n}"
+    pause: 2500
+  - title: "It is stored as it came, in a block of its own — and if you paste the wrong notation, one button converts it"
+    values: "sides: 2"
+    pause: 2500
+  - title: "So: a known shape gets Object or ObjectList, a shape you want to query gets YAML, and bytes you want kept get JSON"
+    pause: 2500

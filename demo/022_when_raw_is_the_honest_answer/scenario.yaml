@@ -1,0 +1,79 @@
+# Narration for take 022 — see ../SCENARIO.md for the format.
+# Last of arc 4. Starts where 021 ended: Book carries `editions`, Dune keeps the two it
+# was left with (the paperback first, because step 9 of that take moved it there), Tolkien
+# has the single 1991 paperback its own note describes, and Books.base counts them.
+#
+# Adds `Album.credits` as raw structure — the answer when there is no shape worth
+# declaring — and closes the field types.
+#
+# Facts the script leans on, all measured in the app before scripting:
+#  - the parser answers while you type: Obsidian's YAML error carries a line, a column and
+#    a caret under the offending spot. Before this take's surfaces pass it only spoke on
+#    Save, so a mistake twenty lines up was learned about on the way out;
+#  - Escape asks instead of discarding — the raw editor was the last one without that
+#    guard, and it is the one with the most typing in it;
+#  - a declared raw field loses Obsidian's warning colour (the plugin declares the value
+#    and round-trips it) while the raw value stays on screen, which for these two types is
+#    the honest answer;
+#  - where a value can't be shown whole it reads `3 keys` / `5 items`, not `{…}`;
+#  - switching the field's type between YAML and JSON changes only the notation in the
+#    editor: the value on disk is untouched. That is step 7, and it is why the take can
+#    name both types while filming one;
+#  - what a base reaches inside a raw value, measured on screen: the formula
+#    `note.credits.producer` gives Teo Macero and `note.credits.personnel.length` gives 3,
+#    while the dotted column `credits.producer` renders EMPTY — the same rule as groups.
+#    Albums.base ships those two formulas, so nothing films formula editing (#19).
+#
+# The credits to type, all real:
+#   Kind of Blue     producer: Teo Macero · engineer: Fred Plaut ·
+#                    personnel: Miles Davis, John Coltrane, Bill Evans
+#   A Love Supreme   producer: Bob Thiele · studio: Van Gelder Studio ·
+#                    quartet: John Coltrane, McCoy Tyner, Jimmy Garrison, Elvin Jones
+#
+# The two shapes disagree on purpose, and that is the argument of the whole take: one
+# credits its personnel, the other its quartet and its studio. Which is also what step 11
+# admits — the `Personnel` column is empty for A Love Supreme, because nothing checks the
+# inside of a raw value. Better shown than claimed.
+#
+# The vault opens on Kind of Blue, the note the take works on.
+title: "Fileclass — When raw is the honest answer"
+description: "JSON and YAML: structure with no shape worth declaring."
+doc: "fields/#structured-fields-json--yaml" # deep link used in the description
+tags: "json, yaml, raw, frontmatter, bases"
+vault_name: "Demo"
+plugin: true
+settings:
+  classFilesPath: "Classes/"
+  fileClassAlias: "fileClass"
+initial_pause: 1500
+default_pause: 900
+
+steps:
+  - title: "The credits of Kind of Blue: a producer, an engineer, the musicians — a shape that changes with every album"
+    pause: 2300
+  - title: "Declaring a class for that would pretend the shape is fixed. Sometimes raw is the honest answer"
+    pause: 2200
+  - title: "Give Album a credits field, of type YAML — or JSON, the same field in the other notation"
+    pause: 2200
+  - title: "A box in monospace, and the parser answers while you type: it names the line and the column"
+    values: "producer: Teo Macero | engineer: Fred Plaut | personnel:"
+    pause: 2400
+  - title: "And Escape no longer throws the work away — it asks"
+    pause: 2100
+  - title: "Saved, the frontmatter holds real structure, not a string that looks like one"
+    pause: 2100
+  - title: "Switch the field to JSON: the value on disk doesn't move, only the notation you type in"
+    pause: 2200
+  - title: "Obsidian shows it raw and read-only — but a field you declared isn't a warning"
+    pause: 2200
+  - title: "And where the value can't be shown whole, it says what it holds: three keys"
+    pause: 2000
+  - title: "A second album, credited its own way — nothing obliges two raw values to agree"
+    values: "producer: Bob Thiele | studio: Van Gelder Studio | quartet:"
+    pause: 2400
+  - title: "That is the price: nothing checks the inside, so a column can be empty for one and full for the other"
+    pause: 2400
+  - title: "And what it keeps: a base still reaches in, through a formula — never through a dotted column"
+    pause: 2400
+  - title: "The rule, then: a known shape gets Object or ObjectList, a shape that varies gets JSON or YAML"
+    pause: 2400

@@ -1,0 +1,18 @@
+formulas:
+  Producer: note.credits.producer
+  Personnel: note.credits.personnel.length
+views:
+  - type: table
+    name: Credits
+    filters:
+      and:
+        - fileClass == "Album"
+    sort:
+      - property: file.name
+        direction: ASC
+    order:
+      - file.name
+      - credits
+      - credits.producer
+      - formula.Producer
+      - formula.Personnel

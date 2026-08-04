@@ -88,7 +88,7 @@ thread, and a tight smoke test of that type's input path.
 | 019 | A place on a map | `Location`, the Maps plugin | `Activity.branch`, four located dates | ✅ [published](https://www.youtube.com/watch?v=Hev8hrBxWj0) |
 | 020 | A group of fields inside a field | `Object`, nested properties | `Comic.storage`, a group of groups, two more albums | ✅ [published](https://www.youtube.com/watch?v=9fRoZEE2xfI) |
 | 021 | A list of grouped fields | `ObjectList`, display template | `Book.editions` | ✅ [published](https://www.youtube.com/watch?v=xHIVXu8LiEE) |
-| 022 | When raw is the honest answer | `JSON`, `YAML` | `Album.credits` | |
+| 022 | When raw is the honest answer | `JSON`, `YAML` | `Album.credits`, a second album | |
 
 ## Arc 5 — modelling a class
 

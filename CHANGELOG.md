@@ -8,15 +8,21 @@ All notable changes to Fileclass are documented here. The format follows
 
 ### Added
 
-- **`Extends` picks from your fileClasses, and opens the one it names.** It was a free-text
-  box, and a wrong parent was completely silent: `extends: Medai` inherited nothing, listed an
-  ancestor nothing answers to, and said not a word. It now suggests the classes you have —
-  never itself, never one that already inherits from it, which would be a cycle — and carries
-  a **way through to the parent's schema** beside it. That button appears only when the name
-  resolves, so a typo leaves no button: the second signal the field was missing.
+- **`Extends` is a dropdown, and opens the class it names.** It was a free-text box, and a
+  wrong parent was completely silent: `extends: Medai` inherited nothing, listed an ancestor
+  nothing answers to, and said not a word. There is no case for typing a free name — a parent
+  that doesn't exist inherits nothing — so it is now a list of the classes you have, never
+  this one and never one that already inherits from it, which would be a cycle. A declaration
+  that no longer resolves is **kept in the list and marked** (`Medai (no such fileClass)`)
+  rather than quietly replaced by "no parent".
 
-  A class's schema still lists its **own** fields only. Showing an ancestor's there would beg
-  the question of which copy you are editing; one click to the parent answers it instead.
+  Beside it, a **way through to the parent's schema**, shown only when the name resolves. A
+  class's editor lists its **own** fields only: showing an ancestor's would beg the question
+  of which copy you are editing, so one click to the parent answers it instead.
+
+  `Extends` also comes first in that modal now. Obsidian focuses a modal's first control, and
+  the Icon field's suggester opens on focus — so opening a class's options greeted you with
+  the icon picker every time.
 
 - **A required field says so where it matters.** `required` lived only inside a field's own
   definition modal, so a class of a dozen fields hid which ones were mandatory behind a dozen

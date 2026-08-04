@@ -14,7 +14,7 @@ import { writeOptions } from "../schema/fileClassIo";
 import { buildOptionUpdates, EditableOptions } from "../schema/fileClassWrite";
 import { applyBaseSync } from "../views/baseSync";
 import { ClassScope, isBaseViewSynced } from "../views/baseYaml";
-import { BaseFileSuggest, FileClassSuggest } from "./baseSuggest";
+import { BaseFileSuggest } from "./baseSuggest";
 import { openFileClassSchema } from "./fileClassSchemaModal";
 import { IconSuggest, paintIcon } from "./iconSuggest";
 import { makeStickyFooter } from "./modalFooter";
@@ -53,6 +53,40 @@ export class FileClassOptionsModal extends Modal {
 		const { contentEl } = this;
 		modalTitle(contentEl, `Options — ${this.name}`);
 
+		/*
+		 * `Extends` comes first, and not only because a parent is more structural than an
+		 * icon: Obsidian focuses a modal's first focusable control, and the Icon field's
+		 * suggester opens on focus — so this modal used to greet you with the icon picker,
+		 * fifty suggestions up and staying. A dropdown taking that focus opens nothing.
+		 *
+		 * It is a **dropdown**, not a text field: a parent that doesn't exist inherits
+		 * nothing, so there is no case for typing a free name. The list holds the classes you
+		 * have, never this one, and never one that already inherits from it (a cycle).
+		 *
+		 * A value that no longer resolves — a hand-edited note, a class renamed or deleted —
+		 * is kept in the list, marked, rather than quietly replaced by "no parent". Losing a
+		 * declaration because its target went missing would be the worse failure.
+		 *
+		 * Beside it, a way through to the parent's schema: a class's editor lists its **own**
+		 * fields only, since showing an ancestor's would beg the question of which copy you
+		 * are editing.
+		 */
+		const parentRow = new Setting(contentEl)
+			.setName("Extends")
+			.setDesc("Parent fileClass — its fields are inherited by this one.");
+		parentRow.addDropdown((d) => {
+			const current = (this.opts.extends ?? "").trim();
+			d.addOption("", "— no parent —");
+			for (const name of this.parentCandidates().sort((a, b) => a.localeCompare(b))) {
+				d.addOption(name, name);
+			}
+			if (current && !this.plugin.index.fileClassNames.includes(current)) {
+				d.addOption(current, `${current} (no such fileClass)`);
+			}
+			d.setValue(current).onChange((v) => {
+				this.opts.extends = v;
+				this.refreshParentLink();
+
 		const iconSetting = new Setting(contentEl).setName("Icon").setDesc("Lucide icon name.");
 		const preview = iconSetting.controlEl.createSpan({ cls: "fileclass-icon-preview" });
 		const fallback = this.plugin.settings.fileClassIcon;
@@ -65,27 +99,9 @@ export class FileClassOptionsModal extends Modal {
 			new IconSuggest(this.app, t.inputEl);
 		});
 		paintPreview(this.opts.icon ?? "");
-
-		/*
-		 * `Extends`, with a way through to the parent. The schema editor deliberately lists
-		 * a class's **own** fields only — duplicating an ancestor's would beg the question of
-		 * which copy you are editing — so the parent is one click away instead.
-		 *
-		 * The button appears only when the name resolves to a fileClass that exists, which
-		 * makes it a second signal too: a typo leaves no button. Before this, a wrong parent
-		 * was entirely silent — `extends: Medai` inherited nothing and said nothing.
-		 */
-		const openParent = new Setting(contentEl)
-			.setName("Extends")
-			.setDesc("Parent fileClass — its fields are inherited by this one. Blank for no parent.");
-		openParent.addText((t) => {
-			t.setValue(this.opts.extends ?? "").onChange((v) => {
-				this.opts.extends = v;
-				this.refreshParentLink();
 			});
-			new FileClassSuggest(this.app, t.inputEl, () => this.parentCandidates());
 		});
-		openParent.addExtraButton((b) => {
+		parentRow.addExtraButton((b) => {
 			this.parentLink = b;
 			b.setIcon("external-link").onClick(() => {
 				const name = (this.opts.extends ?? "").trim();

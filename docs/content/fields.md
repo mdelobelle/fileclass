@@ -83,7 +83,13 @@ which is why *insert missing fields* leaves it blank rather than guessing.
 
 Any field can be marked **Required** in the schema editor (the toggle sits with
 the common field options, alongside the name and type). A required field with an
-empty value is reported as a violation — everywhere validation surfaces:
+empty value is reported as a violation, and the flag is visible without opening
+anything: a schema row reads `File · required`, and in a note's fields an empty
+required field is marked **required** beside its (absent) value.
+
+Nothing is ever blocked. A note that violates its class can be saved, left, and come
+back to — `required` is a statement about your model, not a gate on your typing. What
+it changes is where the violation surfaces:
 
 - the [validation columns](../views/#validation-columns) of the editable
   `fileclass-table` view,
@@ -94,6 +100,12 @@ empty value is reported as a violation — everywhere validation surfaces:
 
 Non-empty values keep their normal per-type validation (a number stays numeric,
 a `Select` must still be an allowed value, and so on).
+
+**A key is not a value.** *Insert missing fields* writes the key with nothing in it
+(`author: ""`), which leaves the note in violation — that is the point of the flag.
+Conversely a field's **Clear** removes the key altogether. In a base, the filter that
+catches both cases is `author.isEmpty()`: `!author` matches nothing, and
+`author == ""` misses the note where the key is simply absent.
 
 ## Number fields
 

@@ -8,6 +8,15 @@ All notable changes to Fileclass are documented here. The format follows
 
 ### Added
 
+- **A required field says so where it matters.** `required` lived only inside a field's own
+  definition modal, so a class of a dozen fields hid which ones were mandatory behind a dozen
+  clicks — and the surface where fields actually get filled said nothing at all. A schema row
+  now reads `File · required`, and the note-fields modal marks a required field that has no
+  value with the word **required**, in the error colour. Nothing is blocked, as before: the
+  flag is a statement, not a gate.
+
+### Added
+
 - **Movable modals, behind a setting** (*Settings → Fileclass → Movable modals*), **off by
   default.** Everything in the three entries below is that one toggle: it is experimental,
   desktop-only, and its CSS half neutralises Obsidian's own full-window modal backdrops — a

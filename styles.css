@@ -1103,3 +1103,15 @@ body.fileclass-movable-modals .modal-container ~ .modal-container > .modal {
 body.fileclass-movable-modals:has(.modal-container ~ .modal-container) .modal-container .modal-bg {
 	pointer-events: none;
 }
+
+/* A required field with nothing in it, in the note-fields modal. Words, not a lone
+   asterisk: the row has to say what is wrong, not decorate itself. */
+.fileclass-field-value > .fileclass-required-mark {
+	flex: 0 0 auto;
+	padding: 0 0.35em;
+	border-radius: 3px;
+	background: var(--background-modifier-error-hover, var(--background-modifier-hover));
+	color: var(--text-error);
+	font-size: 0.85em;
+	letter-spacing: 0.02em;
+}

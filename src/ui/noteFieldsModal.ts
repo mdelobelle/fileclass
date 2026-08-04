@@ -21,6 +21,7 @@ import {
 	nextDateActionFor,
 	runControlAction,
 } from "../fields/fieldActions";
+import { isEmpty, isRequired } from "../fields/validate";
 import { describeField, DisplayDeps } from "../fields/objectDisplay";
 import { isInputSupported } from "../fields/support";
 import { fieldTypeIcon } from "../fields/typeIcons";
@@ -186,6 +187,12 @@ export class NoteFieldsModal extends Modal {
 			raw,
 		});
 		if (preview) valueEl.prepend(preview);
+		// A required field with nothing in it says so, here of all places: this is the
+		// surface where fields get filled, and until now the only way to learn that a
+		// field was mandatory was to open its definition — or to look at a base.
+		if (isRequired(field) && isEmpty(raw)) {
+			valueEl.createSpan({ cls: "fileclass-required-mark", text: "required" });
+		}
 
 		this.addRowActions(ctx, setting, field);
 	}

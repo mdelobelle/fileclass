@@ -97,7 +97,9 @@
 /* Edit button injected between key and value in the Properties editor. */
 .metadata-property > .fileclass-prop-edit {
 	flex: 0 0 auto;
-	align-self: center; /* center in the row, aligned with key/value text */
+	/* On the property name's line: a value can be a stacked list of pills, and a
+	   vertically centred button drifted to its middle row, away from the name it acts on. */
+	align-self: flex-start;
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -153,11 +155,6 @@
 	display: inline-flex;
 	align-items: center;
 	margin: 0 2px;
-}
-/* A sequence stacks its pills, and a centred reading looked like it belonged to the
-   middle one — it summarises the whole list, so it starts on the first line. */
-.metadata-property > .fileclass-prop-preview.fileclass-duration-human {
-	align-self: flex-start;
 }
 .metadata-property > .fileclass-prop-edit svg {
 	width: 15px;
@@ -656,7 +653,6 @@ input.fileclass-color-circle.is-custom::-webkit-color-swatch-wrapper {
 
 /* The human reading of a stored duration, beside the ISO value rather than over it. */
 .fileclass-duration-human {
-	align-self: flex-start;
 	margin-right: 0.4em;
 	padding: 0 0.35em;
 	border-radius: 4px;
@@ -1028,4 +1024,18 @@ input.fileclass-color-circle.is-custom::-webkit-color-swatch-wrapper {
 
 .fileclass-unsaved-hint.is-visible {
 	display: block;
+}
+
+/* The reading of one stored duration, inside its own pill and left of the remove
+   button — where it names the value it reads instead of summarising from a distance. */
+.multi-select-pill > .fileclass-pill-human {
+	margin-left: 0.45em;
+	padding: 0 0.3em;
+	border-radius: 3px;
+	background: var(--background-modifier-hover);
+	color: var(--text-muted);
+	font-size: 0.85em;
+	font-variant-numeric: tabular-nums;
+	white-space: nowrap;
+	pointer-events: none;
 }

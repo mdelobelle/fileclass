@@ -9,12 +9,18 @@ All notable changes to Fileclass are documented here. The format follows
 ### Added
 
 - **A duration reads as a duration in Obsidian's Properties panel.** `PT45M44S` is the
-  right thing on disk and unreadable on screen, so the human form now sits *beside* the
-  stored value — `45m 44s`, and `180d · 360d · 90d` for an interval sequence. Beside, never
-  over: Obsidian's own value there is an editable text property, and overwriting its text
-  would risk writing `45m 44s` back into your frontmatter. Surfaces that already read well
-  — the note-fields modal, a field menu — show nothing extra, and the editable
-  `fileclass-table` gains the reading like the panel.
+  right thing on disk and unreadable on screen, so the human form is now shown next to the
+  stored value — never over it: Obsidian's value there stays editable, and overwriting its
+  text would risk writing `45m 44s` back into your frontmatter. A single value gets its
+  reading beside it; an **interval sequence gets one reading inside each pill**, just left
+  of the pill's remove button, so it names the value it reads instead of summarising the
+  list from a distance. Surfaces that already read well — the note-fields modal, a field
+  menu — show nothing extra, and the editable `fileclass-table` gains the reading like the
+  panel.
+
+- **A field's edit button stays on the property's first line.** It was centred in the row,
+  so on a property whose value is a stacked list it drifted to the middle line, away from
+  the name it acts on.
 
 ### Fixed
 

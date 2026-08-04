@@ -38,6 +38,7 @@ import { describeField, displayTemplateOf } from "../fields/objectDisplay";
 import { validateField } from "../fields/validate";
 import { makeDisplayDeps } from "../fields/displayDeps";
 import { makeValuePreview } from "./valuePreview";
+import { humanDurationsFor } from "../fields/duration";
 
 const BTN_CLASS = "fileclass-prop-edit";
 const PREVIEW_CLASS = "fileclass-prop-preview";
@@ -47,6 +48,8 @@ const ACTIONS_CLASS = "fileclass-prop-actions";
 const CLASS_CLASS = "fileclass-prop-class";
 /** Marks a nested value Obsidian can't interpret but this plugin declares and validates. */
 const GROUP_OK_CLASS = "fileclass-group-ok";
+/** The reading of a stored duration, inside its pill. */
+const PILL_HUMAN_CLASS = "fileclass-pill-human";
 /** Types whose value is a nested structure Obsidian cannot interpret, but we can. */
 const STRUCTURED_TYPES = new Set<FieldType>(["Object", "ObjectList", "JSON", "YAML"]);
 /** Leaf types whose views render a native Properties editor. */
@@ -284,6 +287,39 @@ export class PropertyEditButtons extends Component {
 	 * touches the shape Obsidian renders today: make nested properties editable in a
 	 * future version and this quietly stops.
 	 */
+	/**
+	 * The reading of each stored duration, inside its own pill, just left of the remove
+	 * button. Obsidian renders a list value as pills whose text stays editable, so the
+	 * reading is added next to each one rather than over it — and inside the pill rather
+	 * than beside the row, because there it says *which* value it reads.
+	 *
+	 * Returns true when the value is a list of durations, so the caller drops the
+	 * row-level preview that would repeat it.
+	 *
+	 * Idempotent by necessity: this row is watched by a MutationObserver, and a mutation
+	 * on every pass would feed it forever. A pill already carrying its reading is left
+	 * exactly as it is.
+	 */
+	private decorateDurationPills(valueEl: HTMLElement, field: Field): boolean {
+		if (field.type !== "Duration" && field.type !== "CycleDuration") return false;
+		const pills = Array.from(valueEl.querySelectorAll<HTMLElement>(".multi-select-pill"));
+		if (!pills.length) return false;
+		for (const pill of pills) {
+			const content = pill.querySelector<HTMLElement>(":scope > .multi-select-pill-content");
+			const remove = pill.querySelector<HTMLElement>(":scope > .multi-select-pill-remove-button");
+			const stored = (content?.textContent ?? "").trim();
+			const text = humanDurationsFor(stored, "");
+			const existing = pill.querySelector<HTMLElement>(`:scope > .${PILL_HUMAN_CLASS}`);
+			if (existing?.dataset.fcFor === stored) continue; // settled
+			existing?.remove();
+			if (!text || !remove) continue; // nothing to read, or nowhere to put it
+			const el = createSpan({ cls: PILL_HUMAN_CLASS, text });
+			el.dataset.fcFor = stored;
+			pill.insertBefore(el, remove);
+		}
+		return true;
+	}
+
 	private decorateGroupValue(valueEl: HTMLElement, field: Field, file: TFile): void {
 		// `JSON`/`YAML` join the groups here: Obsidian can't interpret a nested value,
 		// but a class that declares one as free-form structure understands it — it round
@@ -344,14 +380,20 @@ export class PropertyEditButtons extends Component {
 			button = this.makeButton(file, field, key, row);
 			row.insertBefore(button, valueEl);
 		}
+		// A list of durations reads inside its own pills (below), so the row-level
+		// preview would say the same thing twice, further from the value it reads.
+		const perPill = this.decorateDurationPills(valueEl, field);
+		if (perPill) existingPreview?.remove();
+
 		// Type preview (Color swatch / Icon glyph) right after the button (between
 		// it and the value). Dedup by key+value so a settled row triggers no
 		// further DOM mutation (the row is watched — re-injecting every run loops).
 		const value = (valueEl.textContent ?? "").trim();
 		if (
-			!existingPreview ||
-			existingPreview.dataset.fcKey !== key ||
-			existingPreview.dataset.fcValue !== value
+			!perPill &&
+			(!existingPreview ||
+				existingPreview.dataset.fcKey !== key ||
+				existingPreview.dataset.fcValue !== value)
 		) {
 			existingPreview?.remove();
 			const preview = makeValuePreview(field, value, {

@@ -112,3 +112,7 @@ other. Captions are English; YouTube translates them into your language.
 ## Fields you can't leave empty
 
 {{< video "023" >}}
+
+## One parent class, three children
+
+{{< video "024" >}}

@@ -284,5 +284,16 @@
     "durationSeconds": 114,
     "recordedWith": "0.2.6",
     "privacyStatus": "public"
+  },
+  "024": {
+    "id": "-bQ6s6M_pkk",
+    "url": "https://www.youtube.com/watch?v=-bQ6s6M_pkk",
+    "title": "Fileclass #024 · One parent class, three children",
+    "subject": "One parent class, three children",
+    "scenario": "024_one_parent_three_children",
+    "doc": "schema/#inheritance",
+    "durationSeconds": 220,
+    "recordedWith": "0.2.6",
+    "privacyStatus": "public"
   }
 }

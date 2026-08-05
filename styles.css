@@ -1131,3 +1131,132 @@ body.fileclass-movable-modals:has(.modal-container ~ .modal-container) .modal-co
 	color: var(--text-error);
 	opacity: 0.8;
 }
+
+/*
+ * ── Compact modals ─────────────────────────────────────────────────────────────
+ *
+ * Our modals outgrew Obsidian's settings metrics. Those numbers — 16px above and
+ * below every row, a separator between each, 32px controls — were drawn for a
+ * full-width settings pane, not for a box capped at 70vh. A class's options is
+ * thirteen rows, a schema editor has as many rows as you have fields, and a note's
+ * fields as many as it inherits, so nearly everything scrolled.
+ *
+ * Measured before this block, on a 1000px window (706px of room): the options modal
+ * asked for 973px of content, the schema editor 1075, a note's fields 912.
+ *
+ * Scoped to `.fileclass-scroll-body` — the class `modalTitle()` puts on our own modal
+ * bodies — so Obsidian's modals and every other plugin's are left exactly as they are.
+ * Lists of like rows keep the tighter rhythm they already had (see `.fileclass-setting-
+ * list` above), whose selectors are more specific than these.
+ *
+ * The row selectors carry `.modal:not(.mod-settings)` for one reason: app.css writes the
+ * padding and the separator as `.modal:not(.mod-settings) .setting-item:not(.setting-item-
+ * heading):where(:not(.setting-group *))`, four classes' worth, and a three-class selector
+ * of ours loses to it silently — measured, after a first pass that changed nothing.
+ */
+.modal:not(.mod-settings)
+	.modal-content.fileclass-scroll-body
+	.setting-item:not(.setting-item-heading) {
+	border-top: none;
+	padding-top: var(--size-2-3);
+	padding-bottom: var(--size-2-3);
+}
+/* A section heading still needs air above it, or it stops separating anything — but not the
+   16px of indent app.css gives it, which set the title in from the rows it announces. */
+.modal:not(.mod-settings)
+	.modal-content.fileclass-scroll-body
+	.setting-item.setting-item-heading {
+	padding-top: var(--size-4-3);
+	padding-bottom: var(--size-2-1);
+	padding-inline-start: 0;
+}
+/* The footer keeps its own rhythm: it already sits under a border of its own. */
+.modal:not(.mod-settings)
+	.modal-content.fileclass-scroll-body
+	.fileclass-sticky-footer
+	> .setting-item {
+	padding-top: 0;
+	padding-bottom: var(--size-2-2);
+}
+/* A description is a second line on every row it appears on; at 11px it stays
+   readable and stops competing with the name above it. */
+.modal-content.fileclass-scroll-body .setting-item-description {
+	font-size: var(--font-ui-smaller);
+}
+/* 32px is a page metric. In a dense list the button, not the text, sets the row's
+   height — so the row is 32px tall to hold one word. */
+.modal-content.fileclass-scroll-body button:not(.clickable-icon) {
+	height: 24px;
+	padding: 0 var(--size-4-2);
+	font-size: var(--font-ui-smaller);
+}
+/* Same for the fields you type in. Checkboxes, ranges and colour wells keep their
+   own sizing: they are not text boxes and shrinking them breaks their hit area. */
+.modal-content.fileclass-scroll-body
+	input:not([type="checkbox"]):not([type="range"]):not([type="color"]),
+.modal-content.fileclass-scroll-body select {
+	height: 26px;
+}
+/* A dropdown carries the same weight as the buttons beside it. */
+.modal-content.fileclass-scroll-body select {
+	font-size: var(--font-ui-smaller);
+}
+/* And a 1px focus ring rather than 2px: at this density the thicker one reads as a
+   second border around the field. */
+.modal-content.fileclass-scroll-body input:focus,
+.modal-content.fileclass-scroll-body select:focus,
+.modal-content.fileclass-scroll-body textarea:focus {
+	box-shadow: 0 0 0 1px var(--background-modifier-border-focus);
+}
+/* The value column of a note's fields sat at 15px beside a 13px field name, so the
+   value read as the heading. Same size as the name it belongs to. */
+.fileclass-field-value {
+	font-size: var(--font-ui-small);
+}
+/* A field's type is a two-word label, and it was taking a line of its own under every
+   name — sixteen fields, sixteen wasted lines. On the name's own line instead, muted:
+   `author  File · required`. Only in the field lists, where the description is a label;
+   elsewhere it is a sentence and belongs underneath. */
+.modal-content.fileclass-scroll-body .fileclass-field-list .setting-item-info {
+	display: flex;
+	flex-direction: row;
+	align-items: baseline;
+	flex-wrap: wrap;
+	column-gap: var(--size-4-2);
+}
+.modal-content.fileclass-scroll-body .fileclass-field-list .setting-item-description {
+	margin-top: 0;
+}
+/* And more of the modal is usable before anything scrolls: 70vh left a fifth of a tall
+   window empty under a modal that was already scrolling. */
+.modal-content.fileclass-scroll-body {
+	max-height: min(80vh, 100%);
+}
+/* In a compacted row the thumbnail must not be what sets the height: a field's line is
+   ~20px, so a 28px picture made the media row visibly taller than every other one, and
+   the eye read it as an error. 20px here; a picker row and a table cell keep 28px, where
+   recognising the picture is the whole point. */
+.fileclass-field-value .fileclass-thumb,
+.metadata-property .fileclass-thumb {
+	height: 20px;
+	max-width: 32px;
+}
+/*
+ * Our pickers built on SuggestModal render a `.prompt`, not a `.modal`, so none of the
+ * compaction above reached them: choosing one File measured 15px a row while choosing
+ * several measured 13px — the same job in two sizes. Marked in the constructors
+ * (`fileclass-prompt`) rather than by guessing at Obsidian's own prompt markup.
+ */
+.prompt.fileclass-prompt .prompt-input,
+.prompt.fileclass-prompt .suggestion-item {
+	font-size: var(--font-ui-small);
+}
+.prompt.fileclass-prompt .suggestion-item {
+	padding: var(--size-2-2) var(--size-4-2);
+}
+/* The reading of a child's value in an Object editor: it was the modal's body size, larger
+   than the field name beside it and larger than the same value in a note's fields. */
+.fileclass-object-value {
+	color: var(--text-muted);
+	font-size: var(--font-ui-small);
+}

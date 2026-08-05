@@ -8,6 +8,29 @@ All notable changes to Fileclass are documented here. The format follows
 
 ### Changed
 
+- **The modals are compact.** They had been drawn with Obsidian's settings-page metrics —
+  16px above and below every row, a separator between each, 32px controls — which are meant
+  for a full-width pane, not a box capped at a fraction of the window. Everything scrolled:
+  measured on a 1000px window with 706px of room, a note's fields asked for 912px, a class's
+  options 973, a schema editor 1075. Now 622, 777 and 655: **a note's fields and a field's
+  definition no longer scroll at all**, and a fifteen-field schema is 22px from fitting.
+
+  No separators, 6px rows, 24px buttons, 26px inputs and dropdowns, a 1px focus ring instead
+  of 2px, and descriptions, buttons and dropdowns all at 11px. A field's **type sits on the name's line** in the schema editor
+  (`author  File · required`) rather than on a line of its own, sixteen fields deep. A note's
+  field **values drop from 15px to 13px**, the size of the name they belong to. Media
+  thumbnails shrink to 20px in a row — a picker row and a table cell keep 28px, where
+  recognising the picture is the point. And a modal may use 80% of the window's height
+  before anything scrolls, rather than 70%.
+
+  The pickers followed: choosing **one** value read a size larger than choosing several,
+  because a suggester is a `.prompt` and not a `.modal`, and the reading of a child's value
+  in an **Object** editor was the modal's body size. Both are now the 13px every other value
+  is shown at. Section titles line up with the rows they announce, rather than sitting 16px
+  in from them.
+
+  Scoped to this plugin's own modals: Obsidian's, and every other plugin's, are untouched.
+
 - **A class's options are in three sections that mean something.** The modal had exactly one
   heading, `Sync to base`, and it sat above the base rows *and* the four binding rows — so
   `Map with tag`, `Tag names`, `Files paths` and `Bookmark groups` read as settings of a base

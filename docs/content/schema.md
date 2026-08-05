@@ -66,6 +66,20 @@ by field name** (the nearest declaration wins). `excludes` removes inherited
 fields and **accumulates down the chain**: a class's excluded names are dropped
 from that class and every deeper ancestor.
 
+`Extends` is a **dropdown** over the fileClasses you have — never the class itself, and
+never one that already inherits from it (that would be a cycle). A parent that doesn't exist
+inherits nothing, so there is nothing to gain from typing a name; a value that no longer
+resolves (a renamed class, a hand-edited note) stays in the list marked *no such fileClass*,
+so the declaration is visible rather than lost.
+
+`Excludes` — the inherited fields this class drops — is picked from the parent's own fields,
+never typed: a misspelled name excluded nothing and said nothing. With no parent, there is
+nothing to choose and the row says so.
+
+Beside it, a link opens the parent's schema — a class's editor lists its **own** fields only,
+since showing an ancestor's there would leave you wondering which copy you were editing. The
+link appears only when the name resolves.
+
 ## Binding a note to fileClass(es)
 
 A note can be bound to one or more fileClasses. When several sources apply, they
@@ -139,10 +153,14 @@ fileClass**) or its indicator icon, and the fileClass name in the footer of a no
 - **Fields** — add, edit, remove, and reorder field definitions. A field has a
   **name**, a **type**, and type-specific settings; its stable id is generated
   automatically.
-- **Options…** — edit the fileClass options: `icon` (a Lucide name), `extends`
-  (parent fileClass), **Sync to base** (mirror the fields into a `.base`, see
-  [Views](../views/)), `mapWithTag`, `tagNames`, `filesPaths`, `bookmarksGroups`,
-  and `excludes`.
+- **Options…** — edit the fileClass options, in three sections:
+  - **Identity** — **Extends** (its parent, picked from the classes you have, with a
+    button through to that parent's schema), **Excludes** (the inherited fields it
+    drops, picked from the parent's own), and **Icon** (a Lucide name).
+  - **Bound notes** — which notes carry the class beyond those naming it in their
+    frontmatter: **Map with tag**, **Tag names**, **Files paths**, **Bookmark
+    groups**.
+  - **Sync to base** — mirror the fields into a `.base`; see [Views](../views/).
 
 ### Type-specific field settings
 

@@ -3,7 +3,7 @@
  * and writes them in one processFrontMatter on Save, leaving `fields` and other
  * keys untouched. Reads current values from the live frontmatter (fresh).
  */
-import { ButtonComponent, Modal, Setting, TFile, debounce, normalizePath, parseYaml } from "obsidian";
+import { ButtonComponent, ExtraButtonComponent, Modal, Notice, Setting, TFile, debounce, normalizePath, parseYaml } from "obsidian";
 
 import { modalTitle } from "./modalTitle";
 
@@ -15,14 +15,24 @@ import { buildOptionUpdates, EditableOptions } from "../schema/fileClassWrite";
 import { applyBaseSync } from "../views/baseSync";
 import { ClassScope, isBaseViewSynced } from "../views/baseYaml";
 import { BaseFileSuggest } from "./baseSuggest";
+import { openFileClassSchema } from "./fileClassSchemaModal";
 import { IconSuggest, paintIcon } from "./iconSuggest";
+import { MultiSelectModal } from "../fields/input/valueModals";
 import { makeStickyFooter } from "./modalFooter";
+import { attachUnsavedGuard, snapshot, UnsavedGuard } from "./unsavedGuard";
 
 const csv = (v: string): string[] => v.split(",").map((s) => s.trim()).filter(Boolean);
 
 export class FileClassOptionsModal extends Modal {
 	private readonly opts: EditableOptions;
 	private statusBtn?: ButtonComponent;
+	/** The "open the parent's schema" affordance beside `Extends`. */
+	private parentLink?: ExtraButtonComponent;
+	/** The options as this modal opened on them, or as last saved. */
+	private opened = "";
+	private guard?: UnsavedGuard;
+	/** Redraws the Excludes row — the parent it reads from can change under it. */
+	private repaintExcludes?: () => void;
 	private readonly refreshStatus = debounce(() => void this.updateStatus(), 250, true);
 
 	constructor(
@@ -48,7 +58,64 @@ export class FileClassOptionsModal extends Modal {
 
 	onOpen(): void {
 		const { contentEl } = this;
+		this.opened = snapshot(this.opts);
 		modalTitle(contentEl, `Options — ${this.name}`);
+
+		/*
+		 * `Extends` comes first, and not only because a parent is more structural than an
+		 * icon: Obsidian focuses a modal's first focusable control, and the Icon field's
+		 * suggester opens on focus — so this modal used to greet you with the icon picker,
+		 * fifty suggestions up and staying. A dropdown taking that focus opens nothing.
+		 *
+		 * It is a **dropdown**, not a text field: a parent that doesn't exist inherits
+		 * nothing, so there is no case for typing a free name. The list holds the classes you
+		 * have, never this one, and never one that already inherits from it (a cycle).
+		 *
+		 * A value that no longer resolves — a hand-edited note, a class renamed or deleted —
+		 * is kept in the list, marked, rather than quietly replaced by "no parent". Losing a
+		 * declaration because its target went missing would be the worse failure.
+		 *
+		 * Beside it, a way through to the parent's schema: a class's editor lists its **own**
+		 * fields only, since showing an ancestor's would beg the question of which copy you
+		 * are editing.
+		 */
+		/*
+		 * The headings carry no description. One line each looked helpful and cost three rows
+		 * of a modal that was already scrolling, to restate what `Identity`, `Bound notes` and
+		 * `Sync to base` say on their own. The exception is the one fact the rows underneath
+		 * cannot state without repeating it three times: those lists are comma-separated.
+		 */
+		new Setting(contentEl).setName("Identity").setHeading();
+		const parentRow = new Setting(contentEl)
+			.setName("Extends")
+			.setDesc("Parent fileClass — its fields are inherited by this one.");
+		parentRow.addDropdown((d) => {
+			const current = (this.opts.extends ?? "").trim();
+			d.addOption("", "— no parent —");
+			for (const name of this.parentCandidates().sort((a, b) => a.localeCompare(b))) {
+				d.addOption(name, name);
+			}
+			if (current && !this.plugin.index.fileClassNames.includes(current)) {
+				d.addOption(current, `${current} (no such fileClass)`);
+			}
+			d.setValue(current).onChange((v) => {
+				this.opts.extends = v;
+				this.refreshParentLink();
+				this.repaintExcludes?.();
+			});
+		});
+		parentRow.addExtraButton((b) => {
+			this.parentLink = b;
+			b.setIcon("external-link").onClick(() => {
+				const name = (this.opts.extends ?? "").trim();
+				if (name) openFileClassSchema(this.plugin, name);
+			});
+		});
+		this.refreshParentLink();
+
+		// Directly under the parent it depends on: what `Excludes` offers is the parent's own
+		// fields, so the two rows only make sense read together.
+		this.excludesSetting();
 
 		const iconSetting = new Setting(contentEl).setName("Icon").setDesc("Lucide icon name.");
 		const preview = iconSetting.controlEl.createSpan({ cls: "fileclass-icon-preview" });
@@ -58,15 +125,37 @@ export class FileClassOptionsModal extends Modal {
 			t.setValue(this.opts.icon ?? "").onChange((v) => {
 				this.opts.icon = v;
 				paintPreview(v);
+				this.guard?.refresh();
 			});
 			new IconSuggest(this.app, t.inputEl);
 		});
 		paintPreview(this.opts.icon ?? "");
 
+		/*
+		 * Three sections, each holding only what its title covers. `Sync to base` used to be
+		 * the modal's single heading, sitting above the base rows AND the four bindings — so
+		 * `Map with tag` and the three lists read as base settings, which they have never been.
+		 *
+		 * The order is the order of the questions: what is this class, which notes carry it,
+		 * and where are its fields mirrored. The base section comes last so its action button
+		 * sits next to Save.
+		 */
 		new Setting(contentEl)
-			.setName("Extends")
-			.setDesc("Parent fileClass name.")
-			.addText((t) => t.setValue(this.opts.extends ?? "").onChange((v) => (this.opts.extends = v)));
+			.setName("Bound notes")
+			.setDesc("Lists are comma-separated.")
+			.setHeading();
+		new Setting(contentEl)
+			.setName("Map with tag")
+			.setDesc("Bind notes tagged with this fileClass's name.")
+			.addToggle((t) =>
+				t.setValue(!!this.opts.mapWithTag).onChange((v) => {
+					this.opts.mapWithTag = v;
+					void this.updateStatus();
+				})
+			);
+		this.csvSetting("Tag names", "tagNames");
+		this.csvSetting("Files paths", "filesPaths");
+		this.csvSetting("Bookmark groups", "bookmarksGroups");
 
 		new Setting(contentEl).setName("Sync to base").setHeading();
 		new Setting(contentEl)
@@ -96,30 +185,32 @@ export class FileClassOptionsModal extends Modal {
 				b.onClick(() => void this.doSync());
 			});
 
-		new Setting(contentEl)
-			.setName("Map with tag")
-			.setDesc("Bind notes tagged with this fileClass's name.")
-			.addToggle((t) =>
-				t.setValue(!!this.opts.mapWithTag).onChange((v) => {
-					this.opts.mapWithTag = v;
-					void this.updateStatus();
-				})
-			);
-
-		this.csvSetting("Tag names", "tagNames");
-		this.csvSetting("Files paths", "filesPaths");
-		this.csvSetting("Bookmark groups", "bookmarksGroups");
-		this.csvSetting("Excludes", "excludes", "Inherited field names to drop.");
-
-		new Setting(makeStickyFooter(contentEl)).addButton((b) =>
-			b
-				.setButtonText("Save")
-				.setCta()
-				.onClick(async () => {
-					await writeOptions(this.app, this.file, buildOptionUpdates(this.opts));
-					this.close();
-				})
-		);
+		/*
+		 * The same guard every other editing modal here carries: this one holds a draft of a
+		 * class's options and commits it on Save, so Escape used to throw a changed parent or
+		 * a new binding away without a word. `opened` is the comparison point, and it moves
+		 * to what was last written — otherwise Save would commit and then ask.
+		 */
+		const footerRow = new Setting(makeStickyFooter(contentEl));
+		const commit = (): boolean => {
+			const updates = buildOptionUpdates(this.opts);
+			this.opened = snapshot(this.opts);
+			void writeOptions(this.app, this.file, updates).then(() => this.close());
+			return true;
+		};
+		this.guard = attachUnsavedGuard(this.app, this, {
+			isDirty: () => snapshot(this.opts) !== this.opened,
+			save: commit,
+			subject: "options",
+		});
+		this.guard.mountHint(footerRow.settingEl);
+		// One hook rather than one per control: this form has eight of them and will grow, and
+		// a hint that only some of them light up is worse than none. `input` covers the text
+		// boxes, `change` the dropdown and the toggles.
+		for (const type of ["input", "change"]) {
+			contentEl.addEventListener(type, () => this.guard?.refresh());
+		}
+		footerRow.addButton((b) => b.setButtonText("Save").setCta().onClick(() => void commit()));
 
 		void this.updateStatus();
 	}
@@ -180,15 +271,104 @@ export class FileClassOptionsModal extends Modal {
 		await this.updateStatus();
 	}
 
+	/**
+	 * Shows the way through to the parent only when there is a parent to reach: the name
+	 * must be a fileClass the index knows. Its tooltip names the class, so the button says
+	 * where it goes rather than that it goes somewhere.
+	 */
+	private refreshParentLink(): void {
+		if (!this.parentLink) return;
+		const name = (this.opts.extends ?? "").trim();
+		const exists = !!name && this.plugin.index.fileClassNames.includes(name);
+		this.parentLink.extraSettingsEl.toggleClass("is-hidden-fc", !exists);
+		this.parentLink.setTooltip(exists ? `Open "${name}"'s schema` : "");
+	}
+
+	/**
+	 * The classes this one may extend: every fileClass except itself and its own
+	 * descendants. A descendant as a parent is a cycle — `computeAncestors` survives one,
+	 * but a suggester should not propose it.
+	 */
+	private parentCandidates(): string[] {
+		const index = this.plugin.index;
+		return index.fileClassNames.filter(
+			(name) => name !== this.name && !index.getAncestors(name).includes(this.name)
+		);
+	}
+
+	/**
+	 * `Excludes` — the inherited fields this class drops — picked from the parent's own
+	 * fields rather than typed.
+	 *
+	 * It used to be a comma-separated box, where a misspelling excluded nothing and said
+	 * nothing: the same silence `Extends` had. What a class can exclude is a finite, known
+	 * list — its ancestors' field names — so the list is the interface. A name that no longer
+	 * resolves (the parent changed, the note was hand-edited) is kept and marked, because
+	 * dropping it would silently re-inherit a field somebody deliberately excluded.
+	 */
+	private excludesSetting(): void {
+		const row = new Setting(this.contentEl).setName("Excludes");
+		const paint = () => {
+			const chosen = this.opts.excludes ?? [];
+			const available = this.inheritedFieldNames();
+			row.setDesc(
+				available.length
+					? chosen.length
+						? `Dropped from ${this.opts.extends}: ${chosen.join(", ")}`
+						: `Inherited fields to drop. ${available.length} available from ${this.opts.extends}.`
+					: "Nothing to exclude: this class has no parent."
+			);
+		};
+		row.addButton((b) =>
+			b.setButtonText("Choose…").onClick(() => {
+				const available = this.inheritedFieldNames();
+				const chosen = this.opts.excludes ?? [];
+				// A stale exclusion stays offered, so saving cannot quietly undo it.
+				const allowed = [...available, ...chosen.filter((n) => !available.includes(n))];
+				if (!allowed.length) {
+					new Notice("Fileclass: no parent, so there is nothing to exclude.");
+					return;
+				}
+				new MultiSelectModal(this.app, {
+					title: `Excludes — inherited by ${this.name}`,
+					allowed,
+					selected: chosen,
+					onSubmit: (values) => {
+						this.opts.excludes = values;
+						paint();
+						this.guard?.refresh();
+						void this.updateStatus();
+					},
+				}).open();
+			})
+		);
+		paint();
+		this.repaintExcludes = paint;
+	}
+
+	/** The field names this class inherits — what it may exclude, and nothing else. */
+	private inheritedFieldNames(): string[] {
+		const parent = (this.opts.extends ?? "").trim();
+		if (!parent || !this.plugin.index.fileClassNames.includes(parent)) return [];
+		return this.plugin.index
+			.getResolvedFields(parent)
+			.filter((f) => !f.path)
+			.map((f) => f.name);
+	}
+
+	/**
+	 * One of the comma-separated binding lists. No description of its own: the three of them
+	 * said "Comma-separated." one under the other, three lines to make one point, which their
+	 * section heading now makes once.
+	 */
 	private csvSetting(
 		name: string,
 		key: "tagNames" | "filesPaths" | "bookmarksGroups" | "excludes",
-		desc = "Comma-separated."
+		desc = ""
 	): void {
-		new Setting(this.contentEl)
-			.setName(name)
-			.setDesc(desc)
-			.addText((t) =>
+		const row = new Setting(this.contentEl).setName(name);
+		if (desc) row.setDesc(desc);
+		row.addText((t) =>
 				t.setValue((this.opts[key] ?? []).join(", ")).onChange((v) => {
 					this.opts[key] = csv(v);
 					// filesPaths/tagNames decide what the view filters on, so the Sync

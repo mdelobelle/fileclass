@@ -1,0 +1,77 @@
+# Narration for take 024 — see ../SCENARIO.md for the format.
+# Second of arc 5. Starts where 023 ended: `Book.author` is required and every book has one.
+#
+# Thirteen steps rather than twelve, and 3–4 minutes rather than one: inheritance is a wide
+# idea, and it carries three gestures a viewer will want to see performed — extending,
+# excluding, redeclaring — plus one fact that surprises everybody (below).
+#
+# The vault opens on **Library.base → "The whole library"**, whose columns are file name,
+# fileClass and publisher: the repetition step 1 talks about is legible in the first frame,
+# on three different classes at once.
+#
+# The fixture already holds:
+#  - **Media**, with what the whole library shares: `acquired` (Date) and `rating` (Select,
+#    ⭐ / ⭐⭐ / ⭐⭐⭐). Deliberately WITHOUT `publisher` — hoisting it is step 3, and the
+#    take would have nothing to do if the parent were already complete;
+#  - **Movie**, which already extends Media and has its own `director` and `runtime`, plus
+#    two films the library plausibly owns (Lynch's Dune, Blade Runner — whose author Philip
+#    K. Dick is already a note). It inherits from the start so that steps 11 and 12 are about
+#    excluding and redeclaring, not a fourth demonstration of "pick a parent";
+#  - **Library.base**, with the two views step 10 needs, so nothing films a filter being
+#    typed (#19).
+#
+# Facts the script leans on, all measured in the app before scripting:
+#  - a child's redeclaration wins, options included: with `rating` declared in both, the
+#    resolved field of Movie is Movie's (🎬 🎬🎬 🎬🎬🎬) and Book's is Media's (⭐ ⭐⭐ ⭐⭐⭐);
+#  - `excludes: [acquired]` on Movie removes it for Movie only — Book keeps it;
+#  - and the one that surprises: **`fileClass == "Media"` finds nothing**. A note declares the
+#    class it is, never its ancestors, so a base that wants the whole family names the
+#    children: `fileClass.containsAny("Book", "Album", "Comic", "Movie")` → 9 rows here,
+#    film, book and album included. Both views ship in the fixture so the difference is a
+#    click, not a YAML edit;
+#  - `Extends` is a dropdown over the classes that exist (never this one, never a descendant),
+#    and `Excludes` a picker over the parent's own fields — both added for this take, since a
+#    misspelled name in either used to do nothing and say nothing;
+#  - a class's schema lists its **own** fields only; the link beside `Extends` opens the
+#    parent's. That is why step 5 exists.
+title: "Fileclass — One parent class, three children"
+description: "Inheritance: hoist what repeats, then exclude or redeclare what doesn't fit."
+doc: "schema/#inheritance" # deep link used in the description
+tags: "inheritance, extends, excludes, schema, bases"
+vault_name: "Demo"
+plugin: true
+settings:
+  classFilesPath: "Classes/"
+  fileClassAlias: "fileClass"
+initial_pause: 1500
+default_pause: 900
+
+steps:
+  - title: "The same field written three times: a book has a publisher, a comic has one, an album has its label"
+    pause: 2600
+  - title: "Media already exists, holding what everything in this library shares: when it was acquired, and how good it is"
+    pause: 2500
+  - title: "So move publisher up into Media — the repetition becomes one declaration"
+    pause: 2300
+  - title: "In Book's options, Extends is a list of the classes you have: pick Media"
+    pause: 2300
+  - title: "Book's own schema still shows only its own fields — the link beside Extends opens the parent's"
+    pause: 2500
+  - title: "Now drop publisher from Book: it comes from Media, and nothing moved in the notes"
+    pause: 2400
+  - title: "Album and Comic take the same parent — three children, one declaration"
+    pause: 2300
+  - title: "On a note, its own fields come first and the inherited ones after, each saying where it comes from"
+    pause: 2500
+  - title: "Rate a book and an album: the same field, declared once, filled from the same three stars"
+    values: "⭐⭐⭐ | ⭐⭐"
+    pause: 2400
+  - title: "A base can't ask for Media: a note declares its own class, never its parents — so name the children"
+    pause: 2800
+  - title: "Movie is one of them — and a film is watched, not acquired, so it excludes that field"
+    pause: 2700
+  - title: "A film is not rated in stars either — Movie redeclares rating in reels, and its own version wins"
+    values: "🎬🎬🎬"
+    pause: 2600
+  - title: "The rule, then: put in the parent what every child would repeat, and let a child add, exclude, or redeclare"
+    pause: 2600

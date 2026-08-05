@@ -6,7 +6,84 @@ All notable changes to Fileclass are documented here. The format follows
 
 ## [Unreleased]
 
+### Changed
+
+- **The modals are compact.** They had been drawn with Obsidian's settings-page metrics —
+  16px above and below every row, a separator between each, 32px controls — which are meant
+  for a full-width pane, not a box capped at a fraction of the window. Everything scrolled:
+  measured on a 1000px window with 706px of room, a note's fields asked for 912px, a class's
+  options 973, a schema editor 1075. Now 618, 720 and 655 — **a note's fields, a
+  sixteen-field schema and a field's definition no longer scroll at all**, and a class's
+  options misses by 14px.
+
+  No separators, 6px rows, 24px buttons, 26px inputs and dropdowns, a 1px focus ring instead
+  of 2px, and descriptions, buttons and dropdowns all at 11px. A field's **type sits on the
+  name's line** in the schema editor (`author  File · required`) rather than on a line of its
+  own, sixteen fields deep. A note's field **values drop from 15px to 13px**, the size of the
+  name they belong to. Media
+  thumbnails shrink to 20px in a row — a picker row and a table cell keep 28px, where
+  recognising the picture is the point. And a modal may use 80% of the window's height
+  before anything scrolls, rather than 70%.
+
+  The pickers followed: choosing **one** value read a size larger than choosing several,
+  because a suggester is a `.prompt` and not a `.modal`, and the reading of a child's value
+  in an **Object** editor was the modal's body size. Both are now the 13px every other value
+  is shown at. Section titles line up with the rows they announce, rather than sitting 16px
+  in from them, and carry no description of their own — three helpful lines cost three rows
+  to restate what `Identity`, `Bound notes` and `Sync to base` already say. The one fact the
+  rows could not state without saying it three times, that those lists are comma-separated,
+  moved up to the heading.
+
+  **Not on a phone.** A 24px button and a 26px field are hard to hit with a thumb, where the
+  guidance is nearer 44px, so mobile keeps the tighter rhythm and gets its controls and their
+  labels back at full size.
+
+  Scoped to this plugin's own modals: Obsidian's, and every other plugin's, are untouched.
+
+- **A class's options are in three sections that mean something.** The modal had exactly one
+  heading, `Sync to base`, and it sat above the base rows *and* the four binding rows — so
+  `Map with tag`, `Tag names`, `Files paths` and `Bookmark groups` read as settings of a base
+  they have nothing to do with. Now: **Identity** (Extends, Excludes, Icon), **Bound notes**
+  (how notes other than those naming it get the class), **Sync to base** (the base file, its
+  managed view, and the sync status). Each heading says what it covers, and the
+  order follows the questions — what the class is, which notes carry it, where its fields are
+  mirrored.
+
 ### Added
+
+- **A note's fields say where they come from, both ways round.** Hovering a fileClass in the
+  note-fields footer already marked the rows of the fields it declares. The opposite question —
+  *where does this field come from?* — was left to a tooltip, on the surface where it matters
+  most: a note bound to two classes, one of them inheriting from a third. Hovering a row now
+  marks the class that declares it, in the footer, with the same accent bar laid under the
+  name. An ancestor lights up in every breadcrumb it appears in, since `Media` under `Book`
+  and `Media` under `Album` are one declaration.
+
+- **`Excludes` picks from the parent's fields.** The inherited fields a class drops were a
+  comma-separated box, where a misspelling excluded nothing and said nothing — the same silence
+  `Extends` had. What a class may exclude is a finite, known list, so the list is now the
+  interface: a picker over its ancestors' field names, with the count and the current
+  exclusions readable on the row. With no parent it says so instead of offering an empty box.
+  An exclusion that no longer resolves stays offered and marked, because dropping it would
+  silently re-inherit a field somebody deliberately removed. It sits **directly under
+  `Extends`**, since what it offers is that parent's own fields: apart, the two rows read as
+  unrelated settings.
+
+- **`Extends` is a dropdown, and opens the class it names.** It was a free-text box, and a
+  wrong parent was completely silent: `extends: Medai` inherited nothing, listed an ancestor
+  nothing answers to, and said not a word. There is no case for typing a free name — a parent
+  that doesn't exist inherits nothing — so it is now a list of the classes you have, never
+  this one and never one that already inherits from it, which would be a cycle. A declaration
+  that no longer resolves is **kept in the list and marked** (`Medai (no such fileClass)`)
+  rather than quietly replaced by "no parent".
+
+  Beside it, a **way through to the parent's schema**, shown only when the name resolves. A
+  class's editor lists its **own** fields only: showing an ancestor's would beg the question
+  of which copy you are editing, so one click to the parent answers it instead.
+
+  `Extends` also comes first in that modal now. Obsidian focuses a modal's first control, and
+  the Icon field's suggester opens on focus — so opening a class's options greeted you with
+  the icon picker every time.
 
 - **A required field says so where it matters.** `required` lived only inside a field's own
   definition modal, so a class of a dozen fields hid which ones were mandatory behind a dozen

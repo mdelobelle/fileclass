@@ -104,7 +104,14 @@ export class ObjectFieldsEditorModal extends Modal {
 			new Setting(listEl)
 				.setName(child.name)
 				.setDesc(child.type)
-				.then((s) => s.controlEl.createSpan({ text: describeField(child, value, this.opts.deps) }))
+				// Classed, so the reading of a child's value is the size of every other value
+				// we show rather than the modal's body text.
+				.then((s) =>
+					s.controlEl.createSpan({
+						cls: "fileclass-object-value",
+						text: describeField(child, value, this.opts.deps),
+					})
+				)
 				.addButton((b) =>
 					b.setButtonText("Edit").onClick(() =>
 						this.opts.promptChild(child, value, (v) => {

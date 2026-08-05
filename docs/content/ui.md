@@ -48,6 +48,12 @@ note so closing it brings you back. On **hover**, a name marks the rows of the f
 that fileClass declares with a vertical bar, so you can see which fileClass owns
 which field (inherited fields point at the ancestor that declares them).
 
+It works **both ways**: hovering a field's row marks, in the footer, the class that
+declares it — the same accent bar, laid under the name. So "what does this class give
+me?" and "where does this field come from?" are the same gesture, read in either
+direction. An ancestor is marked in every breadcrumb it appears in, since `Media` under
+`Book` and `Media` under `Album` are the same declaration.
+
 Open it with the command **Fileclass: manage note fields** or from a context
 menu.
 

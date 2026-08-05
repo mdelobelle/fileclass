@@ -495,6 +495,9 @@ export class ChoiceSuggestModal<T> extends SuggestModal<T> {
 	) {
 		super(app);
 		this.setPlaceholder(placeholder);
+		// A SuggestModal's box is `.prompt`, not `.modal`, so the compact-modal rules never
+		// reached it: picking one value read a size larger than picking several.
+		this.modalEl.addClass("fileclass-prompt");
 	}
 
 	onOpen(): void {

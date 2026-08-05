@@ -12,6 +12,8 @@ export class AddFileClassModal extends SuggestModal<string> {
 	constructor(private readonly plugin: FileclassPlugin, private readonly file: TFile) {
 		super(plugin.app);
 		this.setPlaceholder("Select a fileClass to add");
+		// Same size as every other picker of ours (see `.fileclass-prompt`).
+		this.modalEl.addClass("fileclass-prompt");
 	}
 
 	getSuggestions(query: string): string[] {

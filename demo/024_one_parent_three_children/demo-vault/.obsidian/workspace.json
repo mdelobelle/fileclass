@@ -1,0 +1,82 @@
+{
+  "main": {
+    "id": "demo-main",
+    "type": "split",
+    "direction": "vertical",
+    "children": [
+      {
+        "id": "demo-tabs",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "demo-note",
+            "type": "leaf",
+            "state": {
+              "type": "bases",
+              "state": {
+                "file": "Library.base",
+                "viewName": "The whole library"
+              },
+              "icon": "lucide-table",
+              "title": "Library"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "left": {
+    "id": "demo-left",
+    "type": "split",
+    "direction": "horizontal",
+    "width": 300,
+    "children": [
+      {
+        "id": "demo-left-tabs",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "demo-explorer",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical"
+              }
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "right": {
+    "id": "demo-right",
+    "type": "split",
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true,
+    "children": [
+      {
+        "id": "demo-right-tabs",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "demo-backlink",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {}
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "active": "demo-note",
+  "lastOpenFiles": [
+    "Library.base",
+    "Classes/Book.md",
+    "Dune (1984).md",
+    "Kind of Blue.md"
+  ]
+}

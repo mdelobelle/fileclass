@@ -81,6 +81,12 @@ export class FileclassIndex extends Events {
 		this.errors = [];
 	}
 
+	/** Is this note a fileClass declaration — a file of the class folder? */
+	private isClassNote(file: TFile): boolean {
+		const folder = this.host.settings.classFilesPath;
+		return !!folder && file.path.startsWith(folder);
+	}
+
 	private indexFileClassNote(file: TFile): void {
 		const name = fileClassNameFromPath(this.host.settings.classFilesPath, file.path);
 		if (!name) return;
@@ -120,9 +126,20 @@ export class FileclassIndex extends Events {
 
 	// -- registry / resolution ------------------------------------------------
 
-	/** A read-only registry view for the pure resolver. */
-	registry(): FileClassRegistry {
-		const global = this.host.settings.globalFileClass || undefined;
+	/**
+	 * A read-only registry view for the pure resolver.
+	 *
+	 * `forFile` exists for one rule: the global fileClass never applies to a **class note**.
+	 * A global class is meant for a vault where every note is the same kind of thing, and
+	 * `Classes/Book.md` is not one of those things — it is the declaration itself. Measured
+	 * before the guard: setting a global class typed the whole class folder with it, so the
+	 * definitions showed up in their own class's views.
+	 */
+	registry(forFile?: TFile): FileClassRegistry {
+		const global =
+			forFile && this.isClassNote(forFile)
+				? undefined
+				: this.host.settings.globalFileClass || undefined;
 		return {
 			has: (name) => this.byName.has(name),
 			fieldsOf: (name) => this.fieldsByName.get(name) ?? [],
@@ -145,7 +162,7 @@ export class FileclassIndex extends Events {
 
 	/** Full binding resolution for a note (fileClasses + merged fields). */
 	resolve(file: TFile): Resolution {
-		const resolution = resolveBinding(this.bindingFor(file), this.registry());
+		const resolution = resolveBinding(this.bindingFor(file), this.registry(file));
 		// Fold the plugin-wide write format into date fields that declare none, so
 		// every consumer (input, validation, display parsing) sees one effective
 		// format. No-op — the same array — when the defaults are blank.

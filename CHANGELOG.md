@@ -4,6 +4,24 @@ All notable changes to Fileclass are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); this project uses
 [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Fixed
+
+- **Two classes on one note no longer fight over a key.** When both declared the same field
+  name, both survived — they were told apart by id — so the note showed the same name twice,
+  reading one frontmatter value through two different types, one of which would refuse it
+  (an `Input` and a `Select` both called `publisher`). The **last bound class wins**:
+  `fileClass: [Book, Article]` reads as "a Book, and an Article on top", the same way a child
+  class has the last word over its parent. The winner brings its type and options and sits
+  with the rest of its own class. A group's child never collides with a root field of the
+  same name.
+
+- **A global fileClass leaves the class folder alone.** It applied to every note with no
+  binding of its own, which included `Classes/Book.md` — so turning it on typed your class
+  declarations with it and showed them in their own class's views. A declaration is not one
+  of the things a vault-wide class describes.
+
 ## [0.2.7] - 2026-08-05
 
 ### Changed

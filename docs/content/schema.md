@@ -83,7 +83,7 @@ link appears only when the name resolves.
 ## Binding a note to fileClass(es)
 
 A note can be bound to one or more fileClasses. When several sources apply, they
-are combined in this priority order (fields de-duplicated by id):
+are combined in this priority order:
 
 1. **Frontmatter alias** — the `fileClass:` key on the note (the alias is
    configurable). Accepts a single value or a list.
@@ -98,8 +98,16 @@ are combined in this priority order (fields de-duplicated by id):
 4. **Bookmark group match** — the note is in a mapped bookmark group.
 5. **Base-view match** — the note is returned by a fileClass's bound Base view
    (replaces Metadata Menu's Dataview `fileClassQueries`; wired in a later phase).
-6. **Global fileClass** — a fallback applied to notes with no other binding.
+6. **Global fileClass** — a fallback applied to notes with no other binding. Never
+   to a note of the class folder: a fileClass declaration is not one of the things a
+   vault-wide class is describing.
 7. **Preset fields** — a last-resort field set.
+
+When two bound classes declare **the same key**, the last one wins — `fileClass: [Book,
+Article]` reads as "a Book, and an Article on top", and the note has exactly one
+`publisher` to write to. The winner brings its own type and options, and the field sits
+with the rest of the class that owns it. A group's child is a different field from a root
+field of the same name (`editions.publisher` beside `publisher`), so those never collide.
 
 The index rebuilds automatically (debounced) when the metadata cache settles or
 a fileClass note changes, and emits a `fileclass:indexed` event.

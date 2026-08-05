@@ -41,7 +41,7 @@ export type BindingSource = "fileClass" | "global" | "preset" | "none";
 export interface Resolution {
 	/** Ordered, de-duplicated bound fileClass names (empty for global/preset). */
 	fileClassNames: string[];
-	/** Fields merged in priority order, de-duplicated by id. */
+	/** Fields merged in binding order; on the same key, the last bound class wins. */
 	fields: Field[];
 	source: BindingSource;
 }
@@ -85,18 +85,39 @@ function collectBoundNames(binding: FileBinding, registry: FileClassRegistry): s
 	return names;
 }
 
-/** Concatenates the fields of each bound class, de-duplicating by field id. */
+/**
+ * What makes two declarations the same field on a note: its name at its level. Identical to
+ * the key inheritance uses — a group's children are told apart by `path`, never by name
+ * alone, or `editions.publisher` would collide with a plain `publisher`.
+ */
+function fieldKey(field: Field): string {
+	// NUL as the separator, as in inheritance.ts: no path or name can hold one, so a field
+	// called "next interval" can never blur into the path in front of it.
+	return `${field.path}\u0000${field.name}`;
+}
+
+/**
+ * The fields of every bound class, merged into one list.
+ *
+ * When two bound classes declare the same key, **the last one wins** — `fileClass: [Book,
+ * Article]` reads as "a Book, and an Article on top", and the frontmatter has exactly one
+ * `publisher` to write to. Before this, both survived (they were de-duplicated by *id*, and
+ * two classes declare their own): a note showed two rows of the same name, reading the same
+ * value through two different types, one of which would refuse it.
+ *
+ * The winner takes the loser's place in the list as well as its meaning, so the key sits with
+ * the rest of the class that owns it and the row's stated owner matches where it appears.
+ */
 function mergeFields(names: string[], registry: FileClassRegistry): Field[] {
-	const fields: Field[] = [];
-	const seen = new Set<string>();
+	const byKey = new Map<string, Field>();
 	for (const name of names) {
 		for (const field of registry.fieldsOf(name)) {
-			if (seen.has(field.id)) continue;
-			fields.push(field);
-			seen.add(field.id);
+			const key = fieldKey(field);
+			byKey.delete(key);
+			byKey.set(key, field);
 		}
 	}
-	return fields;
+	return [...byKey.values()];
 }
 
 /**

@@ -67,6 +67,35 @@ describe("resolveBinding priority", () => {
 		expect(r.source).toBe("none");
 	});
 
+	it("lets the last bound class win a key both declare", () => {
+		// `fileClass: [Book, Todo]` reads as "a Book, and a Todo on top", and the note has
+		// exactly one `shared` key to write to. Both used to survive — they were told apart
+		// by id — so the note showed the same name twice, read through two types.
+		const r = resolveBinding({ ...emptyBinding, innerNames: ["Book", "Todo"] }, makeRegistry());
+		expect(r.fields.map((f) => f.name)).toEqual(["b1", "t1", "shared"]);
+		expect(r.fields.find((f) => f.name === "shared")?.fileClassName).toBe("Todo");
+	});
+
+	it("and the winner sits where its own class does, not where the loser sat", () => {
+		const r = resolveBinding({ ...emptyBinding, innerNames: ["Todo", "Book"] }, makeRegistry());
+		// Reversed: Book now has the last word, and `shared` moves into Book's block.
+		expect(r.fields.map((f) => f.name)).toEqual(["t1", "b1", "shared"]);
+		expect(r.fields.find((f) => f.name === "shared")?.fileClassName).toBe("Book");
+	});
+
+	it("a group's child never collides with a root field of the same name", () => {
+		// `editions.publisher` and a plain `publisher` are two fields, told apart by level —
+		// the same rule inheritance follows.
+		const child: Field = { ...field("publisher", "Book"), id: "c1", path: "edId" };
+		const root: Field = { ...field("publisher", "Article"), id: "r1" };
+		const registry = makeRegistry({
+			has: (n) => n === "Book" || n === "Article",
+			fieldsOf: (n) => (n === "Book" ? [child] : [root]),
+		});
+		const r = resolveBinding({ ...emptyBinding, innerNames: ["Book", "Article"] }, registry);
+		expect(r.fields.map((f) => f.id)).toEqual(["c1", "r1"]);
+	});
+
 	it("falls back to the global fileClass", () => {
 		const r = resolveBinding(emptyBinding, makeRegistry({ globalFileClass: "Global" }));
 		expect(r.source).toBe("global");

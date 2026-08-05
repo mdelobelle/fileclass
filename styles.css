@@ -1154,12 +1154,34 @@ body.fileclass-movable-modals:has(.modal-container ~ .modal-container) .modal-co
  * heading):where(:not(.setting-group *))`, four classes' worth, and a three-class selector
  * of ours loses to it silently — measured, after a first pass that changed nothing.
  */
+.modal-content.fileclass-scroll-body,
+.prompt.fileclass-prompt {
+	--fc-row-pad: var(--size-2-3);
+	--fc-control-h: 26px;
+	--fc-button-h: 24px;
+	--fc-control-font: var(--font-ui-smaller);
+	--fc-item-pad: var(--size-2-2);
+}
+/*
+ * Every one of those is a **pointer** number. A 24px button and a 26px field are hard to
+ * hit with a thumb — the usual guidance is nearer 44px — and Obsidian's mobile metrics are
+ * already touch-sized on purpose. So a phone keeps what costs nothing (no separators, less
+ * padding between rows) and gets its controls and their labels back at full size.
+ */
+body.is-mobile .modal-content.fileclass-scroll-body,
+body.is-mobile .prompt.fileclass-prompt {
+	--fc-row-pad: var(--size-4-2);
+	--fc-control-h: 32px;
+	--fc-button-h: 32px;
+	--fc-control-font: var(--font-ui-small);
+	--fc-item-pad: var(--size-4-1);
+}
 .modal:not(.mod-settings)
 	.modal-content.fileclass-scroll-body
 	.setting-item:not(.setting-item-heading) {
 	border-top: none;
-	padding-top: var(--size-2-3);
-	padding-bottom: var(--size-2-3);
+	padding-top: var(--fc-row-pad);
+	padding-bottom: var(--fc-row-pad);
 }
 /* A section heading still needs air above it, or it stops separating anything — but not the
    16px of indent app.css gives it, which set the title in from the rows it announces. */
@@ -1186,20 +1208,20 @@ body.fileclass-movable-modals:has(.modal-container ~ .modal-container) .modal-co
 /* 32px is a page metric. In a dense list the button, not the text, sets the row's
    height — so the row is 32px tall to hold one word. */
 .modal-content.fileclass-scroll-body button:not(.clickable-icon) {
-	height: 24px;
+	height: var(--fc-button-h);
 	padding: 0 var(--size-4-2);
-	font-size: var(--font-ui-smaller);
+	font-size: var(--fc-control-font);
 }
 /* Same for the fields you type in. Checkboxes, ranges and colour wells keep their
    own sizing: they are not text boxes and shrinking them breaks their hit area. */
 .modal-content.fileclass-scroll-body
 	input:not([type="checkbox"]):not([type="range"]):not([type="color"]),
 .modal-content.fileclass-scroll-body select {
-	height: 26px;
+	height: var(--fc-control-h);
 }
 /* A dropdown carries the same weight as the buttons beside it. */
 .modal-content.fileclass-scroll-body select {
-	font-size: var(--font-ui-smaller);
+	font-size: var(--fc-control-font);
 }
 /* And a 1px focus ring rather than 2px: at this density the thicker one reads as a
    second border around the field. */
@@ -1252,7 +1274,7 @@ body.fileclass-movable-modals:has(.modal-container ~ .modal-container) .modal-co
 	font-size: var(--font-ui-small);
 }
 .prompt.fileclass-prompt .suggestion-item {
-	padding: var(--size-2-2) var(--size-4-2);
+	padding: var(--fc-item-pad) var(--size-4-2);
 }
 /* The reading of a child's value in an Object editor: it was the modal's body size, larger
    than the field name beside it and larger than the same value in a note's fields. */

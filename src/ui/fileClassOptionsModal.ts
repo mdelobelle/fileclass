@@ -79,10 +79,13 @@ export class FileClassOptionsModal extends Modal {
 		 * fields only, since showing an ancestor's would beg the question of which copy you
 		 * are editing.
 		 */
-		new Setting(contentEl)
-			.setName("Identity")
-			.setDesc("What this class is: the one it extends, what it drops from it, and the icon it shows.")
-			.setHeading();
+		/*
+		 * The headings carry no description. One line each looked helpful and cost three rows
+		 * of a modal that was already scrolling, to restate what `Identity`, `Bound notes` and
+		 * `Sync to base` say on their own. The exception is the one fact the rows underneath
+		 * cannot state without repeating it three times: those lists are comma-separated.
+		 */
+		new Setting(contentEl).setName("Identity").setHeading();
 		const parentRow = new Setting(contentEl)
 			.setName("Extends")
 			.setDesc("Parent fileClass — its fields are inherited by this one.");
@@ -139,7 +142,7 @@ export class FileClassOptionsModal extends Modal {
 		 */
 		new Setting(contentEl)
 			.setName("Bound notes")
-			.setDesc("Which notes carry this fileClass, besides those naming it in their frontmatter.")
+			.setDesc("Lists are comma-separated.")
 			.setHeading();
 		new Setting(contentEl)
 			.setName("Map with tag")
@@ -154,10 +157,7 @@ export class FileClassOptionsModal extends Modal {
 		this.csvSetting("Files paths", "filesPaths");
 		this.csvSetting("Bookmark groups", "bookmarksGroups");
 
-		new Setting(contentEl)
-			.setName("Sync to base")
-			.setDesc("A .base view kept in step with this fileClass's fields.")
-			.setHeading();
+		new Setting(contentEl).setName("Sync to base").setHeading();
 		new Setting(contentEl)
 			.setName("Base file")
 			.setDesc("A .base whose managed view mirrors this fileClass's fields. Blank to disable.")
@@ -356,15 +356,19 @@ export class FileClassOptionsModal extends Modal {
 			.map((f) => f.name);
 	}
 
+	/**
+	 * One of the comma-separated binding lists. No description of its own: the three of them
+	 * said "Comma-separated." one under the other, three lines to make one point, which their
+	 * section heading now makes once.
+	 */
 	private csvSetting(
 		name: string,
 		key: "tagNames" | "filesPaths" | "bookmarksGroups" | "excludes",
-		desc = "Comma-separated."
+		desc = ""
 	): void {
-		new Setting(this.contentEl)
-			.setName(name)
-			.setDesc(desc)
-			.addText((t) =>
+		const row = new Setting(this.contentEl).setName(name);
+		if (desc) row.setDesc(desc);
+		row.addText((t) =>
 				t.setValue((this.opts[key] ?? []).join(", ")).onChange((v) => {
 					this.opts[key] = csv(v);
 					// filesPaths/tagNames decide what the view filters on, so the Sync

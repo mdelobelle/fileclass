@@ -12,12 +12,14 @@ All notable changes to Fileclass are documented here. The format follows
   16px above and below every row, a separator between each, 32px controls — which are meant
   for a full-width pane, not a box capped at a fraction of the window. Everything scrolled:
   measured on a 1000px window with 706px of room, a note's fields asked for 912px, a class's
-  options 973, a schema editor 1075. Now 622, 777 and 655: **a note's fields and a field's
-  definition no longer scroll at all**, and a fifteen-field schema is 22px from fitting.
+  options 973, a schema editor 1075. Now 618, 720 and 655 — **a note's fields, a
+  sixteen-field schema and a field's definition no longer scroll at all**, and a class's
+  options misses by 14px.
 
   No separators, 6px rows, 24px buttons, 26px inputs and dropdowns, a 1px focus ring instead
-  of 2px, and descriptions, buttons and dropdowns all at 11px. A field's **type sits on the name's line** in the schema editor
-  (`author  File · required`) rather than on a line of its own, sixteen fields deep. A note's
+  of 2px, and descriptions, buttons and dropdowns all at 11px. A field's **type sits on the
+  name's line** in the schema editor (`author  File · required`) rather than on a line of its
+  own, sixteen fields deep. A note's
   field **values drop from 15px to 13px**, the size of the name they belong to. Media
   thumbnails shrink to 20px in a row — a picker row and a table cell keep 28px, where
   recognising the picture is the point. And a modal may use 80% of the window's height
@@ -27,7 +29,14 @@ All notable changes to Fileclass are documented here. The format follows
   because a suggester is a `.prompt` and not a `.modal`, and the reading of a child's value
   in an **Object** editor was the modal's body size. Both are now the 13px every other value
   is shown at. Section titles line up with the rows they announce, rather than sitting 16px
-  in from them.
+  in from them, and carry no description of their own — three helpful lines cost three rows
+  to restate what `Identity`, `Bound notes` and `Sync to base` already say. The one fact the
+  rows could not state without saying it three times, that those lists are comma-separated,
+  moved up to the heading.
+
+  **Not on a phone.** A 24px button and a 26px field are hard to hit with a thumb, where the
+  guidance is nearer 44px, so mobile keeps the tighter rhythm and gets its controls and their
+  labels back at full size.
 
   Scoped to this plugin's own modals: Obsidian's, and every other plugin's, are untouched.
 

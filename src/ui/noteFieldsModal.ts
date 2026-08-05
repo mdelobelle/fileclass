@@ -126,6 +126,7 @@ export class NoteFieldsModal extends Modal {
 					text: cls,
 					href: "#",
 				});
+				link.dataset.fcClass = cls; // so a hovered row can find the class it comes from
 				link.addEventListener("click", (e) => {
 					e.preventDefault();
 					openFileClassSchema(this.plugin, cls, () => this.close());
@@ -144,6 +145,22 @@ export class NoteFieldsModal extends Modal {
 		});
 	}
 
+	/**
+	 * The other direction: hovering a row marks the class the field comes from, in the footer.
+	 *
+	 * The footer already answered "which fields does this class declare?"; a note bound to
+	 * three classes left the opposite question — "where does *this* field come from?" — to a
+	 * tooltip. Marked in every breadcrumb the class appears in, since an ancestor like `Media`
+	 * legitimately shows up under each of its children.
+	 */
+	private highlightSourceClass(name: string | null): void {
+		this.contentEl
+			.querySelectorAll<HTMLElement>(".fileclass-breadcrumb-item")
+			.forEach((link) => {
+				link.toggleClass("is-fc-owner", name !== null && link.dataset.fcClass === name);
+			});
+	}
+
 	private renderFieldRow(
 		ctx: EditContext,
 		deps: DisplayDeps,
@@ -156,6 +173,11 @@ export class NoteFieldsModal extends Modal {
 		const setting = new Setting(parent ?? this.contentEl).setName(field.name);
 		setting.settingEl.addClass("fileclass-field-row");
 		setting.settingEl.dataset.fcOwner = field.fileClassName; // for footer hover highlight
+		// And the reciprocal: this row says, in the footer, which class it comes from.
+		setting.settingEl.addEventListener("mouseenter", () =>
+			this.highlightSourceClass(field.fileClassName)
+		);
+		setting.settingEl.addEventListener("mouseleave", () => this.highlightSourceClass(null));
 		const typeIcon = createSpan({ cls: "fileclass-type-icon" });
 		const typeLabel = `${field.type} — Alt-click for this field's settings`;
 		typeIcon.setAttribute("aria-label", typeLabel);

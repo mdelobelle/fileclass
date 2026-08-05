@@ -19,8 +19,8 @@ All notable changes to Fileclass are documented here. The format follows
   No separators, 6px rows, 24px buttons, 26px inputs and dropdowns, a 1px focus ring instead
   of 2px, and descriptions, buttons and dropdowns all at 11px. A field's **type sits on the
   name's line** in the schema editor (`author  File · required`) rather than on a line of its
-  own, sixteen fields deep. A note's
-  field **values drop from 15px to 13px**, the size of the name they belong to. Media
+  own, sixteen fields deep. A note's field **values drop from 15px to 13px**, the size of the
+  name they belong to. Media
   thumbnails shrink to 20px in a row — a picker row and a table cell keep 28px, where
   recognising the picture is the point. And a modal may use 80% of the window's height
   before anything scrolls, rather than 70%.
@@ -50,6 +50,14 @@ All notable changes to Fileclass are documented here. The format follows
   mirrored.
 
 ### Added
+
+- **A note's fields say where they come from, both ways round.** Hovering a fileClass in the
+  note-fields footer already marked the rows of the fields it declares. The opposite question —
+  *where does this field come from?* — was left to a tooltip, on the surface where it matters
+  most: a note bound to two classes, one of them inheriting from a third. Hovering a row now
+  marks the class that declares it, in the footer, with the same accent bar laid under the
+  name. An ancestor lights up in every breadcrumb it appears in, since `Media` under `Book`
+  and `Media` under `Album` are one declaration.
 
 - **`Excludes` picks from the parent's fields.** The inherited fields a class drops were a
   comma-separated box, where a misspelling excluded nothing and said nothing — the same silence

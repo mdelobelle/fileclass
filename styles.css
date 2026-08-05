@@ -379,9 +379,35 @@
 	cursor: pointer;
 	color: var(--text-accent);
 	text-decoration: none;
+	/* Room for the hover marker below the name — on every item, marked or not, so nothing
+	   shifts when one lights up. */
+	padding-bottom: 3px;
 }
 .fileclass-breadcrumb-item:hover {
 	text-decoration: underline;
+}
+/*
+ * Hovering a field's row marks the class that declares it, here in the footer — the mirror
+ * of hovering a class to mark its rows. Same accent bar as that marker (3px, 2px radius),
+ * laid under the name instead of down its left side, so the two directions read as one
+ * mechanism rather than two decorations. `text-decoration` was the obvious candidate and is
+ * the wrong one: the item already underlines on its own hover, and the two would collide.
+ */
+.fileclass-breadcrumb-item.is-fc-owner {
+	position: relative;
+	color: var(--text-normal);
+}
+.fileclass-breadcrumb-item.is-fc-owner::after {
+	content: "";
+	position: absolute;
+	left: 0;
+	right: 0;
+	/* Inside the item's own box: at -3px the bar fell past the footer, outside the modal
+	   body's scroll box, and was clipped away — painted, measured, and invisible. */
+	bottom: 0;
+	height: 3px;
+	border-radius: 2px;
+	background: var(--interactive-accent);
 }
 .fileclass-breadcrumb-sep {
 	color: var(--text-faint);

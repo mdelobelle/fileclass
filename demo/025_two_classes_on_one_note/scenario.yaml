@@ -21,8 +21,13 @@
 #  - **Library.base** with a third view, "The articles", empty until step 3 binds one — a
 #    base is created on camera in arc 7, not here.
 #
-# `Article` is the one thing the take builds: two fields, `issue` and a `publisher` picked
-# from three magazines.
+# `Article` is the one thing the take builds: two fields, `issue` and a `publisher` — a
+# **Select with an inline values list**, the kind take 004 introduced, holding *The Atlantic*,
+# *Life* and *Scientific American*. No magazine exists as a note in this vault and none needs
+# to: three typed values are the whole point of a Select, and step 2's caption says "a short
+# list" rather than implying notes that aren't there. The values are of the period, and *Life*
+# is not decoration — the condensed, illustrated version of the essay ran there in September
+# 1945, two months after The Atlantic's.
 #
 # Facts the script leans on, all measured in the app before scripting:
 #  - `Add fileClass` on a note that already has one rewrites the key as a **YAML list**
@@ -41,10 +46,17 @@
 #  - the alias is **not** in this take: take 001 already says "rename it if your vault already
 #    uses another key", and a series does not spend a step twice.
 #
-# One thing to check before rolling: with three classes on the note (Media › Book, and
-# Article) the fields modal is tall, and in a 1024x800 window its footer — which steps 7 and 8
-# need — falls below the fold. Measured there; it fits in the recording window. Size the
-# window so the breadcrumb is visible without scrolling.
+# One thing to set before rolling: **the window must be at least 940px tall**, or the fields
+# modal scrolls. Measured: once Article is bound, the essay's modal holds 17 rows for 750px of
+# content, and a modal may use 80% of the window's height — 750 / 0.8 = 938. At 1024x800 there
+# are 117px too many and the footer falls below the fold, which is where steps 7 and 8 happen;
+# at 1512x886, 41px too many, one nudge of the wheel. Sixty pixels taller and nothing moves.
+#
+# Article is bound **last**, which is what `Add fileClass` writes, and that is also what makes
+# steps 5 and 6 work: on a key both classes bring, the last one named wins, so the short list
+# takes over the plain text `publisher` the book inherits from Media. Binding it first would
+# raise the new fields to the top of the modal and hand the key back to the book — a different
+# lesson, and one the caption would have to admit.
 title: "Fileclass — Two classes on one note"
 description: "Multiple binding, and one class the whole vault carries."
 doc: "schema/#binding-a-note-to-fileclasses" # deep link used in the description
@@ -60,7 +72,7 @@ default_pause: 900
 steps:
   - title: "As We May Think is in the library as a book — but it first appeared in a magazine, and one class can only say half of that"
     pause: 2700
-  - title: "So make the class that says the other half: Article, with the issue it ran in and a publisher picked from magazines"
+  - title: "So make the class that says the other half: Article, with the issue it ran in and a publisher chosen from a short list"
     pause: 2600
   - title: "A note is not limited to one class: add Article, and the key becomes a list of two"
     pause: 2400

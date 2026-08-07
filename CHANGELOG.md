@@ -6,6 +6,16 @@ All notable changes to Fileclass are documented here. The format follows
 
 ## [Unreleased]
 
+### Changed
+
+- **The global fileClass is a baseline, not a fallback.** It used to apply only to notes with
+  no binding at all — which meant the fields you wanted *everywhere* were exactly the fields
+  your typed notes never got. Now **every** note carries it, on top of whatever classes it
+  names itself: the one template the whole vault shares, without declaring it in each class.
+  It has the lowest precedence, so a note's own class wins any key both declare, and its rows
+  come first, a baseline being what the rest is written on top of. A note with no class of its
+  own is unchanged. The class folder is still exempt.
+
 ### Fixed
 
 - **Two classes on one note no longer fight over a key.** When both declared the same field
@@ -17,8 +27,8 @@ All notable changes to Fileclass are documented here. The format follows
   with the rest of its own class. A group's child never collides with a root field of the
   same name.
 
-- **A global fileClass leaves the class folder alone.** It applied to every note with no
-  binding of its own, which included `Classes/Book.md` — so turning it on typed your class
+- **A global fileClass leaves the class folder alone.** It reached every note with no binding
+  of its own, which included `Classes/Book.md` — so turning it on typed your class
   declarations with it and showed them in their own class's views. A declaration is not one
   of the things a vault-wide class describes.
 

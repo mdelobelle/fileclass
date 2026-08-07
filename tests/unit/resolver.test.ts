@@ -96,10 +96,45 @@ describe("resolveBinding priority", () => {
 		expect(r.fields.map((f) => f.id)).toEqual(["c1", "r1"]);
 	});
 
-	it("falls back to the global fileClass", () => {
+	it("gives an unbound note the global fileClass", () => {
 		const r = resolveBinding(emptyBinding, makeRegistry({ globalFileClass: "Global" }));
 		expect(r.source).toBe("global");
 		expect(r.fields.map((f) => f.id)).toEqual(["g1"]);
+	});
+
+	it("gives a typed note the global fileClass too, as a baseline", () => {
+		// A vault-wide template is only useful if it reaches the notes that already have a
+		// class: as a fallback it reached exactly the notes nobody had typed.
+		const r = resolveBinding(
+			{ ...emptyBinding, innerNames: ["Book"] },
+			makeRegistry({ globalFileClass: "Global" })
+		);
+		expect(r.fileClassNames).toEqual(["Global", "Book"]);
+		expect(r.fields.map((f) => f.id)).toEqual(["g1", "b1", "shared"]);
+		// It still says `fileClass`: the note names a class of its own.
+		expect(r.source).toBe("fileClass");
+	});
+
+	it("lets a note's own class override the baseline on a shared key", () => {
+		const globalShared = { ...field("shared", "Global"), id: "g2" };
+		const r = resolveBinding(
+			{ ...emptyBinding, innerNames: ["Book"] },
+			makeRegistry({
+				has: (n) => n === "Book" || n === "Global",
+				fieldsOf: (n) => (n === "Global" ? [field("g1", "Global"), globalShared] : fields.Book),
+				globalFileClass: "Global",
+			})
+		);
+		expect(r.fields.find((f) => f.name === "shared")?.fileClassName).toBe("Book");
+		expect(r.fields.map((f) => f.name)).toEqual(["g1", "b1", "shared"]);
+	});
+
+	it("never lists the global fileClass twice", () => {
+		const r = resolveBinding(
+			{ ...emptyBinding, innerNames: ["Global"] },
+			makeRegistry({ globalFileClass: "Global" })
+		);
+		expect(r.fileClassNames).toEqual(["Global"]);
 	});
 
 	it("falls back to preset fields, then to none", () => {

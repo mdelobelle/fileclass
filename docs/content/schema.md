@@ -98,10 +98,21 @@ are combined in this priority order:
 4. **Bookmark group match** — the note is in a mapped bookmark group.
 5. **Base-view match** — the note is returned by a fileClass's bound Base view
    (replaces Metadata Menu's Dataview `fileClassQueries`; wired in a later phase).
-6. **Global fileClass** — a fallback applied to notes with no other binding. Never
-   to a note of the class folder: a fileClass declaration is not one of the things a
-   vault-wide class is describing.
-7. **Preset fields** — a last-resort field set.
+6. **Preset fields** — a last-resort field set, for a note none of the above reaches.
+
+### The global fileClass
+
+Set one and **every note carries it**, whatever else it is: the one template the whole vault
+shares — a `source`, an `added`, whatever your notes all have in common — without declaring
+it in each class. A note with no binding of its own has just that one; a note that names its
+own classes has the baseline *and* them.
+
+It is the **lowest** precedence: on a key the baseline and one of the note's own classes both
+declare, the note's own class wins. Its rows come first in a note's fields, since a baseline
+is what the rest is written on top of.
+
+One exception, and it is not a note you write: the **class folder**. A fileClass declaration
+is not one of the things a vault-wide class is describing.
 
 When two bound classes declare **the same key**, the last one wins — `fileClass: [Book,
 Article]` reads as "a Book, and an Article on top", and the note has exactly one

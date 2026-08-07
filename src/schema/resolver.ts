@@ -121,17 +121,33 @@ function mergeFields(names: string[], registry: FileClassRegistry): Field[] {
 }
 
 /**
- * Resolves a note's binding. Falls back to the global fileClass, then to preset
- * fields, then to nothing — exactly as Metadata Menu's `getFilesFields`.
+ * Resolves a note's binding.
+ *
+ * The global fileClass is a **baseline, not a fallback**: it applies to every note, whatever
+ * else that note is — the one template the whole vault carries. It was a last resort before,
+ * reaching only notes with no binding at all, which meant the fields you wanted everywhere
+ * were exactly the fields your typed notes never got.
+ *
+ * It comes **first** in the list, and the list is the precedence order — last declaration
+ * wins — so a note's own classes override the baseline on any key they both declare, the same
+ * rule that governs two classes on one note and a child against its parent. `source` still
+ * says `global` when the baseline is all a note has, since that distinction is what tells a
+ * note that names its class from one that inherited the vault's.
+ *
+ * Preset fields remain the last resort, for a vault with neither.
  */
 export function resolveBinding(binding: FileBinding, registry: FileClassRegistry): Resolution {
-	const names = collectBoundNames(binding, registry);
-	if (names.length) {
-		return { fileClassNames: names, fields: mergeFields(names, registry), source: "fileClass" };
-	}
+	const own = collectBoundNames(binding, registry);
 	const global = registry.globalFileClass;
-	if (global && registry.has(global)) {
-		return { fileClassNames: [global], fields: registry.fieldsOf(global), source: "global" };
+	const withGlobal =
+		global && registry.has(global) && !own.includes(global) ? [global, ...own] : own;
+
+	if (withGlobal.length) {
+		return {
+			fileClassNames: withGlobal,
+			fields: mergeFields(withGlobal, registry),
+			source: own.length ? "fileClass" : "global",
+		};
 	}
 	if (registry.presetFields?.length) {
 		return { fileClassNames: [], fields: registry.presetFields, source: "preset" };

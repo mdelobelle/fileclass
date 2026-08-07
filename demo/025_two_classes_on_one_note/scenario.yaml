@@ -1,0 +1,85 @@
+# Narration for take 025 — see ../SCENARIO.md for the format.
+# Third of arc 5, and the last one about modelling. Starts where 024 ended: `publisher` lives
+# in `Media`, Book/Album/Comic/Movie all extend it, Movie excludes `acquired` and rates in
+# reels, and three notes carry the ratings that take set.
+#
+# Twelve steps for two ideas, because they answer the same question from opposite ends: a
+# note that is two things at once (its own classes, side by side), and a thing every note is
+# (one class, under all of them).
+#
+# The vault opens on **Library.base → "The whole library"**, where *As We May Think* sits
+# among the books — which is step 1's whole point, visible in the first frame.
+#
+# The fixture already holds:
+#  - **As We May Think**, bound to `Book`, with its author, its twelve pages and its 1945
+#    date — and deliberately **no publisher value**, so step 5 has something to do;
+#  - **Vannevar Bush** as an Author, since `Book.author` is required since take 023 and the
+#    picker only offers notes that are authors;
+#  - **Everything**, the baseline class step 10 names in the settings — `added` and a
+#    free-text `publisher`. It exists but is *not* global: naming it is the step. Its
+#    `publisher` is what makes step 11 visible rather than merely stated;
+#  - **Library.base** with a third view, "The articles", empty until step 3 binds one — a
+#    base is created on camera in arc 7, not here.
+#
+# `Article` is the one thing the take builds: two fields, `issue` and a `publisher` picked
+# from three magazines.
+#
+# Facts the script leans on, all measured in the app before scripting:
+#  - `Add fileClass` on a note that already has one rewrites the key as a **YAML list**
+#    (`- Book`, `- Article`) and inserts the new class's missing fields, empty;
+#  - two bound classes declaring the same key: **the last one named wins**, options included.
+#    `[Book, Article]` resolves one `publisher`, Article's Select; reversing the list gives it
+#    back to Book's inherited Input. Before this take's fix both rows survived, reading one
+#    value through two types — that is step 6, and it is a rule, not a curiosity;
+#  - the global fileClass is a **baseline**: every note carries it on top of its own classes,
+#    and the note's own class wins any key both declare. Measured with `Everything` global:
+#    Dune resolves `[Everything, Book]`, `publisher` still Book's, `added` gained. Class notes
+#    are exempt — a declaration is not something a vault-wide class describes;
+#  - a note's fields modal shows one breadcrumb per bound class, and the hover marker works
+#    both ways: a field says which class declares it, a class marks what it brings. Steps 7
+#    and 8 are that, and they are new in 0.2.7;
+#  - the alias is **not** in this take: take 001 already says "rename it if your vault already
+#    uses another key", and a series does not spend a step twice.
+#
+# One thing to check before rolling: with three classes on the note (Media › Book, and
+# Article) the fields modal is tall, and in a 1024x800 window its footer — which steps 7 and 8
+# need — falls below the fold. Measured there; it fits in the recording window. Size the
+# window so the breadcrumb is visible without scrolling.
+title: "Fileclass — Two classes on one note"
+description: "Multiple binding, and one class the whole vault carries."
+doc: "schema/#binding-a-note-to-fileclasses" # deep link used in the description
+tags: "binding, multiple fileClass, global fileClass, schema"
+vault_name: "Demo"
+plugin: true
+settings:
+  classFilesPath: "Classes/"
+  fileClassAlias: "fileClass"
+initial_pause: 1500
+default_pause: 900
+
+steps:
+  - title: "As We May Think is in the library as a book — but it first appeared in a magazine, and one class can only say half of that"
+    pause: 2700
+  - title: "So make the class that says the other half: Article, with the issue it ran in and a publisher picked from magazines"
+    pause: 2600
+  - title: "A note is not limited to one class: add Article, and the key becomes a list of two"
+    pause: 2400
+  - title: "What the second class brings arrives with it — its fields are on the note already, empty and waiting"
+    pause: 2400
+  - title: "Fill them in, and notice the publisher is now chosen from a list instead of typed"
+    values: "July 1945"
+    pause: 2500
+  - title: "Both classes bring a publisher, and the last one named wins: one key, one definition, no argument"
+    pause: 2600
+  - title: "Hover a field and it says which of the two classes declares it"
+    pause: 2300
+  - title: "Hover a class and it marks everything that class brings: the same relation, read the other way"
+    pause: 2400
+  - title: "In a base the note answers to both — still among the books, and now among the articles"
+    pause: 2500
+  - title: "Some things every note should carry, whatever else it is: name one class in the settings and the whole vault carries it"
+    pause: 2700
+  - title: "It is a baseline, not a ruling — where a note's own class declares the same field, the note's class wins"
+    pause: 2600
+  - title: "A note is what it says it is, it may say more than one thing, and the vault may say one thing about them all"
+    pause: 2600

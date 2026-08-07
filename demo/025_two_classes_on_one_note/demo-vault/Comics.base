@@ -1,0 +1,20 @@
+formulas:
+  Room: note.storage.room
+  Level: note.storage.shelf.level
+views:
+  - type: table
+    name: By room
+    filters:
+      and:
+        - fileClass == "Comic"
+    sort:
+      - property: formula.Room
+        direction: ASC
+      - property: formula.Level
+        direction: ASC
+    order:
+      - file.name
+      - storage
+      - formula.Room
+      - formula.Level
+      - series

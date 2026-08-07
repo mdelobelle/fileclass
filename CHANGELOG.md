@@ -16,6 +16,12 @@ All notable changes to Fileclass are documented here. The format follows
   come first, a baseline being what the rest is written on top of. A note with no class of its
   own is unchanged. The class folder is still exempt.
 
+  It is also **picked from a list** now, not typed: the classes you have, `— none —` at the
+  top, and a value that no longer resolves kept and marked (`Ghost (no such fileClass)`)
+  rather than silently reset — resetting it would untype every note in the vault that had
+  nothing else. Same treatment `Extends` and `Excludes` got: a setting whose valid answers
+  are known should not be a text box where a typo does nothing and says nothing.
+
 ### Fixed
 
 - **Two classes on one note no longer fight over a key.** When both declared the same field

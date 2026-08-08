@@ -182,7 +182,12 @@ function installPlugin(vault, pluginDir, settings) {
 		if (!existsSync(src)) refuse(`missing ${f} — run \`npm run build\` in the plugin repo first`);
 		cpSync(src, join(out, f));
 	}
-	writeFileSync(join(out, "data.json"), JSON.stringify(settings, null, 2));
+	// `shorterModal` on every staged vault, unless a scenario says otherwise: it takes 90px off
+	// a modal and pins it 45px from the top, so a note with sixteen fields stops reaching into
+	// the subtitles burned along the bottom of the frame. It has no settings row on purpose —
+	// nobody but a screen recorder wants it — so this is where the takes get it.
+	const staged = { shorterModal: true, ...settings };
+	writeFileSync(join(out, "data.json"), JSON.stringify(staged, null, 2));
 
 	const enabledPath = join(vault, ".obsidian", "community-plugins.json");
 	const enabled = existsSync(enabledPath) ? JSON.parse(readFileSync(enabledPath, "utf8")) : [];

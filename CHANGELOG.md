@@ -4,6 +4,26 @@ All notable changes to Fileclass are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); this project uses
 [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Changed
+
+- **A note's fields modal keeps its footer in sight.** The actions — *Insert missing fields*,
+  *Add fileClass*, *Reorder properties* — and the breadcrumb naming the note's classes sat at
+  the end of the list, so on a note with forty fields you scrolled to the bottom to reach the
+  button that fixes the top. They are pinned now, like the Save row of every editing modal.
+
+### Added
+
+- **`shorterModal`, for recording** — no settings row, `data.json` only. With
+  `"shorterModal": true`, this plugin's modals pin themselves 45px from the top of the window
+  and stop above the band a screen capture keeps for burned-in subtitles, which is what it
+  takes for a sixteen-field note not to sit under them. The reserve is calibrated on the
+  tallest caption a take may show — measured at 61, 92 and 123px for one, two and three lines,
+  6vh off the bottom — rather than on an average one, and it is fixed: a modal that resized
+  between steps because a caption grew a line would be worse on camera than one slightly
+  short. The demo tooling sets the flag on every staged vault.
+
 ## [0.2.8] - 2026-08-08
 
 ### Added

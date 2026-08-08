@@ -228,6 +228,12 @@ digit. Versions and dates are left alone.
   and navigation is the one thing no viewer needs to watch. A leaf on a base reads
   `{"type":"bases","state":{"file":"Books.base","viewName":"No author yet"}}` — measured, and
   the `viewName` matters: without it the base opens on its first view.
+- **The staged vault gets `shorterModal`.** `stage.mjs` writes it into `data.json` for every
+  take: the plugin's modals lose 90px and pin themselves 45px from the top, so a note with
+  sixteen fields stops reaching into the subtitles burned along the bottom of the frame. It is
+  deliberately absent from the settings pane — nobody but a screen recorder wants it — and a
+  scenario can turn it off by putting `shorterModal: false` in its own `settings:` block.
+
 - **Give every class its own icon.** A vault whose classes all wear the plugin's default icon
   makes the explorer a wall of identical marks, and a viewer cannot tell a book from a film
   without reading. One `icon:` per class in the fixture — `book`, `disc-3`, `film`,

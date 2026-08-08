@@ -9,6 +9,7 @@
 import { EventRef, Modal, Notice, Setting, setIcon, TFile } from "obsidian";
 
 import { modalTitle } from "./modalTitle";
+import { makeStickyFooter } from "./modalFooter";
 import { attachRowGrid } from "./rowGridKeyboard";
 
 import type FileclassPlugin from "../../main";
@@ -96,7 +97,16 @@ export class NoteFieldsModal extends Modal {
 			preferred: "Edit",
 		});
 
-		const actions = new Setting(contentEl)
+		/*
+		 * The actions and the class breadcrumb live in a pinned footer, not at the end of the
+		 * scroll. They are what you reach for once the list is long — and a long list is
+		 * exactly when they scrolled out of sight. It showed up in the shorter-modal mode used
+		 * for recording, where a sixteen-field note always scrolls, but it was true before:
+		 * inserting missing fields on a note with forty of them meant scrolling to the bottom
+		 * to find the button that fixes it.
+		 */
+		const footerEl = makeStickyFooter(contentEl);
+		const actions = new Setting(footerEl)
 			.addButton((b) =>
 				b
 					.setButtonText("Insert missing fields")
@@ -123,15 +133,15 @@ export class NoteFieldsModal extends Modal {
 			);
 		}
 
-		this.renderFileClassFooter();
+		this.renderFileClassFooter(footerEl);
 	}
 
 	/** Footer: each applied fileClass as an inheritance breadcrumb (clickable). */
-	private renderFileClassFooter(): void {
+	private renderFileClassFooter(parent: HTMLElement): void {
 		const names = this.plugin.index.getFileClasses(this.file);
 		if (!names.length) return;
 
-		const footer = this.contentEl.createDiv({ cls: "fileclass-modal-footer" });
+		const footer = parent.createDiv({ cls: "fileclass-modal-footer" });
 		const origins = this.plugin.index.getBindingOrigins(this.file);
 		for (const name of names) {
 			const crumb = footer.createDiv({ cls: "fileclass-breadcrumb" });

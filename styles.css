@@ -1315,3 +1315,46 @@ body.is-mobile .prompt.fileclass-prompt {
 	color: var(--text-faint);
 	font-size: var(--font-ui-smaller);
 }
+
+/*
+ * `shorterModal` — a recording aid, set in data.json and nowhere else (see the setting).
+ *
+ * A take burns its subtitles along the bottom of the frame, and a modal listing sixteen
+ * fields reaches straight into them. This takes 90px off the body's cap and pins the box
+ * 45px from the top of the window, so the two stop overlapping without shrinking the app.
+ *
+ * Scoped to our own modals: `.fileclass-scroll-body` is on the content of every one of them,
+ * so `:has()` finds the box that holds it and leaves Obsidian's alone.
+ */
+body.fileclass-shorter-modals .modal-container:has(> .modal .fileclass-scroll-body) {
+	align-items: flex-start;
+}
+/*
+ * The box itself is bounded, not just its scrolling body: capping the content alone left the
+ * modal running to the very bottom of the window — measured, `bottomGap: 0` — because that cap
+ * (80vh) was already taller than what remains under a 45px offset.
+ */
+body.fileclass-shorter-modals .modal:has(> .fileclass-scroll-body) {
+	margin-top: 45px;
+	/*
+	 * The reserve is calibrated on the **tallest caption a take may show**, not an average
+	 * one. Measured in a running take: the caption box is 61px for one line, 92 for two and
+	 * 123 for three, always sitting 6vh off the bottom of the window. So a three-line caption
+	 * starts 176px above the floor — and a flat 90px left 54px of a two-line one lying over
+	 * the modal, on the first step of take 026.
+	 *
+	 * `6vh + 133px` is that band plus ten pixels of air. Fixed rather than measured live on
+	 * purpose: a modal that resized between steps because a caption grew a line would be worse
+	 * on camera than one that is a little short.
+	 */
+	max-height: calc(100vh - 45px - (6vh + 133px));
+	display: flex;
+	flex-direction: column;
+}
+/* The body takes what the box leaves and scrolls inside it. `min-height: 0` is what lets a
+   flex child shrink below its content — without it the box grows past its own maximum. */
+body.fileclass-shorter-modals .modal-content.fileclass-scroll-body {
+	max-height: none;
+	flex: 1 1 auto;
+	min-height: 0;
+}

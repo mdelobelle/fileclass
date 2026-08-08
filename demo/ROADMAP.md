@@ -105,7 +105,7 @@ thread, and a tight smoke test of that type's input path.
 | - | ---- | ------- | ----------- | ------ |
 | 026 | Every field of a note, one modal | note-fields modal: rows, Alt on the type icon, Clear, the keyboard grid, and the four things in its footer | — (it works on the vault as 025b leaves it) | ✅ [published](https://www.youtube.com/watch?v=Rd7VeYbHsrE) |
 | 027 | Right-click your way through it | context menus on a note, in its text, on its tab, on a class note and on the class folder | — (works on the vault as 026 leaves it) | ✅ [published](https://www.youtube.com/watch?v=dqxv7Wrxer8) |
-| 028 | Edit buttons in the properties panel | property edit buttons | — | |
+| 028 | Buttons where you already edit | property edit buttons: one per typed row, the wrench on `fileClass`, the section actions, and Alt or right-click to edit the field itself | — (works on the vault as 027 leaves it) | |
 | 029 | Seeing at a glance what's typed | field indicators (tab, explorer, links, bases) | — | |
 | 030 | Change one field across a whole class | bulk edit (set-where) | — | |
 | 030b | Renaming a field, and every note that carries it | rename with frontmatter migration ([#108](https://github.com/mdelobelle/fileclass/issues/108)) — a Save of its own, listing the notes it will rewrite | `Book.shelf` → `storage` | |

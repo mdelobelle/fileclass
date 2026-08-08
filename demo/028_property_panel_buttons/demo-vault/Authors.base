@@ -1,0 +1,13 @@
+views:
+  - type: table
+    name: All authors
+    filters:
+      and:
+        - fileClass == "Author"
+    sort:
+      - property: born
+        direction: ASC
+    order:
+      - file.name
+      - born
+      - nationality

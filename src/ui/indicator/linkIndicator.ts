@@ -2,7 +2,9 @@
  * Internal-link field indicator (ARCHITECTURE.md §19.4, P2-bis.3a). Injects the
  * clickable icon next to internal links pointing at fileClass-bound notes:
  *   - reading view — via a markdown post-processor (per rendered block);
- *   - backlinks and Bases panels — via MutationObservers on their leaves.
+ *   - Bases panels — via MutationObservers on their leaves;
+ *   - the backlinks pane — same observer, different DOM: its results are tree items, not
+ *     links, which is why it needs a decorator of its own.
  * Live Preview (a CM6 editor extension) is a separate slice (3b).
  *
  * Same fragile-boundary discipline as FieldIndicator: per-surface flags, guarded
@@ -10,14 +12,20 @@
  */
 import { Component, TFile, debounce, getLinkpath } from "obsidian";
 import { Prec } from "@codemirror/state";
+import { EditorView } from "@codemirror/view";
 
 import type FileclassPlugin from "../../../main";
 import { INDEXED_EVENT } from "../../schema/fileclassIndex";
 import { fileWithFields, LINK_SCOPE, makeIndicatorIcon, removeIndicators } from "./indicatorDom";
-import { buildLivePreviewExtension } from "./livePreview";
+import { buildLivePreviewExtension, refreshLivePreviewIndicators } from "./livePreview";
 
 interface ViewWithFile {
 	file?: TFile;
+}
+
+/** A markdown view's editor exposes its CodeMirror view as `cm` (absent from the types). */
+interface ViewWithEditor {
+	editor?: { cm?: EditorView };
 }
 
 export class LinkIndicator extends Component {
@@ -76,22 +84,55 @@ export class LinkIndicator extends Component {
 			for (const leaf of this.plugin.app.workspace.getLeavesOfType("markdown")) {
 				const source = (leaf.view as unknown as ViewWithFile).file?.path ?? "";
 				this.guard(() => this.decorateLinks(leaf.view.containerEl, source));
+				// Reading view is DOM we can decorate; Live Preview is CodeMirror's, and it only
+				// rebuilds when told. Without this, the editor open at startup keeps the widgets
+				// it could not build before the index existed — that is to say none.
+				this.guard(() => {
+					const cm = (leaf.view as unknown as ViewWithEditor).editor?.cm;
+					cm?.dispatch({ effects: refreshLivePreviewIndicators.of(null) });
+				});
 			}
 		}
 		if (s.enableBacklinkIndicator) this.guard(() => this.watch("backlink"));
 		if (s.enableBasesIndicator) this.guard(() => this.watch("bases"));
 	}
 
-	/** Observes a leaf type and decorates its internal links as they render. */
+	/** Observes a leaf type and decorates its links as they render. */
 	private watch(viewType: string): void {
 		for (const leaf of this.plugin.app.workspace.getLeavesOfType(viewType)) {
 			const container = leaf.view.containerEl;
-			const decorate = debounce(() => this.guard(() => this.decorateLinks(container, "")), 100, true);
+			const paint = () =>
+				this.guard(() => {
+					this.decorateLinks(container, "");
+					if (viewType === "backlink") this.decorateSearchResults(container);
+				});
+			const decorate = debounce(paint, 100, true);
 			const observer = new MutationObserver(() => decorate());
 			observer.observe(container, { subtree: true, childList: true });
 			this.observers.push(observer);
-			this.decorateLinks(container, ""); // initial pass
+			paint(); // initial pass
 		}
+	}
+
+	/**
+	 * The backlinks pane holds no links at all: each result is a tree item whose title is a
+	 * plain `div`, so the internal-link decorator above walked past every one of them and the
+	 * surface never showed an icon — while the docs said it did. Measured on Obsidian 1.13:
+	 * `.search-result-file-title > .tree-item-inner`, text only, no path attribute, which is
+	 * why the note is resolved from its name the way a `[[link]]` would be.
+	 */
+	private decorateSearchResults(root: HTMLElement): void {
+		root
+			.querySelectorAll<HTMLElement>(".search-result-file-title .tree-item-inner")
+			.forEach((title) => {
+				if (title.nextElementSibling?.classList.contains(LINK_SCOPE)) return;
+				const name = (title.textContent ?? "").trim();
+				if (!name) return;
+				const dest = this.plugin.app.metadataCache.getFirstLinkpathDest(getLinkpath(name), "");
+				const file = dest && fileWithFields(this.plugin, dest.path);
+				if (!file) return;
+				title.insertAdjacentElement("afterend", makeIndicatorIcon(this.plugin, file, LINK_SCOPE));
+			});
 	}
 
 	private decorateLinks(root: HTMLElement, sourcePath: string): void {

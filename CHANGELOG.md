@@ -47,6 +47,19 @@ All notable changes to Fileclass are documented here. The format follows
   Alt over the type icon, which it can afford because there the icon and the button are two
   elements.
 
+### Fixed
+
+- **The indicator on links, on the note you open Obsidian on.** The Live Preview widgets are
+  built when an editor is created and rebuilt when the document or the viewport changes —
+  never when the *index* becomes ready, which at startup happens later. Every link therefore
+  resolved to "no fields" and no icon painted, until you navigated away and came back. The
+  editors open at startup are now told to build again once the classes are known.
+
+- **The indicator in the backlinks pane, which never appeared at all** — while the docs said
+  it did. That pane holds no links: each result is a tree item whose title is a plain `div`,
+  so the internal-link decorator walked past every one of them. It has a decorator of its own
+  now, resolving the note from its name the way a `[[link]]` would.
+
 ## [0.2.8] - 2026-08-08
 
 ### Added

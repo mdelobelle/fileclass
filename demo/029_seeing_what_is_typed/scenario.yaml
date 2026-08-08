@@ -1,0 +1,75 @@
+# Narration for take 029 — see ../SCENARIO.md for the format.
+# Fourth of arc 6, and the one that needs no clicking to make its point: the class's own icon,
+# printed wherever a note's name is written. Takes 026 to 028 each opened something; this one
+# is about what you can read before opening anything.
+#
+# The vault opens on **Dune (1984)**: it links to `[[Dune]]` (step 5) and is the only backlink
+# Dune has (step 6), so both link surfaces are reachable without arranging anything. The
+# explorer behind it shows nine classes' worth of icons, which is step 2's whole frame.
+#
+# The fixture is take 028's vault at its closing state — *Atomic Habits* carries the six fields
+# that take inserted, in Book's order.
+#
+# Facts the script leans on, all measured in the app before scripting:
+#  - six surfaces, six settings: `enableTabHeaderIndicator`, `enableFileExplorerIndicator`,
+#    `enableBookmarksIndicator`, `enableInlineLinkIndicator`, `enableBacklinkIndicator`,
+#    `enableBasesIndicator`;
+#  - counted in this vault: **29** in the file explorer, **1** on the tab header, **1** beside
+#    the `[[Dune]]` link in Live Preview, **1** in the backlinks pane, **2** in the *Film club*
+#    bookmark group (three items, one of which is the group itself), **11** in the first column
+#    of `Library.base` for eleven rows;
+#  - the destination changes with the target: on a note the icon opens `Fields — Dune (1984)`,
+#    on a **class note** it opens `Schema — Movie`. That is step 8;
+#  - the icon is the class's own, and take 025b gave every class of this vault a distinct one:
+#    a book, a disc, a film reel, a silhouette, calques, a newspaper;
+#  - a note nothing types has no icon at all — the reading list showed exactly that before
+#    take 025b claimed it by folder.
+#
+# **Two defects this take found**, both fixed on its branch:
+#  - the **backlinks pane** never showed an icon, though the docs said it did. Its results are
+#    not links — each is a tree item whose title is a plain `div` — so the internal-link
+#    decorator walked past every one of them. It has its own decorator now, resolving the note
+#    from its name the way a `[[link]]` would. Measured before: 0 icons for 1 backlink. After: 1;
+#  - and **the note open at startup had no link icons at all**. The Live Preview extension
+#    builds its widgets when the editor is created and rebuilds on doc or viewport changes —
+#    never when the *index* becomes ready, which at startup happens later. So every link
+#    resolved to "no fields" and nothing painted until you navigated away and came back.
+#    Measured: 0 on the note the vault opens on, 1 after a round trip; now 1 from the first
+#    frame, which is exactly what step 5 needs.
+title: "Fileclass — Seeing at a glance what's typed"
+description: "The class's icon, wherever a note's name is written."
+doc: "ui/#field-indicator" # deep link used in the description
+tags: "indicators, icons, explorer, backlinks, bases"
+vault_name: "Demo"
+plugin: true
+settings:
+  classFilesPath: "Classes/"
+  fileClassAlias: "fileClass"
+initial_pause: 1500
+default_pause: 900
+
+steps:
+  - title: "A typed note wears its class's icon wherever its name is written"
+    pause: 2500
+  - title: "In the file explorer: a book, a disc, a film reel — the library reads itself without being opened"
+    pause: 2700
+  - title: "Click one and you get that note's fields, without opening the note"
+    pause: 2500
+  - title: "On the tab of the note you are reading, the same icon and the same click"
+    pause: 2500
+  - title: "Beside a link in your text, it opens the linked note's fields — without leaving the page you are on"
+    pause: 2700
+  - title: "In the backlinks pane, on every note that mentions this one"
+    pause: 2500
+  - title: "In a bookmark group, and in the first column of a base — anywhere a name is listed"
+    pause: 2600
+  - title: "On a class note the icon changes destination: it opens the schema, not a note's fields"
+    pause: 2600
+  - title: "The icon is the class's own — set it once in its options, and it appears in all six places"
+    pause: 2600
+  - title: "A note nothing types has none at all, and that absence is information too"
+    pause: 2500
+  - title: "Six switches, one per surface, for the ones you would rather not see"
+    pause: 2500
+  - title: "Your vault tells you what it knows before you open a single note"
+    pause: 2500

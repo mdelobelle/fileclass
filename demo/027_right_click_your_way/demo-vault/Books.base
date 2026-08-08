@@ -1,0 +1,45 @@
+formulas:
+  Editions: note.editions.length
+  FirstYear: note.editions[0].year
+views:
+  - type: table
+    name: All books
+    filters:
+      and:
+        - fileClass == "Book"
+    sort:
+      - property: published
+        direction: ASC
+    order:
+      - file.name
+      - shelf
+      - author
+      - publisher
+      - genre
+      - published
+  - type: table
+    name: How many editions
+    filters:
+      and:
+        - fileClass == "Book"
+    sort:
+      - property: formula.Editions
+        direction: DESC
+    order:
+      - file.name
+      - formula.Editions
+      - formula.FirstYear
+      - publisher
+  - type: table
+    name: No author yet
+    filters:
+      and:
+        - fileClass == "Book"
+        - author.isEmpty()
+    sort:
+      - property: file.name
+        direction: ASC
+    order:
+      - file.name
+      - author
+      - published

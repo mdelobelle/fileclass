@@ -152,7 +152,7 @@ export class FileclassContextMenu extends Component {
 				.onClick(() => new AddFileClassModal(this.plugin, file).open())
 		);
 		// One entry per class that applies (#23). Named, not a picker: from here the
-		// answer is usually one class, and this is also the only route for a class
+		// answer is usually one class, and this is one of the two routes for a class
 		// bound by tag, path or Base view — those leave no value to click in the
 		// Properties editor. Same wrench as "Manage this fileClass" on a class note.
 		for (const name of this.plugin.index.getFileClasses(file)) {

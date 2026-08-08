@@ -132,3 +132,7 @@ other. Captions are English; YouTube translates them into your language.
 ## Right-click your way through it
 
 {{< video "027" >}}
+
+## Buttons where you already edit
+
+{{< video "028" >}}

@@ -339,5 +339,16 @@
     "durationSeconds": 141,
     "recordedWith": "0.2.8",
     "privacyStatus": "public"
+  },
+  "028": {
+    "id": "ope7-S5hL94",
+    "url": "https://www.youtube.com/watch?v=ope7-S5hL94",
+    "title": "Fileclass #028 · Buttons where you already edit",
+    "subject": "Buttons where you already edit",
+    "scenario": "028_property_panel_buttons",
+    "doc": "ui/#property-editor-buttons",
+    "durationSeconds": 145,
+    "recordedWith": "0.2.8",
+    "privacyStatus": "public"
   }
 }

@@ -4,6 +4,7 @@
  * loadData/saveData.
  */
 import { DateFormatDefaults } from "../fields/dateFormats";
+import { UnknownKeysPosition } from "../schema/reorder";
 
 
 export interface FileclassSettings {
@@ -34,6 +35,14 @@ export interface FileclassSettings {
 	enableContextMenu: boolean;
 	/** Insert a class's missing fields as soon as the class is bound to a note. */
 	insertFieldsOnBind: boolean;
+	/**
+	 * Rewrite a note's frontmatter in its class's field order after inserting missing fields
+	 * (#104). Off by default: it rewrites the whole block, so it touches lines the user did
+	 * not ask to edit and it shows up in a git diff.
+	 */
+	reorderOnInsert: boolean;
+	/** Where keys no class declares go when the frontmatter is reordered. */
+	unknownKeysPosition: UnknownKeysPosition;
 	/**
 	 * Let a modal be dragged by its title, cascade a stack of them, dim once and make
 	 * every modal of a stack clickable. Experimental and desktop-only: it works by
@@ -74,6 +83,8 @@ export const DEFAULT_SETTINGS: FileclassSettings = {
 	enableValidationColumns: true,
 	enableContextMenu: true,
 	insertFieldsOnBind: true,
+	reorderOnInsert: false,
+	unknownKeysPosition: "top",
 	enableDraggableModals: false,
 	enablePropertyEditButtons: true,
 	enablePropertyActionButtons: true,

@@ -113,6 +113,7 @@ Markdown file — in the file explorer, on a tab, or in the editor — adds:
 - **Manage note fields** → the modal above.
 - **Update a field** → pick one field and edit it.
 - **Insert missing fields**.
+- **Reorder properties** — only when the note's keys are out of its class's order.
 - **Add fileClass** — which also inserts that class's fields, unless you turn
   [**Insert fields when adding a class**](../settings/#behavior) off.
 - **Open *&lt;class&gt;* schema** — one entry per fileClass that applies to the note,

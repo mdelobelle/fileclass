@@ -14,6 +14,7 @@ import { isBasesAvailable, onCorePluginChange } from "./src/engine/basesAdapter"
 import { QueryCache } from "./src/engine/queryCache";
 import { createFileClass } from "./src/commands/createFileClass";
 import { insertMissingFields } from "./src/commands/insertMissingFields";
+import { reorderFrontmatter } from "./src/io/reorderFrontmatter";
 import { pickAndUpdateField } from "./src/fields/fieldActions";
 import { FileclassIndex } from "./src/schema/fileclassIndex";
 import {
@@ -199,6 +200,17 @@ export default class FileclassPlugin extends Plugin {
 		});
 
 		this.addCommand({
+			id: "reorder-frontmatter-in-current-file",
+			name: "Reorder frontmatter to match the class",
+			checkCallback: (checking) => {
+				const file = this.app.workspace.getActiveFile();
+				if (!file || file.extension !== "md") return false;
+				if (!checking) void this.reorderCurrent(file);
+				return true;
+			},
+		});
+
+		this.addCommand({
 			id: "create-class",
 			name: "Create a class",
 			callback: () => createFileClass(this),
@@ -269,6 +281,34 @@ export default class FileclassPlugin extends Plugin {
 				return true;
 			},
 		});
+	}
+
+	/**
+	 * Reorders a note's frontmatter to its class's field order, and says what it did — a
+	 * command that rewrites a file and then says nothing leaves you wondering whether it ran.
+	 */
+	private async reorderCurrent(file: TFile): Promise<void> {
+		const fields = this.index.getFields(file);
+		if (!fields.length) {
+			new Notice("Fileclass: this note has no class, so there is no order to match.");
+			return;
+		}
+		const { moved, unpositionable } = await reorderFrontmatter(
+			this.app,
+			file,
+			fields,
+			this.settings.unknownKeysPosition
+		);
+		if (!moved) {
+			new Notice("Fileclass: the frontmatter is already in the class's order.");
+			return;
+		}
+		// A key YAML re-sorts on its own would make the promise false; name it rather than
+		// leave the user to spot it.
+		const caveat = unpositionable.length
+			? ` (${unpositionable.join(", ")} stays where YAML puts it)`
+			: "";
+		new Notice(`Fileclass: reordered ${moved} keys${caveat}.`);
 	}
 
 	private registerVaultListeners(): void {

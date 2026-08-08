@@ -12,6 +12,7 @@ import { addCustomColor, removeCustomColor } from "../fields/customPalette";
 import { colorCircleInput } from "../ui/colorInput";
 import { applyDraggableModals } from "../ui/modalDrag";
 import { FolderSuggest } from "../ui/folderSuggest";
+import { UnknownKeysPosition } from "../schema/reorder";
 import { normalizeFolderPath } from "./settings";
 
 export class FileclassSettingTab extends PluginSettingTab {
@@ -188,6 +189,45 @@ export class FileclassSettingTab extends PluginSettingTab {
 					this.plugin.settings.insertFieldsOnBind = value;
 					await this.plugin.saveSettings();
 				})
+			);
+
+		/*
+		 * #104. `processFrontMatter` appends, so inserting a note's missing fields lands them
+		 * after whatever it already carried — which is where the disorder the users report is
+		 * created. Off by default all the same: it rewrites the whole block, so it touches
+		 * lines nobody asked to edit and it shows up in a git diff.
+		 */
+		new Setting(containerEl)
+			.setName("Reorder frontmatter when inserting fields")
+			.setDesc(
+				"After Insert missing fields, put the note's properties back in the order its class declares them. " +
+					"Rewrites the whole frontmatter block, which drops YAML comments — as any property write already does. " +
+					"The command Reorder frontmatter to match the class does it on demand, whatever this says."
+			)
+			.addToggle((toggle) =>
+				toggle.setValue(this.plugin.settings.reorderOnInsert).onChange(async (value) => {
+					this.plugin.settings.reorderOnInsert = value;
+					await this.plugin.saveSettings();
+				})
+			);
+
+		new Setting(containerEl)
+			.setName("Keys your classes don't declare")
+			.setDesc(
+				"Where a reorder puts properties no class knows about — tags, aliases, cssclasses, the fileClass key, anything hand-written."
+			)
+			.addDropdown((dropdown) =>
+				dropdown
+					.addOptions({
+						top: "First — where tags and aliases already sit",
+						bottom: "Last — after everything the class declares",
+						"keep-relative": "Where they are — only the class's keys move",
+					})
+					.setValue(this.plugin.settings.unknownKeysPosition)
+					.onChange(async (value) => {
+						this.plugin.settings.unknownKeysPosition = value as UnknownKeysPosition;
+						await this.plugin.saveSettings();
+					})
 			);
 
 		new Setting(containerEl)

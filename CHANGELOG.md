@@ -6,6 +6,31 @@ All notable changes to Fileclass are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- **Frontmatter can be put back in its class's order**
+  ([#104](https://github.com/mdelobelle/fileclass/issues/104)). Obsidian's writer appends, so
+  a key that was not there lands at the end whatever position the class gives it: *Insert
+  missing fields* on a note that already had properties put the new ones after the old, and a
+  field added to a class months later landed last on every note it reached. The class knew the
+  order all along — the fields modal and the generated views honour it — and the file was the
+  one place that did not. Reported on Reddit, where rearranging properties by hand was called
+  "such a huge waste of time".
+
+  The command **Reorder frontmatter to match the class**, an entry in a note's right-click
+  menu, a **⇅ Reorder properties** action beside *Add property*, and a button in the
+  note-fields modal. The last three appear **only when the note is actually out of order** —
+  their presence is the message, and the check costs half a microsecond against the parsed
+  cache. Optionally right after an insert, which is where the disorder is created:
+  *Reorder frontmatter when inserting fields*, off by default.
+
+  Three properties of the operation, since it rewrites a block you did not ask to edit: a note
+  already in order is **not touched at all** (no write, no modification time, no diff); values
+  are re-attached as they were, block scalars, dates and nested objects included; and the
+  rewrite **drops YAML comments**, exactly as any property write already does. Keys no class
+  declares — `tags`, `aliases`, the `fileClass` key, anything hand-written — are never dropped
+  and never reordered among themselves; where they sit is a setting, first by default.
+
 ### Changed
 
 - **A class's tags, folders and bookmark groups are picked, not typed**

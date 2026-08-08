@@ -20,11 +20,13 @@
  * here, behind a setting, dedup-guarded, best-effort, removed on unload. Core
  * features never depend on it.
  */
-import { Component, TFile, debounce, setIcon } from "obsidian";
+import { Component, Notice, TFile, debounce, setIcon } from "obsidian";
 
 import type FileclassPlugin from "../../main";
 import { insertMissingFields } from "../commands/insertMissingFields";
 import { missingRootFields } from "../fields/missingFields";
+import { reorderFrontmatter } from "../io/reorderFrontmatter";
+import { reorderPlan } from "../schema/reorder";
 import { controlActionFor, controlLabel } from "../fields/controlAction";
 import { EditContext, nextDateActionFor, runControlAction } from "../fields/fieldActions";
 import { isInputSupported } from "../fields/support";
@@ -154,7 +156,17 @@ export class PropertyEditButtons extends Component {
 		const missing = bound
 			? missingRootFields(fields, (f) => hasFieldKey(this.plugin.app, file, f))
 			: [];
-		const state = `${file.path}:${bound}:${missing.length}`;
+		// Cheap enough to ask on every render: one pass over the note's keys, no I/O — the
+		// frontmatter is already parsed in the cache. `null` means "already in order", which
+		// is also what decides whether the button exists at all (#104).
+		const outOfOrder =
+			bound &&
+			reorderPlan(
+				fields,
+				Object.keys(this.plugin.app.metadataCache.getFileCache(file)?.frontmatter ?? {}),
+				this.plugin.settings.unknownKeysPosition
+			) !== null;
+		const state = `${file.path}:${bound}:${missing.length}:${outOfOrder ? "unordered" : "ordered"}`;
 		if (existing?.dataset.fcState === state) return;
 		existing?.remove();
 
@@ -181,7 +193,33 @@ export class PropertyEditButtons extends Component {
 				)
 			);
 		}
+		// Same rule as the button above: it appears when there is something to do, and its
+		// presence is the whole message. A note already in its class's order shows nothing.
+		if (outOfOrder) {
+			wrapper.append(
+				this.makeActionButton(
+					"arrow-down-up",
+					"Reorder properties",
+					"Put this note's properties back in the order its class declares them",
+					() => void this.reorder(file, fields)
+				)
+			);
+		}
 		add.after(wrapper);
+	}
+
+	private async reorder(file: TFile, fields: Field[]): Promise<void> {
+		const { moved, unpositionable } = await reorderFrontmatter(
+			this.plugin.app,
+			file,
+			fields,
+			this.plugin.settings.unknownKeysPosition
+		);
+		if (!moved) return;
+		const caveat = unpositionable.length
+			? ` (${unpositionable.join(", ")} stays where YAML puts it)`
+			: "";
+		new Notice(`Fileclass: reordered ${moved} properties${caveat}.`);
 	}
 
 	private makeActionButton(

@@ -6,13 +6,15 @@
  * clearField) — no new write path. Re-renders on
  * metadata changes so edits made through sub-modals show immediately.
  */
-import { EventRef, Modal, Setting, setIcon, TFile } from "obsidian";
+import { EventRef, Modal, Notice, Setting, setIcon, TFile } from "obsidian";
 
 import { modalTitle } from "./modalTitle";
 import { attachRowGrid } from "./rowGridKeyboard";
 
 import type FileclassPlugin from "../../main";
 import { insertMissingFields } from "../commands/insertMissingFields";
+import { reorderFrontmatter } from "../io/reorderFrontmatter";
+import { reorderPlan } from "../schema/reorder";
 import { makeDisplayDeps } from "../fields/displayDeps";
 import { controlActionFor, controlLabel } from "../fields/controlAction";
 import {
@@ -93,7 +95,7 @@ export class NoteFieldsModal extends Modal {
 			preferred: "Edit",
 		});
 
-		new Setting(contentEl)
+		const actions = new Setting(contentEl)
 			.addButton((b) =>
 				b
 					.setButtonText("Insert missing fields")
@@ -104,6 +106,21 @@ export class NoteFieldsModal extends Modal {
 					.setButtonText("Add fileClass")
 					.onClick(() => new AddFileClassModal(this.plugin, this.file).open())
 			);
+		/*
+		 * Only when the file disagrees with the class (#104). This modal already lists fields
+		 * in the class's order — that is the point of it — so the button changes nothing here;
+		 * what it fixes is the note on disk, and everything that reads the note raw: source
+		 * mode, git, and any other tool. The button leaves once the two agree, which is the
+		 * only feedback the modal itself can give.
+		 */
+		if (this.isOutOfOrder(fields)) {
+			actions.addButton((b) =>
+				b
+					.setButtonText("Reorder properties")
+					.setTooltip("Put this note's properties back in the order its class declares them")
+					.onClick(() => void this.reorderProperties(fields))
+			);
+		}
 
 		this.renderFileClassFooter();
 	}
@@ -272,5 +289,29 @@ export class NoteFieldsModal extends Modal {
 		if (!dest) return null;
 		const target = navIndicatorFile(this.plugin, dest.path);
 		return target ? makeIndicatorIcon(this.plugin, target, MODAL_SCOPE) : null;
+	}
+
+	/** Does the note's frontmatter disagree with the order its class declares? */
+	private isOutOfOrder(fields: Field[]): boolean {
+		if (!fields.length) return false;
+		const keys = Object.keys(this.app.metadataCache.getFileCache(this.file)?.frontmatter ?? {});
+		return reorderPlan(fields, keys, this.plugin.settings.unknownKeysPosition) !== null;
+	}
+
+	private async reorderProperties(fields: Field[]): Promise<void> {
+		const { moved, unpositionable } = await reorderFrontmatter(
+			this.app,
+			this.file,
+			fields,
+			this.plugin.settings.unknownKeysPosition
+		);
+		if (!moved) return;
+		const caveat = unpositionable.length
+			? ` (${unpositionable.join(", ")} stays where YAML puts it)`
+			: "";
+		new Notice(`Fileclass: reordered ${moved} properties${caveat}.`);
+		// The modal redraws on the metadata change this write causes; render now so the button
+		// goes as soon as the work is done rather than a cache tick later.
+		this.render();
 	}
 }

@@ -317,5 +317,16 @@
     "durationSeconds": 195,
     "recordedWith": "0.2.8",
     "privacyStatus": "public"
+  },
+  "026": {
+    "id": "Rd7VeYbHsrE",
+    "url": "https://www.youtube.com/watch?v=Rd7VeYbHsrE",
+    "title": "Fileclass #026 · Every field of a note, one modal",
+    "subject": "Every field of a note, one modal",
+    "scenario": "026_every_field_one_modal",
+    "doc": "ui/#note-fields-modal",
+    "durationSeconds": 180,
+    "recordedWith": "0.2.8",
+    "privacyStatus": "public"
   }
 }

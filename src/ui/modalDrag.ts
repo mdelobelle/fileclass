@@ -28,6 +28,18 @@ export function applyDraggableModals(enabled: boolean): void {
 	document.body.toggleClass(DRAGGABLE_MODALS_CLASS, enabled);
 }
 
+/** Body class for `shorterModal` — see the setting, and the rules in styles.css. */
+export const SHORTER_MODALS_CLASS = "fileclass-shorter-modals";
+
+/**
+ * Shorter, higher modals, for recording: shorter by the height of a three-line caption, pinned 45px from the top,
+ * so a tall modal stops reaching into the subtitles burned along the bottom of the frame.
+ * No settings row — `data.json` only.
+ */
+export function applyShorterModals(enabled: boolean): void {
+	document.body.toggleClass(SHORTER_MODALS_CLASS, enabled);
+}
+
 /**
  * How much of a dragged modal must stay on screen, in px. Looked at rather than reasoned
  * about: at 48px the modal reads as *gone* — a corner and three letters of its title —

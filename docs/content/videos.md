@@ -124,3 +124,7 @@ other. Captions are English; YouTube translates them into your language.
 ## Notes a class claims by itself
 
 {{< video "025b" >}}
+
+## Every field of a note, one modal
+
+{{< video "026" >}}

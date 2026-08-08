@@ -118,10 +118,27 @@ export function attachRowGrid(container: HTMLElement, opts: RowGridOptions): () 
 	}
 
 	const onKeyDown = (e: KeyboardEvent): void => {
-		if (!handlesKey(e.key)) return;
 		const el = e.target as HTMLElement | null;
-		// Never steal an arrow from something being typed in.
+		// Never steal a key from something being typed in.
 		if (el?.matches("input, textarea, select, [contenteditable='true']")) return;
+
+		/*
+		 * Enter and Space fire the focused action. The grid walks over Obsidian's
+		 * `clickable-icon`s, which are **divs**: they take focus because we give them a tab
+		 * index, and then the keyboard did nothing at all — you could arrow onto a field's
+		 * pencil and press Enter forever. A <button> handles this itself, so only the icons
+		 * need it, and only when they are the thing focused.
+		 */
+		if ((e.key === "Enter" || e.key === " ") && el && !el.closest("button")) {
+			const action = el.closest<HTMLElement>(opts.actionSelector);
+			if (action && container.contains(action)) {
+				e.preventDefault();
+				e.stopPropagation();
+				action.click();
+			}
+			return;
+		}
+		if (!handlesKey(e.key)) return;
 		const grid = rowsOf();
 		const rowIndex = grid.findIndex((row) => el && row.contains(el));
 		if (rowIndex === -1) return;

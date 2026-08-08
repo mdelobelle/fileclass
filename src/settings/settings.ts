@@ -44,6 +44,16 @@ export interface FileclassSettings {
 	/** Where keys no class declares go when the frontmatter is reordered. */
 	unknownKeysPosition: UnknownKeysPosition;
 	/**
+	 * Undocumented, and deliberately absent from the settings tab: shortens every modal of
+	 * this plugin — enough to clear a three-line subtitle — and pins it 45px from the top.
+	 *
+	 * It exists for **recording**. The demo takes burn their subtitles into the bottom of the
+	 * frame, and a tall modal — a note with sixteen fields — reaches down into them. Set it by
+	 * hand in `data.json` (`"shorterModal": true`); the demo tooling sets it for every staged
+	 * vault. A setting nobody but a screen recorder wants does not belong in a settings pane.
+	 */
+	shorterModal?: boolean;
+	/**
 	 * Let a modal be dragged by its title, cascade a stack of them, dim once and make
 	 * every modal of a stack clickable. Experimental and desktop-only: it works by
 	 * neutralising Obsidian's own full-window modal backdrops, which is a shared surface —
@@ -85,6 +95,7 @@ export const DEFAULT_SETTINGS: FileclassSettings = {
 	insertFieldsOnBind: true,
 	reorderOnInsert: false,
 	unknownKeysPosition: "top",
+	shorterModal: false,
 	enableDraggableModals: false,
 	enablePropertyEditButtons: true,
 	enablePropertyActionButtons: true,

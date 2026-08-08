@@ -6,6 +6,18 @@ All notable changes to Fileclass are documented here. The format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- **Enter fires the action you walked to.** The keyboard grid of a fields list moves the focus
+  onto Obsidian's `clickable-icon`s, which are divs: they took the focus, and then Enter and
+  Space did nothing at all — you could arrow onto a field's pencil and press Enter forever.
+  Both keys now fire the focused action, leaving real buttons to handle themselves.
+
+- **A hovered class stops leaking bars under the footer.** Hovering a fileClass marks its rows
+  with an accent bar drawn 9px into the left gutter — outside the sticky footer's background,
+  so rows scrolling underneath left a stack of little bars showing through it. The footer's
+  background now covers the scroll box edge to edge.
+
 ### Changed
 
 - **A note's fields modal keeps its footer in sight.** The actions — *Insert missing fields*,

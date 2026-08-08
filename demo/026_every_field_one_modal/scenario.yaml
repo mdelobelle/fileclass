@@ -27,7 +27,11 @@
 #    the breadcrumb with its origin, *Insert missing fields*, *Add fileClass*, and *Reorder
 #    properties* — which appears only when the file has drifted, as Dune's has;
 #  - the modal follows the file: `pages` written to 999 from outside while it was open showed
-#    999 without a click.
+#    999 without a click;
+#  - and the third way in, which step 12 closes on: *Dune (1984)* links to `[[Dune]]`, and the
+#    indicator beside that link opens the linked note's fields without leaving the note being
+#    read. The link was added to the fixture for this step — measured, one indicator renders
+#    beside it in the editor.
 title: "Fileclass — Every field of a note, one modal"
 description: "The note-fields modal: rows, keyboard, and the four things in its footer."
 doc: "ui/#note-fields-modal" # deep link used in the description
@@ -63,5 +67,5 @@ steps:
     pause: 2700
   - title: "And when the file has drifted from the order the class declares, one button puts it back"
     pause: 2600
-  - title: "One modal, every field, whatever wrote them — and it follows the file while you work elsewhere"
+  - title: "One modal, every field — and it opens from a link too, without leaving the note you are reading"
     pause: 2600

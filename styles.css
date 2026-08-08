@@ -954,6 +954,14 @@ input.fileclass-color-circle.is-custom::-webkit-color-swatch-wrapper {
 	padding-top: var(--size-4-2);
 	background: var(--modal-background, var(--background-primary));
 	border-top: 1px solid var(--background-modifier-border);
+	/*
+	 * The background covers the scroll box edge to edge, not just the column of rows. A row
+	 * highlighted by hovering its class draws an accent bar 9px into the left gutter — outside
+	 * this footer's box — so rows scrolling underneath left a stack of little bars showing
+	 * through it. Measured: footer 501→1011, content 493→1019, bar at 492.
+	 */
+	margin-inline: calc(-1 * var(--size-4-3));
+	padding-inline: var(--size-4-3);
 }
 .fileclass-sticky-footer > .setting-item {
 	border-top: none;

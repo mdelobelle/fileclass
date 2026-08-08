@@ -1,0 +1,68 @@
+# Narration for take 030 — see ../SCENARIO.md for the format.
+# Fifth of arc 6, and the first take where an action touches notes the operator never opens.
+# Everything before it edited one note at a time; this one edits a class's worth, and spends
+# five of its twelve steps on what happens *before* anything is written.
+#
+# The vault opens on **Classes/Book.md**, which is where the gesture starts: the bulk edit is
+# reached from a class note's right-click menu (take 027 filmed that menu, step 11).
+#
+# The take sets `Book.ownership` — a Cycle, so step 5 shows the field's own list rather than a
+# text box, and the numbers work out without arranging anything: **7 notes matched, 6 to
+# update, 1 already at the value, 0 errors**, measured on this fixture. That "1 already" is
+# what makes step 7 worth its beat: a bulk edit that counted 7 changes would be lying.
+#
+# The fixture is take 029's vault at its closing state.
+#
+# Facts the script leans on, all measured in the app before scripting:
+#  - the command is `Fileclass: Bulk edit a field`, and the same action sits in a class note's
+#    right-click menu as *Bulk edit a field of this fileClass*;
+#  - the modal asks four things: **Fileclass**, **Filter** (All notes · Field condition · Base
+#    view), **Field to set**, and **New value** — the last through a *Set value…* button that
+#    opens the field's own input, so a Cycle offers `Wanted / Owned / Lent out` and a Date its
+#    calendar. The value row **appears once a field is chosen**, so the modal reads as three
+#    questions until step 5 answers the third; and it rebuilds its rows when the class changes,
+#    which is worth knowing before clicking twice in a row on camera;
+#  - **Preview** is a separate modal, `Bulk edit — preview`, and it reads
+#    `6 note(s) will be updated · 1 already at the value · 0 error(s) · 7 matched`, lists every
+#    note as `The Lord of the Rings.md: (empty) → Lent out`, carries an *Include all* toggle,
+#    and offers `Cancel` beside `Apply (6)` — the count is in the button, which is step 10;
+#  - nothing is written until Apply: the preview is computed, not applied. Measured on the
+#    whole flow — before it, one note in the vault reads `Lent out`; after, seven, with the
+#    notice `Fileclass: updated 6 note(s).`
+title: "Fileclass — One field across a whole class"
+description: "Bulk edit: what it will change, counted and listed, before it changes anything."
+doc: "ui/#bulk-edit-set-where" # deep link used in the description
+tags: "bulk edit, set-where, preview, class"
+vault_name: "Demo"
+plugin: true
+settings:
+  classFilesPath: "Classes/"
+  fileClassAlias: "fileClass"
+initial_pause: 1500
+default_pause: 900
+
+steps:
+  - title: "Some corrections belong to a whole class rather than to one note — a value you set once, everywhere"
+    pause: 2600
+  - title: "From the class's own right-click menu: bulk edit one of its fields"
+    pause: 2500
+  - title: "Four questions, in order: which class, which notes, which field, which value"
+    pause: 2500
+  - title: "Which notes: all of them, those matching a condition, or those a base view returns"
+    pause: 2600
+  - title: "Which value: the field's own input — a cycle offers its list, a date its calendar"
+    pause: 2600
+  - title: "Nothing is written yet. First, the preview"
+    pause: 2300
+  - title: "It counts before it changes: six to update, one already at that value, no errors, seven matched"
+    pause: 2800
+  - title: "And it names them, one by one — what each note has now, and what it would have"
+    pause: 2600
+  - title: "Take them all, or untick the ones you would rather leave alone"
+    pause: 2500
+  - title: "The button carries the number: apply six, and only those six are written"
+    pause: 2600
+  - title: "What it writes goes through the same door as a field edited by hand — a value the type refuses is counted, not written"
+    pause: 2800
+  - title: "A class is a promise; this is how you keep it on the notes that were written before it"
+    pause: 2600

@@ -107,7 +107,7 @@ thread, and a tight smoke test of that type's input path.
 | 027 | Right-click your way through it | context menus on a note, in its text, on its tab, on a class note and on the class folder | — (works on the vault as 026 leaves it) | ✅ [published](https://www.youtube.com/watch?v=dqxv7Wrxer8) |
 | 028 | Buttons where you already edit | property edit buttons: one per typed row, the wrench on `fileClass`, the section actions, and Alt or right-click to edit the field itself | — (works on the vault as 027 leaves it) | ✅ [published](https://www.youtube.com/watch?v=ope7-S5hL94) |
 | 029 | Seeing at a glance what's typed | field indicators on all six surfaces — tab, explorer, links, backlinks, bookmarks, bases — and what each one opens | — (works on the vault as 028 leaves it) | ✅ [published](https://www.youtube.com/watch?v=zA4KadPjbNg) |
-| 030 | Change one field across a whole class | bulk edit (set-where) | — | |
+| 030 | One field across a whole class | bulk edit (set-where): the four questions, the counted preview, and Apply carrying its number | — (works on the vault as 029 leaves it) | ✅ [published](https://www.youtube.com/watch?v=qRtYZ3lCy5c) |
 | 030b | Renaming a field, and every note that carries it | rename with frontmatter migration ([#108](https://github.com/mdelobelle/fileclass/issues/108)) — a Save of its own, listing the notes it will rewrite | `Book.shelf` → `storage` | |
 | 031 | New notes that arrive already typed | Templater / Templates | a Book template | |
 

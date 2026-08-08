@@ -140,3 +140,7 @@ other. Captions are English; YouTube translates them into your language.
 ## Seeing at a glance what's typed
 
 {{< video "029" >}}
+
+## One field across a whole class
+
+{{< video "030" >}}

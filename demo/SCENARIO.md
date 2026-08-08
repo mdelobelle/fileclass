@@ -228,6 +228,13 @@ digit. Versions and dates are left alone.
   and navigation is the one thing no viewer needs to watch. A leaf on a base reads
   `{"type":"bases","state":{"file":"Books.base","viewName":"No author yet"}}` — measured, and
   the `viewName` matters: without it the base opens on its first view.
+- **Give every class its own icon.** A vault whose classes all wear the plugin's default icon
+  makes the explorer a wall of identical marks, and a viewer cannot tell a book from a film
+  without reading. One `icon:` per class in the fixture — `book`, `disc-3`, `film`,
+  `book-open`, `user-round`, `layers`, `calendar`, `newspaper`, `library` — and the binding of
+  a note becomes legible in a frame that was showing it anyway. Check what actually paints
+  rather than trusting the name: a Lucide id that does not exist falls back silently.
+
 - **Only show what earlier takes have introduced.** The series is cumulative, so a surface
   that has its own take later must not carry a step here — `fileclass-table` and its
   validation columns belong to arc 7, so take 023 makes its point with a plain Bases view and

@@ -96,7 +96,7 @@ thread, and a tight smoke test of that type's input path.
 | - | ---- | ------- | ----------- | ------ |
 | 023 | Fields you can't leave empty | required fields | `Book.author` required, James Clear | ✅ [published](https://www.youtube.com/watch?v=7F5BvcUbUAc) |
 | 024 | One parent class, three children | inheritance (`extends`), `excludes`, redeclaring | `Media` → `Book`/`Album`/`Comic`, plus `Movie` and two films | ✅ [published](https://www.youtube.com/watch?v=-bQ6s6M_pkk) |
-| 025 | Two classes on one note | multiple binding, a global class every note carries | `Article` class, `Everything` (the baseline), *As We May Think*, Vannevar Bush | |
+| 025 | Two classes on one note | multiple binding, a global class every note carries | `Article` class, `Everything` (the baseline), *As We May Think*, Vannevar Bush | ✅ [published](https://www.youtube.com/watch?v=dz0JTL1bb9Y) |
 | 025b | Notes a class claims by itself | `Map with tag`, `Tag names`, `Files paths`, `Bookmark groups` — the bindings that type a note without a word in its frontmatter. The take also carries [#121](https://github.com/mdelobelle/fileclass/issues/121): the three lists picked from the vault's own tags, folders and bookmark groups instead of typed | a `Reading list/` folder bound by path, `#album` notes, a bookmark group | |
 
 ## Arc 6 — filling fields fast

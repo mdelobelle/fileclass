@@ -111,6 +111,37 @@ Conversely a field's **Clear** removes the key altogether. In a base, the filter
 catches both cases is `author.isEmpty()`: `!author` matches nothing, and
 `author == ""` misses the note where the key is simply absent.
 
+## The order of a note's properties
+
+Obsidian's frontmatter writer **appends**: a key that was not there lands at the end,
+whatever position the class gives it. So *Insert missing fields* on a note that already
+carried properties puts the new ones after the old, and a field added to a class months
+later lands last on every note it reaches. The class knows the order — its `fields` list,
+reorderable in the schema editor — and the fields modal and generated views honour it. The
+file was the one place that did not.
+
+**Reorder frontmatter to match the class** puts it back: a command, an entry in a note's
+right-click menu, and a **⇅ Reorder properties** action beside *Add property* — the last two
+appear only when the note is actually out of order, so their presence is the message.
+Turning on [**Reorder frontmatter when inserting fields**](../settings/#behavior) does it
+right after an insert, which is where the disorder is created in the first place.
+
+Three things to know before you run it on a vault:
+
+- **A reorder is a rewrite.** Key position is not addressable, so the whole frontmatter
+  block is written again — which **drops YAML comments**, exactly as any property write
+  already does. Nothing else changes: values are re-attached as they were, block scalars,
+  dates and nested objects included.
+- **Nothing to do, nothing written.** A note already in its class's order is not touched at
+  all: no write, no modification time, no diff.
+- **Integer-like keys stay put.** YAML sorts keys like `2024` numerically whatever we ask,
+  so a field with such a name will not follow the plan. The notice says which ones.
+
+Keys no class declares — `tags`, `aliases`, `cssclasses`, the `fileClass` key itself,
+anything you wrote by hand — are never dropped and never reordered among themselves. Where
+they sit is [a setting](../settings/#behavior): first (the default), last, or exactly where
+they already are.
+
 ## Number fields
 
 {{< video "003" >}}

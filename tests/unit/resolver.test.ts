@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { Field } from "../../src/schema/field";
 import {
+	describeOrigin,
 	FileBinding,
 	FileClassRegistry,
 	resolveBinding,
@@ -96,6 +97,21 @@ describe("resolveBinding priority", () => {
 		expect(r.fields.map((f) => f.id)).toEqual(["c1", "r1"]);
 	});
 
+	it("binds a note held by a mapped bookmark group", () => {
+		// The resolver has accepted `bookmarkGroups` since the first phase; until 0.2.8 the
+		// index never filled it, so a class bound to a bookmark group claimed nothing at all.
+		const r = resolveBinding({ ...emptyBinding, bookmarkGroups: ["Reading"] }, makeRegistry());
+		expect(r.fileClassNames).toEqual(["Book"]);
+	});
+
+	it("prefers the frontmatter alias over a bookmark group, and keeps both", () => {
+		const r = resolveBinding(
+			{ ...emptyBinding, innerNames: ["Todo"], bookmarkGroups: ["Reading"] },
+			makeRegistry()
+		);
+		expect(r.fileClassNames).toEqual(["Todo", "Book"]);
+	});
+
 	it("gives an unbound note the global fileClass", () => {
 		const r = resolveBinding(emptyBinding, makeRegistry({ globalFileClass: "Global" }));
 		expect(r.source).toBe("global");
@@ -157,6 +173,24 @@ describe("a nested tag binds to the class its parent tag maps", () => {
 		expect(tagAncestry("")).toEqual([]);
 	});
 
+	it("ignores the case of a tag, as Obsidian does everywhere else", () => {
+		// Measured in the app: the file keeps `tags: [Album]` as written, but the vault's own
+		// registry reports `#album` — folded. Matching exactly meant a class mapped on `Album`
+		// claimed `#Album` and missed `#album`, while the picker could only offer the latter.
+		const registry = makeRegistry({ tagBindings: new Map([["album", "Book"]]) });
+		for (const tag of ["Album", "ALBUM", "album"]) {
+			expect(resolveBinding({ ...emptyBinding, tags: [tag] }, registry).fileClassNames).toEqual([
+				"Book",
+			]);
+		}
+	});
+
+	it("and the case of a nested tag's parent too", () => {
+		const registry = makeRegistry({ tagBindings: new Map([["album", "Book"]]) });
+		const r = resolveBinding({ ...emptyBinding, tags: ["Album/Live"] }, registry);
+		expect(r.fileClassNames).toEqual(["Book"]);
+	});
+
 	it("binds #book/fiction to the class mapped on book", () => {
 		// Obsidian's tag search and Bases' file.hasTag() both include children, so a
 		// generated view showed such notes while the resolver left them untyped.
@@ -179,5 +213,52 @@ describe("a nested tag binds to the class its parent tag maps", () => {
 	it("does not bind a sibling branch", () => {
 		const r = resolveBinding({ ...emptyBinding, tags: ["notebook/fiction"] }, makeRegistry());
 		expect(r.fileClassNames).toEqual([]);
+	});
+});
+
+describe("where a class came from", () => {
+	it("names the tag, the folder or the bookmark group that claimed the note", () => {
+		// Three of the four routes leave nothing in the file, so a note can carry a class with
+		// an empty frontmatter; without this, finding out which option claimed it means opening
+		// every class and reading its options.
+		const registry = makeRegistry({ tagBindings: new Map([["book", "Book"]]) });
+		const byTag = resolveBinding({ ...emptyBinding, tags: ["Book"] }, registry);
+		expect(byTag.origins.get("Book")).toEqual({ kind: "tag", value: "book" });
+
+		const byPath = resolveBinding({ ...emptyBinding, folderPath: "Projects/2026" }, makeRegistry());
+		expect(byPath.origins.get("Project")).toEqual({ kind: "path", value: "Projects" });
+
+		const byBookmark = resolveBinding(
+			{ ...emptyBinding, bookmarkGroups: ["Reading"] },
+			makeRegistry()
+		);
+		expect(byBookmark.origins.get("Book")).toEqual({ kind: "bookmark", value: "Reading" });
+	});
+
+	it("says frontmatter when the note names the class itself", () => {
+		const r = resolveBinding({ ...emptyBinding, innerNames: ["Book"] }, makeRegistry());
+		expect(r.origins.get("Book")).toEqual({ kind: "frontmatter" });
+	});
+
+	it("keeps the first, highest-priority reason when two routes claim the same class", () => {
+		const registry = makeRegistry({ tagBindings: new Map([["book", "Book"]]) });
+		const r = resolveBinding({ ...emptyBinding, innerNames: ["Book"], tags: ["book"] }, registry);
+		expect(r.origins.get("Book")).toEqual({ kind: "frontmatter" });
+	});
+
+	it("marks the baseline as vault-wide", () => {
+		const r = resolveBinding(
+			{ ...emptyBinding, innerNames: ["Book"] },
+			makeRegistry({ globalFileClass: "Global" })
+		);
+		expect(r.origins.get("Global")).toEqual({ kind: "global" });
+		expect(r.origins.get("Book")).toEqual({ kind: "frontmatter" });
+	});
+
+	it("reads in one glance", () => {
+		expect(describeOrigin({ kind: "tag", value: "album" })).toBe("#album");
+		expect(describeOrigin({ kind: "path", value: "Reading list" })).toBe("/Reading list");
+		expect(describeOrigin({ kind: "bookmark", value: "Film club" })).toBe("*Film club");
+		expect(describeOrigin({ kind: "frontmatter" })).toBe("");
 	});
 });

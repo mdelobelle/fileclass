@@ -306,5 +306,16 @@
     "durationSeconds": 185,
     "recordedWith": "0.2.7",
     "privacyStatus": "public"
+  },
+  "025b": {
+    "id": "lCiJnJr7IQ8",
+    "url": "https://www.youtube.com/watch?v=lCiJnJr7IQ8",
+    "title": "Fileclass #025b · Notes a class claims by itself",
+    "subject": "Notes a class claims by itself",
+    "scenario": "025b_notes_a_class_claims",
+    "doc": "schema/#picking-what-a-class-claims",
+    "durationSeconds": 195,
+    "recordedWith": "0.2.8",
+    "privacyStatus": "public"
   }
 }

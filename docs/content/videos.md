@@ -120,3 +120,7 @@ other. Captions are English; YouTube translates them into your language.
 ## Two classes on one note
 
 {{< video "025" >}}
+
+## Notes a class claims by itself
+
+{{< video "025b" >}}

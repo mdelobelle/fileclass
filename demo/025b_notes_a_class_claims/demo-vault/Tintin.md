@@ -1,0 +1,8 @@
+---
+fileClass: Series
+color: "#08b94e"
+icon: rocket
+publisher: Casterman
+started: 1929-01-10
+---
+Twenty-four albums, and a reporter who almost never files a story.

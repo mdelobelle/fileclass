@@ -95,10 +95,23 @@ are combined in this priority order:
    its parent are mapped, the most specific class comes first and the parent still
    applies. Frontmatter tags and inline `#tags` both count.
 3. **Path match** — the note lives under one of a fileClass's `filesPaths`.
-4. **Bookmark group match** — the note is in a mapped bookmark group.
+4. **Bookmark group match** — the note is in a mapped bookmark group, or in one nested
+   under it: a note in `Films/Tarkovsky` answers to a class bound to `Films`, the way a
+   nested tag answers to its parent.
 5. **Base-view match** — the note is returned by a fileClass's bound Base view
    (replaces Metadata Menu's Dataview `fileClassQueries`; wired in a later phase).
 6. **Preset fields** — a last-resort field set, for a note none of the above reaches.
+
+### Picking what a class claims
+
+`Tag names`, `Files paths` and `Bookmark groups`, in a class's options, are **picked from the
+vault**, not typed: the tags it uses (most used first), its folders, and the groups of the
+Bookmarks core plugin. Everything you could write there already exists, and a misspelling
+used to bind nothing and say nothing.
+
+A binding that matches nothing today — a folder renamed, a tag that fell out of use — is
+**kept and still offered**, since dropping it on sight would untype every note it reached.
+When there is nothing to offer at all, the row says so rather than opening an empty picker.
 
 ### The global fileClass
 

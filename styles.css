@@ -1308,3 +1308,10 @@ body.is-mobile .prompt.fileclass-prompt {
 	color: var(--text-muted);
 	font-size: var(--font-ui-small);
 }
+/* Where a class came from, in a note's breadcrumb: `Media › Book (from /Reading list)`. Muted
+   and a size down — it explains the name beside it rather than competing with it. */
+.fileclass-breadcrumb-origin {
+	margin-left: 4px;
+	color: var(--text-faint);
+	font-size: var(--font-ui-smaller);
+}

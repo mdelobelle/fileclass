@@ -31,9 +31,11 @@ letters moment doesn't know, so a format is judged on what it writes.
 | **Canvas fields engine** | Auto-fills `Canvas`/`CanvasGroup`/`CanvasGroupLink` fields from `.canvas` files. This is the one surface that writes frontmatter automatically. |
 | **Context menu entries** | Adds Fileclass actions to the file and editor right-click menus, and **Create a class** on the class-files folder. |
 | **Insert fields when adding a class** | Binding a fileClass to a note adds its missing fields to the frontmatter straight away, instead of leaving you to run *Insert missing fields*. On by default. |
+| **Reorder frontmatter when inserting fields** | After *Insert missing fields*, puts the note's properties back in the order its class declares them. **Off by default**: it rewrites the whole frontmatter block, so it touches lines you did not ask to edit and shows up in a git diff. The command **Reorder frontmatter to match the class** does it on demand whatever this says. |
+| **Keys your classes don't declare** | Where a reorder puts properties no class knows about — `tags`, `aliases`, `cssclasses`, the `fileClass` key, anything hand-written. *First* (the default, where those already sit), *Last*, or *Where they are* — the last one moves only the keys your class declares, into the slots they already occupied. |
 | **Property editor buttons** | Shows a per-field edit button (its type icon) in Obsidian's native Properties editor, for typed input — and, on the `fileClass` row, a wrench opening that class's schema. |
 | **Movable modals (experimental)** | Drag a modal by its title, offset each modal opening over another, dim the app once instead of once per modal, and let every modal of a stack be clicked — not only the topmost. **Off by default**: it works by neutralising Obsidian's own full-window modal backdrops, a surface every plugin shares. Desktop only, and while modals are stacked an outside click closes nothing (Escape still closes the top one). |
-| **Property section actions** | Adds **+ Add a class** beside Obsidian's *+ Add property*, plus **+ Insert *N* missing fields** when the note is missing any. On by default. |
+| **Property section actions** | Adds **+ Add a class** beside Obsidian's *+ Add property*, plus **+ Insert *N* missing fields** when the note is missing any and **⇅ Reorder properties** when they are out of their class's order. On by default. |
 
 ## Indicators
 

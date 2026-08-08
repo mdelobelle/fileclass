@@ -6,13 +6,16 @@
  * clearField) — no new write path. Re-renders on
  * metadata changes so edits made through sub-modals show immediately.
  */
-import { EventRef, Modal, Setting, setIcon, TFile } from "obsidian";
+import { EventRef, Modal, Notice, Setting, setIcon, TFile } from "obsidian";
 
 import { modalTitle } from "./modalTitle";
 import { attachRowGrid } from "./rowGridKeyboard";
 
 import type FileclassPlugin from "../../main";
 import { insertMissingFields } from "../commands/insertMissingFields";
+import { reorderFrontmatter } from "../io/reorderFrontmatter";
+import { reorderPlan } from "../schema/reorder";
+import { describeOrigin } from "../schema/resolver";
 import { makeDisplayDeps } from "../fields/displayDeps";
 import { controlActionFor, controlLabel } from "../fields/controlAction";
 import {
@@ -93,7 +96,7 @@ export class NoteFieldsModal extends Modal {
 			preferred: "Edit",
 		});
 
-		new Setting(contentEl)
+		const actions = new Setting(contentEl)
 			.addButton((b) =>
 				b
 					.setButtonText("Insert missing fields")
@@ -104,6 +107,21 @@ export class NoteFieldsModal extends Modal {
 					.setButtonText("Add fileClass")
 					.onClick(() => new AddFileClassModal(this.plugin, this.file).open())
 			);
+		/*
+		 * Only when the file disagrees with the class (#104). This modal already lists fields
+		 * in the class's order — that is the point of it — so the button changes nothing here;
+		 * what it fixes is the note on disk, and everything that reads the note raw: source
+		 * mode, git, and any other tool. The button leaves once the two agree, which is the
+		 * only feedback the modal itself can give.
+		 */
+		if (this.isOutOfOrder(fields)) {
+			actions.addButton((b) =>
+				b
+					.setButtonText("Reorder properties")
+					.setTooltip("Put this note's properties back in the order its class declares them")
+					.onClick(() => void this.reorderProperties(fields))
+			);
+		}
 
 		this.renderFileClassFooter();
 	}
@@ -114,6 +132,7 @@ export class NoteFieldsModal extends Modal {
 		if (!names.length) return;
 
 		const footer = this.contentEl.createDiv({ cls: "fileclass-modal-footer" });
+		const origins = this.plugin.index.getBindingOrigins(this.file);
 		for (const name of names) {
 			const crumb = footer.createDiv({ cls: "fileclass-breadcrumb" });
 			// Root → leaf: ancestors are nearest-first, so reverse then add self.
@@ -135,6 +154,19 @@ export class NoteFieldsModal extends Modal {
 				link.addEventListener("mouseenter", () => this.highlightOwner(cls));
 				link.addEventListener("mouseleave", () => this.highlightOwner(null));
 			});
+			/*
+			 * Where this class came from, when the note does not say. Three of the four routes
+			 * leave nothing in the file — a tag, a folder, a bookmark group — so a note can
+			 * carry a class with an empty frontmatter and no way to find out which option, on
+			 * which class, claimed it. The crumb answers on the spot: `Media › Book
+			 * (from /Reading list)`. Nothing is added when the note names the class itself,
+			 * which is the case that needs no explaining.
+			 */
+			const origin = origins.get(name);
+			const from = origin && origin.kind !== "frontmatter" ? describeOrigin(origin) : "";
+			if (from) {
+				crumb.createSpan({ cls: "fileclass-breadcrumb-origin", text: `(from ${from})` });
+			}
 		}
 	}
 
@@ -272,5 +304,29 @@ export class NoteFieldsModal extends Modal {
 		if (!dest) return null;
 		const target = navIndicatorFile(this.plugin, dest.path);
 		return target ? makeIndicatorIcon(this.plugin, target, MODAL_SCOPE) : null;
+	}
+
+	/** Does the note's frontmatter disagree with the order its class declares? */
+	private isOutOfOrder(fields: Field[]): boolean {
+		if (!fields.length) return false;
+		const keys = Object.keys(this.app.metadataCache.getFileCache(this.file)?.frontmatter ?? {});
+		return reorderPlan(fields, keys, this.plugin.settings.unknownKeysPosition) !== null;
+	}
+
+	private async reorderProperties(fields: Field[]): Promise<void> {
+		const { moved, unpositionable } = await reorderFrontmatter(
+			this.app,
+			this.file,
+			fields,
+			this.plugin.settings.unknownKeysPosition
+		);
+		if (!moved) return;
+		const caveat = unpositionable.length
+			? ` (${unpositionable.join(", ")} stays where YAML puts it)`
+			: "";
+		new Notice(`Fileclass: reordered ${moved} properties${caveat}.`);
+		// The modal redraws on the metadata change this write causes; render now so the button
+		// goes as soon as the work is done rather than a cache tick later.
+		this.render();
 	}
 }

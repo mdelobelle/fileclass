@@ -6,7 +6,55 @@ All notable changes to Fileclass are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- **A note's breadcrumb says where its class came from.** `Media › Book (from /Reading list)`,
+  `(from #album)`, `(from *Film club)` — and nothing at all when the note names the class
+  itself, which is the case that needs no explaining. Three of the four binding routes leave
+  no trace in the file, so a note could carry a class with an entirely empty frontmatter and
+  the only way to find out which option, on which class, had claimed it was to open every
+  class and read its options. The resolver now carries the reason alongside each bound name,
+  which is also what [#127](https://github.com/mdelobelle/fileclass/issues/127) will render in
+  the table view.
+
+- **Frontmatter can be put back in its class's order**
+  ([#104](https://github.com/mdelobelle/fileclass/issues/104)). Obsidian's writer appends, so
+  a key that was not there lands at the end whatever position the class gives it: *Insert
+  missing fields* on a note that already had properties put the new ones after the old, and a
+  field added to a class months later landed last on every note it reached. The class knew the
+  order all along — the fields modal and the generated views honour it — and the file was the
+  one place that did not. Reported on Reddit, where rearranging properties by hand was called
+  "such a huge waste of time".
+
+  The command **Reorder frontmatter to match the class**, an entry in a note's right-click
+  menu, a **⇅ Reorder properties** action beside *Add property*, and a button in the
+  note-fields modal. The last three appear **only when the note is actually out of order** —
+  their presence is the message, and the check costs half a microsecond against the parsed
+  cache. Optionally right after an insert, which is where the disorder is created:
+  *Reorder frontmatter when inserting fields*, off by default.
+
+  Three properties of the operation, since it rewrites a block you did not ask to edit: a note
+  already in order is **not touched at all** (no write, no modification time, no diff); values
+  are re-attached as they were, block scalars, dates and nested objects included; and the
+  rewrite **drops YAML comments**, exactly as any property write already does. Keys no class
+  declares — `tags`, `aliases`, the `fileClass` key, anything hand-written — are never dropped
+  and never reordered among themselves; where they sit is a setting, first by default.
+
 ### Changed
+
+- **A class's tags, folders and bookmark groups are picked, not typed**
+  ([#121](https://github.com/mdelobelle/fileclass/issues/121)). The three lists that decide
+  which notes a class claims were comma-separated boxes, where a misspelled tag bound nothing
+  and said nothing — the last of the silences `Extends` and `Excludes` were cured of. They are
+  pickers now, over what the vault holds: its tags, most used first; its folders, root excluded
+  since binding the root would claim every note; and the groups of the Bookmarks core plugin.
+
+  A value that matches nothing today is kept, still offered, and **said** to match nothing —
+  the row reads `jazz, vinyl (matches nothing)`. A folder gets renamed, a tag falls out of use,
+  and dropping the binding on sight would untype every note it reached; keeping it silently
+  would leave the row looking exactly like a working one while claiming no note at all. With
+  nothing to offer at all, the row says which of the three is empty instead of opening an empty
+  picker.
 
 - **The global fileClass is a baseline, not a fallback.** It used to apply only to notes with
   no binding at all — which meant the fields you wanted *everywhere* were exactly the fields
@@ -23,6 +71,20 @@ All notable changes to Fileclass are documented here. The format follows
   are known should not be a text box where a typo does nothing and says nothing.
 
 ### Fixed
+
+- **A tag binds whatever its case.** `Map with tag` on a class named `Album` claimed the notes
+  tagged `#Album` and missed every `#album` — and the tag picker could only ever offer the
+  lower-case spelling, because `metadataCache.getTags()` reports the whole vault folded. So
+  the two halves of the same feature disagreed. Measured: a file keeps `tags: [Album]` exactly
+  as written, while the vault's registry lists `#album`; Obsidian's search and tag pane treat
+  the two as one tag, and now so does binding, nested tags included.
+
+- **A class bound to a bookmark group claimed nothing.** The resolver has accepted bookmark
+  groups since the first release and the option has always been in a class's editor — but
+  nothing ever filled that half of a note's binding context, so the setting silently did
+  nothing at all. Found by rehearsing the take that shows those options for the first time,
+  which is roughly the point of rehearsing them. A note now answers to the group holding it
+  **and** to any group that one is nested under, the way a nested tag answers to its parent.
 
 - **Two classes on one note no longer fight over a key.** When both declared the same field
   name, both survived — they were told apart by id — so the note showed the same name twice,

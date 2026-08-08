@@ -1,0 +1,97 @@
+# Narration for take 025b — see ../SCENARIO.md for the format.
+# Closes arc 5. Every take so far typed a note by writing `fileClass:` in it. This one never
+# writes that key at all: the class goes and claims the notes, by folder, by tag, by bookmark.
+#
+# It is also the first take to show those three options at all — which is roughly why they
+# spent a year as three comma-separated boxes where a typo bound nothing and said nothing.
+# They are pickers over what the vault holds since 0.2.8 (#121), and steps 7 and 8 are that.
+#
+# The vault opens on **Reading list/The Dispossessed**, a note with an empty Properties
+# section, in a folder of three like it — step 1 is the first frame, no navigation.
+#
+# The gestures behind the last four steps, since they are the ones that read as claims rather
+# than actions:
+#  - **9** — on that same note, open the fields modal: the rows are Book's, the frontmatter is
+#    still empty, and the footer reads `Media › Book (from /Reading list)` — the origin suffix
+#    added for this take. Click the name and the class's schema opens; the note's right-click
+#    menu carries the same entry. There is no `fileClass` value anywhere to click, which is
+#    the whole point;
+#  - **10** — switch to `Library.base`, view "The whole library": the three notes are absent,
+#    because that view asks `fileClass.containsAny(...)` and they never wrote the key;
+#  - **11** — switch to the view next to it, "Claimed by a folder": there they are;
+#  - **12** — back on the note, *Insert missing fields* in the modal, and the Properties
+#    section fills for the first time in the take.
+#
+# The fixture holds take 025's outcome (Article exists, *As We May Think* carries two classes
+# with its issue and publisher filled) plus what this take claims:
+#  - **Reading list/** with three untyped notes — Le Guin, Asimov, Pratchett, whose authors
+#    are already people in this vault;
+#  - **Blue Train** and **Giant Steps**, tagged `#jazz`, and **Ascension**, tagged `#Album` —
+#    all three typed by nothing. Two tags, because steps 4 and 5 are two different mechanisms:
+#    an explicit tag in the class's list, then the class's own name used as one. With a single
+#    `#album` the second step would claim what the first already had, and show nothing;
+#  - **Stalker** and **Solaris**, in a **Film club** bookmark group (`.obsidian/bookmarks.json`),
+#    typed by nothing either.
+#
+# It does **not** carry the global fileClass take 025 ended on: a baseline would add a row to
+# every note in every frame here, and this take is about where a class comes from, not what
+# everything carries.
+#
+# Facts the script leans on, all measured in the app before scripting:
+#  - the three lists are pickers now: the vault's tags, most used first; its folders, root
+#    excluded; the groups of the Bookmarks core plugin. With nothing to offer the row says so
+#    and the button answers with a notice rather than opening an empty list;
+#  - a value that matches nothing is kept, still offered, and now **marked in the row** —
+#    `jazz, vinyl (matches nothing)`. `Album` ships with `vinyl` in its tag list for exactly
+#    that step: a tag this vault never uses, kept from an older habit. Marking it was added
+#    for this take; before, the row read like any working one while claiming no note at all;
+#  - a note bound this way has **no `fileClass` value to click**, so the right-click menu is
+#    the only route to its schema, and the fields modal's footer is where the class's name
+#    appears. Both already true since 0.1, never filmed;
+#  - and the catch worth the steps it costs: a base cannot ask for a class those notes never
+#    wrote. `fileClass.containsAny("Book")` misses every note in `Reading list/` — measured, 4
+#    matches, none of them the three. What a base asks for instead is the folder or the tag,
+#    which is what a generated view already filters on. Both views ship in `Library.base`, so
+#    steps 10 and 11 are one click each: "The whole library" without them, "Claimed by a
+#    folder" (`file.inFolder("Reading list")`) with them;
+#  - binding does not write anything: the notes stay as they are until *Insert missing fields*
+#    is run, which is step 11 and the reason the fields are absent in step 3's frontmatter.
+title: "Fileclass — Notes a class claims by itself"
+description: "Binding by folder, by tag, by bookmark — without a word in the note."
+doc: "schema/#picking-what-a-class-claims" # deep link used in the description
+tags: "binding, tags, folders, bookmarks, schema"
+vault_name: "Demo"
+plugin: true
+settings:
+  classFilesPath: "Classes/"
+  fileClassAlias: "fileClass"
+initial_pause: 1500
+default_pause: 900
+
+steps:
+  - title: "Three notes sit in a Reading list folder, and nothing in them says what they are"
+    pause: 2500
+  - title: "A class can claim a folder: in Book's options, Files paths offers the folders this vault has"
+    pause: 2600
+  - title: "And they answer at once — Book's fields, on notes whose frontmatter never mentions a class"
+    pause: 2600
+  - title: "A tag does the same: Album claims every note tagged jazz, chosen from the tags this vault actually uses"
+    pause: 2600
+  - title: "Or let the class's own name be the tag: turn that on, and the note tagged album joins on its own"
+    pause: 2600
+  - title: "Even a bookmark group: what you bookmarked for the film club is what the class now claims"
+    pause: 2600
+  - title: "None of the three can be misspelled any more — you pick what exists, so a typo can't bind nothing in silence"
+    pause: 2600
+  - title: "One tag here matches nothing — vinyl, kept from an older habit, and the row says so instead of pretending"
+    pause: 2700
+  - title: "Nothing in the note names its class — so the modal does, and says which folder claimed it"
+    pause: 2700
+  - title: "In the library view they are still missing: a base can't ask for a class these notes never wrote"
+    pause: 2700
+  - title: "So it asks for what they do have — the folder they live in — and there they are"
+    pause: 2600
+  - title: "And when you want the fields in the file, insert them: until now, binding had written nothing at all"
+    pause: 2700
+  - title: "A class is a promise about notes — and a note doesn't have to sign it"
+    pause: 2500

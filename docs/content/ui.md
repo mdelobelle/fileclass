@@ -48,6 +48,11 @@ note so closing it brings you back. On **hover**, a name marks the rows of the f
 that fileClass declares with a vertical bar, so you can see which fileClass owns
 which field (inherited fields point at the ancestor that declares them).
 
+When the note does **not** name the class itself, the crumb says where it came from —
+`Media › Book (from /Reading list)`, `(from #album)`, `(from *Film club)`. Three of the four
+binding routes leave nothing in the file, so without this a note can carry a class with an
+empty frontmatter and no way to find out which option, on which class, claimed it.
+
 It works **both ways**: hovering a field's row marks, in the footer, the class that
 declares it — the same accent bar, laid under the name. So "what does this class give
 me?" and "where does this field come from?" are the same gesture, read in either
@@ -113,6 +118,7 @@ Markdown file — in the file explorer, on a tab, or in the editor — adds:
 - **Manage note fields** → the modal above.
 - **Update a field** → pick one field and edit it.
 - **Insert missing fields**.
+- **Reorder properties** — only when the note's keys are out of its class's order.
 - **Add fileClass** — which also inserts that class's fields, unless you turn
   [**Insert fields when adding a class**](../settings/#behavior) off.
 - **Open *&lt;class&gt;* schema** — one entry per fileClass that applies to the note,

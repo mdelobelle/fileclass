@@ -95,7 +95,9 @@ are combined in this priority order:
    its parent are mapped, the most specific class comes first and the parent still
    applies. Frontmatter tags and inline `#tags` both count.
 3. **Path match** — the note lives under one of a fileClass's `filesPaths`.
-4. **Bookmark group match** — the note is in a mapped bookmark group.
+4. **Bookmark group match** — the note is in a mapped bookmark group, or in one nested
+   under it: a note in `Films/Tarkovsky` answers to a class bound to `Films`, the way a
+   nested tag answers to its parent.
 5. **Base-view match** — the note is returned by a fileClass's bound Base view
    (replaces Metadata Menu's Dataview `fileClassQueries`; wired in a later phase).
 6. **Preset fields** — a last-resort field set, for a note none of the above reaches.

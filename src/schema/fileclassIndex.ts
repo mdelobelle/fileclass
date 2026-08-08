@@ -7,7 +7,7 @@
  * Rebuild is driven by main.ts (debounced metadataCache 'resolved' + fileClass
  * file changes). On each rebuild it fires the `fileclass:indexed` event.
  */
-import { App, Events, TFile, getAllTags } from "obsidian";
+import { App, BookmarkItem, Events, TFile, getAllTags } from "obsidian";
 
 import { dateFormatDefaults, FileclassSettings } from "../settings/settings";
 import { withDefaultDateFormats } from "../fields/dateFormats";
@@ -39,6 +39,16 @@ export class FileclassIndex extends Events {
 	private tagBindings = new Map<string, string>();
 	private pathBindings = new Map<string, string>();
 	private bookmarkBindings = new Map<string, string>();
+	/**
+	 * note path → the bookmark groups holding it, nested ones as `parent/child`, each note
+	 * counted for its group and that group's ancestors.
+	 *
+	 * Built once per rebuild rather than asked per note: the alternative walks the whole
+	 * bookmark tree for every note in the vault. It also closes a hole — the resolver has
+	 * accepted `bookmarkGroups` since day one and nothing ever filled it, so a class bound to
+	 * a bookmark group claimed nothing at all (#121's take found it).
+	 */
+	private bookmarkGroupsByPath = new Map<string, string[]>();
 	/** Aggregated non-fatal parse problems from the last rebuild. */
 	errors: string[] = [];
 
@@ -64,6 +74,9 @@ export class FileclassIndex extends Events {
 			this.computeInheritance();
 			this.buildBindingMaps();
 		}
+		// Outside the class-folder guard: a vault can bookmark notes with no class at all, and
+		// this map costs one walk of the bookmark tree.
+		this.buildBookmarkMap();
 		// Notify our own listeners and the workspace (external consumers).
 		this.trigger(INDEXED_EVENT);
 		this.app.workspace.trigger(INDEXED_EVENT);
@@ -78,6 +91,7 @@ export class FileclassIndex extends Events {
 		this.tagBindings.clear();
 		this.pathBindings.clear();
 		this.bookmarkBindings.clear();
+		this.bookmarkGroupsByPath.clear();
 		this.errors = [];
 	}
 
@@ -157,7 +171,42 @@ export class FileclassIndex extends Events {
 		const alias = this.host.settings.fileClassAlias;
 		const innerNames = toStringArray(cache?.frontmatter?.[alias]);
 		const tags = (cache ? getAllTags(cache) ?? [] : []).map((t) => t.replace(/^#/, ""));
-		return { innerNames, tags, folderPath: file.parent?.path ?? "" };
+		return {
+			innerNames,
+			tags,
+			folderPath: file.parent?.path ?? "",
+			bookmarkGroups: this.bookmarkGroupsByPath.get(file.path) ?? [],
+		};
+	}
+
+	/**
+	 * Walks the Bookmarks core plugin once, recording which groups hold each file. A file in
+	 * `Films/Tarkovsky` counts for `Films/Tarkovsky` **and** `Films`, the way a nested tag
+	 * counts for its parent — a class bound to the outer group claims what the inner one holds.
+	 */
+	private buildBookmarkMap(): void {
+		const instance = this.app.internalPlugins?.plugins?.bookmarks?.instance;
+		const items = instance?.getBookmarks?.();
+		if (!items?.length) return;
+
+		const walk = (list: BookmarkItem[], groups: string[]): void => {
+			for (const item of list) {
+				if (item.type === "group") {
+					const title = (item.title ?? "").trim();
+					if (!title) continue;
+					const path = [...groups, title];
+					walk(item.items ?? [], path);
+					continue;
+				}
+				const filePath = typeof item.path === "string" ? item.path : "";
+				if (!filePath || !groups.length) continue;
+				// Every ancestor, most specific last — the order does not matter, the set does.
+				const names = groups.map((_, i) => groups.slice(0, i + 1).join("/"));
+				const known = this.bookmarkGroupsByPath.get(filePath) ?? [];
+				this.bookmarkGroupsByPath.set(filePath, [...new Set([...known, ...names])]);
+			}
+		};
+		walk(items, []);
 	}
 
 	/** Full binding resolution for a note (fileClasses + merged fields). */

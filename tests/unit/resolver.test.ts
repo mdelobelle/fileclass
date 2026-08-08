@@ -96,6 +96,21 @@ describe("resolveBinding priority", () => {
 		expect(r.fields.map((f) => f.id)).toEqual(["c1", "r1"]);
 	});
 
+	it("binds a note held by a mapped bookmark group", () => {
+		// The resolver has accepted `bookmarkGroups` since the first phase; until 0.2.8 the
+		// index never filled it, so a class bound to a bookmark group claimed nothing at all.
+		const r = resolveBinding({ ...emptyBinding, bookmarkGroups: ["Reading"] }, makeRegistry());
+		expect(r.fileClassNames).toEqual(["Book"]);
+	});
+
+	it("prefers the frontmatter alias over a bookmark group, and keeps both", () => {
+		const r = resolveBinding(
+			{ ...emptyBinding, innerNames: ["Todo"], bookmarkGroups: ["Reading"] },
+			makeRegistry()
+		);
+		expect(r.fileClassNames).toEqual(["Todo", "Book"]);
+	});
+
 	it("gives an unbound note the global fileClass", () => {
 		const r = resolveBinding(emptyBinding, makeRegistry({ globalFileClass: "Global" }));
 		expect(r.source).toBe("global");

@@ -31,6 +31,15 @@ All notable changes to Fileclass are documented here. The format follows
   declares — `tags`, `aliases`, the `fileClass` key, anything hand-written — are never dropped
   and never reordered among themselves; where they sit is a setting, first by default.
 
+### Fixed
+
+- **A class bound to a bookmark group claimed nothing.** The resolver has accepted bookmark
+  groups since the first release and the option has always been in a class's editor — but
+  nothing ever filled that half of a note's binding context, so the setting silently did
+  nothing at all. Found by rehearsing the take that shows those options for the first time,
+  which is roughly the point of rehearsing them. A note now answers to the group holding it
+  **and** to any group that one is nested under, the way a nested tag answers to its parent.
+
 ### Changed
 
 - **A class's tags, folders and bookmark groups are picked, not typed**

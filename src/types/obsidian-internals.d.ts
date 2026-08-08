@@ -24,6 +24,8 @@ declare module "obsidian" {
 	interface BookmarkItem {
 		type: string;
 		title?: string;
+		/** Set on file/folder entries — the vault path the bookmark points at. */
+		path?: string;
 		items?: BookmarkItem[];
 	}
 

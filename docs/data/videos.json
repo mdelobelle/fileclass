@@ -350,5 +350,16 @@
     "durationSeconds": 145,
     "recordedWith": "0.2.8",
     "privacyStatus": "public"
+  },
+  "029": {
+    "id": "zA4KadPjbNg",
+    "url": "https://www.youtube.com/watch?v=zA4KadPjbNg",
+    "title": "Fileclass #029 · Seeing at a glance what's typed",
+    "subject": "Seeing at a glance what's typed",
+    "scenario": "029_seeing_what_is_typed",
+    "doc": "ui/#field-indicator",
+    "durationSeconds": 142,
+    "recordedWith": "0.2.8",
+    "privacyStatus": "public"
   }
 }

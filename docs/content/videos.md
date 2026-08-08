@@ -136,3 +136,7 @@ other. Captions are English; YouTube translates them into your language.
 ## Buttons where you already edit
 
 {{< video "028" >}}
+
+## Seeing at a glance what's typed
+
+{{< video "029" >}}

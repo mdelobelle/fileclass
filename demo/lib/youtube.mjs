@@ -137,13 +137,36 @@ export async function accessToken() {
 	}
 	const client = clientCredentials();
 	const { refresh_token } = JSON.parse(readFileSync(TOKENS_FILE, "utf8"));
-	const tokens = await tokenRequest({
-		client_id: client.id,
-		client_secret: client.secret,
-		refresh_token,
-		grant_type: "refresh_token",
-	});
-	return tokens.access_token;
+	try {
+		const tokens = await tokenRequest({
+			client_id: client.id,
+			client_secret: client.secret,
+			refresh_token,
+			grant_type: "refresh_token",
+		});
+		return tokens.access_token;
+	} catch (err) {
+		// The one failure that will happen again: Google expires a refresh token after
+		// **seven days** while the OAuth consent screen is in *Testing*. The message it
+		// returns ("Token has been expired or revoked") says nothing about why or what to do,
+		// and the setup notes used to promise `--auth` was needed "once, ever".
+		const message = err instanceof Error ? err.message : String(err);
+		if (/expired or revoked|invalid_grant/i.test(message)) {
+			const age = existsSync(TOKENS_FILE)
+				? Math.round((Date.now() - statSync(TOKENS_FILE).mtimeMs) / 86400000)
+				: null;
+			throw new Error(
+				`${message}\n` +
+					`  The stored token is ${age} day(s) old. Google expires refresh tokens after 7 days\n` +
+					`  while the OAuth consent screen is in Testing.\n` +
+					`  Now:      node publish.mjs --auth\n` +
+					`  For good: Google Cloud console → APIs & Services → OAuth consent screen →\n` +
+					`            Publish app. Unverified is fine for an app with one user; the\n` +
+					`            consent warning stays, the seven-day clock goes.`
+			);
+		}
+		throw err;
+	}
 }
 
 async function api(token, path, { method = "GET", body, params } = {}) {

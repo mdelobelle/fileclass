@@ -295,5 +295,16 @@
     "durationSeconds": 220,
     "recordedWith": "0.2.6",
     "privacyStatus": "public"
+  },
+  "025": {
+    "id": "dz0JTL1bb9Y",
+    "url": "https://www.youtube.com/watch?v=dz0JTL1bb9Y",
+    "title": "Fileclass #025 · Two classes on one note",
+    "subject": "Two classes on one note",
+    "scenario": "025_two_classes_on_one_note",
+    "doc": "schema/#binding-a-note-to-fileclasses",
+    "durationSeconds": 185,
+    "recordedWith": "0.2.7",
+    "privacyStatus": "public"
   }
 }

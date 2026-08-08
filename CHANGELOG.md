@@ -4,6 +4,40 @@ All notable changes to Fileclass are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); this project uses
 [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Changed
+
+- **The global fileClass is a baseline, not a fallback.** It used to apply only to notes with
+  no binding at all — which meant the fields you wanted *everywhere* were exactly the fields
+  your typed notes never got. Now **every** note carries it, on top of whatever classes it
+  names itself: the one template the whole vault shares, without declaring it in each class.
+  It has the lowest precedence, so a note's own class wins any key both declare, and its rows
+  come first, a baseline being what the rest is written on top of. A note with no class of its
+  own is unchanged. The class folder is still exempt.
+
+  It is also **picked from a list** now, not typed: the classes you have, `— none —` at the
+  top, and a value that no longer resolves kept and marked (`Ghost (no such fileClass)`)
+  rather than silently reset — resetting it would untype every note in the vault that had
+  nothing else. Same treatment `Extends` and `Excludes` got: a setting whose valid answers
+  are known should not be a text box where a typo does nothing and says nothing.
+
+### Fixed
+
+- **Two classes on one note no longer fight over a key.** When both declared the same field
+  name, both survived — they were told apart by id — so the note showed the same name twice,
+  reading one frontmatter value through two different types, one of which would refuse it
+  (an `Input` and a `Select` both called `publisher`). The **last bound class wins**:
+  `fileClass: [Book, Article]` reads as "a Book, and an Article on top", the same way a child
+  class has the last word over its parent. The winner brings its type and options and sits
+  with the rest of its own class. A group's child never collides with a root field of the
+  same name.
+
+- **A global fileClass leaves the class folder alone.** It reached every note with no binding
+  of its own, which included `Classes/Book.md` — so turning it on typed your class
+  declarations with it and showed them in their own class's views. A declaration is not one
+  of the things a vault-wide class describes.
+
 ## [0.2.7] - 2026-08-05
 
 ### Changed

@@ -52,19 +52,36 @@ export class FileclassSettingTab extends PluginSettingTab {
 					})
 			);
 
+		/*
+		 * A list, not a text box, for the same reason `Extends` became one: a name that is not
+		 * a fileClass binds nothing and says nothing, and the set of valid answers is known.
+		 * A value that no longer resolves — a class renamed or deleted — is kept in the list
+		 * and marked rather than silently reset, since dropping it would quietly untype every
+		 * note in the vault that had nothing else.
+		 */
 		new Setting(containerEl)
 			.setName("Global fileClass")
-			.setDesc("Applied to every note that has no other binding. Leave empty to disable.")
-			.addText((text) =>
-				text
-					.setPlaceholder("(none)")
-					.setValue(this.plugin.settings.globalFileClass)
-					.onChange(async (value) => {
-						this.plugin.settings.globalFileClass = value.trim();
-						await this.plugin.saveSettings();
-						this.plugin.index.rebuild();
-					})
-			);
+			.setDesc(
+				"A baseline carried by every note, on top of the classes it names itself; " +
+					"the note's own class wins any field both declare. Not applied to the class folder."
+			)
+			.addDropdown((dropdown) => {
+				const current = this.plugin.settings.globalFileClass.trim();
+				dropdown.addOption("", "— none —");
+				for (const name of [...this.plugin.index.fileClassNames].sort((a, b) =>
+					a.localeCompare(b)
+				)) {
+					dropdown.addOption(name, name);
+				}
+				if (current && !this.plugin.index.fileClassNames.includes(current)) {
+					dropdown.addOption(current, `${current} (no such fileClass)`);
+				}
+				dropdown.setValue(current).onChange(async (value) => {
+					this.plugin.settings.globalFileClass = value;
+					await this.plugin.saveSettings();
+					this.plugin.index.rebuild();
+				});
+			});
 
 		new Setting(containerEl)
 			.setName("Bases folder")

@@ -5,7 +5,7 @@ captions, title, description — and uploads it to the channel, adds the caption
 track and files it in the series playlist.
 
 ```bash
-node publish.mjs --auth                                     # once, ever
+node publish.mjs --auth                                     # see "when the token expires"
 node publish.mjs 002 --video ~/Movies/002.mov --sync 4.2     # build, check it
 node publish.mjs 002 --video ~/Movies/002.mov --sync 4.2 --upload
 ```
@@ -28,14 +28,29 @@ the repo.
    name — it's yours alone).
 2. **Enable the API**: APIs & Services → Library → *YouTube Data API v3* → Enable.
 3. **OAuth consent screen**: External, fill in the app name and your email, and
-   add your own Google account under *Test users*. Testing mode is enough — this
-   app has exactly one user.
+   add your own Google account under *Test users*. Then **Publish app**, moving
+   the publishing status from *Testing* to *In production*: Google expires refresh
+   tokens after **seven days** while an app is in Testing, and this one is meant to
+   keep working between takes. Publishing an unverified app is allowed — it has
+   exactly one user, you — and the only consequence is the "Google hasn't verified
+   this app" screen you already click through at consent.
 4. **Credentials** → Create credentials → OAuth client ID → Application type
    **Desktop app** → Create → Download JSON.
 5. Save that file as `~/.config/fileclass-demo/client_secret.json`.
 6. Run `node publish.mjs --auth`. The browser opens, you approve (Google will warn
    that the app is unverified — it's yours, continue), and the refresh token is
    stored in `~/.config/fileclass-demo/tokens.json`. Never commit either file.
+
+### When the token expires
+
+```
+OAuth failed: Token has been expired or revoked.
+```
+
+Re-run `node publish.mjs --auth` and the upload works again. If it comes back a
+week later, the consent screen is still in *Testing* — step 3 above is the cure.
+Google also drops a refresh token that has gone six months unused, and revokes
+every token for a project whose client secret is regenerated.
 
 Optional `~/.config/fileclass-demo/config.json`:
 

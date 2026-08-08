@@ -116,3 +116,7 @@ other. Captions are English; YouTube translates them into your language.
 ## One parent class, three children
 
 {{< video "024" >}}
+
+## Two classes on one note
+
+{{< video "025" >}}

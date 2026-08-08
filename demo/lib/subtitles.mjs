@@ -58,6 +58,46 @@ function install(cueCode) {
 	};
 	window.__fcApplyPlacement = applyPlacement;
 
+	/*
+	 * A context menu opens where the pointer is, and Obsidian's menus grow downward: right-click
+	 * anything in the lower half of the window and the menu lands behind the caption. The
+	 * caption gets out of the way on its own while a menu overlaps it, and drops back when the
+	 * menu closes — the operator has ⌘⌃⌥⇧U for everything else, but a menu is dismissed by the
+	 * next click, which is far too fast to reach for a chord.
+	 *
+	 * It only dodges upward when the top is actually free: a menu opened from the file explorer
+	 * near the top of the window would otherwise be swapped for the same problem, upside down.
+	 */
+	const bandFor = (top) => {
+		const h = window.innerHeight;
+		const sixth = h * 0.06;
+		return top ? { top: sixth, bottom: sixth + 140 } : { top: h - sixth - 140, bottom: h - sixth };
+	};
+	const dodgeMenus = () => {
+		const el = document.getElementById("fc-demo-subtitle");
+		if (!el || !el.classList.contains("fc-show") || window.__fcDemo?.top) {
+			el?.classList.remove("fc-dodge");
+			document.getElementById("fc-demo-keys")?.classList.remove("fc-dodge");
+			return;
+		}
+		const menus = Array.from(document.querySelectorAll(".menu")).filter(
+			(m) => m.getBoundingClientRect().height > 0
+		);
+		const hits = (band) =>
+			menus.some((m) => {
+				const r = m.getBoundingClientRect();
+				return r.bottom > band.top && r.top < band.bottom;
+			});
+		const dodge = hits(bandFor(false)) && !hits(bandFor(true));
+		for (const id of ["fc-demo-subtitle", "fc-demo-keys"]) {
+			document.getElementById(id)?.classList.toggle("fc-dodge", dodge);
+		}
+	};
+	if (!window.__fcMenuWatch) {
+		window.__fcMenuWatch = new MutationObserver(() => requestAnimationFrame(dodgeMenus));
+		window.__fcMenuWatch.observe(document.body, { childList: true });
+	}
+
 	if (!window.__fcDemo) {
 		window.__fcDemo = { cue: 0 };
 		window.addEventListener(
@@ -210,8 +250,10 @@ function install(cueCode) {
 			#fc-demo-subtitle .fc-input.is-done{background:rgba(224,172,0,.07);color:#8d7a3c;
 				text-decoration:line-through}
 			#fc-demo-subtitle .fc-typed{background:rgba(0,183,211,.16);color:#7fdcf0}
-			#fc-demo-subtitle.fc-top:not(.fc-title){bottom:auto;top:6vh}
-			#fc-demo-keys.fc-top{bottom:auto;top:2vh}`;
+			#fc-demo-subtitle.fc-top:not(.fc-title),
+			#fc-demo-subtitle.fc-dodge:not(.fc-title){bottom:auto;top:6vh}
+			#fc-demo-keys.fc-top,
+			#fc-demo-keys.fc-dodge{bottom:auto;top:2vh}`;
 		document.head.appendChild(style);
 		const el = document.createElement("div");
 		el.id = "fc-demo-subtitle";

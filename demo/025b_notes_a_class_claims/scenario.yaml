@@ -45,9 +45,9 @@
 #    `jazz, vinyl (matches nothing)`. `Album` ships with `vinyl` in its tag list for exactly
 #    that step: a tag this vault never uses, kept from an older habit. Marking it was added
 #    for this take; before, the row read like any working one while claiming no note at all;
-#  - a note bound this way has **no `fileClass` value to click**, so the right-click menu is
-#    the only route to its schema, and the fields modal's footer is where the class's name
-#    appears. Both already true since 0.1, never filmed;
+#  - a note bound this way has **no `fileClass` value to click**, so its class is reached from
+#    the fields modal's footer, which names it, or from the right-click menu, which lists it.
+#    Two routes, neither of them the frontmatter. Both already true since 0.1, never filmed;
 #  - and the catch worth the steps it costs: a base cannot ask for a class those notes never
 #    wrote. `fileClass.containsAny("Book")` misses every note in `Reading list/` — measured, 4
 #    matches, none of them the three. What a base asks for instead is the folder or the tag,

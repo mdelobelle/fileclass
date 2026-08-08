@@ -1,0 +1,72 @@
+# Narration for take 027 — see ../SCENARIO.md for the format.
+# Second of arc 6. Take 026 showed the modal that holds everything; this one shows that you
+# rarely need to go looking for it — the plugin's actions live in the menus Obsidian already
+# opens under your right hand, and they change with what you clicked.
+#
+# The vault opens on **Dune (1984)**, and the take right-clicks that film rather than Dune for
+# two measured reasons: its frontmatter has drifted from Movie's order, so step 6's entry is
+# actually there, and its class is not Book, so step 8's named entry reads *Open Movie schema*
+# on a note the viewer has just seen typed as a film.
+#
+# The fixture is take 026's vault at its closing state, with one deliberate exception: **Dune
+# keeps its author**. Take 026 cleared it on camera to show a required field turning red, and
+# leaving it empty would flag that note in every take that follows, for no reason but
+# continuity theatre. Its properties are in Book's order, which that take also did.
+#
+# Facts the script leans on, all measured with real right-clicks before scripting:
+#  - on a note, in the explorer: **Manage note fields, Update a field, Insert missing fields,
+#    Reorder properties, Add fileClass, Open <class> schema** — appended to Obsidian's own
+#    nineteen entries, which is why step 2 says "at the end";
+#  - `Reorder properties` is there only when the file has drifted: absent on a note whose keys
+#    already match its class. Nine notes of this vault have drifted, *Dune (1984)* among them;
+#  - the **same six** appear on a right-click in the note's text, and on its **tab** — checked
+#    on the tab header itself, where they sit between *Reveal file in navigation* and *Delete
+#    file*;
+#  - on a **class note** the menu is a different trade: *Manage this fileClass*, *Create a base
+#    for this fileClass*, *Bulk edit a field of this fileClass*. On the **class folder**, one
+#    entry: *Create a class*;
+#  - a right-click on a property row opens nothing at all — Obsidian has no menu there, and
+#    neither do we. Worth knowing so no step promises it;
+#  - the whole set is governed by one setting, *Context menu entries*, on by default.
+#
+# On the subtitles: Obsidian's menus open where the pointer is and grow downward, so a
+# right-click low in the window used to land behind the caption. The overlay now lifts the
+# caption while a menu overlaps it and drops it back when the menu closes — nothing for the
+# operator to do, and nothing in the script depends on where the click happens.
+title: "Fileclass — Right-click your way through it"
+description: "Every action, in the menu Obsidian already opens under your hand."
+doc: "ui/#context-menus" # deep link used in the description
+tags: "context menu, right-click, note fields, schema"
+vault_name: "Demo"
+plugin: true
+settings:
+  classFilesPath: "Classes/"
+  fileClassAlias: "fileClass"
+initial_pause: 1500
+default_pause: 900
+
+steps:
+  - title: "Everything this plugin does is one right-click away — on a note, in its text, on a class"
+    pause: 2500
+  - title: "Right-click a note and Fileclass's entries are there, at the end of Obsidian's own menu"
+    pause: 2500
+  - title: "Manage note fields opens the modal from the last video, without going through the palette"
+    pause: 2500
+  - title: "Update a field goes straight to one field, for when you already know which one you want"
+    pause: 2500
+  - title: "Insert missing fields writes into the file what the class promises"
+    pause: 2400
+  - title: "Reorder properties only appears when the file has drifted from the order its class declares"
+    pause: 2600
+  - title: "Add fileClass binds a second one, without touching the frontmatter by hand"
+    pause: 2400
+  - title: "And one entry per class that applies, named: open its schema straight from the note"
+    pause: 2500
+  - title: "Even on a note whose file says nothing — this one is claimed by its folder — the menu names its class and opens it"
+    pause: 2700
+  - title: "The same six live in the note's text, and on its tab: right-click wherever your hand already is"
+    pause: 2600
+  - title: "On a class note the menu changes trade: manage it, generate its base, bulk edit one of its fields"
+    pause: 2700
+  - title: "And on the folder that holds them, a single entry — make another class"
+    pause: 2500

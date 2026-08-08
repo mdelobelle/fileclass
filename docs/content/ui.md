@@ -122,8 +122,10 @@ Markdown file — in the file explorer, on a tab, or in the editor — adds:
 - **Add fileClass** — which also inserts that class's fields, unless you turn
   [**Insert fields when adding a class**](../settings/#behavior) off.
 - **Open *&lt;class&gt;* schema** — one entry per fileClass that applies to the note,
-  named. This is the only route for a class bound by **tag, path, bookmark or Base
-  view**: those leave no value in the frontmatter to click.
+  named. This matters for a class bound by **tag, path, bookmark or Base view**:
+  those leave no value in the frontmatter to click, so the menu — and the breadcrumb
+  at the bottom of the [note-fields modal](#note-fields-modal) — are how you reach
+  the class at all.
 
 On a **fileClass note**, the menu instead offers schema actions plus **Bulk edit
 a field of this fileClass** (see below).

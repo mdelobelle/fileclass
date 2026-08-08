@@ -238,6 +238,13 @@ digit. Versions and dates are left alone.
   ships that setting off — it is experimental — so the takes turn it on here, and a scenario
   can say `enableDraggableModals: false` if a step needs the default behaviour.
 
+- **A caption gets out of the way of a menu by itself.** Obsidian's menus open where the
+  pointer is and grow downward, so a right-click in the lower half of the window lands behind
+  the caption. The overlay watches for one and lifts the caption to the top while it is open,
+  dropping back when it closes — and only when the top is free, so a menu opened near the top
+  is not handed the same problem upside down. ⌘⌃⌥⇧U still lifts it by hand for everything else;
+  a menu closes on the next click, which is far too fast to reach for a chord.
+
 - **Give every class its own icon.** A vault whose classes all wear the plugin's default icon
   makes the explorer a wall of identical marks, and a viewer cannot tell a book from a film
   without reading. One `icon:` per class in the fixture — `book`, `disc-3`, `film`,

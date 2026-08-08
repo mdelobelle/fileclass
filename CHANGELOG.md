@@ -33,6 +33,13 @@ All notable changes to Fileclass are documented here. The format follows
 
 ### Fixed
 
+- **A tag binds whatever its case.** `Map with tag` on a class named `Album` claimed the notes
+  tagged `#Album` and missed every `#album` — and the tag picker could only ever offer the
+  lower-case spelling, because `metadataCache.getTags()` reports the whole vault folded. So
+  the two halves of the same feature disagreed. Measured: a file keeps `tags: [Album]` exactly
+  as written, while the vault's registry lists `#album`; Obsidian's search and tag pane treat
+  the two as one tag, and now so does binding, nested tags included.
+
 - **A class bound to a bookmark group claimed nothing.** The resolver has accepted bookmark
   groups since the first release and the option has always been in a class's editor — but
   nothing ever filled that half of a note's binding context, so the setting silently did

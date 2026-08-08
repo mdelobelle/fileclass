@@ -26,7 +26,12 @@ export interface FileBinding {
 export interface FileClassRegistry {
 	has(name: string): boolean;
 	fieldsOf(name: string): Field[];
-	/** tag → fileClass name (from `mapWithTag` / `tagNames`). */
+	/**
+	 * tag → fileClass name (from `mapWithTag` / `tagNames`), **keyed in lower case**: a tag's
+	 * case is not part of its identity anywhere in Obsidian, and the vault's own registry is
+	 * folded. Two classes mapping tags that differ only by case therefore collide, and the
+	 * last one indexed wins — which is the same answer Obsidian's tag pane gives.
+	 */
 	tagBindings: ReadonlyMap<string, string>;
 	/** folder-path prefix → fileClass name (from `filesPaths`). */
 	pathBindings: ReadonlyMap<string, string>;
@@ -69,9 +74,17 @@ function collectBoundNames(binding: FileBinding, registry: FileClassRegistry): s
 
 	// 1. inner (frontmatter alias)
 	binding.innerNames.forEach(add);
-	// 2. tag match, a nested tag counting as its ancestors
+	// 2. tag match, a nested tag counting as its ancestors, **case-insensitively**.
+	//
+	// Obsidian treats `#Album` and `#album` as one tag everywhere it matters — its search, its
+	// tag pane, and `metadataCache.getTags()`, which reports the whole vault folded to lower
+	// case. Matching exactly meant a class named `Album` with `Map with tag` on claimed the
+	// notes tagged `#Album` and missed every `#album`, while the tag picker (which reads that
+	// same folded registry) could only ever offer the lower-case spelling. Measured, both ways.
 	for (const tag of binding.tags) {
-		for (const candidate of tagAncestry(tag)) add(registry.tagBindings.get(candidate));
+		for (const candidate of tagAncestry(tag.toLowerCase())) {
+			add(registry.tagBindings.get(candidate));
+		}
 	}
 	// 3. path match (folder path is under a mapped prefix)
 	for (const [prefix, name] of registry.pathBindings) {

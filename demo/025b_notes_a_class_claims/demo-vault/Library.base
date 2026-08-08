@@ -28,3 +28,12 @@ views:
       - file.name
       - publisher
       - issue
+  - type: table
+    name: Claimed by a folder
+    filters:
+      and:
+        - file.inFolder("Reading list")
+    order:
+      - file.name
+      - author
+      - pages

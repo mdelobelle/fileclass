@@ -172,6 +172,24 @@ describe("a nested tag binds to the class its parent tag maps", () => {
 		expect(tagAncestry("")).toEqual([]);
 	});
 
+	it("ignores the case of a tag, as Obsidian does everywhere else", () => {
+		// Measured in the app: the file keeps `tags: [Album]` as written, but the vault's own
+		// registry reports `#album` — folded. Matching exactly meant a class mapped on `Album`
+		// claimed `#Album` and missed `#album`, while the picker could only offer the latter.
+		const registry = makeRegistry({ tagBindings: new Map([["album", "Book"]]) });
+		for (const tag of ["Album", "ALBUM", "album"]) {
+			expect(resolveBinding({ ...emptyBinding, tags: [tag] }, registry).fileClassNames).toEqual([
+				"Book",
+			]);
+		}
+	});
+
+	it("and the case of a nested tag's parent too", () => {
+		const registry = makeRegistry({ tagBindings: new Map([["album", "Book"]]) });
+		const r = resolveBinding({ ...emptyBinding, tags: ["Album/Live"] }, registry);
+		expect(r.fileClassNames).toEqual(["Book"]);
+	});
+
 	it("binds #book/fiction to the class mapped on book", () => {
 		// Obsidian's tag search and Bases' file.hasTag() both include children, so a
 		// generated view showed such notes while the resolver left them untyped.

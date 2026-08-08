@@ -131,8 +131,13 @@ export class FileclassIndex extends Events {
 		for (const [name, parsed] of this.byName) {
 			const { mapWithTag, tagNames, filesPaths, bookmarksGroups } = parsed.options;
 			// mapWithTag → the fileClass name itself is the tag (single-word only).
-			if (mapWithTag && !name.includes(" ")) this.tagBindings.set(name, name);
-			for (const tag of tagNames) if (!tag.includes(" ")) this.tagBindings.set(tag, name);
+			// Lower case, because a tag's case is not part of its identity: see the note on
+			// `tagBindings` in resolver.ts. The class keeps its own capitalisation everywhere
+			// else — this is the lookup key, not the name.
+			if (mapWithTag && !name.includes(" ")) this.tagBindings.set(name.toLowerCase(), name);
+			for (const tag of tagNames) {
+				if (!tag.includes(" ")) this.tagBindings.set(tag.toLowerCase(), name);
+			}
 			for (const path of filesPaths) this.pathBindings.set(path, name);
 			for (const group of bookmarksGroups) this.bookmarkBindings.set(group, name);
 		}

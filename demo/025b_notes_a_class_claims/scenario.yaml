@@ -9,6 +9,18 @@
 # The vault opens on **Reading list/The Dispossessed**, a note with an empty Properties
 # section, in a folder of three like it — step 1 is the first frame, no navigation.
 #
+# The gestures behind the last four steps, since they are the ones that read as claims rather
+# than actions:
+#  - **9** — on that same note, open the fields modal: the rows are Book's, the frontmatter is
+#    still empty, and the footer reads `Media › Book`. Click that name and the class's schema
+#    opens; the note's right-click menu carries the same entry. There is no `fileClass` value
+#    anywhere to click, which is the whole point;
+#  - **10** — switch to `Library.base`, view "The whole library": the three notes are absent,
+#    because that view asks `fileClass.containsAny(...)` and they never wrote the key;
+#  - **11** — switch to the view next to it, "Claimed by a folder": there they are;
+#  - **12** — back on the note, *Insert missing fields* in the modal, and the Properties
+#    section fills for the first time in the take.
+#
 # The fixture holds take 025's outcome (Article exists, *As We May Think* carries two classes
 # with its issue and publisher filled) plus what this take claims:
 #  - **Reading list/** with three untyped notes — Le Guin, Asimov, Pratchett, whose authors
@@ -29,10 +41,12 @@
 #  - a note bound this way has **no `fileClass` value to click**, so the right-click menu is
 #    the only route to its schema, and the fields modal's footer is where the class's name
 #    appears. Both already true since 0.1, never filmed;
-#  - and the catch worth the step it costs: a base cannot ask for a class those notes never
-#    wrote. `fileClass.containsAny("Book")` misses every note in `Reading list/`. What a base
-#    asks for instead is the folder or the tag — `file.inFolder("Reading list")`,
-#    `file.hasTag("album")` — which is exactly what a generated view already filters on;
+#  - and the catch worth the steps it costs: a base cannot ask for a class those notes never
+#    wrote. `fileClass.containsAny("Book")` misses every note in `Reading list/` — measured, 4
+#    matches, none of them the three. What a base asks for instead is the folder or the tag,
+#    which is what a generated view already filters on. Both views ship in `Library.base`, so
+#    steps 10 and 11 are one click each: "The whole library" without them, "Claimed by a
+#    folder" (`file.inFolder("Reading list")`) with them;
 #  - binding does not write anything: the notes stay as they are until *Insert missing fields*
 #    is run, which is step 11 and the reason the fields are absent in step 3's frontmatter.
 title: "Fileclass — Notes a class claims by itself"
@@ -64,11 +78,13 @@ steps:
     pause: 2600
   - title: "And a binding that stops matching is kept and marked, because dropping it would untype every note it reached"
     pause: 2600
-  - title: "On such a note there is no class to click, so the fields modal names it in its footer and the menu opens it"
+  - title: "Nothing in the note names its class — so the fields modal names it, at the bottom, and one click opens it"
     pause: 2700
-  - title: "The catch: a base can't ask for a class these notes never wrote — it asks for the folder or the tag instead"
-    pause: 2800
-  - title: "Nothing was written to them until you say so: insert the fields, and now the notes carry what the class promised"
+  - title: "In the library view they are still missing: a base can't ask for a class these notes never wrote"
+    pause: 2700
+  - title: "So it asks for what they do have — the folder they live in — and there they are"
     pause: 2600
+  - title: "And when you want the fields in the file, insert them: until now, binding had written nothing at all"
+    pause: 2700
   - title: "A class is a promise about notes — and a note doesn't have to sign it"
     pause: 2500

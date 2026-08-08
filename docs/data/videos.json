@@ -361,5 +361,16 @@
     "durationSeconds": 142,
     "recordedWith": "0.2.8",
     "privacyStatus": "public"
+  },
+  "030": {
+    "id": "qRtYZ3lCy5c",
+    "url": "https://www.youtube.com/watch?v=qRtYZ3lCy5c",
+    "title": "Fileclass #030 · One field across a whole class",
+    "subject": "One field across a whole class",
+    "scenario": "030_one_field_across_a_class",
+    "doc": "ui/#bulk-edit-set-where",
+    "durationSeconds": 143,
+    "recordedWith": "0.2.8",
+    "privacyStatus": "public"
   }
 }

@@ -17,8 +17,6 @@ All notable changes to Fileclass are documented here. The format follows
   which is also what [#127](https://github.com/mdelobelle/fileclass/issues/127) will render in
   the table view.
 
-### Added
-
 - **Frontmatter can be put back in its class's order**
   ([#104](https://github.com/mdelobelle/fileclass/issues/104)). Obsidian's writer appends, so
   a key that was not there lands at the end whatever position the class gives it: *Insert
@@ -41,22 +39,6 @@ All notable changes to Fileclass are documented here. The format follows
   rewrite **drops YAML comments**, exactly as any property write already does. Keys no class
   declares — `tags`, `aliases`, the `fileClass` key, anything hand-written — are never dropped
   and never reordered among themselves; where they sit is a setting, first by default.
-
-### Fixed
-
-- **A tag binds whatever its case.** `Map with tag` on a class named `Album` claimed the notes
-  tagged `#Album` and missed every `#album` — and the tag picker could only ever offer the
-  lower-case spelling, because `metadataCache.getTags()` reports the whole vault folded. So
-  the two halves of the same feature disagreed. Measured: a file keeps `tags: [Album]` exactly
-  as written, while the vault's registry lists `#album`; Obsidian's search and tag pane treat
-  the two as one tag, and now so does binding, nested tags included.
-
-- **A class bound to a bookmark group claimed nothing.** The resolver has accepted bookmark
-  groups since the first release and the option has always been in a class's editor — but
-  nothing ever filled that half of a note's binding context, so the setting silently did
-  nothing at all. Found by rehearsing the take that shows those options for the first time,
-  which is roughly the point of rehearsing them. A note now answers to the group holding it
-  **and** to any group that one is nested under, the way a nested tag answers to its parent.
 
 ### Changed
 
@@ -89,6 +71,20 @@ All notable changes to Fileclass are documented here. The format follows
   are known should not be a text box where a typo does nothing and says nothing.
 
 ### Fixed
+
+- **A tag binds whatever its case.** `Map with tag` on a class named `Album` claimed the notes
+  tagged `#Album` and missed every `#album` — and the tag picker could only ever offer the
+  lower-case spelling, because `metadataCache.getTags()` reports the whole vault folded. So
+  the two halves of the same feature disagreed. Measured: a file keeps `tags: [Album]` exactly
+  as written, while the vault's registry lists `#album`; Obsidian's search and tag pane treat
+  the two as one tag, and now so does binding, nested tags included.
+
+- **A class bound to a bookmark group claimed nothing.** The resolver has accepted bookmark
+  groups since the first release and the option has always been in a class's editor — but
+  nothing ever filled that half of a note's binding context, so the setting silently did
+  nothing at all. Found by rehearsing the take that shows those options for the first time,
+  which is roughly the point of rehearsing them. A note now answers to the group holding it
+  **and** to any group that one is nested under, the way a nested tag answers to its parent.
 
 - **Two classes on one note no longer fight over a key.** When both declared the same field
   name, both survived — they were told apart by id — so the note showed the same name twice,

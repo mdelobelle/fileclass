@@ -328,5 +328,16 @@
     "durationSeconds": 180,
     "recordedWith": "0.2.8",
     "privacyStatus": "public"
+  },
+  "027": {
+    "id": "dqxv7Wrxer8",
+    "url": "https://www.youtube.com/watch?v=dqxv7Wrxer8",
+    "title": "Fileclass #027 · Right-click your way through it",
+    "subject": "Right-click your way through it",
+    "scenario": "027_right_click_your_way",
+    "doc": "ui/#context-menus",
+    "durationSeconds": 141,
+    "recordedWith": "0.2.8",
+    "privacyStatus": "public"
   }
 }

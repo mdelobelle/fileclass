@@ -128,3 +128,7 @@ other. Captions are English; YouTube translates them into your language.
 ## Every field of a note, one modal
 
 {{< video "026" >}}
+
+## Right-click your way through it
+
+{{< video "027" >}}

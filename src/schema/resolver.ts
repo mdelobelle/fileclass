@@ -43,12 +43,46 @@ export interface FileClassRegistry {
 
 export type BindingSource = "fileClass" | "global" | "preset" | "none";
 
+/**
+ * Why a class applies to a note. Four of the five leave no trace in the file, which is the
+ * whole reason to carry this: a note in a bound folder looks untyped in its own frontmatter,
+ * and until you are told *where* its class comes from, the only way to find out is to open
+ * every class and read its options.
+ */
+export type BindingOrigin =
+	| { kind: "frontmatter" }
+	| { kind: "tag"; value: string }
+	| { kind: "path"; value: string }
+	| { kind: "bookmark"; value: string }
+	| { kind: "baseView"; value: string }
+	| { kind: "global" };
+
+/** `#album`, `/Reading list`, `*Film club` — how an origin reads in one glance. */
+export function describeOrigin(origin: BindingOrigin): string {
+	switch (origin.kind) {
+		case "tag":
+			return `#${origin.value}`;
+		case "path":
+			return `/${origin.value}`;
+		case "bookmark":
+			return `*${origin.value}`;
+		case "baseView":
+			return `${origin.value}`;
+		case "global":
+			return "vault-wide";
+		default:
+			return "";
+	}
+}
+
 export interface Resolution {
 	/** Ordered, de-duplicated bound fileClass names (empty for global/preset). */
 	fileClassNames: string[];
 	/** Fields merged in binding order; on the same key, the last bound class wins. */
 	fields: Field[];
 	source: BindingSource;
+	/** Per bound class, why it applies. Same keys as `fileClassNames`. */
+	origins: Map<string, BindingOrigin>;
 }
 
 /**
@@ -65,15 +99,25 @@ export function tagAncestry(tag: string): string[] {
 	return parts.map((_, i) => parts.slice(0, parts.length - i).join("/"));
 }
 
-/** Bound fileClass names in priority order, keeping only those in the registry. */
-function collectBoundNames(binding: FileBinding, registry: FileClassRegistry): string[] {
+/**
+ * Bound fileClass names in priority order, keeping only those in the registry, each with the
+ * reason it is there. A class claimed twice — a tag *and* a folder — keeps the first reason,
+ * which is also the higher-priority one.
+ */
+function collectBoundNames(
+	binding: FileBinding,
+	registry: FileClassRegistry
+): { names: string[]; origins: Map<string, BindingOrigin> } {
 	const names: string[] = [];
-	const add = (name: string | undefined) => {
-		if (name && registry.has(name) && !names.includes(name)) names.push(name);
+	const origins = new Map<string, BindingOrigin>();
+	const add = (name: string | undefined, origin: BindingOrigin) => {
+		if (!name || !registry.has(name) || names.includes(name)) return;
+		names.push(name);
+		origins.set(name, origin);
 	};
 
 	// 1. inner (frontmatter alias)
-	binding.innerNames.forEach(add);
+	binding.innerNames.forEach((name) => add(name, { kind: "frontmatter" }));
 	// 2. tag match, a nested tag counting as its ancestors, **case-insensitively**.
 	//
 	// Obsidian treats `#Album` and `#album` as one tag everywhere it matters — its search, its
@@ -83,19 +127,23 @@ function collectBoundNames(binding: FileBinding, registry: FileClassRegistry): s
 	// same folded registry) could only ever offer the lower-case spelling. Measured, both ways.
 	for (const tag of binding.tags) {
 		for (const candidate of tagAncestry(tag.toLowerCase())) {
-			add(registry.tagBindings.get(candidate));
+			add(registry.tagBindings.get(candidate), { kind: "tag", value: candidate });
 		}
 	}
 	// 3. path match (folder path is under a mapped prefix)
 	for (const [prefix, name] of registry.pathBindings) {
-		if (binding.folderPath === prefix || binding.folderPath.startsWith(prefix)) add(name);
+		if (binding.folderPath === prefix || binding.folderPath.startsWith(prefix)) {
+			add(name, { kind: "path", value: prefix });
+		}
 	}
 	// 4. bookmark group match
-	(binding.bookmarkGroups ?? []).forEach((group) => add(registry.bookmarkBindings.get(group)));
+	for (const group of binding.bookmarkGroups ?? []) {
+		add(registry.bookmarkBindings.get(group), { kind: "bookmark", value: group });
+	}
 	// 5. base-view match (pre-resolved upstream)
-	(binding.baseViewNames ?? []).forEach(add);
+	for (const name of binding.baseViewNames ?? []) add(name, { kind: "baseView", value: name });
 
-	return names;
+	return { names, origins };
 }
 
 /**
@@ -150,20 +198,22 @@ function mergeFields(names: string[], registry: FileClassRegistry): Field[] {
  * Preset fields remain the last resort, for a vault with neither.
  */
 export function resolveBinding(binding: FileBinding, registry: FileClassRegistry): Resolution {
-	const own = collectBoundNames(binding, registry);
+	const { names: own, origins } = collectBoundNames(binding, registry);
 	const global = registry.globalFileClass;
 	const withGlobal =
 		global && registry.has(global) && !own.includes(global) ? [global, ...own] : own;
+	if (withGlobal.length > own.length && global) origins.set(global, { kind: "global" });
 
 	if (withGlobal.length) {
 		return {
 			fileClassNames: withGlobal,
 			fields: mergeFields(withGlobal, registry),
 			source: own.length ? "fileClass" : "global",
+			origins,
 		};
 	}
 	if (registry.presetFields?.length) {
-		return { fileClassNames: [], fields: registry.presetFields, source: "preset" };
+		return { fileClassNames: [], fields: registry.presetFields, source: "preset", origins };
 	}
-	return { fileClassNames: [], fields: [], source: "none" };
+	return { fileClassNames: [], fields: [], source: "none", origins };
 }

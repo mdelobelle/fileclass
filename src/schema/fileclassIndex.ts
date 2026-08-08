@@ -19,7 +19,13 @@ import {
 	toStringArray,
 } from "./fileClass";
 import { computeAncestors, resolveInheritedFields } from "./inheritance";
-import { FileBinding, FileClassRegistry, resolveBinding, Resolution } from "./resolver";
+import {
+	BindingOrigin,
+	FileBinding,
+	FileClassRegistry,
+	resolveBinding,
+	Resolution,
+} from "./resolver";
 
 /** Minimal host contract (satisfied structurally by the plugin instance). */
 export interface IndexHost {
@@ -226,6 +232,11 @@ export class FileclassIndex extends Events {
 
 	getFileClasses(file: TFile): string[] {
 		return this.resolve(file).fileClassNames;
+	}
+
+	/** Why each of a note's classes applies — `#album`, `/Reading list`, `*Film club`. */
+	getBindingOrigins(file: TFile): Map<string, BindingOrigin> {
+		return this.resolve(file).origins;
 	}
 
 	getFields(file: TFile): Field[] {

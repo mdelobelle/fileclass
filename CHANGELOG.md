@@ -8,6 +8,17 @@ All notable changes to Fileclass are documented here. The format follows
 
 ### Added
 
+- **A note's breadcrumb says where its class came from.** `Media › Book (from /Reading list)`,
+  `(from #album)`, `(from *Film club)` — and nothing at all when the note names the class
+  itself, which is the case that needs no explaining. Three of the four binding routes leave
+  no trace in the file, so a note could carry a class with an entirely empty frontmatter and
+  the only way to find out which option, on which class, had claimed it was to open every
+  class and read its options. The resolver now carries the reason alongside each bound name,
+  which is also what [#127](https://github.com/mdelobelle/fileclass/issues/127) will render in
+  the table view.
+
+### Added
+
 - **Frontmatter can be put back in its class's order**
   ([#104](https://github.com/mdelobelle/fileclass/issues/104)). Obsidian's writer appends, so
   a key that was not there lands at the end whatever position the class gives it: *Insert

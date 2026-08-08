@@ -15,6 +15,7 @@ import type FileclassPlugin from "../../main";
 import { insertMissingFields } from "../commands/insertMissingFields";
 import { reorderFrontmatter } from "../io/reorderFrontmatter";
 import { reorderPlan } from "../schema/reorder";
+import { describeOrigin } from "../schema/resolver";
 import { makeDisplayDeps } from "../fields/displayDeps";
 import { controlActionFor, controlLabel } from "../fields/controlAction";
 import {
@@ -131,6 +132,7 @@ export class NoteFieldsModal extends Modal {
 		if (!names.length) return;
 
 		const footer = this.contentEl.createDiv({ cls: "fileclass-modal-footer" });
+		const origins = this.plugin.index.getBindingOrigins(this.file);
 		for (const name of names) {
 			const crumb = footer.createDiv({ cls: "fileclass-breadcrumb" });
 			// Root → leaf: ancestors are nearest-first, so reverse then add self.
@@ -152,6 +154,19 @@ export class NoteFieldsModal extends Modal {
 				link.addEventListener("mouseenter", () => this.highlightOwner(cls));
 				link.addEventListener("mouseleave", () => this.highlightOwner(null));
 			});
+			/*
+			 * Where this class came from, when the note does not say. Three of the four routes
+			 * leave nothing in the file — a tag, a folder, a bookmark group — so a note can
+			 * carry a class with an empty frontmatter and no way to find out which option, on
+			 * which class, claimed it. The crumb answers on the spot: `Media › Book
+			 * (from /Reading list)`. Nothing is added when the note names the class itself,
+			 * which is the case that needs no explaining.
+			 */
+			const origin = origins.get(name);
+			const from = origin && origin.kind !== "frontmatter" ? describeOrigin(origin) : "";
+			if (from) {
+				crumb.createSpan({ cls: "fileclass-breadcrumb-origin", text: `(from ${from})` });
+			}
 		}
 	}
 

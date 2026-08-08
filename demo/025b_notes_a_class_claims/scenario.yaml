@@ -12,9 +12,10 @@
 # The gestures behind the last four steps, since they are the ones that read as claims rather
 # than actions:
 #  - **9** — on that same note, open the fields modal: the rows are Book's, the frontmatter is
-#    still empty, and the footer reads `Media › Book`. Click that name and the class's schema
-#    opens; the note's right-click menu carries the same entry. There is no `fileClass` value
-#    anywhere to click, which is the whole point;
+#    still empty, and the footer reads `Media › Book (from /Reading list)` — the origin suffix
+#    added for this take. Click the name and the class's schema opens; the note's right-click
+#    menu carries the same entry. There is no `fileClass` value anywhere to click, which is
+#    the whole point;
 #  - **10** — switch to `Library.base`, view "The whole library": the three notes are absent,
 #    because that view asks `fileClass.containsAny(...)` and they never wrote the key;
 #  - **11** — switch to the view next to it, "Claimed by a folder": there they are;
@@ -84,7 +85,7 @@ steps:
     pause: 2600
   - title: "One tag here matches nothing — vinyl, kept from an older habit, and the row says so instead of pretending"
     pause: 2700
-  - title: "Nothing in the note names its class — so the fields modal names it, at the bottom, and one click opens it"
+  - title: "Nothing in the note names its class — so the modal does, and says which folder claimed it"
     pause: 2700
   - title: "In the library view they are still missing: a base can't ask for a class these notes never wrote"
     pause: 2700

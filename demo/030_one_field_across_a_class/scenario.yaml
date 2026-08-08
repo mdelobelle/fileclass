@@ -6,10 +6,16 @@
 # The vault opens on **Classes/Book.md**, which is where the gesture starts: the bulk edit is
 # reached from a class note's right-click menu (take 027 filmed that menu, step 11).
 #
-# The take sets `Book.ownership` — a Cycle, so step 5 shows the field's own list rather than a
-# text box, and the numbers work out without arranging anything: **7 notes matched, 6 to
-# update, 1 already at the value, 0 errors**, measured on this fixture. That "1 already" is
-# what makes step 7 worth its beat: a bulk edit that counted 7 changes would be lying.
+# The take sets `Book.ownership` to **`Owned`** — a Cycle, so step 5 shows the field's own list
+# rather than a text box, and the numbers work out without arranging anything: **7 matched, 6 to
+# update, 1 already at the value, 0 errors**. That "1 already" is what makes step 7 worth its
+# beat: a bulk edit that counted 7 changes would be lying.
+#
+# **The value is not interchangeable, and step 5 now says which one to take.** The seven books
+# are five with no `ownership` at all, *Dune* at `Owned` and *Atomic Habits* at `Lent out`. Pick
+# `Owned` and the preview reads 6 and 1, as the caption promises; pick `Wanted`, which nothing
+# carries, and it reads 7 and 0 — which is what happened the first time this was recorded,
+# because the script had not named the value.
 #
 # The fixture is take 029's vault at its closing state.
 #
@@ -50,7 +56,7 @@ steps:
     pause: 2500
   - title: "Which notes: all of them, those matching a condition, or those a base view returns"
     pause: 2600
-  - title: "Which value: the field's own input — a cycle offers its list, a date its calendar"
+  - title: "Which value: the field's own input — the cycle offers its list, and this library owns its books"
     pause: 2600
   - title: "Nothing is written yet. First, the preview"
     pause: 2300

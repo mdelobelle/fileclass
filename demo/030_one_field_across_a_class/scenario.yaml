@@ -3,8 +3,19 @@
 # Everything before it edited one note at a time; this one edits a class's worth, and spends
 # five of its twelve steps on what happens *before* anything is written.
 #
-# The vault opens on **Classes/Book.md**, which is where the gesture starts: the bulk edit is
-# reached from a class note's right-click menu (take 027 filmed that menu, step 11).
+# The vault opens on **Books.base → "Who owns what"**, a table of the seven books with an
+# `ownership` column full of holes. That frame is step 1, and it is also the point of the take:
+# after Apply, the column fills in behind the modal, in the same shot. Filming a bulk edit
+# without showing what it changed would be asking the viewer to take our word for it.
+#
+# The gesture itself starts from the class, reached by right-clicking `Classes/Book.md` in the
+# explorer — the menu take 027 filmed (its step 11).
+#
+# That view's filter is `fileClass.containsAny("Book") **or** file.inFolder("Reading list")`,
+# and the `or` is not decoration: three of the seven books are claimed by their folder and carry
+# no `fileClass` key at all, so the `fileClass == "Book"` filter the other views use would show
+# four rows and the bulk edit would then appear to touch notes that are not on screen. Take 025b
+# made that same point; here it decides whether the take is legible.
 #
 # The take sets `Book.ownership` to **`Owned`** — a Cycle, so step 5 shows the field's own list
 # rather than a text box, and the numbers work out without arranging anything: **7 matched, 6 to
@@ -33,8 +44,9 @@
 #    note as `The Lord of the Rings.md: (empty) → Lent out`, carries an *Include all* toggle,
 #    and offers `Cancel` beside `Apply (6)` — the count is in the button, which is step 10;
 #  - nothing is written until Apply: the preview is computed, not applied. Measured on the
-#    whole flow — before it, one note in the vault reads `Lent out`; after, seven, with the
-#    notice `Fileclass: updated 6 note(s).`
+#    whole flow, in the opening view: before, the `ownership` column shows `Lent out` on
+#    *Atomic Habits*, `Owned` on *Dune* and nothing on the other five; after Apply, all seven
+#    read `Owned`, with the notice `Fileclass: updated 6 note(s).`
 title: "Fileclass — One field across a whole class"
 description: "Bulk edit: what it will change, counted and listed, before it changes anything."
 doc: "ui/#bulk-edit-set-where" # deep link used in the description
@@ -48,7 +60,7 @@ initial_pause: 1500
 default_pause: 900
 
 steps:
-  - title: "Some corrections belong to a whole class rather than to one note — a value you set once, everywhere"
+  - title: "Seven books, one column, and holes all through it — some corrections belong to the class, not to any one note"
     pause: 2600
   - title: "From the class's own right-click menu: bulk edit one of its fields"
     pause: 2500
@@ -66,7 +78,7 @@ steps:
     pause: 2600
   - title: "Take them all, or untick the ones you would rather leave alone"
     pause: 2500
-  - title: "The button carries the number: apply six, and only those six are written"
+  - title: "The button carries the number: apply six — and the column fills in behind it"
     pause: 2600
   - title: "What it writes goes through the same door as a field edited by hand — a value the type refuses is counted, not written"
     pause: 2800

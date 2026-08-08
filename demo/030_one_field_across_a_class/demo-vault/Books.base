@@ -43,3 +43,16 @@ views:
       - file.name
       - author
       - published
+  - type: table
+    name: Who owns what
+    filters:
+      or:
+        - fileClass.containsAny("Book")
+        - file.inFolder("Reading list")
+    sort:
+      - property: file.name
+        direction: ASC
+    order:
+      - file.name
+      - ownership
+      - author

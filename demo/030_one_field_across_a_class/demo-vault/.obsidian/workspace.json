@@ -12,11 +12,10 @@
             "id": "demo-note",
             "type": "leaf",
             "state": {
-              "type": "markdown",
+              "type": "bases",
               "state": {
-                "file": "Classes/Book.md",
-                "mode": "source",
-                "source": false
+                "file": "Books.base",
+                "viewName": "Who owns what"
               }
             }
           }
@@ -73,8 +72,8 @@
   },
   "active": "demo-note",
   "lastOpenFiles": [
+    "Books.base",
     "Classes/Book.md",
-    "Dune.md",
-    "Library.base"
+    "Dune.md"
   ]
 }

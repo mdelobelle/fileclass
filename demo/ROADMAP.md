@@ -103,7 +103,7 @@ thread, and a tight smoke test of that type's input path.
 
 | # | Take | Feature | Vault gains | Status |
 | - | ---- | ------- | ----------- | ------ |
-| 026 | Every field of a note, one modal | note-fields modal | — | |
+| 026 | Every field of a note, one modal | note-fields modal: rows, Alt on the type icon, Clear, the keyboard grid, and the four things in its footer | — (it works on the vault as 025b leaves it) | |
 | 027 | Right-click your way through it | context menus | — | |
 | 028 | Edit buttons in the properties panel | property edit buttons | — | |
 | 029 | Seeing at a glance what's typed | field indicators (tab, explorer, links, bases) | — | |

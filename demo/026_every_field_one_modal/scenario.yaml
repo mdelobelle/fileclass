@@ -1,0 +1,67 @@
+# Narration for take 026 — see ../SCENARIO.md for the format.
+# First of arc 6 (filling fields fast), and the first take *about* the note-fields modal rather
+# than one that merely uses it. Twenty-five takes have opened it in passing; this one explains
+# what its rows, its keyboard and its footer are for.
+#
+# The vault opens on **Dune**, which has everything the take needs without arranging anything:
+# sixteen fields across half a dozen types, `author` required and filled, and a frontmatter
+# whose keys have drifted out of Book's order — so step 11's button is already there when the
+# take reaches it. Measured in the fixture: the keys start `rating, fileClass, shelf,
+# publisher, pages, …` while the class declares `author, editions, shelf, …`.
+#
+# The fixture is take 025b's vault at its closing state: Book claims `Reading list/`, Album
+# claims `#jazz` and its own name, Movie claims the *Film club* bookmark group, and *The
+# Dispossessed* carries the sixteen keys that take inserted at its last step.
+#
+# **Steps 6 and 8 chain on purpose.** `Clear` empties `author` — the key goes, not just the
+# value — and `author` is required since take 023, so the same row's action turns red on the
+# spot. Two facts, one gesture, and the note is left without its author at the end of the take:
+# a demo vault, and the alternative was a step spent putting Frank Herbert back.
+#
+# Facts the script leans on, all measured in the app before scripting:
+#  - the modal lists 16 rows for Dune, each with its type as an icon (`File — Alt-click for
+#    this field's settings`), its value, and two actions: `Edit` and `Clear`;
+#  - the keyboard grid works: two presses of ArrowDown from the open modal put the focus on
+#    `Edit` of the third row — the arrows walk rows and the action column stays put;
+#  - the footer carries four things, three of them added in the fortnight before this take:
+#    the breadcrumb with its origin, *Insert missing fields*, *Add fileClass*, and *Reorder
+#    properties* — which appears only when the file has drifted, as Dune's has;
+#  - the modal follows the file: `pages` written to 999 from outside while it was open showed
+#    999 without a click.
+title: "Fileclass — Every field of a note, one modal"
+description: "The note-fields modal: rows, keyboard, and the four things in its footer."
+doc: "ui/#note-fields-modal" # deep link used in the description
+tags: "note fields, modal, keyboard, properties"
+vault_name: "Demo"
+plugin: true
+settings:
+  classFilesPath: "Classes/"
+  fileClassAlias: "fileClass"
+initial_pause: 1500
+default_pause: 900
+
+steps:
+  - title: "A note's fields are scattered down its frontmatter — one modal shows them all, whatever class they come from"
+    pause: 2600
+  - title: "Three ways in: the command Manage note fields, the note's right-click menu, or the icon beside its name"
+    pause: 2500
+  - title: "Every row is a field: its type as an icon, its value, and the one gesture that edits it"
+    pause: 2500
+  - title: "One gesture per type — a date opens a calendar, a boolean flips, a cycle steps to the next value"
+    pause: 2600
+  - title: "Hold Alt and the type icon becomes the way into that field's own definition, without leaving the note"
+    pause: 2600
+  - title: "Clear empties a field — and takes the key with it, not just the value"
+    pause: 2500
+  - title: "And because author is required, the row says so at once: its own action turns red"
+    pause: 2500
+  - title: "None of this needs the mouse: the arrows walk the rows, and the action you were on stays put"
+    pause: 2600
+  - title: "At the bottom, the classes that apply — and where each came from, when the note doesn't say"
+    pause: 2600
+  - title: "Insert the missing fields and the class's promise lands in the file, author included, empty and still red"
+    pause: 2700
+  - title: "And when the file has drifted from the order the class declares, one button puts it back"
+    pause: 2600
+  - title: "One modal, every field, whatever wrote them — and it follows the file while you work elsewhere"
+    pause: 2600

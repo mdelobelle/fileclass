@@ -25,7 +25,10 @@
 # with its issue and publisher filled) plus what this take claims:
 #  - **Reading list/** with three untyped notes — Le Guin, Asimov, Pratchett, whose authors
 #    are already people in this vault;
-#  - **Blue Train** and **Giant Steps**, tagged `#album` and typed by nothing;
+#  - **Blue Train** and **Giant Steps**, tagged `#jazz`, and **Ascension**, tagged `#Album` —
+#    all three typed by nothing. Two tags, because steps 4 and 5 are two different mechanisms:
+#    an explicit tag in the class's list, then the class's own name used as one. With a single
+#    `#album` the second step would claim what the first already had, and show nothing;
 #  - **Stalker** and **Solaris**, in a **Film club** bookmark group (`.obsidian/bookmarks.json`),
 #    typed by nothing either.
 #
@@ -37,7 +40,10 @@
 #  - the three lists are pickers now: the vault's tags, most used first; its folders, root
 #    excluded; the groups of the Bookmarks core plugin. With nothing to offer the row says so
 #    and the button answers with a notice rather than opening an empty list;
-#  - a value that matches nothing is kept and marked, never dropped on sight — that is step 8;
+#  - a value that matches nothing is kept, still offered, and now **marked in the row** —
+#    `jazz, vinyl (matches nothing)`. `Album` ships with `vinyl` in its tag list for exactly
+#    that step: a tag this vault never uses, kept from an older habit. Marking it was added
+#    for this take; before, the row read like any working one while claiming no note at all;
 #  - a note bound this way has **no `fileClass` value to click**, so the right-click menu is
 #    the only route to its schema, and the fields modal's footer is where the class's name
 #    appears. Both already true since 0.1, never filmed;
@@ -68,16 +74,16 @@ steps:
     pause: 2600
   - title: "And they answer at once — Book's fields, on notes whose frontmatter never mentions a class"
     pause: 2600
-  - title: "A tag does the same: Album claims every note tagged album, chosen from the tags the vault actually uses"
+  - title: "A tag does the same: Album claims every note tagged jazz, chosen from the tags this vault actually uses"
     pause: 2600
-  - title: "Or let the class's own name be the tag, and anything tagged Album belongs without naming it twice"
-    pause: 2500
+  - title: "Or let the class's own name be the tag: turn that on, and the note tagged album joins on its own"
+    pause: 2600
   - title: "Even a bookmark group: what you bookmarked for the film club is what the class now claims"
     pause: 2600
   - title: "None of the three can be misspelled any more — you pick what exists, so a typo can't bind nothing in silence"
     pause: 2600
-  - title: "And a binding that stops matching is kept and marked, because dropping it would untype every note it reached"
-    pause: 2600
+  - title: "One tag here matches nothing — vinyl, kept from an older habit, and the row says so instead of pretending"
+    pause: 2700
   - title: "Nothing in the note names its class — so the fields modal names it, at the bottom, and one click opens it"
     pause: 2700
   - title: "In the library view they are still missing: a base can't ask for a class these notes never wrote"

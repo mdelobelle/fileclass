@@ -56,8 +56,10 @@ All notable changes to Fileclass are documented here. The format follows
   pickers now, over what the vault holds: its tags, most used first; its folders, root excluded
   since binding the root would claim every note; and the groups of the Bookmarks core plugin.
 
-  A value that matches nothing today is kept and still offered — a folder gets renamed, a tag
-  falls out of use, and dropping the binding on sight would untype every note it reached. With
+  A value that matches nothing today is kept, still offered, and **said** to match nothing —
+  the row reads `jazz, vinyl (matches nothing)`. A folder gets renamed, a tag falls out of use,
+  and dropping the binding on sight would untype every note it reached; keeping it silently
+  would leave the row looking exactly like a working one while claiming no note at all. With
   nothing to offer at all, the row says which of the three is empty instead of opening an empty
   picker.
 

@@ -375,9 +375,15 @@ export class FileClassOptionsModal extends Modal {
 		const paint = () => {
 			const chosen = this.opts[key] ?? [];
 			const { available, nothing, unit } = source();
+			// A kept binding that matches nothing today is *said* to match nothing. Keeping it
+			// silently would be its own trap: the row would read exactly like a working one
+			// while claiming no note at all — which is the silence this whole picker was built
+			// to end. A renamed folder, a tag nobody uses any more; the value stays, the row
+			// tells you.
+			const shown = chosen.map((v) => (available.includes(v) ? v : `${v} (matches nothing)`));
 			row.setDesc(
-				chosen.length
-					? chosen.join(", ")
+				shown.length
+					? shown.join(", ")
 					: available.length
 						? `Nothing yet. ${available.length} ${unit} in this vault.`
 						// The same sentence serves as a Notice ("Fileclass: no tag is …"), where it

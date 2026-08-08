@@ -1,4 +1,6 @@
 ---
+tagNames:
+  - vinyl
 icon: disc-3
 extends: Media
 fields:

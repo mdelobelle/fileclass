@@ -182,11 +182,17 @@ function installPlugin(vault, pluginDir, settings) {
 		if (!existsSync(src)) refuse(`missing ${f} — run \`npm run build\` in the plugin repo first`);
 		cpSync(src, join(out, f));
 	}
-	// `shorterModal` on every staged vault, unless a scenario says otherwise: it takes 90px off
-	// a modal and pins it 45px from the top, so a note with sixteen fields stops reaching into
-	// the subtitles burned along the bottom of the frame. It has no settings row on purpose —
-	// nobody but a screen recorder wants it — so this is where the takes get it.
-	const staged = { shorterModal: true, ...settings };
+	// Two recording defaults on every staged vault, unless a scenario overrides them.
+	//
+	// `shorterModal` pins a modal 45px from the top and stops it above the band the capture
+	// keeps for burned-in subtitles — a note with sixteen fields reached straight into them. It
+	// has no settings row on purpose, so this is where the takes get it.
+	//
+	// `enableDraggableModals` so a modal can be pulled aside on camera when it covers the very
+	// thing a step is about. It ships **off** — it is experimental and it touches a surface
+	// every plugin shares — but a take is exactly the situation it was built for, and a
+	// recording that cannot move a modal has to close it and reopen it instead.
+	const staged = { shorterModal: true, enableDraggableModals: true, ...settings };
 	writeFileSync(join(out, "data.json"), JSON.stringify(staged, null, 2));
 
 	const enabledPath = join(vault, ".obsidian", "community-plugins.json");

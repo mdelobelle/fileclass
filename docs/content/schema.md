@@ -100,6 +100,17 @@ are combined in this priority order:
    (replaces Metadata Menu's Dataview `fileClassQueries`; wired in a later phase).
 6. **Preset fields** — a last-resort field set, for a note none of the above reaches.
 
+### Picking what a class claims
+
+`Tag names`, `Files paths` and `Bookmark groups`, in a class's options, are **picked from the
+vault**, not typed: the tags it uses (most used first), its folders, and the groups of the
+Bookmarks core plugin. Everything you could write there already exists, and a misspelling
+used to bind nothing and say nothing.
+
+A binding that matches nothing today — a folder renamed, a tag that fell out of use — is
+**kept and still offered**, since dropping it on sight would untype every note it reached.
+When there is nothing to offer at all, the row says so rather than opening an empty picker.
+
 ### The global fileClass
 
 Set one and **every note carries it**, whatever else it is: the one template the whole vault

@@ -3,7 +3,7 @@
  * and writes them in one processFrontMatter on Save, leaving `fields` and other
  * keys untouched. Reads current values from the live frontmatter (fresh).
  */
-import { ButtonComponent, ExtraButtonComponent, Modal, Notice, Setting, TFile, debounce, normalizePath, parseYaml } from "obsidian";
+import { BookmarkItem, ButtonComponent, ExtraButtonComponent, Modal, Notice, Setting, TFile, TFolder, debounce, normalizePath, parseYaml } from "obsidian";
 
 import { modalTitle } from "./modalTitle";
 
@@ -20,8 +20,6 @@ import { IconSuggest, paintIcon } from "./iconSuggest";
 import { MultiSelectModal } from "../fields/input/valueModals";
 import { makeStickyFooter } from "./modalFooter";
 import { attachUnsavedGuard, snapshot, UnsavedGuard } from "./unsavedGuard";
-
-const csv = (v: string): string[] => v.split(",").map((s) => s.trim()).filter(Boolean);
 
 export class FileClassOptionsModal extends Modal {
 	private readonly opts: EditableOptions;
@@ -80,10 +78,11 @@ export class FileClassOptionsModal extends Modal {
 		 * are editing.
 		 */
 		/*
-		 * The headings carry no description. One line each looked helpful and cost three rows
-		 * of a modal that was already scrolling, to restate what `Identity`, `Bound notes` and
-		 * `Sync to base` say on their own. The exception is the one fact the rows underneath
-		 * cannot state without repeating it three times: those lists are comma-separated.
+		 * The headings carry no description: one line each looked helpful and cost three rows of
+		 * a modal that was already scrolling, to restate what `Identity`, `Bound notes` and
+		 * `Sync to base` say on their own. The line that did carry a fact — that the binding
+		 * lists were comma-separated — went with the boxes it described, now that they are
+		 * pickers (#121).
 		 */
 		new Setting(contentEl).setName("Identity").setHeading();
 		const parentRow = new Setting(contentEl)
@@ -142,7 +141,6 @@ export class FileClassOptionsModal extends Modal {
 		 */
 		new Setting(contentEl)
 			.setName("Bound notes")
-			.setDesc("Lists are comma-separated.")
 			.setHeading();
 		new Setting(contentEl)
 			.setName("Map with tag")
@@ -153,9 +151,9 @@ export class FileClassOptionsModal extends Modal {
 					void this.updateStatus();
 				})
 			);
-		this.csvSetting("Tag names", "tagNames");
-		this.csvSetting("Files paths", "filesPaths");
-		this.csvSetting("Bookmark groups", "bookmarksGroups");
+		this.bindingPicker("Tag names", "tagNames", () => this.vaultTags());
+		this.bindingPicker("Files paths", "filesPaths", () => this.vaultFolders());
+		this.bindingPicker("Bookmark groups", "bookmarksGroups", () => this.bookmarkGroups());
 
 		new Setting(contentEl).setName("Sync to base").setHeading();
 		new Setting(contentEl)
@@ -357,25 +355,98 @@ export class FileClassOptionsModal extends Modal {
 	}
 
 	/**
-	 * One of the comma-separated binding lists. No description of its own: the three of them
-	 * said "Comma-separated." one under the other, three lines to make one point, which their
-	 * section heading now makes once.
+	 * One of the three binding lists — the tags, folders or bookmark groups whose notes this
+	 * class claims — picked from what the vault holds rather than typed (#121).
+	 *
+	 * They were comma-separated boxes, where a misspelled tag bound nothing and said nothing:
+	 * the silence `Extends` and `Excludes` were cured of. Everything a person can write in
+	 * them already exists in the vault, so the vault is the list.
+	 *
+	 * A value that matches nothing **stays**, marked, and is still offered: a folder can be
+	 * renamed, a tag can fall out of use for a week, and dropping the binding on sight would
+	 * quietly untype every note it reached.
 	 */
-	private csvSetting(
+	private bindingPicker(
 		name: string,
-		key: "tagNames" | "filesPaths" | "bookmarksGroups" | "excludes",
-		desc = ""
+		key: "tagNames" | "filesPaths" | "bookmarksGroups",
+		source: () => { available: string[]; nothing: string; unit: string }
 	): void {
 		const row = new Setting(this.contentEl).setName(name);
-		if (desc) row.setDesc(desc);
-		row.addText((t) =>
-				t.setValue((this.opts[key] ?? []).join(", ")).onChange((v) => {
-					this.opts[key] = csv(v);
-					// filesPaths/tagNames decide what the view filters on, so the Sync
-					// button has to light up as soon as they change.
-					void this.updateStatus();
-				})
+		const paint = () => {
+			const chosen = this.opts[key] ?? [];
+			const { available, nothing, unit } = source();
+			row.setDesc(
+				chosen.length
+					? chosen.join(", ")
+					: available.length
+						? `Nothing yet. ${available.length} ${unit} in this vault.`
+						// The same sentence serves as a Notice ("Fileclass: no tag is …"), where it
+						// follows a colon, and as a row description, where it opens a line.
+						: nothing.charAt(0).toUpperCase() + nothing.slice(1)
 			);
+		};
+		row.addButton((b) =>
+			b.setButtonText("Choose…").onClick(() => {
+				const { available, nothing } = source();
+				const chosen = this.opts[key] ?? [];
+				// A stale binding stays offered, so saving cannot quietly drop it.
+				const allowed = [...available, ...chosen.filter((v) => !available.includes(v))];
+				if (!allowed.length) {
+					new Notice(`Fileclass: ${nothing}`);
+					return;
+				}
+				new MultiSelectModal(this.app, {
+					title: `${name} — ${this.name}`,
+					allowed,
+					selected: chosen,
+					onSubmit: (values) => {
+						this.opts[key] = values;
+						paint();
+						this.guard?.refresh();
+						// filesPaths/tagNames decide what a generated view filters on, so the
+						// Sync button has to light up as soon as they change.
+						void this.updateStatus();
+					},
+				}).open();
+			})
+		);
+		paint();
+	}
+
+	/** Every tag in the vault, without its `#`, most used first. */
+	private vaultTags(): { available: string[]; nothing: string; unit: string } {
+		const counts = this.app.metadataCache.getTags();
+		const available = Object.entries(counts)
+			.sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+			.map(([tag]) => tag.replace(/^#/, ""));
+		return { available, nothing: "no tag is used in this vault yet.", unit: "tags" };
+	}
+
+	/** The vault's folders. The root is left out: binding it would claim every note. */
+	private vaultFolders(): { available: string[]; nothing: string; unit: string } {
+		const available = this.app.vault
+			.getAllLoadedFiles()
+			.filter((f): f is TFolder => f instanceof TFolder && !f.isRoot())
+			.map((f) => f.path)
+			.sort((a, b) => a.localeCompare(b));
+		return { available, nothing: "this vault has no folder.", unit: "folders" };
+	}
+
+	/** Bookmark groups, nested ones as `parent/child`, from the core plugin. */
+	private bookmarkGroups(): { available: string[]; nothing: string; unit: string } {
+		const nothing = "the Bookmarks core plugin has no group (or is disabled).";
+		const instance = this.app.internalPlugins?.plugins?.bookmarks?.instance;
+		const items = instance?.getBookmarks?.() ?? [];
+		const walk = (list: BookmarkItem[], prefix: string): string[] =>
+			list.flatMap((item) =>
+				item.type === "group"
+					? [
+							`${prefix}${item.title ?? ""}`,
+							...walk(item.items ?? [], `${prefix}${item.title ?? ""}/`),
+						]
+					: []
+			);
+		return { available: walk(items, "").filter(Boolean), nothing, unit: "groups" };
 	}
 
 	onClose(): void {

@@ -8,6 +8,18 @@ All notable changes to Fileclass are documented here. The format follows
 
 ### Changed
 
+- **A class's tags, folders and bookmark groups are picked, not typed**
+  ([#121](https://github.com/mdelobelle/fileclass/issues/121)). The three lists that decide
+  which notes a class claims were comma-separated boxes, where a misspelled tag bound nothing
+  and said nothing — the last of the silences `Extends` and `Excludes` were cured of. They are
+  pickers now, over what the vault holds: its tags, most used first; its folders, root excluded
+  since binding the root would claim every note; and the groups of the Bookmarks core plugin.
+
+  A value that matches nothing today is kept and still offered — a folder gets renamed, a tag
+  falls out of use, and dropping the binding on sight would untype every note it reached. With
+  nothing to offer at all, the row says which of the three is empty instead of opening an empty
+  picker.
+
 - **The global fileClass is a baseline, not a fallback.** It used to apply only to notes with
   no binding at all — which meant the fields you wanted *everywhere* were exactly the fields
   your typed notes never got. Now **every** note carries it, on top of whatever classes it

@@ -1,0 +1,73 @@
+# Narration for take 028 — see ../SCENARIO.md for the format.
+# Third of arc 6. Takes 026 and 027 showed the modal and the menus; this one stays in the panel
+# most people actually edit in — Obsidian's own Properties section — where Fileclass adds to
+# what is already there instead of replacing it.
+#
+# The vault opens on **Atomic Habits**, chosen by measurement rather than taste: eleven rows,
+# ten buttons, and the widest spread of gestures in the library — Input, Number, Select,
+# Boolean, Cycle, two Dates, a CycleDuration and a File — with six fields missing and a
+# frontmatter that has drifted, so steps 9 and 10 both have something to do.
+#
+# It has **no empty required field**, though, so the red button of step 11 is shown on *The
+# Dispossessed* — the note claimed by its folder, which step 11 was visiting anyway. Two facts,
+# one note, one beat.
+#
+# The fixture is take 027's vault at its closing state (the film it right-clicked has its
+# missing fields inserted and its properties in Movie's order).
+#
+# Facts the script leans on, all measured in the app before scripting:
+#  - every typed row carries a button between its key and its value, and the button's **icon is
+#    the field's type**: `author` a file, `pages` a hash, `read` a toggle, `ownership` a rotate.
+#    Its label names the gesture rather than a generic "edit" — `Toggle "read" — Boolean
+#    (Alt-click to pick a value)`;
+#  - the `fileClass` row carries a wrench instead, opening that class's schema;
+#  - a required field with no value paints its own button red — one row in sixteen on a note of
+#    the reading list;
+#  - a Duration reads as `2h 17m` beside the `PT2H17M` the file stores;
+#  - beside *Add property*: **Add a class** always, **Insert N missing fields** only when some
+#    are missing, **Reorder properties** only when the file has drifted from its class's order;
+#  - a note claimed by a folder carries the whole set with no `fileClass` key in the file at
+#    all — sixteen buttons, no class row;
+#  - **right-click** on a button opens that field's own definition — new in this take's branch.
+#    Not Alt, which take 006 already spent on this very button ("Need a value directly?
+#    Alt-click opens the picker", on a Cycle in this same panel). A wrench under Alt on the
+#    rows where nothing else claims it was built, measured and dropped: one modifier meaning
+#    two things depending on the type is worse than one meaning one thing. Steps 4 and 5 are
+#    those two gestures, in that order — Alt for the value, right-click for the field.
+title: "Fileclass — Buttons where you already edit"
+description: "Typed input inside Obsidian's own Properties panel."
+doc: "ui/#property-editor-buttons" # deep link used in the description
+tags: "properties, panel, typed input, buttons"
+vault_name: "Demo"
+plugin: true
+settings:
+  classFilesPath: "Classes/"
+  fileClassAlias: "fileClass"
+initial_pause: 1500
+default_pause: 900
+
+steps:
+  - title: "Obsidian's own Properties panel is where most editing happens — Fileclass adds to it rather than replacing it"
+    pause: 2600
+  - title: "Between a key and its value, a button whose icon is the field's type"
+    pause: 2400
+  - title: "And the same gesture as everywhere else: a date opens its calendar, a boolean flips, a cycle steps on"
+    pause: 2600
+  - title: "Hold Alt on a boolean or a cycle and you get the list instead of the next value"
+    pause: 2500
+  - title: "And right-click the same button to edit the field itself — its type, its options — without leaving the note"
+    pause: 2700
+  - title: "On the fileClass row, a wrench instead: the class's schema, from the note that uses it"
+    pause: 2600
+  - title: "A duration is read out beside what the file actually stores — 180 days, not P180D"
+    pause: 2500
+  - title: "Under the list, beside Add property, the same actions as the modal: bind another class"
+    pause: 2500
+  - title: "Insert the six fields this note is missing, and they arrive typed, ready to fill"
+    pause: 2600
+  - title: "And put its properties back in the order the class declares, from the same row of buttons"
+    pause: 2600
+  - title: "None of this needs a fileClass line: this note is claimed by its folder, and its empty required author is red all the same"
+    pause: 2800
+  - title: "Two settings turn the buttons and these actions off, if your panel is busy enough already"
+    pause: 2500

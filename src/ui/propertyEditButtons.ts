@@ -31,6 +31,7 @@ import { controlActionFor, controlLabel } from "../fields/controlAction";
 import { EditContext, nextDateActionFor, runControlAction } from "../fields/fieldActions";
 import { isInputSupported } from "../fields/support";
 import { fieldTypeIcon } from "../fields/typeIcons";
+import { openFieldSettings } from "./fieldSettings";
 import { Field, FieldType, isRootField } from "../schema/field";
 import { hasFieldKey, readFieldValue } from "../io/read";
 import { AddFileClassModal } from "./addFileClassModal";
@@ -507,7 +508,19 @@ export class PropertyEditButtons extends Component {
 		// says so — and shows the date it would write while Alt is held.
 		const hasNextDate = !!nextDateActionFor(ctxOf(), field);
 		if (hasNextDate) hint = " (Alt-click to set the next date)";
-		const label = `Fileclass: ${verb} "${field.name}" — ${field.type}${hint}`;
+		/*
+		 * **Alt belongs to the value here, and right-click to the field.** One rule per
+		 * surface, no exception: in this panel Alt-click opens a type's picker — a Cycle's
+		 * list rather than its next value — which take 006 taught on this very button, in a
+		 * published video. A wrench appearing under Alt on the rows where nothing else claims
+		 * it was tried and dropped: a gesture that means two things depending on the type is
+		 * worse than one that means one thing and is written on the tooltip.
+		 *
+		 * The note-fields modal keeps its own rule, also published (take 026): there the type
+		 * icon and the action button are two elements, so Alt over the *icon* is free to open
+		 * the field's definition.
+		 */
+		const label = `Fileclass: ${verb} "${field.name}" — ${field.type}${hint} · right-click for its settings`;
 		btn.setAttribute("aria-label", label);
 		setIcon(btn, icon);
 		if (hasNextDate) {
@@ -530,6 +543,20 @@ export class PropertyEditButtons extends Component {
 			const current = this.editableField(ctx.file, key);
 			if (!current) return;
 			void runControlAction(ctx, current, { alt: e.altKey });
+		});
+		/*
+		 * Right-click edits the **field**, not its value — the definition modal, from the
+		 * panel where you noticed the problem. The note-fields modal has had this since take
+		 * 006, on Alt-click over the type icon; here the icon *is* the button, and Alt is
+		 * already spoken for by the types that pick from a list. Right-click was free, and it
+		 * is where a "settings for this thing" gesture is looked for anyway. The label says so,
+		 * since nothing else would.
+		 */
+		btn.addEventListener("contextmenu", (e) => {
+			e.preventDefault();
+			e.stopPropagation();
+			const current = this.editableField(fileNow(), key);
+			if (current) openFieldSettings(this.plugin, current);
 		});
 		return btn;
 	}

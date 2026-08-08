@@ -251,7 +251,14 @@ In Obsidian's native **Properties** editor, each row whose key matches an
 and the value**, carrying the field's type icon. Clicking it performs [that type's
 gesture](#one-gesture-per-field-type) — a `Cycle` advances, a `Boolean` flips,
 everything else opens the type-appropriate input with its validation, instead of
-Obsidian's untyped value cell. **Alt-click** always opens the input. Auto-
+Obsidian's untyped value cell. **Alt-click** always opens the input.
+
+**Editing the field rather than its value**: **right-click** any of these buttons and
+that field's own definition opens — its type, its options — from the panel where you
+noticed the problem. Not Alt: on this button Alt already opens a type's picker, and a
+modifier that means two things depending on the type is worse than one that means one.
+In the [note-fields modal](#note-fields-modal) the type icon and the action button are
+two separate elements, so there Alt over the icon is what opens the definition. Auto-
 maintained fields (Canvas family) and computed types get no button. Toggle it
 under **Settings → Fileclass → Property editor buttons**.
 

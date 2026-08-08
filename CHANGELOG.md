@@ -36,6 +36,17 @@ All notable changes to Fileclass are documented here. The format follows
   between steps because a caption grew a line would be worse on camera than one slightly
   short. The demo tooling sets the flag on every staged vault.
 
+### Added
+
+- **The field itself, from the Properties panel.** A row's button edits a *value*; editing the
+  *field* — its type, its options — meant leaving the note for the class editor, even though
+  the button under the pointer already knows which field it is. **Right-click** one of those
+  buttons and the field's own definition opens. Not Alt: on this button Alt already opens a
+  type's picker — a `Cycle`'s list rather than its next value — so a wrench under Alt would
+  mean two different things depending on the type. The note-fields modal keeps its own route,
+  Alt over the type icon, which it can afford because there the icon and the button are two
+  elements.
+
 ## [0.2.8] - 2026-08-08
 
 ### Added

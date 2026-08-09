@@ -38,6 +38,16 @@ All notable changes to Fileclass are documented here. The format follows
 
 ### Added
 
+- **Insert a class's missing fields across every note that carries it.** *Insert missing
+  fields* has always been a per-note command, which is what you want on the note in front of
+  you and useless the day a class gains a field: the notes written before it keep a gap nobody
+  can see, and closing it meant opening each one. Bulk *edit* could set a value everywhere, but
+  never add the key. **Fileclass: insert missing fields across a class** — also on a fileClass
+  note's right-click menu — counts first, then lists the notes and what each is missing, and
+  writes nothing until you say so. It asks the index, so the notes claimed by a folder, a tag
+  or a bookmark group are in the list too, though no `fileClass` line names them; those are
+  usually the ones nobody remembers. One notice at the end rather than one per note.
+
 - **The field itself, from the Properties panel.** A row's button edits a *value*; editing the
   *field* — its type, its options — meant leaving the note for the class editor, even though
   the button under the pointer already knows which field it is. **Right-click** one of those

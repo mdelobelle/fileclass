@@ -15,8 +15,9 @@
 # only thing that works: a class that changed after the template was written.
 #
 # The fixture is take 030c's vault at its closing state — Book carries `lent to`, and its seven
-# notes carry the whole class, empty where nothing was filled in — plus a `Templates/` folder
-# holding *New book* and *Daily note*.
+# notes carry the whole class, empty where nothing was filled in — plus what arrived between the
+# two takes, off camera: a `Templates/` folder holding *New book* and *Daily note*, and a `Habit`
+# class with four days already written under it.
 #
 # Facts the script leans on, all measured in the app before scripting:
 #  - the **Templates** core plugin is enabled with **no folder configured** (`{}`), which is what
@@ -25,6 +26,15 @@
 #  - `.obsidian/daily-notes.json` already points at `Templates/Daily note` (folder `Daily`,
 #    format `YYYY/MM/YYYY-MM-DD`): which template a daily note uses is a setting, not a lesson,
 #    so it is shipped rather than filmed;
+#  - the daily half of the take runs on a class of its own, **Habit** — a daily note is a day,
+#    not an event, and Activity's `branch`/`doors`/`starts` read as a booking form on one. Habit
+#    ships two `Cycle` fields whose values are a scale you click up: `reading` 📖 → 📖📖📖📖 and
+#    `watching` 🎬 → 🎬🎬🎬🎬. The third, `listening` (🎧 → 🎧🎧🎧🎧), is added to the class on
+#    camera at step 7 — that is the schema change the rest of the take is about;
+#  - the four days already written — `Daily/2026/08/` on the 3rd, 5th, 6th and 7th — carry
+#    `fileClass: Habit` with values, and were moved into the recording month on purpose: days
+#    dated 2028 would sit *ahead* of a take about what came before. Their bodies are the ones
+#    earlier takes wrote;
 #  - a class lands in a template like it lands in any note — a template *is* a note, which is the
 #    whole trick. Measured on *New book*: `Add fileClass` → Book takes it from **no frontmatter**
 #    to **18 keys** in one go (`fileClass` plus the seventeen Book declares, `inserted 17
@@ -32,17 +42,13 @@
 #    right-click menu (*Add fileClass*), from `Fileclass: Add a class to this note`, and from the
 #    note-fields modal's footer;
 #  - a template does **not** re-sync when the class changes, and steps 6–9 are that, on camera:
-#    the daily template starts with no class, gains Activity with its five fields, and stays at
-#    those when `attendance` is added to the class. *Insert missing fields* on the template takes
-#    it to `fileClass, attendance, branch, icon, color, starts, doors` — this is where that
-#    command belongs, and the only place the take needs it;
-#  - the four Activity notes already written — *Signing — Blake & Mortimer*, *Reading group*,
-#    *Library book sale*, *Film club — Dune* — do not gain `attendance`, and the class-wide pass
-#    from take 030c offers exactly those four (`4 note(s) are missing 4 field(s) in all`). That
-#    is step 10, and the reason 030c was recorded first;
-#  - the four days under `Daily/2028/` carry no frontmatter and no class. They are what a day
-#    looked like before this take, and they stay that way — a template only types what comes
-#    after it.
+#    the daily template starts with no class, gains `fileClass, reading, watching` in one gesture,
+#    and stays at those three when `listening` is added to Habit. *Insert missing fields* on the
+#    template takes it to four — this is where that command belongs, and the only place the take
+#    needs it;
+#  - the four days already written do **not** gain `listening`, and the class-wide pass from take
+#    030c offers exactly those four (`4 note(s) are missing 4 field(s) in all`). That is step 10,
+#    and the reason 030c was recorded first.
 #
 # **Templater is named, not filmed** (step 11). It is not installed in this vault, and installing
 # a community plugin on camera costs the three steps take 019 spent on Maps. The take stays on
@@ -71,15 +77,15 @@ steps:
     pause: 2600
   - title: "Nothing left to do but the values, in the panel you already know"
     pause: 2500
-  - title: "Do the same for your days: the daily template has no class either — add Activity to it"
+  - title: "Do the same for your days: the daily template has no class either — add Habit to it"
     pause: 2700
-  - title: "Now add a field to Activity, attendance, and look back at that template: it hasn't budged"
-    pause: 2700
+  - title: "Now give Habit a third field, listening, and look back at that template: it hasn't budged"
+    pause: 2800
   - title: "A template is a copy, not a link — insert its missing fields to bring it up to date"
     pause: 2700
-  - title: "Create today's note and it arrives typed, attendance and all"
-    pause: 2500
-  - title: "The four activities written before this don't gain it — insert into them one at a time, or across the class at once"
+  - title: "Create today's note: all three habits are waiting, and one click walks a scale up"
+    pause: 2700
+  - title: "The four days written before this don't gain listening — insert into them one at a time, or across the class at once"
     pause: 2900
   - title: "Templater goes further still: it can work out the class, or a value, as the note is created"
     pause: 2600

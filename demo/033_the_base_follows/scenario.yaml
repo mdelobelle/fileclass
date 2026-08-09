@@ -25,8 +25,11 @@
 #    `watching` to `screen time` gives `file.name, walking, reading, screen time, listening`.
 #    That is the other half of take 030b, which migrated the notes and deliberately left every
 #    base alone, naming the ones to look at;
-#  - **a filter you edited survives.** Adding `!file.inFolder("Templates")` to the managed view
-#    by hand, then syncing, keeps the clause and still updates the order (the sync re-emits it
+#  - **a filter you edited survives.** The clause step 10 adds is `!file.inFolder("Templates")`,
+#    and what it is *for* is on screen from take 032: the Habit table showed six rows, the sixth
+#    being `Templates/Daily note.md`, which carries the class like any other note. Dropping it is
+#    the first thing anyone would want from that table, so it is what the take edits. Measured:
+#    the clause survives the next sync, which still updates the order (it re-emits the clause
 #    with different quoting — same value);
 #  - **the views you wrote are untouched.** `Books.base`'s four hand-written views are byte for
 #    byte what they were, and *All books* still names a `shelf` column — left over from the
@@ -63,8 +66,8 @@ steps:
     pause: 2600
   - title: "The four views you wrote yourself are untouched: All books still says shelf, and that's yours to change"
     pause: 2900
-  - title: "So is a filter you add to its own view — put Templates out, and the next sync keeps it out"
-    pause: 2800
+  - title: "Remember the template sitting in that table? Drop it with a clause of your own, and the next sync leaves your clause alone"
+    pause: 3000
   - title: "Nothing runs behind your back: the button tells you, you decide when"
     pause: 2600
   - title: "A class that changes shape doesn't leave its table behind — it takes it along when you say so"

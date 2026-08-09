@@ -167,33 +167,27 @@
  * one line of buttons; it wraps on a narrow pane instead of overflowing.
  */
 /*
- * Mirrors what Obsidian declares on .metadata-add-button — metadata label font
- * (`.text-icon-button` alone would give --font-ui-small, a size smaller) and the
- * same 0.5em top margin, which resolves against that font. Variables, not the
- * numbers they currently evaluate to, so the row stays on one baseline when a
- * theme or the user changes the metadata font.
+ * The actions and Obsidian's own "Add property" are **one wrapping row**, not two.
+ *
+ * The group used to be an inline-flex box of its own, and an inline-level box cannot be
+ * split across lines: measured on a class note, 119px of "Add property" plus 627px of
+ * actions against a 720px container, so all five dropped below together while the line
+ * above stayed nearly empty. `display: contents` drops the wrapper's box and leaves its
+ * buttons as inline-level siblings of the native one, so the break happens *between
+ * buttons* — the row fills, then continues on the next line.
+ *
+ * Spacing therefore lives on each button rather than on a flex gap. `0.5em` above mirrors
+ * what Obsidian declares on .metadata-add-button, and resolves against the metadata label
+ * font, so a theme changing that font keeps every button on one baseline.
  */
 .metadata-content > .fileclass-prop-actions {
-	display: inline-flex;
-	flex-wrap: wrap;
-	align-items: center;
-	/*
-	 * Two gutters, not one. With a single 4px gap the rows sat closer together than the
-	 * buttons within a row — measured on a class note at 340px: 33px between rows against
-	 * ~30px of horizontal spacing — so five wrapped actions read as columns with a stranded
-	 * last item instead of one group. The vertical gutter is now the wider of the two, which
-	 * is what makes wrapped rows read as rows.
-	 */
-	column-gap: var(--size-4-2);
-	row-gap: var(--size-4-3);
-	font-size: var(--metadata-label-font-size);
-	font-family: var(--metadata-label-font);
-	/* 4px, not 8: the group lands on its own line as soon as it stops fitting, and there the
-	   left margin is an indent against "Add property" rather than a separation from it. */
-	margin: 0.5em 0 0 var(--size-4-1);
-	vertical-align: top;
+	display: contents;
 }
 .metadata-container .fileclass-prop-action {
+	display: inline-flex;
+	align-items: center;
+	vertical-align: top;
+	margin: 0.5em 0 0 var(--size-4-2);
 	font-size: var(--metadata-label-font-size);
 	font-family: var(--metadata-label-font);
 	/* Symmetric, so the space between two buttons is the same wherever the row breaks. */

@@ -1,0 +1,66 @@
+# Narration for take 030c — see ../SCENARIO.md for the format.
+# Between 030b and 031, and it exists because writing 031 turned up a hole: a class that gains
+# a field leaves every note already written behind it, and the only cure was to open them one
+# by one. Bulk *edit* could set a value everywhere; nothing could add the key.
+#
+# The vault opens on **Dune**, written long before the field its class is about to gain. Step 2
+# adds `lent to` to Book on camera and comes back to this note to show that nothing moved:
+# that is the whole problem, in two frames.
+#
+# The fixture is take 030b's vault at its closing state — `shelf` renamed to `storage` in the
+# class and in the four notes that carried it.
+#
+# Facts the script leans on, all measured in the app before scripting:
+#  - the command is `Fileclass: Insert missing fields across a class`, and the same action sits
+#    in a class note's right-click menu between *Create a base for this fileClass* and *Bulk
+#    edit a field of this fileClass*;
+#  - from the palette it takes the class of the **class note** in front of you, and asks otherwise
+#    — measured with *Dune* open, it asks, because Dune is a member of Book, not Book itself.
+#    So the take enters through the class note's menu, which is the natural gesture anyway;
+#  - on this vault, after adding one field to Book, the modal reads `7 note(s) are missing 57
+#    field(s) in all` — 57 because several of those notes were never filled in at all, which is
+#    honest and worth showing: the count is fields, not notes. (Measured 8 and 74 on take 031's
+#    vault, which has a template by then: a template is a note of the class like any other, and
+#    that is 031's subject rather than this one's.);
+#  - the list names all seven — *The Lord of the Rings*, *Dune*, *Atomic Habits*, *As We May
+#    Think* and the three in `Reading list/`, among them `Foundation.md`: notes claimed by their
+#    folder, carrying no `fileClass` key. The pass asks the index, so it finds them;
+#  - after the write, `author` — Book's one required field — is empty in *The Dispossessed*,
+#    *Small Gods* and *Foundation*, so step 9's red flag is on screen in three rows at once;
+#  - *Not now* leaves everything alone. Confirming writes once and says
+#    `inserted 57 field(s) across 7 note(s) of "Book"` — one notice, not one per note, which is
+#    a fix this take earned: each note announced its own write until now, so a pass over eight
+#    would have stacked eight notices over the summary.
+title: "Fileclass — A class that gained a field"
+description: "Insert what a class promises into every note that was written before it."
+doc: "ui/#insert-missing-fields-across-a-class" # deep link used in the description
+tags: "insert missing fields, class, migration, bulk"
+vault_name: "Demo"
+plugin: true
+settings:
+  classFilesPath: "Classes/"
+  fileClassAlias: "fileClass"
+initial_pause: 1500
+default_pause: 900
+
+steps:
+  - title: "A class that gains a field leaves every note already written behind it"
+    pause: 2600
+  - title: "Add lent to in Book's schema, then come back to Dune: nothing has moved"
+    pause: 2600
+  - title: "Insert missing fields works here, note by note — but not at the scale of a library"
+    pause: 2600
+  - title: "So ask the class instead: insert its missing fields across every note that carries it"
+    pause: 2700
+  - title: "The modal counts first: seven notes, fifty-seven fields in all"
+    pause: 2600
+  - title: "And names them, with what each one is missing"
+    pause: 2400
+  - title: "Including the ones no fileClass line types — their folder is enough"
+    pause: 2600
+  - title: "Not now is an answer: nothing is written until you say so"
+    pause: 2500
+  - title: "Insert, and the keys arrive empty — a required one flags itself red on the spot"
+    pause: 2700
+  - title: "What the class promises, its notes finally carry — even those written before the promise"
+    pause: 2700

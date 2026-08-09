@@ -9,6 +9,7 @@ import { Component, Menu, Notice, TAbstractFile, TFile, TFolder } from "obsidian
 import type FileclassPlugin from "../../main";
 import { createFileClass } from "../commands/createFileClass";
 import { insertMissingFields } from "../commands/insertMissingFields";
+import { bulkInsertMissingFields } from "../commands/bulkInsertMissing";
 import { reorderFrontmatter } from "../io/reorderFrontmatter";
 import { reorderPlan } from "../schema/reorder";
 import { isClassFolder } from "../schema/classFolder";
@@ -103,6 +104,12 @@ export class FileclassContextMenu extends Component {
 					.onClick(() => openFileClassBase(this.plugin, fcName))
 			);
 		}
+		menu.addItem((item) =>
+			item
+				.setTitle("Insert missing fields across this fileClass")
+				.setIcon("list-plus")
+				.onClick(() => void bulkInsertMissingFields(this.plugin, fcName))
+		);
 		menu.addItem((item) =>
 			item
 				.setTitle("Bulk edit a field of this fileClass")

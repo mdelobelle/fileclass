@@ -203,7 +203,12 @@ export class FileClassSchemaModal extends Modal {
 		);
 	}
 
-	private addField(): void {
+	/**
+	 * Public because the Properties panel offers *Add a field* on a class note: it opens this
+	 * modal and this dialog on top of it, so the field lands in a list you are already looking
+	 * at rather than nowhere visible.
+	 */
+	addField(): void {
 		new FieldDefModal(this.app, {
 			title: "Add field",
 			dateDefaults: dateFormatDefaults(this.plugin.settings),
@@ -280,6 +285,22 @@ export class FileClassSchemaModal extends Modal {
  * Opens the schema editor for `name`, or a fileClass picker when omitted.
  * `closeParent` is dismissed by the actions that navigate away from the modal.
  */
+/**
+ * The schema editor with its *Add field* dialog already open — what the Properties panel's
+ * *Add a field* does on a class note. Two modals, and the stack is LIFO (#118): answer the
+ * dialog and the schema behind it is where you land.
+ */
+export function openAddFieldTo(plugin: FileclassPlugin, name: string): void {
+	const file = plugin.index.getFileClassFile(name);
+	if (!file) {
+		new Notice(`Fileclass: note for "${name}" not found.`);
+		return;
+	}
+	const modal = new FileClassSchemaModal(plugin, name, file);
+	modal.open();
+	modal.addField();
+}
+
 export function openFileClassSchema(
 	plugin: FileclassPlugin,
 	name?: string,

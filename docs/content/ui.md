@@ -320,7 +320,25 @@ to insert" — which, since binding a class inserts its fields automatically
 (*Insert fields when adding a class*, on by default), is what it would show most
 of the time.
 
-Both buttons sit in the properties section, so they follow Obsidian's own rule
+A third, **Reorder properties**, appears only when a note's keys are out of the
+order its class declares.
+
+### On a fileClass note
+
+A class note gets the actions that act on the **class**, not on the note — and
+not *Add a class*, which there would bind a class to a class:
+
+- **+ Add a field** — opens the schema editor with its *Add field* dialog
+  already up, so the new field lands in a list you are looking at.
+- **Options** — what the class [extends](../schema/#extending-a-fileclass), what
+  it excludes, and the [notes it claims](../schema/#binding-notes-to-a-fileclass).
+- **Create a base** / **Modify the base** — the
+  [generator](../views/#generating-a-base), prefilled.
+- **Open the base** — only once the class has one, and it goes straight there.
+- **Bulk edit a field** — [set one field](#bulk-edit-set-where) across the notes
+  that carry the class.
+
+Both sets sit in the properties section, so they follow Obsidian's own rule
 for showing it: a note with **no frontmatter at all** displays no properties
 section, and therefore no buttons — use the command palette, the right-click menu
 or the [field indicator](#field-indicator) to bind the first class. Toggle the

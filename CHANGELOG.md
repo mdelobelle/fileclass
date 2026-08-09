@@ -6,6 +6,15 @@ All notable changes to Fileclass are documented here. The format follows
 
 ## [Unreleased]
 
+### Changed
+
+- **A fileClass note's Properties panel offers the class's own actions.** Beside *Add
+  property* it used to show *Add a class*, which on a class note would bind a class to a
+  class. It now carries what you actually do there: **Add a field** (the schema editor with
+  its dialog already open), **Options**, **Create a base** — *Modify the base* once there is
+  one — **Open the base**, which appears only when there is one to open, and **Bulk edit a
+  field**. Notes that are not class notes keep the set they had.
+
 ### Fixed
 
 - **A stack of modals is last-in-first-out for the mouse too**

@@ -156,3 +156,7 @@ other. Captions are English; YouTube translates them into your language.
 ## New notes that arrive already typed
 
 {{< video "031" >}}
+
+## A table for a class, generated
+
+{{< video "032" >}}

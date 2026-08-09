@@ -116,7 +116,7 @@ thread, and a tight smoke test of that type's input path.
 
 | # | Take | Feature | Vault gains | Status |
 | - | ---- | ------- | ----------- | ------ |
-| 032 | A table for a class, generated | `Create a base for a class`: the modal, the columns in class order, the class↔base link, and a view added to a base you already keep | `Habit.base`, plus a fifth view in `Books.base` | |
+| 032 | A table for a class, generated | `Create a base for a class`: the modal, the columns in class order, the class↔base link, and a view added to a base you already keep | `Habit.base`, plus a fifth view in `Books.base` | ✅ [published](https://www.youtube.com/watch?v=tGG3ONU4sv8) |
 | 033 | Schema changed? the base follows | `Sync this class to its base` | — | |
 | 034 | Editing right in the table | `fileclass-table` view | — | |
 | 035 | What's missing, in a column | validation columns | — | |

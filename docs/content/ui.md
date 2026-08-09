@@ -9,6 +9,8 @@ the UI surfaces; on-name indicators come later).
 
 ## Note-fields modal
 
+{{< video "026" >}}
+
 The **note-fields modal** is the hub for a note's fields. It lists every root
 field of the note's fileClass(es) — each row is compact, with the field's **type
 shown as a leading icon** (hover it for the type name) and its current value.
@@ -112,6 +114,8 @@ modals answer the chord.
 
 ## Context menus
 
+{{< video "027" >}}
+
 When **Context menu entries** is enabled (Settings → Fileclass), right-clicking a
 Markdown file — in the file explorer, on a tab, or in the editor — adds:
 
@@ -138,6 +142,8 @@ All actions write to frontmatter only, one `processFrontMatter` write each.
 
 ## Insert missing fields across a class
 
+{{< video "030c" >}}
+
 *Insert missing fields* is a per-note command, which is what you want on the note in front of
 you and useless the day a class gains a field: every note written before it keeps a gap, and
 closing it meant opening each one. [Bulk edit](#bulk-edit-set-where) could set a value
@@ -158,6 +164,8 @@ The keys arrive **empty**, as they do note by note: a key with nothing in it, wh
 what a [required field](../fields/#required-fields) then flags.
 
 ## Bulk edit (set-where)
+
+{{< video "030" >}}
 
 **Fileclass: bulk edit a field** (command, or the fileClass note's right-click
 menu) sets one field across many notes at once — the in-app counterpart of the
@@ -253,6 +261,8 @@ Moving down keeps the *action*, not the column: a group field carries an extra
 
 ## Field indicator
 
+{{< video "029" >}}
+
 A small clickable **icon** appears next to a note's name whenever a fileClass
 applies to it; clicking it opens the note-fields modal above. On a **fileClass
 note** itself (in the tab header or file explorer), the icon instead opens the
@@ -271,6 +281,8 @@ version, the icon simply stops appearing there — the modal, menus, and command
 keep working.
 
 ## Property editor buttons
+
+{{< video "028" >}}
 
 In Obsidian's native **Properties** editor, each row whose key matches an
 **editable field** of the note's fileClass gets a small **button between the key

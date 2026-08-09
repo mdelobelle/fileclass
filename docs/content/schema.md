@@ -173,12 +173,12 @@ template, and let Fileclass manage the *frontmatter*.
 The trick to avoid running **Insert missing fields** on every new note is to
 bake the fields into the template **once**:
 
-1. Create a template note and put the binding in its frontmatter (e.g.
-   `fileClass: Book`).
-2. Open that template note and run **Fileclass: insert missing fields in current
-   file** once — it writes every field of the fileClass (empty) into the
-   template's frontmatter. (Templater can even pre-fill `fileClass:` dynamically.)
-3. New notes created from the template now start with the binding **and all the
+1. Create a template note and run **Add fileClass** on it — from its right-click
+   menu, from **Fileclass: add a class to this note**, or from the footer of the
+   note-fields modal. A template is a note, so this does there what it does
+   anywhere: it writes the binding **and** every field the class declares, empty,
+   in one go. (Templater can even work `fileClass:` out dynamically.)
+2. New notes created from the template now start with the binding **and all the
    fields already present** — just fill them in via the note-fields modal or the
    Properties edit buttons. No per-note command needed.
 

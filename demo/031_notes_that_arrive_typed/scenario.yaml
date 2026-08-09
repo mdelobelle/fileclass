@@ -4,9 +4,15 @@
 # their fields already there.
 #
 # The vault opens on **Templates/New book.md**, a template carrying **nothing but two headings**
-# — no frontmatter at all. Steps 2 and 3 give it a class and fill it on camera, and steps 7 to 9
-# do the same for the daily template, which is also shipped classless: the point of this take is
-# the gesture, so nothing it demonstrates is pre-baked.
+# — no frontmatter at all. Step 2 types it on camera with a single gesture, and step 6 does the
+# same to the daily template, also shipped classless: the point of this take is the gesture, so
+# nothing it demonstrates is pre-baked.
+#
+# Typing a template takes **one** action, not two: *Add fileClass* writes the class line and
+# then inserts every field the class declares (`addFileClassModal` calls `insertMissingFields`
+# itself). An earlier draft spent a step teaching *Insert missing fields* here, which was a step
+# spent on something nobody has to do. The command keeps its place at step 8, where it is the
+# only thing that works: a class that changed after the template was written.
 #
 # The fixture is take 030c's vault at its closing state — Book carries `lent to`, and its seven
 # notes carry the whole class, empty where nothing was filled in — plus a `Templates/` folder
@@ -14,19 +20,22 @@
 #
 # Facts the script leans on, all measured in the app before scripting:
 #  - the **Templates** core plugin is enabled with **no folder configured** (`{}`), which is what
-#    step 4 sets on camera; its commands are `Templates: Insert template`, `Insert current date`,
+#    step 3 sets on camera; its commands are `Templates: Insert template`, `Insert current date`,
 #    `Insert current time`;
 #  - `.obsidian/daily-notes.json` already points at `Templates/Daily note` (folder `Daily`,
 #    format `YYYY/MM/YYYY-MM-DD`): which template a daily note uses is a setting, not a lesson,
 #    so it is shipped rather than filmed;
-#  - *Insert missing fields* on a template writes the class's fields into **that note**, like any
-#    other: a template is a note, which is the whole trick. Measured: writing `fileClass: Book`
-#    into *New book* and running it takes the template from no frontmatter to **18 keys**
-#    (`inserted 17 field(s)`);
-#  - a template does **not** re-sync when the class changes, and steps 7–9 are that, on camera:
-#    the daily template starts with no class, gains `fileClass: Activity` by hand, and stays at
-#    that single key when `attendance` is added to Activity. Running the insert on it again takes
-#    it to `fileClass, attendance, branch, icon, color, starts, doors`;
+#  - a class lands in a template like it lands in any note — a template *is* a note, which is the
+#    whole trick. Measured on *New book*: `Add fileClass` → Book takes it from **no frontmatter**
+#    to **18 keys** in one go (`fileClass` plus the seventeen Book declares, `inserted 17
+#    field(s)`), and the two headings underneath are untouched. Reachable from the note's
+#    right-click menu (*Add fileClass*), from `Fileclass: Add a class to this note`, and from the
+#    note-fields modal's footer;
+#  - a template does **not** re-sync when the class changes, and steps 6–9 are that, on camera:
+#    the daily template starts with no class, gains Activity with its five fields, and stays at
+#    those when `attendance` is added to the class. *Insert missing fields* on the template takes
+#    it to `fileClass, attendance, branch, icon, color, starts, doors` — this is where that
+#    command belongs, and the only place the take needs it;
 #  - the four Activity notes already written — *Signing — Blake & Mortimer*, *Reading group*,
 #    *Library book sale*, *Film club — Dune* — do not gain `attendance`, and the class-wide pass
 #    from take 030c offers exactly those four (`4 note(s) are missing 4 field(s) in all`). That
@@ -54,24 +63,24 @@ default_pause: 900
 steps:
   - title: "Every note so far was typed after it was written — a template types it before"
     pause: 2600
-  - title: "This template is two headings and nothing else: write fileClass Book into its frontmatter"
-    pause: 2600
-  - title: "Then insert its missing fields, once — the whole class lands in the template, empty"
-    pause: 2700
+  - title: "This template is two headings and nothing else — add the Book class, and its seventeen fields arrive with it"
+    pause: 2900
   - title: "Point Obsidian's Templates plugin at the folder that holds it"
     pause: 2400
   - title: "New note, insert the template, and it arrives with its class and every field"
     pause: 2600
   - title: "Nothing left to do but the values, in the panel you already know"
     pause: 2500
-  - title: "Do the same for your days: the daily template has no class — write fileClass Activity into it"
+  - title: "Do the same for your days: the daily template has no class either — add Activity to it"
     pause: 2700
   - title: "Now add a field to Activity, attendance, and look back at that template: it hasn't budged"
     pause: 2700
-  - title: "A template is a copy, not a link — insert its missing fields again and the days written next carry attendance"
-    pause: 2800
-  - title: "The four activities already written don't gain it — insert into them one at a time, or across the class at once"
-    pause: 2800
+  - title: "A template is a copy, not a link — insert its missing fields to bring it up to date"
+    pause: 2700
+  - title: "Create today's note and it arrives typed, attendance and all"
+    pause: 2500
+  - title: "The four activities written before this don't gain it — insert into them one at a time, or across the class at once"
+    pause: 2900
   - title: "Templater goes further still: it can work out the class, or a value, as the note is created"
     pause: 2600
   - title: "A class is a promise — a template is that promise kept from the first line"

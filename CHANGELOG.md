@@ -6,24 +6,7 @@ All notable changes to Fileclass are documented here. The format follows
 
 ## [Unreleased]
 
-### Fixed
-
-- **Enter fires the action you walked to.** The keyboard grid of a fields list moves the focus
-  onto Obsidian's `clickable-icon`s, which are divs: they took the focus, and then Enter and
-  Space did nothing at all — you could arrow onto a field's pencil and press Enter forever.
-  Both keys now fire the focused action, leaving real buttons to handle themselves.
-
-- **A hovered class stops leaking bars under the footer.** Hovering a fileClass marks its rows
-  with an accent bar drawn 9px into the left gutter — outside the sticky footer's background,
-  so rows scrolling underneath left a stack of little bars showing through it. The footer's
-  background now covers the scroll box edge to edge.
-
-### Changed
-
-- **A note's fields modal keeps its footer in sight.** The actions — *Insert missing fields*,
-  *Add fileClass*, *Reorder properties* — and the breadcrumb naming the note's classes sat at
-  the end of the list, so on a note with forty fields you scrolled to the bottom to reach the
-  button that fixes the top. They are pinned now, like the Save row of every editing modal.
+## [0.2.9] - 2026-08-09
 
 ### Added
 
@@ -35,8 +18,6 @@ All notable changes to Fileclass are documented here. The format follows
   6vh off the bottom — rather than on an average one, and it is fixed: a modal that resized
   between steps because a caption grew a line would be worse on camera than one slightly
   short. The demo tooling sets the flag on every staged vault.
-
-### Added
 
 - **Insert a class's missing fields across every note that carries it.** *Insert missing
   fields* has always been a per-note command, which is what you want on the note in front of
@@ -57,7 +38,24 @@ All notable changes to Fileclass are documented here. The format follows
   Alt over the type icon, which it can afford because there the icon and the button are two
   elements.
 
+### Changed
+
+- **A note's fields modal keeps its footer in sight.** The actions — *Insert missing fields*,
+  *Add fileClass*, *Reorder properties* — and the breadcrumb naming the note's classes sat at
+  the end of the list, so on a note with forty fields you scrolled to the bottom to reach the
+  button that fixes the top. They are pinned now, like the Save row of every editing modal.
+
 ### Fixed
+
+- **Enter fires the action you walked to.** The keyboard grid of a fields list moves the focus
+  onto Obsidian's `clickable-icon`s, which are divs: they took the focus, and then Enter and
+  Space did nothing at all — you could arrow onto a field's pencil and press Enter forever.
+  Both keys now fire the focused action, leaving real buttons to handle themselves.
+
+- **A hovered class stops leaking bars under the footer.** Hovering a fileClass marks its rows
+  with an accent bar drawn 9px into the left gutter — outside the sticky footer's background,
+  so rows scrolling underneath left a stack of little bars showing through it. The footer's
+  background now covers the scroll box edge to edge.
 
 - **The indicator on links, on the note you open Obsidian on.** The Live Preview widgets are
   built when an editor is created and rebuilt when the document or the viewport changes —
@@ -69,8 +67,6 @@ All notable changes to Fileclass are documented here. The format follows
   it did. That pane holds no links: each result is a tree item whose title is a plain `div`,
   so the internal-link decorator walked past every one of them. It has a decorator of its own
   now, resolving the note from its name the way a `[[link]]` would.
-
-### Fixed
 
 - **Renaming a field renames the property it wrote**
   ([#108](https://github.com/mdelobelle/fileclass/issues/108)). It used to rewrite the class

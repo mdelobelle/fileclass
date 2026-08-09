@@ -1,0 +1,93 @@
+# Narration for take 032 — see ../SCENARIO.md for the format.
+# Opens arc 7. Every take so far looked at one note at a time; this one turns a class into a
+# table you can look at, and it does not ask you to write the query.
+#
+# The vault opens on **Classes/Habit.md**, the class take 031 created and the only one in the
+# vault with no base at all — so step 2 is a real gap being filled, not a duplicate table being
+# made beside an existing one.
+#
+# The fixture is take 031's vault at its closing state: Habit carries `listening`, both
+# templates are typed (*New book* with Book's seventeen fields, *Daily note* with Habit's
+# three), the day the take created is there — `Daily/2026/08/2026-08-09.md`, one click into its
+# reading scale — and the four older days carry the key the class gained. *Frankenstein* is the
+# note born from the template on camera; it explains the *Mary Shelley* note that had no book.
+#
+# Facts the script leans on, all measured in the app before scripting:
+#  - the command is `Fileclass: Create a base for a class`, and a fileClass note's right-click
+#    menu carries *Create a base for this fileClass* between *Manage this fileClass* and
+#    *Insert missing fields across this fileClass*;
+#  - it opens a class picker, then a modal titled **Sync Habit to a base** with two prefilled
+#    inputs — *Base file* `Habit.base` ("New or existing .base to mirror this fileClass's fields
+#    into") and *View name* `Habit` ("The managed view (other views in the base are left
+#    untouched)") — and one button, **Create / sync**. The notice reads `created Habit.base`;
+#  - what it writes is short enough to read on camera:
+#      views:
+#        - type: fileclass-table
+#          name: "Habit"
+#          filters: { and: [ fileClass == "Habit" ] }
+#          order: [ file.name, reading, watching, listening ]
+#    `order` is `file.name` then the class's fields **in the order the class declares them**;
+#  - the class note gains `baseFile: Habit.base` and `baseView: Habit`. That is the link, and it
+#    is what `Fileclass: Open this class's base` follows — measured from the class note, it
+#    opens `Habit.base` straight away;
+#  - opened from a class note, the command **does not ask** which class: it takes the one in
+#    front of it and goes straight to the modal. That is why step 2 enters from the class note;
+#  - the rendered table has **six** rows, not five: the five days *and* `Templates/Daily note.md`,
+#    which carries `fileClass: Habit` since take 031 typed it. Step 5 says so rather than
+#    miscounting on camera — a template is a note of the class, which is take 031's own lesson,
+#    and a viewer who wants it out adds a clause of their own (sync leaves it alone);
+#  - the columns render as `valid | Name | reading | watching | listening | errors`. The first and
+#    last are take 035's subject; step 4 names them in half a clause rather than leaving two
+#    columns unaccounted for across three takes;
+#  - `listening` sits **last** in the class, where take 031 added it on camera, so the generated
+#    `order` reads `file.name, reading, watching, listening`;
+#  - pointing the generator at a base that already exists **adds** a view: `Books.base` went from
+#    four hand-written views (*All books*, *How many editions*, *No author yet*, *Who owns what*)
+#    to five, the four untouched. Notice: `synced Books.base`;
+#  - and the filter it writes for Book follows the class's bindings, not just its property:
+#    `fileClass == "Book" OR file.inFolder("Reading list")`, so the table catches the three notes
+#    in `Reading list/` that no `fileClass` line names. Tags are followed the same way
+#    (`file.hasTag(...)`, the class's own name included when *map with tag* is on).
+#
+# **Bookmark groups are not filmed.** They bind, and they have no Bases predicate, so a note
+# bound only by a bookmark group falls outside a generated filter — `docs/content/views.md` says
+# so and says what to do (add your own clause; sync leaves it alone). It is an advanced case and
+# it would cost a step out of twelve to show a table missing rows, on a take whose subject is a
+# table that arrives complete.
+title: "Fileclass — A table for a class, generated"
+description: "One command turns a class into a table: the columns, the filter, and the way back."
+doc: "views/#generating-a-base" # deep link used in the description
+tags: "bases, table, generated view, filters"
+vault_name: "Demo"
+plugin: true
+settings:
+  classFilesPath: "Classes/"
+  fileClassAlias: "fileClass"
+initial_pause: 1500
+default_pause: 900
+
+steps:
+  - title: "A class knows its fields — a base is where you finally see them all at once"
+    pause: 2600
+  - title: "Habit has no table yet — from the class note itself, create a base for it"
+    pause: 2500
+  - title: "It proposes the file and the name of the view — a new base, or one you already keep"
+    pause: 2700
+  - title: "Create, and the table is there: a column per field, in the order the class declares them — plus valid and errors, which we'll come back to"
+    pause: 3000
+  - title: "Six rows: five days, and the template that carries the class like any other note"
+    pause: 2700
+  - title: "The base itself is plain YAML — a filter, an order, nothing you couldn't have written"
+    pause: 2700
+  - title: "And the class remembers it: baseFile and baseView, so it can find its way back"
+    pause: 2600
+  - title: "From the class note, open its base — the round trip is one command"
+    pause: 2500
+  - title: "Book already has a base you wrote, with four views of your own"
+    pause: 2500
+  - title: "Point the generator at that file and it adds its view, leaving your four alone"
+    pause: 2700
+  - title: "Read the filter it wrote: Book is bound to a folder too, so the table catches the notes no fileClass line names"
+    pause: 2900
+  - title: "A class is a shape — a base is that shape, looked at"
+    pause: 2600

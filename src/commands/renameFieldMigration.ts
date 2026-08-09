@@ -58,8 +58,9 @@ export async function migrateRenamedField(
 	if (!from || from === field.name) return;
 	const candidates = notesCarrying(plugin, field, from);
 	if (!candidates.length) return;
+	const bases = await basesMentioning(plugin, from);
 	const confirmed = await new Promise<boolean>((resolve) => {
-		new RenamePreviewModal(plugin.app, { from, to: field.name, candidates, resolve }).open();
+		new RenamePreviewModal(plugin.app, { from, to: field.name, candidates, bases, resolve }).open();
 	});
 	if (!confirmed) return;
 
@@ -86,10 +87,37 @@ export async function migrateRenamedField(
 	);
 }
 
+/**
+ * The `.base` files whose text still mentions the old name.
+ *
+ * A base is **not** migrated: its views are the author's, written by hand, and rewriting
+ * someone's queries because a field was renamed would be a much bigger promise than this
+ * feature makes. But saying nothing turns a rename into a column that silently empties, so the
+ * modal names the bases that will need a look. A plain text search, deliberately: a base names
+ * properties in `order`, in `filters`, in `sort` and inside formulas, and a parser that
+ * understood only some of those would miss exactly the ones nobody remembers.
+ *
+ * The cost of that bluntness is a false positive — renaming `Book.shelf` also names
+ * `Comics.base`, which mentions the `shelf` inside Comic's own `storage` object. So the wording
+ * points rather than instructs: it says these bases mention the word, and leaves the reader to
+ * see whether the column is this field. Claiming otherwise would be worse than saying nothing.
+ */
+export async function basesMentioning(plugin: FileclassPlugin, name: string): Promise<string[]> {
+	const files = plugin.app.vault.getFiles().filter((f) => f.extension === "base");
+	const word = new RegExp(`\\b${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`);
+	const hits: string[] = [];
+	for (const file of files) {
+		const text = await plugin.app.vault.cachedRead(file);
+		if (word.test(text)) hits.push(file.path);
+	}
+	return hits;
+}
+
 interface PreviewOptions {
 	from: string;
 	to: string;
 	candidates: RenameCandidate[];
+	bases: string[];
 	resolve: (confirmed: boolean) => void;
 }
 
@@ -116,6 +144,17 @@ class RenamePreviewModal extends Modal {
 				(total > candidates.length ? ` — ${total} occurrences in all.` : ".") +
 				" The class note is already saved; this is the data.",
 		});
+
+		// What this migration will *not* do, said before the click rather than discovered after.
+		if (this.opts.bases.length) {
+			contentEl.createEl("p", {
+				cls: "fileclass-rename-caveat",
+				text:
+					`${this.opts.bases.join(", ")} still mention "${from}". Bases are yours to write, ` +
+					"so they are left as they are — worth checking whether the column they name is " +
+					"this field.",
+			});
+		}
 
 		const list = contentEl.createDiv({ cls: "fileclass-setting-list" });
 		for (const { file, occurrences } of candidates) {

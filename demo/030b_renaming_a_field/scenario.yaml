@@ -1,0 +1,66 @@
+# Narration for take 030b — see ../SCENARIO.md for the format.
+# Sixth of arc 6, and the counterpart of take 030: that one wrote a value into many notes, this
+# one changes the *name* those notes are written under. Eleven steps rather than twelve —
+# nothing here needed padding.
+#
+# The vault opens on **Dune**, whose Properties panel shows `shelf: Study · A-3` three rows
+# down. That row is the whole take: it is what a rename leaves behind when nobody migrates it,
+# and it is where step 8 shows the new name landing in the same position.
+#
+# The fixture is take 030's vault at its closing state — every book reads `ownership: Owned`.
+#
+# Facts the script leans on, all measured in the app before scripting:
+#  - **four notes** carry `shelf`: *Dune*, *The Lord of the Rings*, *Atomic Habits* and
+#    *Reading list/The Dispossessed*, the last one claimed by its folder rather than by a
+#    `fileClass` key — which is why the migration asks the index rather than the class name;
+#  - the save button reads **`Save and migrate…`** as soon as the name differs, and goes back to
+#    `Save` if the old name is typed again: it is re-read on every keystroke;
+#  - the modal reads `4 note(s) carry "shelf" and will be rewritten. The class note is already
+#    saved; this is the data.`, names the four, and offers *Leave the notes alone* beside
+#    *Rename in 4 note(s)*. Escape answers no;
+#  - after confirming, no note carries `shelf`, four carry `storage` with their values, and
+#    **Dune's key order is unchanged**: `fileClass, author, editions, storage, pages, …` — the
+#    new name occupies the line the old one had;
+#  - **a base does not follow**, and the modal says so. Measured: `Books.base` still lists
+#    `shelf` among the columns of its "All books" view, and `Book` has no base sync configured,
+#    so nothing would update it. The caveat names the bases that mention the word — *Comics.base*
+#    among them, which mentions the `shelf` inside Comic's own `storage` object and has nothing
+#    to do with this rename. That is why it points rather than instructs;
+#  - an `Object` field's child is renamed inside that object, and inside **every item** of an
+#    `ObjectList`, which is why the count can read more occurrences than notes. Step 9 says it;
+#    the take does not perform a second rename to show it.
+title: "Fileclass — Renaming a field, and every note that carries it"
+description: "A rename is a data migration: what it will rewrite, listed before it does."
+doc: "schema/#renaming-a-field" # deep link used in the description
+tags: "rename, migration, frontmatter, schema"
+vault_name: "Demo"
+plugin: true
+settings:
+  classFilesPath: "Classes/"
+  fileClassAlias: "fileClass"
+initial_pause: 1500
+default_pause: 900
+
+steps:
+  - title: "A field's name is the key it writes in every note — rename it, and those notes are left holding the old one"
+    pause: 2700
+  - title: "In Book's schema, edit shelf: the name is a text box like any other"
+    pause: 2400
+  - title: "Change it to storage, and the save button changes with it — it says what it is about to do"
+    pause: 2600
+  - title: "Saving writes the class first: a definition is not the data"
+    pause: 2400
+  - title: "Then the list — four notes carry shelf, named one by one"
+    pause: 2500
+  - title: "Nothing is written yet: leaving them alone is a real answer, and so is Escape"
+    pause: 2600
+  - title: "Confirm, and in each note the key is renamed with its value"
+    pause: 2500
+  - title: "In the note, storage sits exactly where shelf sat — nothing is reshuffled"
+    pause: 2500
+  - title: "Inside an Object field it renames within that object, and in every item of a list — so the count can read more keys than notes"
+    pause: 2800
+  - title: "A base that named the old column still names it: your views are yours, and the modal says which ones to look at"
+    pause: 2800
+  - title: "A class may change its mind — the notes it already wrote don't have to pay for it"
+    pause: 2600

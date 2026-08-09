@@ -58,6 +58,8 @@ Each entry in `fields` is `{ name, id, type, options, path }`:
 
 ## Inheritance
 
+{{< video "024" >}}
+
 A fileClass may `extends` one parent, forming a chain (`Child → Parent → …`).
 The chain is **cycle-guarded**: a self-reference or loop simply stops.
 
@@ -82,6 +84,8 @@ link appears only when the name resolves.
 
 ## Binding a note to fileClass(es)
 
+{{< video "025" >}}
+
 A note can be bound to one or more fileClasses. When several sources apply, they
 are combined in this priority order:
 
@@ -104,6 +108,8 @@ are combined in this priority order:
 
 ### Renaming a field
 
+{{< video "030b" >}}
+
 A field's name is the frontmatter key it writes, so renaming it is a **data migration**: the
 notes that carry the old key would otherwise keep it, with their values, while the new name
 had nothing under it — the field reading as empty everywhere while its data sat one line
@@ -119,6 +125,8 @@ name already exists is left alone: overwriting a value you can see would be wors
 nothing.
 
 ### Picking what a class claims
+
+{{< video "025b" >}}
 
 `Tag names`, `Files paths` and `Bookmark groups`, in a class's options, are **picked from the
 vault**, not typed: the tags it uses (most used first), its folders, and the groups of the
@@ -165,6 +173,8 @@ A fileClass note can also be created from the **class-files folder's right-click
 menu** (*Create a class*), not only from the command palette.
 
 ## Creating notes with a template (Templater / Templates)
+
+{{< video "031" >}}
 
 Fileclass is **frontmatter-only**, so it composes cleanly with the core
 **Templates** plugin and **Templater**: keep managing the note *body* with your

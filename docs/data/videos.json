@@ -405,5 +405,16 @@
     "durationSeconds": 157,
     "recordedWith": "0.2.8",
     "privacyStatus": "public"
+  },
+  "032": {
+    "id": "tGG3ONU4sv8",
+    "url": "https://www.youtube.com/watch?v=tGG3ONU4sv8",
+    "title": "Fileclass #032 · A table for a class, generated",
+    "subject": "A table for a class, generated",
+    "scenario": "032_a_table_for_a_class",
+    "doc": "views/#generating-a-base",
+    "durationSeconds": 156,
+    "recordedWith": "0.2.9",
+    "privacyStatus": "public"
   }
 }

@@ -36,7 +36,11 @@ import { Field, FieldType, isRootField } from "../schema/field";
 import { hasFieldKey, readFieldValue } from "../io/read";
 import { AddFileClassModal } from "./addFileClassModal";
 import { attachAltAffordance } from "./altAffordance";
-import { openFileClassSchema } from "./fileClassSchemaModal";
+import { openAddFieldTo, openFileClassSchema } from "./fileClassSchemaModal";
+import { FileClassOptionsModal } from "./fileClassOptionsModal";
+import { openBulkEdit } from "./bulkEditModal";
+import { pickAndCreateBase } from "../views/baseFileGenerator";
+import { fileClassBaseFile, openFileClassBase } from "../views/baseSync";
 import { describeField, displayTemplateOf } from "../fields/objectDisplay";
 import { isEmpty, isRequired, validateField } from "../fields/validate";
 import { makeDisplayDeps } from "../fields/displayDeps";
@@ -138,8 +142,12 @@ export class PropertyEditButtons extends Component {
 	}
 
 	/**
-	 * "Add a class" and "Insert N missing fields", as siblings of the native
-	 * "Add property" button (which is inline-flex, so they land on its line).
+	 * The actions beside the native "Add property" button (which is inline-flex, so they land
+	 * on its line): what this note can be asked for.
+	 *
+	 * A **class note** gets the ones that act on the class — add a field, its options, its
+	 * base, a bulk edit — and not *Add a class*, which would bind a class to a class.
+	 * Every other note gets the note actions.
 	 *
 	 * The whole set is rebuilt only when its state changes: this DOM is watched,
 	 * and mutating it on every pass would feed the observer forever.
@@ -151,6 +159,9 @@ export class PropertyEditButtons extends Component {
 			existing?.remove(); // not a note's properties editor (e.g. a canvas card)
 			return;
 		}
+
+		const fcName = this.plugin.index.fileClassNameOfNote(file.path);
+		if (fcName) return this.injectClassActions(add, existing, file, fcName);
 
 		const fields = this.plugin.index.getFields(file);
 		const bound = this.plugin.index.getFileClasses(file).length;
@@ -206,6 +217,58 @@ export class PropertyEditButtons extends Component {
 				)
 			);
 		}
+		add.after(wrapper);
+	}
+
+	/** The class actions, in the order you use them: shape it, set it up, look at it, edit it. */
+	private injectClassActions(
+		add: HTMLElement,
+		existing: HTMLElement | null | undefined,
+		file: TFile,
+		fcName: string
+	): void {
+		const base = fileClassBaseFile(this.plugin, fcName);
+		const state = `class:${fcName}:${base?.path ?? ""}`;
+		if (existing?.dataset.fcState === state) return;
+		existing?.remove();
+
+		const wrapper = createSpan({ cls: ACTIONS_CLASS });
+		wrapper.dataset.fcState = state;
+		wrapper.append(
+			this.makeActionButton("plus", "Add a field", `Declare a new field on ${fcName}`, () =>
+				openAddFieldTo(this.plugin, fcName)
+			),
+			this.makeActionButton(
+				"settings-2",
+				"Options",
+				`What ${fcName} extends, excludes, and the notes it claims`,
+				() => new FileClassOptionsModal(this.plugin, fcName, file).open()
+			),
+			this.makeActionButton(
+				"layout-grid",
+				base ? "Modify the base" : "Create a base",
+				base
+					? `Sync ${fcName}'s fields into ${base.path}`
+					: `Generate a base whose table is ${fcName}'s fields`,
+				() => pickAndCreateBase(this.plugin, fcName)
+			)
+		);
+		// Same rule as the note actions: a button appears when it has somewhere to go.
+		if (base) {
+			wrapper.append(
+				this.makeActionButton("table", "Open the base", `Open ${base.path}`, () =>
+					openFileClassBase(this.plugin, fcName)
+				)
+			);
+		}
+		wrapper.append(
+			this.makeActionButton(
+				"replace",
+				"Bulk edit a field",
+				`Set one of ${fcName}'s fields across the notes that carry it`,
+				() => openBulkEdit(this.plugin, fcName)
+			)
+		);
 		add.after(wrapper);
 	}
 

@@ -9,6 +9,8 @@ use a `.base` file; Fileclass helps you create one.
 
 ## Generating a base
 
+{{< video "032" >}}
+
 Run **Fileclass: create a base for a class**, or **right-click a fileClass
 note** → **Create a base for this fileClass**. A small dialog lets you choose:
 

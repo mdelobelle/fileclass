@@ -1,0 +1,28 @@
+formulas:
+  fcMatch_publisher_by_publisher: publisher.isTruthy() && this.publisher.isTruthy() && (publisher == this.publisher)
+views:
+  - type: table
+    name: All series
+    filters:
+      and:
+        - fileClass == "Series"
+    sort:
+      - property: started
+        direction: ASC
+    order:
+      - file.name
+      - publisher
+      - started
+  - type: table
+    name: "Fileclass · All series · publisher = this.publisher"
+    filters:
+      and:
+        - fileClass == "Series"
+        - formula.fcMatch_publisher_by_publisher == true
+    sort:
+      - property: started
+        direction: ASC
+    order:
+      - file.name
+      - publisher
+      - started

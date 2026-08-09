@@ -373,10 +373,15 @@ async function main() {
 
 	// Feed the docs and the roadmap from the release we just published, so they're
 	// never behind the channel. Reporting only — it writes generated files.
-	const { written, todo } = await syncDocs();
-	if (written.length) console.log(dim(`docs       updated ${written.length} generated file(s)`));
+	const { written, placed, todo } = await syncDocs();
+	if (written.length) console.log(dim(`docs       updated ${written.length} file(s)`));
+	for (const p of placed) {
+		console.log(dim(`docs       placed {{< video "${p.n}" >}} in ${p.file}#${p.anchor}`));
+	}
+	// Only what the tooling refuses to guess is left for a human — a `doc:` naming a
+	// heading that does not exist is a mistake to see, not a location to invent.
 	for (const p of todo) {
-		console.log(dim(`docs       still to place: {{< video "${p.n}" >}} in ${p.file}`));
+		console.log(dim(`docs       nowhere to place {{< video "${p.n}" >}}: ${p.file} (${p.why})`));
 	}
 
 	console.log(`\n${bold(yt.videoUrl(videoId))}`);

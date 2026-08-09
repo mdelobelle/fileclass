@@ -21,6 +21,7 @@ import { applyConditional } from "../views/conditionalSync";
 import { FileClassSchemaModal } from "./fileClassSchemaModal";
 import { childPathOf } from "../schema/field";
 import { FieldDefModal, FieldDefResult } from "./fieldDefModal";
+import { migrateRenamedField } from "../commands/renameFieldMigration";
 
 /**
  * Generates the formula and view a dependent field needs (#19). No-op for a field
@@ -64,7 +65,12 @@ export function openFieldSettings(plugin: FileclassPlugin, field: Field): void {
 		onSubmit: (r) => {
 			void mutateFields(plugin.app, file, (fields) =>
 				updateFieldDef(fields, field.id, { name: r.name, type: r.type, options: r.options })
-			).then(() => writeFieldDependency(plugin, owner, r));
+			).then(async () => {
+				writeFieldDependency(plugin, owner, r);
+				// A rename is a data migration (#108): the class note is written, the notes that
+				// carry the old key are listed and rewritten only if the author says so.
+				await migrateRenamedField(plugin, { ...field, name: r.name }, field.name);
+			});
 		},
 	}).open();
 }

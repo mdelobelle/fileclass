@@ -1366,3 +1366,15 @@ body.fileclass-shorter-modals .modal-content.fileclass-scroll-body {
 	flex: 1 1 auto;
 	min-height: 0;
 }
+
+/* What a rename will not touch, said in its confirmation modal: the bases that still name the
+   old property. A caveat, not an error — it is information, and the colour says so. */
+.fileclass-rename-caveat {
+	margin: var(--size-4-2) 0;
+	padding: var(--size-2-3) var(--size-4-2);
+	border-left: 3px solid var(--text-warning);
+	border-radius: var(--radius-s);
+	background: var(--background-modifier-hover);
+	color: var(--text-muted);
+	font-size: var(--font-ui-smaller);
+}

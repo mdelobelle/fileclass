@@ -102,6 +102,22 @@ are combined in this priority order:
    (replaces Metadata Menu's Dataview `fileClassQueries`; wired in a later phase).
 6. **Preset fields** — a last-resort field set, for a note none of the above reaches.
 
+### Renaming a field
+
+A field's name is the frontmatter key it writes, so renaming it is a **data migration**: the
+notes that carry the old key would otherwise keep it, with their values, while the new name
+had nothing under it — the field reading as empty everywhere while its data sat one line
+above, under a name nothing knew about.
+
+So the save says what it is about to do. Change a field's name and the button reads **Save and
+migrate…**; it writes the class note, then lists the notes that actually carry the old key and
+asks before touching them. *Leave the notes alone* is a real answer, and so is Escape.
+
+The rename keeps each key **where it stood** — frontmatter order is what the Properties panel
+shows — and descends into groups and into every item of an `ObjectList`. A note where the new
+name already exists is left alone: overwriting a value you can see would be worse than doing
+nothing.
+
 ### Picking what a class claims
 
 `Tag names`, `Files paths` and `Bookmark groups`, in a class's options, are **picked from the

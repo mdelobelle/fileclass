@@ -26,6 +26,7 @@ import {
 import { ChoiceSuggestModal } from "../fields/input/valueModals";
 import { isRequired } from "../fields/validate";
 import { FieldDefModal, FieldDefResult } from "./fieldDefModal";
+import { migrateRenamedField } from "../commands/renameFieldMigration";
 import { writeFieldDependency } from "./fieldSettings";
 import { makeStickyFooter } from "./modalFooter";
 import { FileClassOptionsModal } from "./fileClassOptionsModal";
@@ -256,7 +257,12 @@ export class FileClassSchemaModal extends Modal {
 						type: r.type,
 						options: r.options,
 					})
-				).then(() => this.writeDependency(r));
+				).then(async () => {
+					this.writeDependency(r);
+					// The other door onto the same editor, and the same rule: renaming a field
+					// offers to migrate the notes that carry the old key (#108).
+					await migrateRenamedField(this.plugin, { ...field, name: r.name }, field.name);
+				});
 			},
 		}).open();
 	}

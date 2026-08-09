@@ -60,6 +60,22 @@ All notable changes to Fileclass are documented here. The format follows
   so the internal-link decorator walked past every one of them. It has a decorator of its own
   now, resolving the note from its name the way a `[[link]]` would.
 
+### Fixed
+
+- **Renaming a field renames the property it wrote**
+  ([#108](https://github.com/mdelobelle/fileclass/issues/108)). It used to rewrite the class
+  note and nothing else: every note kept the old key with its value, while the new name had
+  nothing under it — the field read as empty in every surface while its data sat one line
+  above, under a name nothing knew about. Found while recording take 020, where renaming
+  `shelf` to `storage` left `shelf: Study · A-3` in three books.
+
+  A rename now says what it is: the button reads **Save and migrate…**, and after the class
+  note is written you get the list of notes that actually carry the old key, with a count, and
+  nothing is touched until you confirm — *Leave the notes alone* is a real answer, and so is
+  Escape. Each key is renamed **where it stood**, so the order the Properties panel shows is
+  kept; groups and every item of an `ObjectList` are descended into; and a note where the new
+  name already exists is left alone rather than having a visible value overwritten.
+
 ## [0.2.8] - 2026-08-08
 
 ### Added

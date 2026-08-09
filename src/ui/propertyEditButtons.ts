@@ -40,7 +40,12 @@ import { openAddFieldTo, openFileClassSchema } from "./fileClassSchemaModal";
 import { FileClassOptionsModal } from "./fileClassOptionsModal";
 import { openBulkEdit } from "./bulkEditModal";
 import { pickAndCreateBase } from "../views/baseFileGenerator";
-import { fileClassBaseFile, openFileClassBase } from "../views/baseSync";
+import {
+	baseSyncStatus,
+	fileClassBaseFile,
+	openFileClassBase,
+	syncFileClassToBase,
+} from "../views/baseSync";
 import { describeField, displayTemplateOf } from "../fields/objectDisplay";
 import { isEmpty, isRequired, validateField } from "../fields/validate";
 import { makeDisplayDeps } from "../fields/displayDeps";
@@ -55,6 +60,8 @@ const ACTIONS_CLASS = "fileclass-prop-actions";
 const CLASS_CLASS = "fileclass-prop-class";
 /** Marks a nested value Obsidian can't interpret but this plugin declares and validates. */
 const GROUP_OK_CLASS = "fileclass-group-ok";
+const FIELDS_ROW_CLASS = "fileclass-fields-summary";
+const FIELDS_ROW_MARK = "fileclass-fields-row";
 /** The reading of a stored duration, inside its pill. */
 const PILL_HUMAN_CLASS = "fileclass-pill-human";
 /** Set on a field's button when the field is required and has no value. */
@@ -128,6 +135,7 @@ export class PropertyEditButtons extends Component {
 					.forEach((row) => {
 						this.injectRow(row);
 						this.injectClassRow(row);
+						this.injectFieldsRow(row);
 					});
 			}
 			if (this.plugin.settings.enablePropertyActionButtons) {
@@ -228,7 +236,15 @@ export class PropertyEditButtons extends Component {
 		fcName: string
 	): void {
 		const base = fileClassBaseFile(this.plugin, fcName);
-		const state = `class:${fcName}:${base?.path ?? ""}`;
+		// The class's own shape is part of the state: editing the schema leaves the base file
+		// and its path untouched, and it is exactly what makes a synced base diverge. Without
+		// it the row would keep saying "Modify" over a table that no longer matches.
+		const shape = this.plugin.index
+			.getResolvedFields(fcName)
+			.filter((f) => isRootField(f))
+			.map((f) => f.name)
+			.join(",");
+		const state = `class:${fcName}:${base?.path ?? ""}:${shape}`;
 		if (existing?.dataset.fcState === state) return;
 		existing?.remove();
 
@@ -244,14 +260,7 @@ export class PropertyEditButtons extends Component {
 				`What ${fcName} extends, excludes, and the notes it claims`,
 				() => new FileClassOptionsModal(this.plugin, fcName, file).open()
 			),
-			this.makeActionButton(
-				"layout-grid",
-				base ? "Modify the base" : "Create a base",
-				base
-					? `Sync ${fcName}'s fields into ${base.path}`
-					: `Generate a base whose table is ${fcName}'s fields`,
-				() => pickAndCreateBase(this.plugin, fcName)
-			)
+			this.baseButton(wrapper, state, fcName, base)
 		);
 		// Same rule as the note actions: a button appears when it has somewhere to go.
 		if (base) {
@@ -270,6 +279,63 @@ export class PropertyEditButtons extends Component {
 			)
 		);
 		add.after(wrapper);
+	}
+
+	/**
+	 * The base button, and the one thing on this row that answers late.
+	 *
+	 * A class whose table no longer mirrors it now says so, on the button that fixes it:
+	 * `baseSyncStatus` was written and never called, so a base generated before the class
+	 * gained a field, renamed one or reordered them was stale in a way nothing showed — the
+	 * only way to find out was to open the table and count columns.
+	 *
+	 * Reading and parsing the base is I/O, so the button is built with what is already known
+	 * ("Modify the base", which is true) and relabelled when the answer lands, rather than
+	 * holding the whole row back on a file read.
+	 */
+	private baseButton(
+		wrapper: HTMLElement,
+		state: string,
+		fcName: string,
+		base: TFile | null
+	): HTMLElement {
+		let diverged = false;
+		const button = this.makeActionButton(
+			"layout-grid",
+			base ? "Modify the base" : "Create a base",
+			base
+				? `Sync ${fcName}'s fields into ${base.path}`
+				: `Generate a base whose table is ${fcName}'s fields`,
+			() => {
+				// Labelled "Sync the base", it syncs — one click, and the notice says what it did.
+				if (!diverged) return pickAndCreateBase(this.plugin, fcName);
+				void syncFileClassToBase(this.plugin, fcName).then((ok) => {
+					if (!ok || !button.isConnected) return;
+					diverged = false;
+					restore();
+				});
+			}
+		);
+		const label = button.querySelector(".text-button-label");
+		const restore = (): void => {
+			label?.setText("Modify the base");
+			button.removeClass("is-fc-diverged");
+			button.setAttribute("aria-label", `Fileclass: Sync ${fcName}'s fields into ${base?.path ?? ""}`);
+		};
+		if (!base) return button;
+
+		void baseSyncStatus(this.plugin, fcName).then((status) => {
+			// The row may have been rebuilt, or the note left, while the file was read.
+			if (status !== "diverged" || !wrapper.isConnected || wrapper.dataset.fcState !== state) return;
+			diverged = true;
+			label?.setText("Sync the base");
+			button.addClass("is-fc-diverged");
+			button.setAttribute(
+				"aria-label",
+				`Fileclass: ${fcName} has changed since its table was written — bring its columns back in line`
+			);
+		});
+		return button;
 	}
 
 	private async reorder(file: TFile, fields: Field[]): Promise<void> {
@@ -324,6 +390,61 @@ export class PropertyEditButtons extends Component {
 	 * handled; a name that matches no class gets no button, which is also how a
 	 * typo announces itself.
 	 */
+	/**
+	 * The `fields` row of a class note: the schema, not its JSON.
+	 *
+	 * A class's fields are a list of objects, which Obsidian has no editor for — so the panel
+	 * printed the raw JSON, in the warning colour it reserves for values nobody can make sense
+	 * of. On the one note where that value is the whole point, that read as an error and told
+	 * you nothing: you counted braces to find out how many fields the class had.
+	 *
+	 * It now reads "N fields" behind a wrench that opens the schema — the row says what it
+	 * holds, and offers the only thing you would do with it.
+	 */
+	private injectFieldsRow(row: HTMLElement): void {
+		// Obsidian lowercases data-property-key, hence the case-insensitive match.
+		if (row.getAttribute("data-property-key")?.toLowerCase() !== "fields") return;
+		const file = this.fileForEl(row);
+		const fcName = file && this.plugin.index.fileClassNameOfNote(file.path);
+		if (!file || !fcName) return;
+		const item = row.querySelector<HTMLElement>(
+			":scope > .metadata-property-value > .metadata-property-value-item.mod-unknown"
+		);
+		if (!item) return;
+
+		const declared: unknown = this.plugin.app.metadataCache.getFileCache(file)?.frontmatter?.fields;
+		const list = Array.isArray(declared) ? declared : [];
+		const root = list.filter((f) => !(f as { path?: string })?.path).length;
+		const nested = list.length - root;
+		const state = `${fcName}:${root}:${nested}`;
+		if (item.dataset.fcFields === state) return; // settled: no new mutation
+		item.dataset.fcFields = state;
+
+		// The JSON is kept, so switching the buttons off puts the row back as Obsidian wrote it.
+		item.dataset.fcRaw ??= item.textContent ?? "";
+		item.empty();
+		item.addClass(FIELDS_ROW_MARK);
+		// Everything of ours lives in one span: removing it takes its listeners with it.
+		const summary = item.createSpan({ cls: FIELDS_ROW_CLASS });
+		setIcon(summary.createSpan({ cls: "fileclass-fields-wrench" }), "wrench");
+		summary.createSpan({ text: `${root} field${root === 1 ? "" : "s"}` });
+		summary.setAttribute(
+			"aria-label",
+			`Fileclass: open ${fcName}'s schema` +
+				(nested ? ` — ${root} at the top level, ${nested} inside them` : "")
+		);
+		summary.tabIndex = 0;
+		const open = (e: Event): void => {
+			e.preventDefault();
+			e.stopPropagation();
+			openFileClassSchema(this.plugin, fcName);
+		};
+		summary.addEventListener("click", open);
+		summary.addEventListener("keydown", (e) => {
+			if (e.key === "Enter" || e.key === " ") open(e);
+		});
+	}
+
 	private injectClassRow(row: HTMLElement): void {
 		const key = row.getAttribute("data-property-key");
 		const alias = this.plugin.settings.fileClassAlias;
@@ -649,8 +770,14 @@ export class PropertyEditButtons extends Component {
 	}
 
 	private removeAll(): void {
-		for (const cls of [BTN_CLASS, PREVIEW_CLASS, ACTIONS_CLASS, CLASS_CLASS]) {
+		for (const cls of [BTN_CLASS, PREVIEW_CLASS, ACTIONS_CLASS, CLASS_CLASS, FIELDS_ROW_CLASS]) {
 			document.querySelectorAll(`.${cls}`).forEach((el) => el.remove());
 		}
+		// That row is Obsidian's own element, rewritten rather than added to: put its text back.
+		document.querySelectorAll<HTMLElement>(`.${FIELDS_ROW_MARK}`).forEach((item) => {
+			item.removeClass(FIELDS_ROW_MARK);
+			delete item.dataset.fcFields;
+			item.setText(item.dataset.fcRaw ?? "");
+		});
 	}
 }

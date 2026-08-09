@@ -1,0 +1,11 @@
+views:
+  - type: fileclass-table
+    name: "Habit"
+    filters:
+      and:
+        - fileClass == "Habit"
+    order:
+      - file.name
+      - reading
+      - watching
+      - listening

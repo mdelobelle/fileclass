@@ -416,5 +416,16 @@
     "durationSeconds": 156,
     "recordedWith": "0.2.9",
     "privacyStatus": "public"
+  },
+  "033": {
+    "id": "wnt_FkyFd8I",
+    "url": "https://www.youtube.com/watch?v=wnt_FkyFd8I",
+    "title": "Fileclass #033 · Schema changed? the base follows",
+    "subject": "Schema changed? the base follows",
+    "scenario": "033_the_base_follows",
+    "doc": "views/#keeping-a-base-in-sync",
+    "durationSeconds": 154,
+    "recordedWith": "0.2.9",
+    "privacyStatus": "public"
   }
 }

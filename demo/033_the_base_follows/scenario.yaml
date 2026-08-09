@@ -1,0 +1,74 @@
+# Narration for take 033 — see ../SCENARIO.md for the format.
+# Second of arc 7, and the counterpart of take 032: that one generated a table, this one is
+# about the day after — the class changes, and the table it wrote does not follow on its own.
+#
+# The vault opens on **Classes/Habit.md**, whose Properties panel carries the class actions and
+# whose base was generated on camera in take 032. That row is the take: it is where the drift
+# becomes visible and where one click ends it.
+#
+# The fixture is take 032's vault at its closing state — `Habit.base` created, `Books.base`
+# carrying a fifth view named *Book* beside the four written by hand, and both classes holding
+# their `baseFile` / `baseView` keys.
+#
+# Facts the script leans on, all measured in the app before scripting:
+#  - the sync is `Fileclass: Sync this class to its base`, the class note's menu entry, and the
+#    base button of the Properties panel. The notice reads `synced Habit.base`;
+#  - **the button says when a sync is due.** New in this version: `baseSyncStatus()` existed and
+#    nothing called it, so a table one field behind was invisible. The button now reads *Modify
+#    the base* while the two agree and **Sync the base**, in the accent colour, while they do
+#    not — measured live, without leaving the note: add `walking` to Habit and the label changes
+#    under your eyes. Clicking it then syncs on the spot;
+#  - a field **added** to the class arrives in the table **at the class's position**, not at the
+#    end: with `walking` declared first, `order` reads `file.name, walking, reading, watching,
+#    listening`;
+#  - a field **renamed** in the class is renamed in the managed view, where it stood: renaming
+#    `watching` to `screen time` gives `file.name, walking, reading, screen time, listening`.
+#    That is the other half of take 030b, which migrated the notes and deliberately left every
+#    base alone, naming the ones to look at;
+#  - **a filter you edited survives.** The clause step 10 adds is `!file.inFolder("Templates")`,
+#    and what it is *for* is on screen from take 032: the Habit table showed six rows, the sixth
+#    being `Templates/Daily note.md`, which carries the class like any other note. Dropping it is
+#    the first thing anyone would want from that table, so it is what the take edits. Measured:
+#    the clause survives the next sync, which still updates the order (it re-emits the clause
+#    with different quoting — same value);
+#  - **the views you wrote are untouched.** `Books.base`'s four hand-written views are byte for
+#    byte what they were, and *All books* still names a `shelf` column — left over from the
+#    rename in take 030b, and still the viewer's to fix. Step 9 is that column, on screen;
+#  - syncing a class that has not changed still says `synced …` and writes nothing.
+title: "Fileclass — Schema changed? the base follows"
+description: "A class that changes shape doesn't leave its table behind — it takes it along."
+doc: "views/#keeping-a-base-in-sync" # deep link used in the description
+tags: "bases, sync, schema, generated view"
+vault_name: "Demo"
+plugin: true
+settings:
+  classFilesPath: "Classes/"
+  fileClassAlias: "fileClass"
+initial_pause: 1500
+default_pause: 900
+
+steps:
+  - title: "A table generated once would go stale the day its class changes — this one doesn't have to"
+    pause: 2700
+  - title: "Add a field to Habit: walking, a number"
+    pause: 2400
+  - title: "The table hasn't moved — a base is a file, not a live query on your schema"
+    pause: 2700
+  - title: "But the class says so: its base button now reads Sync the base"
+    pause: 2600
+  - title: "One click, and the column is there — where the class puts it, not at the end"
+    pause: 2700
+  - title: "Rename watching to screen time: take 030b rewrote the notes and left every base alone"
+    pause: 2800
+  - title: "Sync again, and the column follows the name, in the place it already had"
+    pause: 2700
+  - title: "What the sync owns is one view — the one it wrote, named after the class"
+    pause: 2600
+  - title: "The four views you wrote yourself are untouched: All books still says shelf, and that's yours to change"
+    pause: 2900
+  - title: "Remember the template sitting in that table? Drop it with a clause of your own, and the next sync leaves your clause alone"
+    pause: 3000
+  - title: "Nothing runs behind your back: the button tells you, you decide when"
+    pause: 2600
+  - title: "A class that changes shape doesn't leave its table behind — it takes it along when you say so"
+    pause: 2700

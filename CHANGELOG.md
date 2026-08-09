@@ -8,6 +8,36 @@ All notable changes to Fileclass are documented here. The format follows
 
 ### Changed
 
+- **The property actions wrap as one row with *Add property*.** They were an inline box of
+  their own, and an inline box cannot be split across lines: with five actions on a class note —
+  119px of *Add property* plus 627px of buttons against a 720px panel — the whole set dropped
+  below, leaving the line above nearly empty and the group reading as a second, ragged block.
+  The buttons are now inline-level siblings of Obsidian's own, so the line breaks *between
+  buttons*: the row fills, then continues underneath. Each button's horizontal padding is
+  symmetric, so the space between two of them is the same wherever the break falls, and a label
+  never splits across two lines.
+
+- **A class note's `fields` row shows its schema, not its JSON.** A list of objects is a value
+  Obsidian has no editor for, so the panel printed the raw thing in the warning colour it
+  reserves for values nobody can make sense of — on the one note where that value is the whole
+  point. It reads **N fields** now, behind a wrench that opens the schema editor; the count is
+  what the class declares at its top level, and the tooltip adds how many live inside objects.
+  Switching the property buttons off puts the raw value back.
+
+### Added
+
+- **A class says when its table has fallen behind.** `baseSyncStatus()` — is the managed view
+  still a mirror of the class? — was written and never called, so a base generated before the
+  class gained a field, renamed one or reordered them was stale in a way nothing showed: the
+  only way to find out was to open the table and count columns. The base button in a class
+  note's Properties panel now reads **Sync the base**, in the accent colour, while the two
+  disagree, and clicking it syncs on the spot rather than reopening the generator. The check
+  costs a file read, so the button is built with what is already known and relabelled when the
+  answer lands; it is re-asked whenever the class's own shape changes, which is what makes a
+  synced base diverge in the first place.
+
+### Changed
+
 - **A fileClass note's Properties panel offers the class's own actions.** Beside *Add
   property* it used to show *Add a class*, which on a class note would bind a class to a
   class. It now carries what you actually do there: **Add a field** (the schema editor with

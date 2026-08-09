@@ -167,31 +167,81 @@
  * one line of buttons; it wraps on a narrow pane instead of overflowing.
  */
 /*
- * Mirrors what Obsidian declares on .metadata-add-button — metadata label font
- * (`.text-icon-button` alone would give --font-ui-small, a size smaller) and the
- * same 0.5em top margin, which resolves against that font. Variables, not the
- * numbers they currently evaluate to, so the row stays on one baseline when a
- * theme or the user changes the metadata font.
+ * The actions and Obsidian's own "Add property" are **one wrapping row**, not two.
+ *
+ * The group used to be an inline-flex box of its own, and an inline-level box cannot be
+ * split across lines: measured on a class note, 119px of "Add property" plus 627px of
+ * actions against a 720px container, so all five dropped below together while the line
+ * above stayed nearly empty. `display: contents` drops the wrapper's box and leaves its
+ * buttons as inline-level siblings of the native one, so the break happens *between
+ * buttons* — the row fills, then continues on the next line.
+ *
+ * Spacing therefore lives on each button rather than on a flex gap. `0.5em` above mirrors
+ * what Obsidian declares on .metadata-add-button, and resolves against the metadata label
+ * font, so a theme changing that font keeps every button on one baseline.
  */
 .metadata-content > .fileclass-prop-actions {
-	display: inline-flex;
-	flex-wrap: wrap;
-	align-items: center;
-	gap: var(--size-4-1);
-	font-size: var(--metadata-label-font-size);
-	font-family: var(--metadata-label-font);
-	margin: 0.5em 0 0 var(--size-4-2);
-	vertical-align: top;
+	display: contents;
 }
 .metadata-container .fileclass-prop-action {
+	display: inline-flex;
+	align-items: center;
+	vertical-align: top;
+	margin: 0.5em 0 0 var(--size-4-2);
 	font-size: var(--metadata-label-font-size);
 	font-family: var(--metadata-label-font);
-	padding-inline-start: var(--size-2-3);
+	/* Symmetric, so the space between two buttons is the same wherever the row breaks. */
+	padding-inline: var(--size-2-3);
+	/* A label is one target: "Bulk edit a field" never breaks across two lines. */
+	white-space: nowrap;
 	cursor: pointer;
 	color: var(--text-muted);
 }
 .metadata-container .fileclass-prop-action:hover {
 	color: var(--text-normal);
+}
+
+/*
+ * A class note's `fields` row: the schema, not its JSON.
+ *
+ * Obsidian has no editor for a list of objects, so it printed the raw value in the warning
+ * colour it keeps for values nobody can interpret — on the one note where that value is the
+ * subject. The marker drops the warning; the summary is a control, and says so.
+ */
+.metadata-property-value-item.fileclass-fields-row {
+	color: var(--text-normal);
+	white-space: normal;
+}
+.fileclass-fields-summary {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--size-2-2);
+	cursor: pointer;
+	color: var(--text-muted);
+}
+.fileclass-fields-summary:hover {
+	color: var(--text-normal);
+}
+.fileclass-fields-wrench {
+	display: inline-flex;
+	align-items: center;
+}
+.fileclass-fields-wrench svg {
+	width: 15px;
+	height: 15px;
+}
+
+/*
+ * A class whose table no longer mirrors it: the button that fixes it says so.
+ *
+ * The accent, not the error colour — nothing is broken, and a base one field behind is a
+ * normal state between a schema change and the moment you decide to carry it over.
+ */
+.metadata-container .fileclass-prop-action.is-fc-diverged {
+	color: var(--text-accent);
+}
+.metadata-container .fileclass-prop-action.is-fc-diverged:hover {
+	color: var(--text-accent-hover);
 }
 
 /*

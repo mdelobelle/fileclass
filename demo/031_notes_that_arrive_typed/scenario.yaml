@@ -1,0 +1,68 @@
+# Narration for take 031 — see ../SCENARIO.md for the format.
+# Closes arc 6. Every take so far typed a note *after* it was written — by hand, from a menu,
+# in bulk. This one types it before: the class goes into a template, and new notes arrive with
+# their fields already there.
+#
+# The vault opens on **Templates/New book.md**, a template carrying nothing but
+# `fileClass: Book` and two headings. Step 3 fills it, and the rest of the take is what that
+# buys.
+#
+# The fixture is take 030b's vault at its closing state — `shelf` renamed to `storage` in the
+# class and in the four notes that carried it — plus what this take needs: a `Templates/`
+# folder holding *New book* and *Daily note*, and `.obsidian/templates.json` pointing at it.
+#
+# Facts the script leans on, all measured in the app before scripting:
+#  - the **Templates** core plugin is enabled but had **no folder configured** (`options: {}`)
+#    and the vault had no templates folder at all, which is why the fixture ships both — step 4
+#    shows the setting rather than hunting for it;
+#  - its commands are `Templates: Insert template`, `Insert current date`, `Insert current time`;
+#  - *Insert missing fields* on a template writes the class's fields into **that note**, like
+#    any other: a template is a note, which is the whole trick;
+#  - a template does **not** re-sync when the class changes — the docs have said so since the
+#    feature page was written, and steps 8 and 9 are that, on camera. Rehearsed: inserting into
+#    the template takes it from 1 key to 17 (`inserted 16 field(s)`); a note created from it
+#    arrives with the same 17 and resolves as a Book; adding `lent to` to the class leaves the
+#    template at 17 until the insert is run again, which takes it to 18; and *Dune*, written
+#    before all this, does not gain the key at all — which is step 10 and take 030's job.
+#
+# **Templater is named, not filmed** (step 11). It is not installed in this vault, and
+# installing a community plugin on camera costs the three steps take 019 spent on Maps. The
+# take stays on the core plugin everyone already has, and says in one line what the other one
+# adds — a class or a value computed as the note is created.
+title: "Fileclass — New notes that arrive already typed"
+description: "Put the class in a template, and every note born from it starts complete."
+doc: "schema/#creating-notes-with-a-template-templater--templates" # deep link used in the description
+tags: "templates, templater, new notes, workflow"
+vault_name: "Demo"
+plugin: true
+settings:
+  classFilesPath: "Classes/"
+  fileClassAlias: "fileClass"
+initial_pause: 1500
+default_pause: 900
+
+steps:
+  - title: "Every note so far was typed after it was written — a template types it before"
+    pause: 2600
+  - title: "A template is a note like any other: give it a class in its frontmatter"
+    pause: 2500
+  - title: "Insert the missing fields into the template, once — the whole class lands there, empty"
+    pause: 2700
+  - title: "Point Obsidian's Templates plugin at the folder that holds it"
+    pause: 2400
+  - title: "New note, insert the template, and it arrives with its class and every field"
+    pause: 2600
+  - title: "Nothing left to do but the values, in the panel you already know"
+    pause: 2500
+  - title: "The same trick types your daily notes — put the class in the daily template"
+    pause: 2600
+  - title: "A template doesn't re-sync: add a field to the class and the template stays as it was"
+    pause: 2700
+  - title: "Insert missing fields on the template again, and the notes born after it pick the new one up"
+    pause: 2600
+  - title: "The notes already written don't move — they get it when you ask, one by one or a class at a time"
+    pause: 2700
+  - title: "Templater goes further still: it can work out the class, or a value, as the note is created"
+    pause: 2600
+  - title: "A class is a promise — a template is that promise kept from the first line"
+    pause: 2600

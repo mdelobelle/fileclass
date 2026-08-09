@@ -109,7 +109,7 @@ thread, and a tight smoke test of that type's input path.
 | 029 | Seeing at a glance what's typed | field indicators on all six surfaces — tab, explorer, links, backlinks, bookmarks, bases — and what each one opens | — (works on the vault as 028 leaves it) | ✅ [published](https://www.youtube.com/watch?v=zA4KadPjbNg) |
 | 030 | One field across a whole class | bulk edit (set-where): the four questions, the counted preview, and Apply carrying its number | — (works on the vault as 029 leaves it) | ✅ [published](https://www.youtube.com/watch?v=qRtYZ3lCy5c) |
 | 030b | Renaming a field, and every note that carries it | rename with frontmatter migration ([#108](https://github.com/mdelobelle/fileclass/issues/108)) — a Save of its own, the notes listed before the write, and the bases it will not touch | `Book.shelf` → `storage` | ✅ [published](https://www.youtube.com/watch?v=FJAqxSDIXac) |
-| 031 | New notes that arrive already typed | Templater / Templates | a Book template | |
+| 031 | New notes that arrive already typed | Templates: the class in a template, the fields baked in once, and what a schema change does not do | `Templates/` with *New book* and *Daily note* | |
 
 ## Arc 7 — Bases views
 

@@ -1117,23 +1117,56 @@ body.fileclass-movable-modals .modal-container ~ .modal-container .modal-bg {
 	pointer-events: none;
 }
 /*
+ * A stack is LIFO for the pointer, as it already was for the keyboard (#118).
+ *
+ * Obsidian traps focus in the topmost modal and Escape closes the last one opened. The
+ * rules that used to live here handed the pointer to the whole stack instead, so mouse and
+ * keyboard disagreed about the same stack — and that is unsafe here, because these modals
+ * are draft editors: reaching into the parent while a child draft is open means the child's
+ * Save writes over a draft the parent has since changed. `mutateFields` has the same shape,
+ * so two stacked schema modals let the second overwrite the first one's work.
+ *
  * The container above is full-window too, and once its backdrop stopped catching clicks it
- * was the next thing to catch them (measured, in that order). So a stacked container is
- * click-through, and its own modal is put back in the way — which is what makes every
- * modal of a stack, not just the top one, clickable and draggable.
+ * was the next thing to catch them (measured, in that order) — so while modals are stacked
+ * every container is click-through, or the topmost one would cover the app and nothing
+ * underneath could even be seen to be inert.
  */
 body.fileclass-movable-modals .modal-container ~ .modal-container {
 	pointer-events: none;
 }
 /*
- * Everything the container holds except its backdrop takes the pointer back. Naming
- * `.modal` alone was a bug the operator found in a minute: a picker's container holds a
- * `.prompt`, not a `.modal` (measured: children are `modal-bg` + `prompt`), so every
- * suggestion in a File field's picker was unclickable — the click fell through to the
- * modal underneath. Whatever Obsidian puts in there is interactive; only the backdrop is
- * not.
+ * …and only the topmost container's contents take the pointer back.
+ *
+ * "The one with no container after it" rather than "the last-opened modal": a File field's
+ * picker opens **its own container**, holding a `.prompt` and not a `.modal`, above the
+ * modal that opened it. A rule phrased as "every stacked container is inert" would kill
+ * that picker. `> *:not(.modal-bg)` for the same reason — naming `.modal` was a bug the
+ * operator found in a minute, since the picker's children are `modal-bg` + `prompt`.
  */
-body.fileclass-movable-modals .modal-container ~ .modal-container > *:not(.modal-bg) {
+body.fileclass-movable-modals .modal-container:not(:has(~ .modal-container)) > *:not(.modal-bg) {
+	pointer-events: auto;
+}
+/*
+ * The modals underneath are inert, and say so: full strength on the one that acts, dimmed
+ * below. Dimming controls that still answered the pointer would have misrepresented them,
+ * which is why the two arrive together rather than one before the other.
+ *
+ * Inert on the *modal*, not on its container: the bottom container is deliberately left
+ * catching the pointer, since it is the only thing standing between a stray click and the
+ * app behind the stack. Measured, and it is why this rule exists at all — with every
+ * container click-through, a click over a lower modal landed on the note's own header.
+ */
+body.fileclass-movable-modals .modal-container:has(~ .modal-container) > *:not(.modal-bg) {
+	pointer-events: none;
+	opacity: 0.62;
+}
+/*
+ * An inactive modal can still be **moved**: rearranging what you can see is the reason this
+ * setting exists, and moving one changes no data. It is how any window manager behaves —
+ * you can drag a background window, you cannot act inside it. The exception is the drag
+ * handle itself, which is the title.
+ */
+body.fileclass-movable-modals .modal-container:has(~ .modal-container) .fileclass-drag-handle {
 	pointer-events: auto;
 }
 /*

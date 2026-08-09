@@ -54,8 +54,11 @@ export interface FileclassSettings {
 	 */
 	shorterModal?: boolean;
 	/**
-	 * Let a modal be dragged by its title, cascade a stack of them, dim once and make
-	 * every modal of a stack clickable. Experimental and desktop-only: it works by
+	 * Let a modal be dragged by its title, cascade a stack of them, and dim the app once
+	 * rather than once per modal. A stack stays **LIFO for the pointer** as it already is
+	 * for the keyboard (#118): only the topmost modal answers a click, the ones below are
+	 * dimmed and inert, and they can still be dragged by their title — a background window
+	 * you may move but not act inside. Experimental and desktop-only: it works by
 	 * neutralising Obsidian's own full-window modal backdrops, which is a shared surface —
 	 * hence off by default.
 	 */

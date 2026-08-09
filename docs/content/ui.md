@@ -196,10 +196,15 @@ stops growing after a few levels, and dragging a modal replaces it.
 
 Position is per-modal and not remembered: the next one you open is centred again.
 
-**Any modal of a stack can be moved**, not only the top one. Obsidian gives each modal a
-full-window backdrop, so an invisible one still swallowed every click aimed at a modal
-underneath; those upper backdrops are click-through now, and so are their containers, with
-each modal itself put back in the way.
+**Only the topmost modal of a stack answers the mouse** — the ones below are dimmed and
+inert, which is what the keyboard already did: Obsidian traps focus in the last modal
+opened, and <kbd>Escape</kbd> closes that one. These modals hold drafts, so reaching into
+the one underneath while a child is open would let the child's Save write over a draft you
+had since changed.
+
+**They can still be moved**, by their title: rearranging what you can see is the point of
+the setting, and moving a modal changes nothing in it. A background window you may drag but
+not act inside.
 
 Stacked modals also **dim the app once**, not once per modal: three of them used to darken
 the window three times over and wash out the ones below.

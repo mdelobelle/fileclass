@@ -6,6 +6,26 @@ All notable changes to Fileclass are documented here. The format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- **A stack of modals is last-in-first-out for the mouse too**
+  ([#118](https://github.com/mdelobelle/fileclass/issues/118)). With movable modals on, every
+  modal of a stack took clicks — deliberately, so a lower one could be reached — while the
+  keyboard had always been LIFO: Obsidian traps focus in the topmost modal and Escape closes
+  the last one opened. Mouse and keyboard disagreed about the same stack, and these modals hold
+  **drafts**: reaching into the parent while a child was open let the child's Save write over a
+  draft the parent had since changed, and two stacked schema modals could each overwrite the
+  other's field list.
+
+  Only the topmost modal answers the pointer now; the ones below are dimmed and inert — dimming
+  controls that still responded would have misrepresented them, so the two arrive together. They
+  can still be **dragged by their title**, which is how a background window behaves in any
+  window manager: you may move it, you may not act inside it. A File field's picker opens its
+  own container above the modal that opened it, and stays fully interactive: the rule names the
+  container with nothing after it rather than "everything but the first". The bottom container
+  keeps catching stray clicks, or one aimed at a lower modal would land on the note behind the
+  stack — measured, on the note's own header.
+
 ## [0.2.9] - 2026-08-09
 
 ### Added

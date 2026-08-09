@@ -136,6 +136,27 @@ naturally looks for it.
 
 All actions write to frontmatter only, one `processFrontMatter` write each.
 
+## Insert missing fields across a class
+
+*Insert missing fields* is a per-note command, which is what you want on the note in front of
+you and useless the day a class gains a field: every note written before it keeps a gap, and
+closing it meant opening each one. [Bulk edit](#bulk-edit-set-where) could set a value
+everywhere but never add the key.
+
+**Fileclass: insert missing fields across a class** — also on a fileClass note's right-click
+menu — counts first: how many notes are missing how many fields, then the list, note by note,
+with what each one lacks. *Not now* leaves everything as it is; confirming writes once and
+reports a single total rather than one notice per note.
+
+It asks the index, not the frontmatter, so a note **claimed by a folder, a tag or a bookmark
+group** is included even though no `fileClass` line names it — those are precisely the ones
+nobody remembers. Templates are included too, and should be: a template is a note of the class
+like any other (see [creating notes with a
+template](../schema/#creating-notes-with-a-template-templater--templates)).
+
+The keys arrive **empty**, as they do note by note: a key with nothing in it, which is exactly
+what a [required field](../fields/#required-fields) then flags.
+
 ## Bulk edit (set-where)
 
 **Fileclass: bulk edit a field** (command, or the fileClass note's right-click

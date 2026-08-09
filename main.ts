@@ -14,6 +14,8 @@ import { isBasesAvailable, onCorePluginChange } from "./src/engine/basesAdapter"
 import { QueryCache } from "./src/engine/queryCache";
 import { createFileClass } from "./src/commands/createFileClass";
 import { insertMissingFields } from "./src/commands/insertMissingFields";
+import { bulkInsertMissingFields } from "./src/commands/bulkInsertMissing";
+import { ChoiceSuggestModal } from "./src/fields/input/valueModals";
 import { reorderFrontmatter } from "./src/io/reorderFrontmatter";
 import { pickAndUpdateField } from "./src/fields/fieldActions";
 import { FileclassIndex } from "./src/schema/fileclassIndex";
@@ -208,6 +210,31 @@ export default class FileclassPlugin extends Plugin {
 				const file = this.app.workspace.getActiveFile();
 				if (!file || file.extension !== "md") return false;
 				if (!checking) void this.reorderCurrent(file);
+				return true;
+			},
+		});
+
+		this.addCommand({
+			id: "insert-missing-fields-across-a-class",
+			name: "Insert missing fields across a class",
+			checkCallback: (checking) => {
+				const names = this.index.fileClassNames;
+				if (!names.length) return false;
+				if (!checking) {
+					// The class of the note in front of you, when there is one — the same courtesy
+					// the bulk edit command does; otherwise, ask.
+					const active = this.app.workspace.getActiveFile();
+					const current = active ? this.index.fileClassNameOfNote(active.path) : undefined;
+					if (current) void bulkInsertMissingFields(this, current);
+					else
+						new ChoiceSuggestModal(
+							this.app,
+							[...names].sort((a, b) => a.localeCompare(b)),
+							(n) => n,
+							(n) => void bulkInsertMissingFields(this, n),
+							"Insert missing fields across which class?"
+						).open();
+				}
 				return true;
 			},
 		});

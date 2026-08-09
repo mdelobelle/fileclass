@@ -27,9 +27,16 @@ export async function insertMissingFields(
 	 */
 	{
 		silent = false,
+		quiet = false,
 		reorder,
 	}: {
 		silent?: boolean;
+		/**
+		 * Say nothing at all, not even about a write. `silent` drops the "nothing to insert"
+		 * notice while still announcing what was written, which is right for one note; a pass
+		 * over a whole class would stack one notice per note over the summary that follows.
+		 */
+		quiet?: boolean;
 		/**
 		 * Put the whole frontmatter in the class's order once the missing keys are in (#104).
 		 * This is where the disorder is *created* — `processFrontMatter` appends, so a note
@@ -50,7 +57,7 @@ export async function insertMissingFields(
 	}));
 
 	if (!writes.length) {
-		if (!silent) new Notice("Fileclass: no missing fields to insert.");
+		if (!silent && !quiet) new Notice("Fileclass: no missing fields to insert.");
 		return 0;
 	}
 	await writeValues(app, file, writes);
@@ -58,11 +65,13 @@ export async function insertMissingFields(
 	// them, and it writes nothing at all when they already sit in the right order.
 	const policy = reorder === undefined ? settingPolicy() : reorder;
 	const reordered = policy ? (await reorderFrontmatter(app, file, fields, policy)).moved : 0;
-	new Notice(
-		reordered
-			? `Fileclass: inserted ${writes.length} field(s), in the class's order.`
-			: `Fileclass: inserted ${writes.length} field(s).`
-	);
+	if (!quiet) {
+		new Notice(
+			reordered
+				? `Fileclass: inserted ${writes.length} field(s), in the class's order.`
+				: `Fileclass: inserted ${writes.length} field(s).`
+		);
+	}
 	return writes.length;
 }
 

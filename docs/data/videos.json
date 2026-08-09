@@ -383,5 +383,27 @@
     "durationSeconds": 134,
     "recordedWith": "0.2.9",
     "privacyStatus": "public"
+  },
+  "030c": {
+    "id": "2V_U74cGmlU",
+    "url": "https://www.youtube.com/watch?v=2V_U74cGmlU",
+    "title": "Fileclass #030c · A class that gained a field",
+    "subject": "A class that gained a field",
+    "scenario": "030c_a_class_that_gained_a_field",
+    "doc": "ui/#insert-missing-fields-across-a-class",
+    "durationSeconds": 120,
+    "recordedWith": "0.2.8",
+    "privacyStatus": "public"
+  },
+  "031": {
+    "id": "_uNtXbPQ-0M",
+    "url": "https://www.youtube.com/watch?v=_uNtXbPQ-0M",
+    "title": "Fileclass #031 · New notes that arrive already typed",
+    "subject": "New notes that arrive already typed",
+    "scenario": "031_notes_that_arrive_typed",
+    "doc": "schema/#creating-notes-with-a-template-templater--templates",
+    "durationSeconds": 157,
+    "recordedWith": "0.2.8",
+    "privacyStatus": "public"
   }
 }

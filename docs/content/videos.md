@@ -144,3 +144,7 @@ other. Captions are English; YouTube translates them into your language.
 ## One field across a whole class
 
 {{< video "030" >}}
+
+## Renaming a field, and every note that carries it
+
+{{< video "030b" >}}

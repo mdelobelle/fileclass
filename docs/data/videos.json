@@ -372,5 +372,16 @@
     "durationSeconds": 143,
     "recordedWith": "0.2.8",
     "privacyStatus": "public"
+  },
+  "030b": {
+    "id": "FJAqxSDIXac",
+    "url": "https://www.youtube.com/watch?v=FJAqxSDIXac",
+    "title": "Fileclass #030b · Renaming a field, and every note that carries it",
+    "subject": "Renaming a field, and every note that carries it",
+    "scenario": "030b_renaming_a_field",
+    "doc": "schema/#renaming-a-field",
+    "durationSeconds": 134,
+    "recordedWith": "0.2.9",
+    "privacyStatus": "public"
   }
 }

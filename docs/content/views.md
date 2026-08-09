@@ -73,6 +73,8 @@ Once a base exists, the right-click menu on the fileClass note changes:
 
 ## Keeping a base in sync
 
+{{< video "033" >}}
+
 The class note's Properties panel says when a sync is due: its base button reads
 **Sync the base** while the managed view no longer mirrors the class, and syncs
 in one click. Nothing happens on its own — a base one field behind is a normal

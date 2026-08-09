@@ -8,6 +8,14 @@ All notable changes to Fileclass are documented here. The format follows
 
 ### Changed
 
+- **The property actions read as one group when they wrap.** They had a single 4px gap, so on
+  a narrow pane the rows sat closer together than the buttons within a row — measured at 340px:
+  33px between rows against about 30px of horizontal spacing — and five wrapped actions read as
+  columns with a stranded last item. The vertical gutter is now the wider of the two (12px
+  against 8px), each button's horizontal padding is symmetric so the space between two of them
+  is the same wherever the row breaks, and a label never splits across two lines. A row that
+  fits still sits on the line of *Add property*.
+
 - **A class note's `fields` row shows its schema, not its JSON.** A list of objects is a value
   Obsidian has no editor for, so the panel printed the raw thing in the warning colour it
   reserves for values nobody can make sense of — on the one note where that value is the whole

@@ -160,3 +160,7 @@ other. Captions are English; YouTube translates them into your language.
 ## A table for a class, generated
 
 {{< video "032" >}}
+
+## Schema changed? the base follows
+
+{{< video "033" >}}

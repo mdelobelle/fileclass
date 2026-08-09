@@ -177,16 +177,29 @@
 	display: inline-flex;
 	flex-wrap: wrap;
 	align-items: center;
-	gap: var(--size-4-1);
+	/*
+	 * Two gutters, not one. With a single 4px gap the rows sat closer together than the
+	 * buttons within a row — measured on a class note at 340px: 33px between rows against
+	 * ~30px of horizontal spacing — so five wrapped actions read as columns with a stranded
+	 * last item instead of one group. The vertical gutter is now the wider of the two, which
+	 * is what makes wrapped rows read as rows.
+	 */
+	column-gap: var(--size-4-2);
+	row-gap: var(--size-4-3);
 	font-size: var(--metadata-label-font-size);
 	font-family: var(--metadata-label-font);
-	margin: 0.5em 0 0 var(--size-4-2);
+	/* 4px, not 8: the group lands on its own line as soon as it stops fitting, and there the
+	   left margin is an indent against "Add property" rather than a separation from it. */
+	margin: 0.5em 0 0 var(--size-4-1);
 	vertical-align: top;
 }
 .metadata-container .fileclass-prop-action {
 	font-size: var(--metadata-label-font-size);
 	font-family: var(--metadata-label-font);
-	padding-inline-start: var(--size-2-3);
+	/* Symmetric, so the space between two buttons is the same wherever the row breaks. */
+	padding-inline: var(--size-2-3);
+	/* A label is one target: "Bulk edit a field" never breaks across two lines. */
+	white-space: nowrap;
 	cursor: pointer;
 	color: var(--text-muted);
 }

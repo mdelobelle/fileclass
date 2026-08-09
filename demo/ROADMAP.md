@@ -110,7 +110,7 @@ thread, and a tight smoke test of that type's input path.
 | 030 | One field across a whole class | bulk edit (set-where): the four questions, the counted preview, and Apply carrying its number | — (works on the vault as 029 leaves it) | ✅ [published](https://www.youtube.com/watch?v=qRtYZ3lCy5c) |
 | 030b | Renaming a field, and every note that carries it | rename with frontmatter migration ([#108](https://github.com/mdelobelle/fileclass/issues/108)) — a Save of its own, the notes listed before the write, and the bases it will not touch | `Book.shelf` → `storage` | ✅ [published](https://www.youtube.com/watch?v=FJAqxSDIXac) |
 | 030c | A class that gained a field | insert missing fields across a class: the count, the list, the notes no `fileClass` line names | — (works on the vault as 030b leaves it) | ✅ [published](https://www.youtube.com/watch?v=2V_U74cGmlU) |
-| 031 | New notes that arrive already typed | Templates: the class written into a template on camera, the fields baked in once, and what a schema change does not do | `Templates/` with *New book* and *Daily note*, both classless | |
+| 031 | New notes that arrive already typed | Templates: the class written into a template on camera, the fields baked in once, and what a schema change does not do | `Templates/` with *New book* and *Daily note*, both classless | ✅ [published](https://www.youtube.com/watch?v=_uNtXbPQ-0M) |
 
 ## Arc 7 — Bases views
 

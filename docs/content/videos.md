@@ -152,3 +152,7 @@ other. Captions are English; YouTube translates them into your language.
 ## A class that gained a field
 
 {{< video "030c" >}}
+
+## New notes that arrive already typed
+
+{{< video "031" >}}

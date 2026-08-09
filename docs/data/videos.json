@@ -394,5 +394,16 @@
     "durationSeconds": 120,
     "recordedWith": "0.2.8",
     "privacyStatus": "public"
+  },
+  "031": {
+    "id": "_uNtXbPQ-0M",
+    "url": "https://www.youtube.com/watch?v=_uNtXbPQ-0M",
+    "title": "Fileclass #031 · New notes that arrive already typed",
+    "subject": "New notes that arrive already typed",
+    "scenario": "031_notes_that_arrive_typed",
+    "doc": "schema/#creating-notes-with-a-template-templater--templates",
+    "durationSeconds": 157,
+    "recordedWith": "0.2.8",
+    "privacyStatus": "public"
   }
 }

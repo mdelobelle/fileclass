@@ -70,3 +70,36 @@ export function checkDocRef(doc, anchors) {
 	}
 	return { ok: true, message: `${page}/#${anchor}` };
 }
+
+/**
+ * Puts `{{< video "NNN" >}}` under the heading `anchor` names, and says what it did.
+ *
+ * Pasting that line was the one manual step left after a publish, and it was skipped for
+ * twelve takes in a row (024 → 032): the videos existed, the index listed them, and the
+ * pages that explain the features never showed them. A step nobody performs is not a step.
+ *
+ * Right after the heading, blank line either side — where take 023 put its own by hand, and
+ * where a reader looking for "what does this look like" reaches it before the prose.
+ * Returns:
+ *   "already"  the page already carries this shortcode — nothing to do, and the usual case
+ *   "written"  inserted, and `text` is the new page
+ *   null       no heading matches; the caller reports it for a human, since inventing a
+ *              location is an editorial decision and a wrong anchor is worth noticing
+ */
+export function placeVideoShortcode(markdown, number, anchor) {
+	if (markdown.includes(`{{< video "${number}"`)) return { text: markdown, placed: "already" };
+	if (!anchor) return { text: markdown, placed: null };
+
+	const lines = markdown.split("\n");
+	let fenced = false;
+	for (let i = 0; i < lines.length; i++) {
+		// A fenced block can hold anything, `## like this` included.
+		if (/^\s*(```|~~~)/.test(lines[i])) fenced = !fenced;
+		if (fenced) continue;
+		const heading = /^(#{2,6})\s+(.*)$/.exec(lines[i]);
+		if (!heading || slugify(heading[2]) !== anchor) continue;
+		lines.splice(i + 1, 0, "", `{{< video "${number}" >}}`);
+		return { text: lines.join("\n"), placed: "written" };
+	}
+	return { text: markdown, placed: null };
+}

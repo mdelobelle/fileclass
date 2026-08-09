@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 // Plain JS helpers from the demo tooling; only their pure part is exercised.
-import { checkDocRef, slugify } from "../../demo/lib/docsAnchors.mjs";
+import { checkDocRef, placeVideoShortcode, slugify } from "../../demo/lib/docsAnchors.mjs";
 
 const slug = (s: string): string => slugify(s) as string;
 
@@ -52,5 +52,40 @@ describe("checkDocRef — a scenario's doc: before it reaches a description", ()
 	it("accepts a page without an anchor, and a take with no doc at all", () => {
 		expect((checkDocRef("views/", anchors) as { ok: boolean }).ok).toBe(true);
 		expect((checkDocRef("", anchors) as { ok: boolean }).ok).toBe(true);
+	});
+});
+
+describe("placeVideoShortcode — the paste nobody was doing", () => {
+	const page = ["# Views", "", "## Generating a base", "", "Run the command.", ""].join("\n");
+	const place = (md: string, n: string, anchor: string): { text: string; placed: string | null } =>
+		placeVideoShortcode(md, n, anchor) as { text: string; placed: string | null };
+
+	it("puts the shortcode under the heading the anchor names", () => {
+		const { text, placed } = place(page, "032", "generating-a-base");
+		expect(placed).toBe("written");
+		expect(text.split("\n").slice(2, 6)).toEqual([
+			"## Generating a base",
+			"",
+			'{{< video "032" >}}',
+			"",
+		]);
+	});
+
+	it("is idempotent — a second sync leaves the page alone", () => {
+		const once = place(page, "032", "generating-a-base").text;
+		const twice = place(once, "032", "generating-a-base");
+		expect(twice.placed).toBe("already");
+		expect(twice.text).toBe(once);
+	});
+
+	it("refuses to guess when no heading matches", () => {
+		const { text, placed } = place(page, "032", "a-section-nobody-wrote");
+		expect(placed).toBeNull();
+		expect(text).toBe(page);
+	});
+
+	it("ignores a heading inside a fenced block", () => {
+		const fenced = ["# Views", "", "```yaml", "## Generating a base", "```", ""].join("\n");
+		expect(place(fenced, "032", "generating-a-base").placed).toBeNull();
 	});
 });

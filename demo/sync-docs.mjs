@@ -12,10 +12,13 @@
  *   docs/content/videos.md   the generated series index
  *   demo/ROADMAP.md          the Status cell of each published row
  *
- * It does NOT touch the prose pages: where a video belongs inside an explanation
- * is an editorial decision, so it prints the `{{< video "003" >}}` line to paste
- * and the page each take's `doc:` key points at. Paste it once, and every later
- * re-sync keeps it current on its own.
+ * It also places `{{< video "003" >}}` in the prose page each take's `doc:` key
+ * names, directly under the heading its anchor points at. That used to be a
+ * paste-it-yourself step, which is another way of saying it did not happen: it
+ * was skipped for twelve takes running, so published videos were reachable only
+ * from the index. When no heading matches the anchor — a typo, or a section not
+ * written yet — it writes nothing and says so, since that is a real mistake
+ * worth seeing rather than a location worth guessing.
  *
  * `publish.mjs` calls this after a successful upload, so the docs are never
  * behind the channel.
@@ -27,6 +30,7 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 
+import { placeVideoShortcode } from "./lib/docsAnchors.mjs";
 import { loadScenario } from "./lib/scenario.mjs";
 
 const run = promisify(execFile);
@@ -159,30 +163,51 @@ export async function syncDocs({ check = false } = {}) {
 		}
 	}
 
-	// Where a human still has to act: the shortcode inside the prose.
-	const placements = numbers
-		.map((n) => ({ n, v: videos[n] }))
-		.filter(({ v }) => v.doc)
-		.map(({ n, v }) => {
-			const page = v.doc.replace(/#.*$/, "").replace(/\/$/, "") || "_index";
-			const anchor = v.doc.includes("#") ? v.doc.replace(/^.*#/, "#") : "";
-			const file = join("docs", "content", `${page}.md`);
-			const placed =
-				existsSync(join(repo, file)) &&
-				readFileSync(join(repo, file), "utf8").includes(`{{< video "${n}"`);
-			return { n, file, anchor, placed };
-		});
+	// The shortcode inside the prose. Pages are edited in memory and written once, so
+	// several takes landing in one page do not fight over each other's copy.
+	const pages = new Map();
+	const todo = [];
+	const placed = [];
+	for (const n of numbers) {
+		const v = videos[n];
+		if (!v.doc) continue;
+		const page = v.doc.replace(/#.*$/, "").replace(/\/$/, "") || "_index";
+		const anchor = v.doc.includes("#") ? v.doc.replace(/^.*#/, "") : "";
+		const file = join("docs", "content", `${page}.md`);
+		const full = join(repo, file);
+		if (!existsSync(full)) {
+			todo.push({ n, file, anchor, why: "no such page" });
+			continue;
+		}
+		if (!pages.has(file)) pages.set(file, readFileSync(full, "utf8"));
+		const result = placeVideoShortcode(pages.get(file), n, anchor);
+		if (result.placed === null) {
+			todo.push({ n, file, anchor, why: anchor ? "no heading with that anchor" : "no anchor" });
+			continue;
+		}
+		if (result.placed === "written") {
+			pages.set(file, result.text);
+			placed.push({ n, file, anchor });
+		}
+	}
+	for (const [file, text] of pages) {
+		const full = join(repo, file);
+		if (readFileSync(full, "utf8") === text) continue;
+		if (!check) writeFileSync(full, text);
+		writes.push([full, text]);
+	}
 
 	return {
 		videos,
 		written: writes.map(([path]) => path),
-		todo: placements.filter((p) => !p.placed),
+		placed,
+		todo,
 	};
 }
 
 async function main() {
 	const check = process.argv.includes("--check");
-	const { videos, written, todo } = await syncDocs({ check });
+	const { videos, written, placed, todo } = await syncDocs({ check });
 	const numbers = Object.keys(videos).sort();
 
 	console.log(`${numbers.length} published take${numbers.length === 1 ? "" : "s"}`);
@@ -196,12 +221,16 @@ async function main() {
 	if (!written.length) console.log(dim("\nDocs already up to date."));
 	else console.log(dim(`\n${check ? "Would update" : "Wrote"}:\n${written.map((p) => `  ${p}`).join("\n")}`));
 
+	if (placed.length) {
+		console.log(`\n${check ? "Would place" : "Placed"}:`);
+		for (const p of placed) console.log(`  {{< video "${p.n}" >}}  →  ${p.file}#${p.anchor}`);
+	}
 	if (todo.length) {
-		console.log("\nStill to place by hand, once each:");
+		console.log("\nNowhere to place these — check the scenario's doc: key:");
 		for (const p of todo) {
-			console.log(`  {{< video "${p.n}" >}}  →  ${p.file}${p.anchor ? ` near ${p.anchor}` : ""}`);
+			console.log(`  {{< video "${p.n}" >}}  →  ${p.file}${p.anchor ? `#${p.anchor}` : ""} (${p.why})`);
 		}
-	} else if (numbers.length) {
+	} else if (numbers.length && !placed.length) {
 		console.log(dim("\nEvery published take is referenced from its doc page."));
 	}
 }

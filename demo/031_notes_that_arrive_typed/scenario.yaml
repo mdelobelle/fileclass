@@ -32,7 +32,12 @@
 #    in **Daily notes**, not in the Templates plugin (whose whole options object is a folder plus
 #    the `{{date}}`/`{{time}}` formats — `templateFiles` and nothing else besides); and it is a
 #    moment.js pattern, so `{{YYYY}}/{{MM}}/{{YYYY-MM-DD}}` creates a note literally at
-#    `Daily/{{2026}}/{{08}}/{{2026-08-09}}.md` — moment fills the tokens and keeps the braces;
+#    `Daily/{{2026}}/{{08}}/{{2026-08-09}}.md` — moment fills the tokens and keeps the braces.
+#    The two settings don't feed each other either, in either direction: with Templates set to
+#    `dateFormat: [T]YYYY.MM.DD` / `timeFormat: HH[h]mm`, *Templates: insert template* stamped
+#    `T2026.08.09 at 17h25`, while the **same template applied by Daily notes** stamped
+#    `2026-08-09 at 17:24` — the daily-notes plugin does its own `{{date}}` substitution on the
+#    defaults, and neither config file touched the other on disk;
 #  - the daily half of the take runs on a class of its own, **Habit** — a daily note is a day,
 #    not an event, and Activity's `branch`/`doors`/`starts` read as a booking form on one. Habit
 #    ships two `Cycle` fields whose values are a scale you click up: `reading` 📖 → 📖📖📖📖 and

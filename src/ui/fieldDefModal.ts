@@ -3,7 +3,7 @@
  * and the per-type option settings (Number/Date/List for now — §20.3). Types we
  * don't yet have settings for keep their existing options untouched.
  */
-import { App, Modal, Notice, Setting } from "obsidian";
+import { App, ButtonComponent, Modal, Notice, Setting } from "obsidian";
 
 import { modalTitle } from "./modalTitle";
 import { attachUnsavedGuard, snapshot, UnsavedGuard } from "./unsavedGuard";
@@ -52,6 +52,8 @@ export class FieldDefModal extends Modal {
 	/** Snapshot of the draft as the modal opened, or as it was last saved. */
 	private opened = "";
 	private guard!: UnsavedGuard;
+	/** The footer's save button, whose label follows what the save would do. */
+	private saveButton?: ButtonComponent;
 	private name: string;
 	private type: FieldType;
 	private draft: OptionsDraft;
@@ -96,6 +98,16 @@ export class FieldDefModal extends Modal {
 		return snapshot(this.state()) !== this.opened;
 	}
 
+	/**
+	 * Is this save a **rename** — an existing field whose name has changed? The button says so,
+	 * because what follows it is not another write to the class note but a pass over every note
+	 * that carries the old key (#108).
+	 */
+	private isRename(): boolean {
+		const initial = this.opts.initial?.name?.trim() ?? "";
+		return !!initial && this.name.trim() !== initial;
+	}
+
 	/** Commits the draft. False when it can't be saved, so the caller stays open. */
 	private commit(): boolean {
 		const name = this.name.trim();
@@ -125,7 +137,10 @@ export class FieldDefModal extends Modal {
 		// listener runs after the control's own handler, so the draft is already
 		// updated when dirtiness is re-read.
 		for (const type of ["input", "change", "click"] as const) {
-			contentEl.addEventListener(type, () => this.guard.refresh());
+			contentEl.addEventListener(type, () => {
+				this.guard.refresh();
+				this.saveButton?.setButtonText(this.isRename() ? "Save and migrate…" : "Save");
+			});
 		}
 
 		new Setting(contentEl).setName("Name").addText((t) =>
@@ -180,14 +195,19 @@ export class FieldDefModal extends Modal {
 		const footer = makeStickyFooter(contentEl);
 		const footerRow = new Setting(footer);
 		this.guard.mountHint(footerRow.settingEl);
-		footerRow.addButton((b) =>
-			b
-				.setButtonText("Save")
+		footerRow.addButton((b) => {
+			// A rename is not the same act as editing an option: the button says so, and what
+			// follows it is a list of the notes about to be rewritten (#108). Re-read on every
+			// keystroke — the name is being typed *now*, and a label decided when the modal
+			// opened would announce the wrong act.
+			this.saveButton = b;
+			return b
+				.setButtonText(this.isRename() ? "Save and migrate…" : "Save")
 				.setCta()
 				.onClick(() => {
 					if (this.commit()) this.close();
-				})
-		);
+				});
+		});
 	}
 
 	/** Merges the common `required` flag into the type's options (or removes it). */

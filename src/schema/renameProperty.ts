@@ -9,6 +9,23 @@
  * Properties panel, so a rename must not shuffle it.
  */
 
+import { Field, PATH_SEPARATOR } from "./field";
+
+/**
+ * The names of the groups a field lives under, outermost first — `["storage", "shelf"]` for a
+ * field whose path is those two ids. Empty for a root field.
+ *
+ * Resolved from the class's own fields rather than from the path string: the path holds ids,
+ * and it is the *names* that appear in a note's frontmatter.
+ */
+export function ancestorNames(fields: readonly Field[], field: Field): string[] {
+	if (!field.path) return [];
+	return field.path
+		.split(PATH_SEPARATOR)
+		.filter(Boolean)
+		.map((id) => fields.find((f) => f.id === id)?.name ?? "");
+}
+
 /** True for a YAML mapping — not a list, not a scalar, not null. */
 function isMapping(value: unknown): value is Record<string, unknown> {
 	return !!value && typeof value === "object" && !Array.isArray(value);

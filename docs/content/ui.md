@@ -345,7 +345,11 @@ not *Add a class*, which there would bind a class to a class:
 - **Options** — what the class [extends](../schema/#extending-a-fileclass), what
   it excludes, and the [notes it claims](../schema/#binding-notes-to-a-fileclass).
 - **Create a base** / **Modify the base** — the
-  [generator](../views/#generating-a-base), prefilled.
+  [generator](../views/#generating-a-base), prefilled. It reads **Sync the base**,
+  in the accent colour, while the class and its table disagree — a field added,
+  renamed or moved since the table was written — and clicking it then syncs
+  straight away instead of reopening the generator. Nothing polls: the check runs
+  when the class's shape changes under your eyes.
 - **Open the base** — only once the class has one, and it goes straight there.
 - **Bulk edit a field** — [set one field](#bulk-edit-set-where) across the notes
   that carry the class.

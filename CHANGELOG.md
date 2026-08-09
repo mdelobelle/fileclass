@@ -6,6 +6,18 @@ All notable changes to Fileclass are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- **A class says when its table has fallen behind.** `baseSyncStatus()` — is the managed view
+  still a mirror of the class? — was written and never called, so a base generated before the
+  class gained a field, renamed one or reordered them was stale in a way nothing showed: the
+  only way to find out was to open the table and count columns. The base button in a class
+  note's Properties panel now reads **Sync the base**, in the accent colour, while the two
+  disagree, and clicking it syncs on the spot rather than reopening the generator. The check
+  costs a file read, so the button is built with what is already known and relabelled when the
+  answer lands; it is re-asked whenever the class's own shape changes, which is what makes a
+  synced base diverge in the first place.
+
 ### Changed
 
 - **A fileClass note's Properties panel offers the class's own actions.** Beside *Add

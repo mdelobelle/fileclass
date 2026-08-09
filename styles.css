@@ -195,6 +195,19 @@
 }
 
 /*
+ * A class whose table no longer mirrors it: the button that fixes it says so.
+ *
+ * The accent, not the error colour — nothing is broken, and a base one field behind is a
+ * normal state between a schema change and the moment you decide to carry it over.
+ */
+.metadata-container .fileclass-prop-action.is-fc-diverged {
+	color: var(--text-accent);
+}
+.metadata-container .fileclass-prop-action.is-fc-diverged:hover {
+	color: var(--text-accent-hover);
+}
+
+/*
  * A multi-select row toggles wherever you click it. The switch is a small target
  * in a column of them, and the label is where the eye already is; the cursor says
  * the whole row is live.

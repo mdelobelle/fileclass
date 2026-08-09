@@ -40,7 +40,12 @@ import { openAddFieldTo, openFileClassSchema } from "./fileClassSchemaModal";
 import { FileClassOptionsModal } from "./fileClassOptionsModal";
 import { openBulkEdit } from "./bulkEditModal";
 import { pickAndCreateBase } from "../views/baseFileGenerator";
-import { fileClassBaseFile, openFileClassBase } from "../views/baseSync";
+import {
+	baseSyncStatus,
+	fileClassBaseFile,
+	openFileClassBase,
+	syncFileClassToBase,
+} from "../views/baseSync";
 import { describeField, displayTemplateOf } from "../fields/objectDisplay";
 import { isEmpty, isRequired, validateField } from "../fields/validate";
 import { makeDisplayDeps } from "../fields/displayDeps";
@@ -228,7 +233,15 @@ export class PropertyEditButtons extends Component {
 		fcName: string
 	): void {
 		const base = fileClassBaseFile(this.plugin, fcName);
-		const state = `class:${fcName}:${base?.path ?? ""}`;
+		// The class's own shape is part of the state: editing the schema leaves the base file
+		// and its path untouched, and it is exactly what makes a synced base diverge. Without
+		// it the row would keep saying "Modify" over a table that no longer matches.
+		const shape = this.plugin.index
+			.getResolvedFields(fcName)
+			.filter((f) => isRootField(f))
+			.map((f) => f.name)
+			.join(",");
+		const state = `class:${fcName}:${base?.path ?? ""}:${shape}`;
 		if (existing?.dataset.fcState === state) return;
 		existing?.remove();
 
@@ -244,14 +257,7 @@ export class PropertyEditButtons extends Component {
 				`What ${fcName} extends, excludes, and the notes it claims`,
 				() => new FileClassOptionsModal(this.plugin, fcName, file).open()
 			),
-			this.makeActionButton(
-				"layout-grid",
-				base ? "Modify the base" : "Create a base",
-				base
-					? `Sync ${fcName}'s fields into ${base.path}`
-					: `Generate a base whose table is ${fcName}'s fields`,
-				() => pickAndCreateBase(this.plugin, fcName)
-			)
+			this.baseButton(wrapper, state, fcName, base)
 		);
 		// Same rule as the note actions: a button appears when it has somewhere to go.
 		if (base) {
@@ -270,6 +276,63 @@ export class PropertyEditButtons extends Component {
 			)
 		);
 		add.after(wrapper);
+	}
+
+	/**
+	 * The base button, and the one thing on this row that answers late.
+	 *
+	 * A class whose table no longer mirrors it now says so, on the button that fixes it:
+	 * `baseSyncStatus` was written and never called, so a base generated before the class
+	 * gained a field, renamed one or reordered them was stale in a way nothing showed — the
+	 * only way to find out was to open the table and count columns.
+	 *
+	 * Reading and parsing the base is I/O, so the button is built with what is already known
+	 * ("Modify the base", which is true) and relabelled when the answer lands, rather than
+	 * holding the whole row back on a file read.
+	 */
+	private baseButton(
+		wrapper: HTMLElement,
+		state: string,
+		fcName: string,
+		base: TFile | null
+	): HTMLElement {
+		let diverged = false;
+		const button = this.makeActionButton(
+			"layout-grid",
+			base ? "Modify the base" : "Create a base",
+			base
+				? `Sync ${fcName}'s fields into ${base.path}`
+				: `Generate a base whose table is ${fcName}'s fields`,
+			() => {
+				// Labelled "Sync the base", it syncs — one click, and the notice says what it did.
+				if (!diverged) return pickAndCreateBase(this.plugin, fcName);
+				void syncFileClassToBase(this.plugin, fcName).then((ok) => {
+					if (!ok || !button.isConnected) return;
+					diverged = false;
+					restore();
+				});
+			}
+		);
+		const label = button.querySelector(".text-button-label");
+		const restore = (): void => {
+			label?.setText("Modify the base");
+			button.removeClass("is-fc-diverged");
+			button.setAttribute("aria-label", `Fileclass: Sync ${fcName}'s fields into ${base?.path ?? ""}`);
+		};
+		if (!base) return button;
+
+		void baseSyncStatus(this.plugin, fcName).then((status) => {
+			// The row may have been rebuilt, or the note left, while the file was read.
+			if (status !== "diverged" || !wrapper.isConnected || wrapper.dataset.fcState !== state) return;
+			diverged = true;
+			label?.setText("Sync the base");
+			button.addClass("is-fc-diverged");
+			button.setAttribute(
+				"aria-label",
+				`Fileclass: ${fcName} has changed since its table was written — bring its columns back in line`
+			);
+		});
+		return button;
 	}
 
 	private async reorder(file: TFile, fields: Field[]): Promise<void> {

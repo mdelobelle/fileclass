@@ -24,19 +24,21 @@
 #    step 3 sets on camera; its commands are `Templates: Insert template`, `Insert current date`,
 #    `Insert current time`;
 #  - `.obsidian/daily-notes.json` is fully set up so nothing has to be typed on camera: folder
-#    `Daily`, format `YYYY/MM/DD/YYYY-MM-DD`, template `Templates/Daily note`. Which template a
-#    daily note uses, and where it lands, are settings rather than lessons. Measured: *Daily
-#    notes: open today's daily note* creates `Daily/2026/08/09/2026-08-09.md`, with the template's
-#    body and — once steps 6–8 have run — `fileClass: Habit` and its three empty cycles. (The
-#    format lives in **Daily notes**, not in the Templates plugin, whose settings hold only a
-#    folder and the `{{date}}`/`{{time}}` formats; and it is a moment.js pattern, so it is written
-#    without braces or Obsidian would name the file after them.);
+#    `Daily`, format `YYYY/MM/YYYY-MM-DD`, template `Templates/Daily note`. Which template a daily
+#    note uses, and where it lands, are settings rather than lessons. Measured: *Daily notes: open
+#    today's daily note* creates `Daily/2026/08/2026-08-09.md`, with the template's body and —
+#    once steps 6–8 have run — `fileClass: Habit` and its three empty cycles.
+#    Two things measured while setting this up, both worth not re-deriving: the path format lives
+#    in **Daily notes**, not in the Templates plugin (whose whole options object is a folder plus
+#    the `{{date}}`/`{{time}}` formats — `templateFiles` and nothing else besides); and it is a
+#    moment.js pattern, so `{{YYYY}}/{{MM}}/{{YYYY-MM-DD}}` creates a note literally at
+#    `Daily/{{2026}}/{{08}}/{{2026-08-09}}.md` — moment fills the tokens and keeps the braces;
 #  - the daily half of the take runs on a class of its own, **Habit** — a daily note is a day,
 #    not an event, and Activity's `branch`/`doors`/`starts` read as a booking form on one. Habit
 #    ships two `Cycle` fields whose values are a scale you click up: `reading` 📖 → 📖📖📖📖 and
 #    `watching` 🎬 → 🎬🎬🎬🎬. The third, `listening` (🎧 → 🎧🎧🎧🎧), is added to the class on
 #    camera at step 7 — that is the schema change the rest of the take is about;
-#  - the four days already written — `Daily/2026/08/03`, `/05`, `/06` and `/07` — carry
+#  - the four days already written — `Daily/2026/08/` on the 3rd, 5th, 6th and 7th — carry
 #    `fileClass: Habit` with values, and were moved into the recording month on purpose: days
 #    dated 2028 would sit *ahead* of a take about what came before. Their bodies are the ones
 #    earlier takes wrote;

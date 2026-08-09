@@ -6,6 +6,15 @@ All notable changes to Fileclass are documented here. The format follows
 
 ## [Unreleased]
 
+### Changed
+
+- **A class note's `fields` row shows its schema, not its JSON.** A list of objects is a value
+  Obsidian has no editor for, so the panel printed the raw thing in the warning colour it
+  reserves for values nobody can make sense of — on the one note where that value is the whole
+  point. It reads **N fields** now, behind a wrench that opens the schema editor; the count is
+  what the class declares at its top level, and the tooltip adds how many live inside objects.
+  Switching the property buttons off puts the raw value back.
+
 ### Added
 
 - **A class says when its table has fallen behind.** `baseSyncStatus()` — is the managed view

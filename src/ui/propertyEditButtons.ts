@@ -60,6 +60,8 @@ const ACTIONS_CLASS = "fileclass-prop-actions";
 const CLASS_CLASS = "fileclass-prop-class";
 /** Marks a nested value Obsidian can't interpret but this plugin declares and validates. */
 const GROUP_OK_CLASS = "fileclass-group-ok";
+const FIELDS_ROW_CLASS = "fileclass-fields-summary";
+const FIELDS_ROW_MARK = "fileclass-fields-row";
 /** The reading of a stored duration, inside its pill. */
 const PILL_HUMAN_CLASS = "fileclass-pill-human";
 /** Set on a field's button when the field is required and has no value. */
@@ -133,6 +135,7 @@ export class PropertyEditButtons extends Component {
 					.forEach((row) => {
 						this.injectRow(row);
 						this.injectClassRow(row);
+						this.injectFieldsRow(row);
 					});
 			}
 			if (this.plugin.settings.enablePropertyActionButtons) {
@@ -387,6 +390,61 @@ export class PropertyEditButtons extends Component {
 	 * handled; a name that matches no class gets no button, which is also how a
 	 * typo announces itself.
 	 */
+	/**
+	 * The `fields` row of a class note: the schema, not its JSON.
+	 *
+	 * A class's fields are a list of objects, which Obsidian has no editor for — so the panel
+	 * printed the raw JSON, in the warning colour it reserves for values nobody can make sense
+	 * of. On the one note where that value is the whole point, that read as an error and told
+	 * you nothing: you counted braces to find out how many fields the class had.
+	 *
+	 * It now reads "N fields" behind a wrench that opens the schema — the row says what it
+	 * holds, and offers the only thing you would do with it.
+	 */
+	private injectFieldsRow(row: HTMLElement): void {
+		// Obsidian lowercases data-property-key, hence the case-insensitive match.
+		if (row.getAttribute("data-property-key")?.toLowerCase() !== "fields") return;
+		const file = this.fileForEl(row);
+		const fcName = file && this.plugin.index.fileClassNameOfNote(file.path);
+		if (!file || !fcName) return;
+		const item = row.querySelector<HTMLElement>(
+			":scope > .metadata-property-value > .metadata-property-value-item.mod-unknown"
+		);
+		if (!item) return;
+
+		const declared: unknown = this.plugin.app.metadataCache.getFileCache(file)?.frontmatter?.fields;
+		const list = Array.isArray(declared) ? declared : [];
+		const root = list.filter((f) => !(f as { path?: string })?.path).length;
+		const nested = list.length - root;
+		const state = `${fcName}:${root}:${nested}`;
+		if (item.dataset.fcFields === state) return; // settled: no new mutation
+		item.dataset.fcFields = state;
+
+		// The JSON is kept, so switching the buttons off puts the row back as Obsidian wrote it.
+		item.dataset.fcRaw ??= item.textContent ?? "";
+		item.empty();
+		item.addClass(FIELDS_ROW_MARK);
+		// Everything of ours lives in one span: removing it takes its listeners with it.
+		const summary = item.createSpan({ cls: FIELDS_ROW_CLASS });
+		setIcon(summary.createSpan({ cls: "fileclass-fields-wrench" }), "wrench");
+		summary.createSpan({ text: `${root} field${root === 1 ? "" : "s"}` });
+		summary.setAttribute(
+			"aria-label",
+			`Fileclass: open ${fcName}'s schema` +
+				(nested ? ` — ${root} at the top level, ${nested} inside them` : "")
+		);
+		summary.tabIndex = 0;
+		const open = (e: Event): void => {
+			e.preventDefault();
+			e.stopPropagation();
+			openFileClassSchema(this.plugin, fcName);
+		};
+		summary.addEventListener("click", open);
+		summary.addEventListener("keydown", (e) => {
+			if (e.key === "Enter" || e.key === " ") open(e);
+		});
+	}
+
 	private injectClassRow(row: HTMLElement): void {
 		const key = row.getAttribute("data-property-key");
 		const alias = this.plugin.settings.fileClassAlias;
@@ -712,8 +770,14 @@ export class PropertyEditButtons extends Component {
 	}
 
 	private removeAll(): void {
-		for (const cls of [BTN_CLASS, PREVIEW_CLASS, ACTIONS_CLASS, CLASS_CLASS]) {
+		for (const cls of [BTN_CLASS, PREVIEW_CLASS, ACTIONS_CLASS, CLASS_CLASS, FIELDS_ROW_CLASS]) {
 			document.querySelectorAll(`.${cls}`).forEach((el) => el.remove());
 		}
+		// That row is Obsidian's own element, rewritten rather than added to: put its text back.
+		document.querySelectorAll<HTMLElement>(`.${FIELDS_ROW_MARK}`).forEach((item) => {
+			item.removeClass(FIELDS_ROW_MARK);
+			delete item.dataset.fcFields;
+			item.setText(item.dataset.fcRaw ?? "");
+		});
 	}
 }

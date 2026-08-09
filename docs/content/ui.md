@@ -337,6 +337,13 @@ order its class declares.
 
 ### On a fileClass note
 
+Its **`fields` row** reads *N fields* behind a wrench that opens the schema. A
+class's fields are a list of objects, which Obsidian has no editor for, so the
+panel printed the raw JSON in the warning colour it keeps for values nobody can
+interpret — on the one note where that value is the subject. The count is what
+the class declares at its top level; the tooltip adds how many live inside
+objects.
+
 A class note gets the actions that act on the **class**, not on the note — and
 not *Add a class*, which there would bind a class to a class:
 

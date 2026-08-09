@@ -195,6 +195,36 @@
 }
 
 /*
+ * A class note's `fields` row: the schema, not its JSON.
+ *
+ * Obsidian has no editor for a list of objects, so it printed the raw value in the warning
+ * colour it keeps for values nobody can interpret — on the one note where that value is the
+ * subject. The marker drops the warning; the summary is a control, and says so.
+ */
+.metadata-property-value-item.fileclass-fields-row {
+	color: var(--text-normal);
+	white-space: normal;
+}
+.fileclass-fields-summary {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--size-2-2);
+	cursor: pointer;
+	color: var(--text-muted);
+}
+.fileclass-fields-summary:hover {
+	color: var(--text-normal);
+}
+.fileclass-fields-wrench {
+	display: inline-flex;
+	align-items: center;
+}
+.fileclass-fields-wrench svg {
+	width: 15px;
+	height: 15px;
+}
+
+/*
  * A class whose table no longer mirrors it: the button that fixes it says so.
  *
  * The accent, not the error colour — nothing is broken, and a base one field behind is a

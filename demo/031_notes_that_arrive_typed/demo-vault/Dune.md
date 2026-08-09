@@ -26,6 +26,7 @@ cover: "[[Dune.png]]"
 acquired:
 publisher: Chilton Books
 rating: ⭐⭐⭐
+lent to: ""
 ---
 Frank Herbert spent five years on desert ecology and the politics of water
 before Chilton Books — until then a publisher of car repair manuals — took the

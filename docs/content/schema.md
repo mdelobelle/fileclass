@@ -184,8 +184,9 @@ bake the fields into the template **once**:
 
 > **When the schema changes:** templates don't re-sync automatically. If you add
 > a field to the fileClass later, re-run **Insert missing fields** on the
-> template so new notes pick it up (existing notes get it the next time you run
-> the command on them).
+> template so new notes pick it up. The notes already written don't move either:
+> run the command on one of them, or
+> [across the whole class at once](../ui/#insert-missing-fields-across-a-class).
 
 ## Editing a fileClass
 

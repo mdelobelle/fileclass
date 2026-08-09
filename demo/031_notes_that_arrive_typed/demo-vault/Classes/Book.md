@@ -4,6 +4,11 @@ filesPaths:
 icon: book
 extends: Media
 fields:
+  - name: lent to
+    id: lNtTo1
+    type: Input
+    options: {}
+    path: ""
   - name: author
     id: aU7hor
     type: File

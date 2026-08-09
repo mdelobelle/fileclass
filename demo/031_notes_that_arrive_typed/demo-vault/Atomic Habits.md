@@ -16,6 +16,7 @@ cover: ""
 acquired:
 publisher: Avery
 rating:
+lent to: ""
 ---
 The one about systems over goals, and about making the good thing the easy thing.
 

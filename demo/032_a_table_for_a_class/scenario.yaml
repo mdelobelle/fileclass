@@ -13,9 +13,15 @@
 # note born from the template on camera; it explains the *Mary Shelley* note that had no book.
 #
 # Facts the script leans on, all measured in the app before scripting:
-#  - the command is `Fileclass: Create a base for a class`, and a fileClass note's right-click
-#    menu carries *Create a base for this fileClass* between *Manage this fileClass* and
-#    *Insert missing fields across this fileClass*;
+#  - the take enters through the **Properties panel of the class note**, which now carries the
+#    class's own actions beside *Add property*: `Add a field · Options · Create a base · Bulk
+#    edit a field`. The same thing is reachable from `Fileclass: Create a base for a class` and
+#    from the class note's right-click menu; the panel is what reads on camera, since the row
+#    sits directly above the fields it is about;
+#  - and the row **updates in place**, measured without leaving the note: once the base exists
+#    it reads `Add a field · Options · Modify the base · Open the base · Bulk edit a field`.
+#    That new button is step 8 — a button appears when it has somewhere to go — and clicking it
+#    opens `Habit.base`;
 #  - it opens a class picker, then a modal titled **Sync Habit to a base** with two prefilled
 #    inputs — *Base file* `Habit.base` ("New or existing .base to mirror this fileClass's fields
 #    into") and *View name* `Habit` ("The managed view (other views in the base are left
@@ -69,8 +75,8 @@ default_pause: 900
 steps:
   - title: "A class knows its fields — a base is where you finally see them all at once"
     pause: 2600
-  - title: "Habit has no table yet — from the class note itself, create a base for it"
-    pause: 2500
+  - title: "Habit has no table yet, and its own Properties panel offers to make one"
+    pause: 2600
   - title: "It proposes the file and the name of the view — a new base, or one you already keep"
     pause: 2700
   - title: "Create, and the table is there: a column per field, in the order the class declares them — plus valid and errors, which we'll come back to"
@@ -79,13 +85,13 @@ steps:
     pause: 2700
   - title: "The base itself is plain YAML — a filter, an order, nothing you couldn't have written"
     pause: 2700
-  - title: "And the class remembers it: baseFile and baseView, so it can find its way back"
+  - title: "And the class remembers it: baseFile and baseView, written into the class note"
     pause: 2600
-  - title: "From the class note, open its base — the round trip is one command"
-    pause: 2500
+  - title: "Back on the class, the panel has grown a button — Open the base, one click away"
+    pause: 2700
   - title: "Book already has a base you wrote, with four views of your own"
     pause: 2500
-  - title: "Point the generator at that file and it adds its view, leaving your four alone"
+  - title: "Create one from Book's panel too, but point it at the file you already keep — it adds its view and leaves your four alone"
     pause: 2700
   - title: "Read the filter it wrote: Book is bound to a folder too, so the table catches the notes no fileClass line names"
     pause: 2900

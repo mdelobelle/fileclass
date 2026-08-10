@@ -6,6 +6,16 @@ All notable changes to Fileclass are documented here. The format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- **A generated base opened at startup no longer reports an unknown view type.** Obsidian
+  restores its tabs before a plugin's `onLayoutReady`, so a vault closed on a generated base
+  reopened on **"Unknown view type: fileclass-table"** — an error on a file Fileclass itself
+  wrote, over a table that works the moment you navigate away and back. The same happened when
+  Bases was switched on with one of those bases already open. The open base views are rebuilt
+  as soon as the view type is registered; re-setting a leaf's own view state was measured to
+  change nothing, since Obsidian skips a no-op state change.
+
 ### Changed
 
 - **The property actions wrap as one row with *Add property*.** They were an inline box of

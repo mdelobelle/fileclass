@@ -1,0 +1,13 @@
+views:
+  - type: fileclass-table
+    name: Habit
+    filters:
+      and:
+        - fileClass == "Habit"
+        - '!file.inFolder("Templates")'
+    order:
+      - file.name
+      - reading
+      - screen time
+      - listening
+      - walking

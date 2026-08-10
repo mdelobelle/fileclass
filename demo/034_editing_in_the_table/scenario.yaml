@@ -1,0 +1,15 @@
+title: "Fileclass — Editing right in the table"
+description: "placeholder — written after the surfaces pass"
+doc: "views/#editable-table-view"
+tags: "bases, table, editing"
+vault_name: "Demo"
+plugin: true
+settings:
+  classFilesPath: "Classes/"
+  fileClassAlias: "fileClass"
+initial_pause: 1500
+default_pause: 900
+
+steps:
+  - title: "placeholder"
+    pause: 2000

@@ -6,6 +6,17 @@ All notable changes to Fileclass are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- **The `valid` column filters on itself** ([#142](https://github.com/mdelobelle/fileclass/issues/142)).
+  Click its header for the rows with something to fix, again for the ones without, once more for
+  all of them — and it carries the count while you decide (`valid 2✗`). The request was to expose
+  `valid` as a property so Bases could filter and sort on it; Bases lets a plugin register a
+  **view** and nothing else — its registry holds view types only — so that is not reachable, and
+  restating the check as a base formula would answer a slightly different question, since allowed
+  values resolve through queries. The column filters itself instead, which is exact, and the
+  choice lasts for the session rather than being written into someone's base file.
+
 ### Fixed
 
 - **A note carrying several classes appears in its class's generated table.** The filter tested

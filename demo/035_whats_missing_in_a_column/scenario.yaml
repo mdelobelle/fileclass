@@ -1,0 +1,80 @@
+# Narration for take 035 — see ../SCENARIO.md for the format.
+# Fourth of arc 7, and the one take 034 promised: the two columns it named without explaining,
+# `valid` and `errors`.
+#
+# The vault opens on **`Books.base`, on its generated *Book* view** — not on Habit's table, which
+# has nothing wrong with it: Habit's fields are three cycles and a number, none required, and
+# every day satisfies them. Book is the class with a required field and with values typed by
+# hand, which is where validation earns its keep.
+#
+# The fixture is take 034's vault after its on-camera edits: `reading` advanced and `walking` set
+# on the 6th, `read` flipped and `ownership` advanced to *Lent out* on *Dune*, and the note the
+# toolbar's *New* created kept as `Daily/2026/08/2026-08-10.md`.
+#
+# Facts the script leans on, all measured in the app before scripting:
+#  - the Book view reads **`valid 6✗`** over 9 rows, and the failures are of three different
+#    kinds, which is why this table and not another:
+#      · `"author" is required` — *Foundation*, *Small Gods*, *The Dispossessed* and
+#        `Templates/New book`. The first three were filled in empty by take 030c's class-wide
+#        pass; the fourth is the template, a note of the class like any other (take 031);
+#      · `"Gothic" is not an allowed value for "genre"; "Science" is not an allowed value for
+#        "themes"` — *Frankenstein*. Those values are **mine**: I wrote that note's frontmatter
+#        while building take 032's fixture without checking Book's lists (`genre` allows Science
+#        fiction / Fantasy / Comics, `themes` Ecology / Politics / Religion). Kept on purpose —
+#        it is exactly the mistake the column exists to catch, and exactly how it happens;
+#      · `"next interval" must be a list` — *Atomic Habits*, whose `CycleDuration` holds a scalar
+#        left over from an earlier take;
+#  - the `valid` header **filters on itself** (#142, added in this branch): one click leaves the
+#    six, another the three, a third shows all nine. The failure count rides in the header;
+#  - **a filter you write is not the same thing.** `Books.base` carries a hand-written view,
+#    *No author yet* (`fileClass == "Book" AND author.isEmpty()`), and it finds **one** note where
+#    the column flags four: the other three are claimed by `Reading list/` and carry no
+#    `fileClass` key at all. That contrast is step 10, and it was already in the vault;
+#  - the columns are switchable: **Settings → Fileclass → Validation columns**
+#    (`enableValidationColumns`, on by default). Named in step 2 rather than filmed;
+#  - **step 9 fixes a required field, not Frankenstein's.** Rehearsed both: picking a genre from
+#    the cell clears that error but the row stays ✗, since `themes` is wrong too — one gesture,
+#    no visible reward. Clicking *Foundation*'s `author` cell offers the vault's author notes,
+#    and the row goes ✓ with the header dropping to `valid 5✗` in the same beat. It is also a
+#    `Reading list/` note, which is step 10's point arriving early;
+#  - the same red flag is on the field itself — a required field with nothing in it colours its
+#    action in the note-fields modal and in the Properties panel, which is where take 023 left
+#    it. Measured on *Foundation* before the fix: one marked row in the panel, `author`, and the
+#    same field marked in the note-fields modal. Step 11 shows the two ends of one fact.
+title: "Fileclass — What's missing, in a column"
+description: "A class that says what it expects can show you, row by row, where it isn't met."
+doc: "views/#validation-columns" # deep link used in the description
+tags: "bases, validation, required, allowed values"
+vault_name: "Demo"
+plugin: true
+settings:
+  classFilesPath: "Classes/"
+  fileClassAlias: "fileClass"
+initial_pause: 1500
+default_pause: 900
+
+steps:
+  - title: "Every field says what it accepts — a table can say which notes don't follow"
+    pause: 2700
+  - title: "Book's table: nine rows, and the column at the front counts six worth looking at"
+    pause: 2800
+  - title: "A required field left empty: author, in four of them"
+    pause: 2600
+  - title: "A value that was never in the list: Gothic is not one of the genres"
+    pause: 2700
+  - title: "A type that doesn't hold: an interval written as a single value instead of a list"
+    pause: 2800
+  - title: "The errors column spells each one out, in the row it belongs to"
+    pause: 2600
+  - title: "Click the valid header and only what needs fixing is left — the count had warned you"
+    pause: 2800
+  - title: "Click again for the rest, a third time to see all nine"
+    pause: 2500
+  - title: "Fix it where you found it: give Foundation its author and the row turns to a tick, six failures down to five"
+    pause: 3000
+  - title: "A filter you wrote finds one of those four — it tests the property, while the class knows which notes it claims"
+    pause: 3000
+  - title: "And the same flag is on the field itself, in the note and in its panel"
+    pause: 2600
+  - title: "A class that says what it expects can show you where it isn't met — that's all validation is"
+    pause: 2800

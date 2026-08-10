@@ -162,6 +162,8 @@ native one and it goes.
 
 ## Validation columns
 
+{{< video "035" >}}
+
 The `fileclass-table` view can prepend a **`valid`** column and append an
 **`errors`** column, turning the table into a live data-quality dashboard:
 
@@ -175,6 +177,27 @@ Validation covers **all** of the note's root fields, not just the columns shown.
 Toggle it under **Settings → Fileclass → Validation columns** (on by default).
 The same checks back `fileclass validate` on the [CLI](../cli/) and the API's
 `validate()`.
+
+It also covers **every note the class claims**, which a filter of your own cannot
+do without repeating the bindings: a view filtered on `author.isEmpty()` and the
+class property finds the notes that *name* the class, while the column flags the
+folder-bound ones too. That is the difference between asking a query and asking
+the class.
+
+### Only the rows that need attention
+
+Click the **`valid`** header to see just those, click again for the ones with
+nothing to fix, once more for everything. The header carries the count of
+failures as it goes (`valid 2✗`), so you know whether it is worth looking before
+you look.
+
+It is the column that filters, not a Bases filter
+([#142](https://github.com/mdelobelle/fileclass/issues/142)): Bases lets a plugin
+register a **view** and nothing else, so validity is not a property its own Sort
+and Filter menus can see. Restating the check as a base formula was the
+alternative and it was rejected — allowed values are resolved through queries, so
+the formula would answer a slightly different question and the two would drift.
+The choice lasts for the session; nothing is written to your base.
 
 ## Embedding
 

@@ -438,5 +438,16 @@
     "durationSeconds": 164,
     "recordedWith": "0.2.9",
     "privacyStatus": "public"
+  },
+  "035": {
+    "id": "4qNflzfclNI",
+    "url": "https://www.youtube.com/watch?v=4qNflzfclNI",
+    "title": "Fileclass #035 · What's missing, in a column",
+    "subject": "What's missing, in a column",
+    "scenario": "035_whats_missing_in_a_column",
+    "doc": "views/#validation-columns",
+    "durationSeconds": 150,
+    "recordedWith": "0.2.9",
+    "privacyStatus": "public"
   }
 }

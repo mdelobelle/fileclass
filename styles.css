@@ -232,6 +232,25 @@
 }
 
 /*
+ * The `valid` column filters on itself (#142). Bases can register a view and nothing else, so
+ * validity is not a property its own Filter menu can see; this header is the control instead.
+ */
+th.fc-valid-header {
+	cursor: pointer;
+	white-space: nowrap;
+}
+th.fc-valid-header.is-filtering {
+	color: var(--text-accent);
+}
+.fc-valid-count {
+	color: var(--text-error);
+	font-variant-numeric: tabular-nums;
+}
+tr.fc-row-filtered {
+	display: none;
+}
+
+/*
  * A class whose table no longer mirrors it: the button that fixes it says so.
  *
  * The accent, not the error colour — nothing is broken, and a base one field behind is a

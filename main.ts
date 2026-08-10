@@ -7,7 +7,7 @@
  * Feature logic lives under src/. No Bases/private-internal access happens
  * here — only via the adapter.
  */
-import { Notice, Plugin, TAbstractFile, TFile, debounce } from "obsidian";
+import { Notice, Plugin, TAbstractFile, TFile, WorkspaceLeaf, debounce } from "obsidian";
 
 import { setPlugin, clearPlugin } from "./src/globals";
 import { isBasesAvailable, onCorePluginChange } from "./src/engine/basesAdapter";
@@ -133,12 +133,30 @@ export default class FileclassPlugin extends Plugin {
 				this.tableViewRegistered = false;
 				unregister();
 			});
+			this.rebuildOpenBases();
 		} catch (e) {
 			console.error(
 				"Fileclass: could not register the editable fileclass-table Bases view — " +
 					"generated bases will report an unknown view type until this succeeds.",
 				e
 			);
+		}
+	}
+
+	/**
+	 * Rebuilds the base views already on screen, because registration always arrives late.
+	 *
+	 * Obsidian restores its tabs before `onLayoutReady`, so a vault closed on a generated base
+	 * reopens on **"Unknown view type: fileclass-table"** — an error on a file this plugin
+	 * wrote, over a table that works everywhere else. The same applies the moment Bases is
+	 * switched back on with one of those bases open.
+	 *
+	 * Measured: re-setting the leaf's own view state changes nothing (Obsidian skips a no-op
+	 * state change); rebuilding the view is what clears it.
+	 */
+	private rebuildOpenBases(): void {
+		for (const leaf of this.app.workspace.getLeavesOfType("bases")) {
+			(leaf as WorkspaceLeaf & { rebuildView?: () => void }).rebuildView?.();
 		}
 	}
 

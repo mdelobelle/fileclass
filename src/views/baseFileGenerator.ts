@@ -12,7 +12,7 @@ import type FileclassPlugin from "../../main";
 import { writeOptions } from "../schema/fileClassIo";
 import { ChoiceSuggestModal } from "../fields/input/valueModals";
 import { BaseFileSuggest } from "../ui/baseSuggest";
-import { applyBaseSync, managedViewName } from "./baseSync";
+import { applyBaseSync, fileClassClaimingView, managedViewName } from "./baseSync";
 
 class CreateBaseModal extends Modal {
 	private path: string;
@@ -58,6 +58,18 @@ class CreateBaseModal extends Modal {
 		if (!path.endsWith(".base")) path += ".base";
 		path = normalizePath(path);
 		const view = this.view.trim() || this.name;
+
+		// Two classes mirroring into one view would overwrite each other's columns on every
+		// sync, quietly and forever. Refused before anything is written, and named: the answer
+		// is a different view name, which is one word away in the field above.
+		const taken = fileClassClaimingView(this.plugin, path, view, this.name);
+		if (taken) {
+			new Notice(
+				`Fileclass: "${taken}" already mirrors into ${path} › ${view}. ` +
+					"Give this one a view name of its own."
+			);
+			return;
+		}
 
 		const fcFile = this.plugin.index.getFileClassFile(this.name);
 		if (fcFile) await writeOptions(this.app, fcFile, { baseFile: path, baseView: view });

@@ -24,13 +24,22 @@ listing `file.name` and the fields — and records the choices on the fileClass
 (`baseFile`/`baseView`). Pointing at an **existing** base is safe: only the
 managed view is added or updated — your other views are left untouched.
 
+**One view, one class.** If another fileClass already mirrors into that file and
+view name, the setup says which and stops: two classes writing the same view
+would overwrite each other's columns on every sync. Give the second one a view
+name of its own — the same base can hold both.
+
 ### What the managed view filters on
 
 The filter matches **every way a note can be bound to the class**, not just the
 frontmatter property:
 
-- `fileClass == "Author"` — the note names the class (whatever your *fileClass
-  alias* is);
+- `fileClass.containsAny("Author")` — the note names the class (whatever your
+  *fileClass alias* is). `containsAny`, not `==`: a note may carry
+  [several classes](../schema/#binding-a-note-to-fileclasses), and the property is
+  then a list, which no equality test matches — it was dropping those notes from
+  the table of a class they belong to. A base generated before this is still
+  recognised as ours, so the next **sync** rewrites the clause;
 - `file.inFolder("Authors")` — one clause per **Files paths** folder. `inFolder`
   rather than an equality on the folder, because binding is by prefix: a note in
   `Authors/Deep/` is bound too;
@@ -108,6 +117,8 @@ class to its base**.
 
 ## Editable table view
 
+{{< video "034" >}}
+
 Fileclass registers a Bases view type, **`fileclass-table`**, that renders like a
 table but lets you **edit cells in place**: clicking a `note.<field>` cell performs
 [that type's gesture](../ui/#one-gesture-per-field-type) — a `Cycle` advances, a
@@ -120,8 +131,34 @@ Generated bases use it by default. In any other base, set a view's `type` to
 the sync — its type is preserved). It requires the core Bases plugin; with Bases
 disabled the view type is simply unavailable (switch the view back to `table`).
 
+The table follows the notes it shows: edit a value in the note, or from its
+Properties panel, and the cell changes with it — one set of data, two windows
+onto it.
+
 > It renders all rows (no virtualization yet), so very large bases are better
 > viewed with a native `table` view.
+
+### A new note from the table
+
+The toolbar's **New** creates a note that already **carries the class**, with its
+fields inserted empty, and the row appears at once — Bases applies the view's
+filter to what it creates, and the class it names is what a `fileClass` line
+would have said. The note opens in a popover whose Properties panel carries this
+plugin's [controls](../ui/#property-editor-buttons) like any other, so the row can
+be filled in without leaving the table.
+
+### The class's schema, from the table
+
+A table is where a schema shows its consequences — a column too many, a type that
+reads wrong in every row. The base's own toolbar therefore carries a wrench:
+**Manage `<FileClass>`**, opening that class's [schema editor](../schema/#editing-a-fileclass).
+
+The class is the one that **declared the view** (`baseFile` / `baseView` on the
+class note), so `Books.base › Book` is Book's table even when a row is both a
+Book and an Article. On a `fileclass-table` view nobody claims — one you set up
+by hand — it falls back to the classes of the rows: one and the button names it,
+several and it asks which. It appears only on an editable view; switch to a
+native one and it goes.
 
 ## Validation columns
 

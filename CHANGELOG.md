@@ -6,6 +6,49 @@ All notable changes to Fileclass are documented here. The format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- **A note carrying several classes appears in its class's generated table.** The filter tested
+  `fileClass == "Book"`, and a note that names two classes stores a **list** — which no equality
+  test matches. Measured on the demo vault: the generated Book view listed 8 rows instead of 9,
+  the missing one being a note that is both a Book and an Article. The clause is now
+  `fileClass.containsAny("Book")`, which matches the single-class case just as well. Bases
+  generated before this are still recognised as Fileclass's own, so they read as **out of sync**
+  and the next sync rewrites the clause in place.
+
+- **The Properties controls appear in the Bases *New* popover.** Creating a note from a base's
+  toolbar opens an embedded editor that belongs to no workspace leaf, so the file behind it could
+  not be resolved and the row buttons, the type previews and the action row were all missing on
+  the one screen where you fill a new note in. The file is now taken from CodeMirror, which knows
+  which document it is showing — rather than from the active file, which would decorate a hover
+  preview of another note with this note's fields.
+
+### Added
+
+- **A wrench in the base toolbar: *Manage `<FileClass>`***, opening the schema of the class the
+  table is about. A table is where a schema shows its consequences, and the editor was three
+  clicks away in the file explorer. The class is the one that **declared the view**, so
+  `Books.base › Book` is Book's table even when a row is both a Book and an Article; a
+  hand-made editable view, which no class claims, falls back to the classes of its rows — one
+  and the button names it, several and it asks. It appears only on an editable
+  `fileclass-table` view.
+
+- **One view, one class.** Nothing stopped two fileClasses from pointing `baseFile`/`baseView`
+  at the same view, and they would then overwrite each other's columns on every sync, quietly
+  and indefinitely. Both the base setup and a class's options now refuse it, naming the class
+  that got there first — a view name of its own is one word away, and the same base can hold
+  both.
+
+### Fixed
+
+- **A generated base opened at startup no longer reports an unknown view type.** Obsidian
+  restores its tabs before a plugin's `onLayoutReady`, so a vault closed on a generated base
+  reopened on **"Unknown view type: fileclass-table"** — an error on a file Fileclass itself
+  wrote, over a table that works the moment you navigate away and back. The same happened when
+  Bases was switched on with one of those bases already open. The open base views are rebuilt
+  as soon as the view type is registered; re-setting a leaf's own view state was measured to
+  change nothing, since Obsidian skips a no-op state change.
+
 ### Changed
 
 - **The property actions wrap as one row with *Add property*.** They were an inline box of

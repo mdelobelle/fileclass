@@ -58,6 +58,33 @@ export function managedViewName(plugin: FileclassPlugin, name: string): string {
 	return liveOptions(plugin, name)?.baseView?.trim() || name;
 }
 
+/**
+ * The fileClass that claims `viewName` in `basePath` — the class↔view link, read from the
+ * class notes rather than guessed from the rows.
+ *
+ * Two uses, one question. A table asking "which class am I about?" gets the class that
+ * declared the view, not whichever classes its rows happen to carry: a note that is both a Book
+ * and an Article does not make its Book table ambiguous. And a class about to claim a view can
+ * ask whether another one already has — two classes mirroring into the same view would
+ * overwrite each other's columns on every sync, quietly, forever.
+ *
+ * `except` is the class doing the asking, so it never collides with itself.
+ */
+export function fileClassClaimingView(
+	plugin: FileclassPlugin,
+	basePath: string,
+	viewName: string,
+	except?: string
+): string | undefined {
+	const wanted = normalizePath(basePath);
+	return plugin.index.fileClassNames.find((name) => {
+		if (name === except) return false;
+		const declared = liveOptions(plugin, name)?.baseFile?.trim();
+		if (!declared || normalizePath(declared) !== wanted) return false;
+		return managedViewName(plugin, name) === viewName;
+	});
+}
+
 /** The fileClass's declared base file, if it is set and exists in the vault. */
 export function fileClassBaseFile(plugin: FileclassPlugin, name: string): TFile | null {
 	const baseFile = liveOptions(plugin, name)?.baseFile?.trim();

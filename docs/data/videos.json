@@ -414,7 +414,7 @@
     "scenario": "032_a_table_for_a_class",
     "doc": "views/#generating-a-base",
     "durationSeconds": 156,
-    "recordedWith": "0.2.9",
+    "recordedWith": "0.2.10",
     "privacyStatus": "public"
   },
   "033": {
@@ -425,7 +425,7 @@
     "scenario": "033_the_base_follows",
     "doc": "views/#keeping-a-base-in-sync",
     "durationSeconds": 154,
-    "recordedWith": "0.2.9",
+    "recordedWith": "0.2.10",
     "privacyStatus": "public"
   },
   "034": {
@@ -436,7 +436,7 @@
     "scenario": "034_editing_in_the_table",
     "doc": "views/#editable-table-view",
     "durationSeconds": 164,
-    "recordedWith": "0.2.9",
+    "recordedWith": "0.2.10",
     "privacyStatus": "public"
   },
   "035": {
@@ -447,7 +447,7 @@
     "scenario": "035_whats_missing_in_a_column",
     "doc": "views/#validation-columns",
     "durationSeconds": 150,
-    "recordedWith": "0.2.9",
+    "recordedWith": "0.2.10",
     "privacyStatus": "public"
   },
   "036": {
@@ -458,7 +458,7 @@
     "scenario": "036_a_base_inside_a_note",
     "doc": "views/#embedding",
     "durationSeconds": 144,
-    "recordedWith": "0.2.9",
+    "recordedWith": "0.2.10",
     "privacyStatus": "public"
   }
 }

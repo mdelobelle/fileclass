@@ -6,6 +6,68 @@ All notable changes to Fileclass are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.2.10] - 2026-08-10
+
+### Added
+
+- **The `valid` column filters on itself** ([#142](https://github.com/mdelobelle/fileclass/issues/142)).
+  Click its header for the rows with something to fix, again for the ones without, once more for
+  all of them — and it carries the count while you decide (`valid 2✗`). The request was to expose
+  `valid` as a property so Bases could filter and sort on it; Bases lets a plugin register a
+  **view** and nothing else — its registry holds view types only — so that is not reachable, and
+  restating the check as a base formula would answer a slightly different question, since allowed
+  values resolve through queries. The column filters itself instead, which is exact, and the
+  choice lasts for the session rather than being written into someone's base file.
+
+- **A wrench in the base toolbar: *Manage `<FileClass>`***, opening the schema of the class the
+  table is about. A table is where a schema shows its consequences, and the editor was three
+  clicks away in the file explorer. The class is the one that **declared the view**, so
+  `Books.base › Book` is Book's table even when a row is both a Book and an Article; a
+  hand-made editable view, which no class claims, falls back to the classes of its rows — one
+  and the button names it, several and it asks. It appears only on an editable
+  `fileclass-table` view.
+
+- **One view, one class.** Nothing stopped two fileClasses from pointing `baseFile`/`baseView`
+  at the same view, and they would then overwrite each other's columns on every sync, quietly
+  and indefinitely. Both the base setup and a class's options now refuse it, naming the class
+  that got there first — a view name of its own is one word away, and the same base can hold
+  both.
+
+- **A class says when its table has fallen behind.** `baseSyncStatus()` — is the managed view
+  still a mirror of the class? — was written and never called, so a base generated before the
+  class gained a field, renamed one or reordered them was stale in a way nothing showed: the
+  only way to find out was to open the table and count columns. The base button in a class
+  note's Properties panel now reads **Sync the base**, in the accent colour, while the two
+  disagree, and clicking it syncs on the spot rather than reopening the generator. The check
+  costs a file read, so the button is built with what is already known and relabelled when the
+  answer lands; it is re-asked whenever the class's own shape changes, which is what makes a
+  synced base diverge in the first place.
+
+### Changed
+
+- **The property actions wrap as one row with *Add property*.** They were an inline box of
+  their own, and an inline box cannot be split across lines: with five actions on a class note —
+  119px of *Add property* plus 627px of buttons against a 720px panel — the whole set dropped
+  below, leaving the line above nearly empty and the group reading as a second, ragged block.
+  The buttons are now inline-level siblings of Obsidian's own, so the line breaks *between
+  buttons*: the row fills, then continues underneath. Each button's horizontal padding is
+  symmetric, so the space between two of them is the same wherever the break falls, and a label
+  never splits across two lines.
+
+- **A class note's `fields` row shows its schema, not its JSON.** A list of objects is a value
+  Obsidian has no editor for, so the panel printed the raw thing in the warning colour it
+  reserves for values nobody can make sense of — on the one note where that value is the whole
+  point. It reads **N fields** now, behind a wrench that opens the schema editor; the count is
+  what the class declares at its top level, and the tooltip adds how many live inside objects.
+  Switching the property buttons off puts the raw value back.
+
+- **A fileClass note's Properties panel offers the class's own actions.** Beside *Add
+  property* it used to show *Add a class*, which on a class note would bind a class to a
+  class. It now carries what you actually do there: **Add a field** (the schema editor with
+  its dialog already open), **Options**, **Create a base** — *Modify the base* once there is
+  one — **Open the base**, which appears only when there is one to open, and **Bulk edit a
+  field**. Notes that are not class notes keep the set they had.
+
 ### Fixed
 
 - **An embedded `fileclass-table` renders.** A base embedded in a note — `![[Some.base]]` or a
@@ -30,19 +92,6 @@ All notable changes to Fileclass are documented here. The format follows
   button looked for the toolbar from the note's content element, so it found the first embed's
   and both landed there. It now looks inside the embed it belongs to.
 
-### Added
-
-- **The `valid` column filters on itself** ([#142](https://github.com/mdelobelle/fileclass/issues/142)).
-  Click its header for the rows with something to fix, again for the ones without, once more for
-  all of them — and it carries the count while you decide (`valid 2✗`). The request was to expose
-  `valid` as a property so Bases could filter and sort on it; Bases lets a plugin register a
-  **view** and nothing else — its registry holds view types only — so that is not reachable, and
-  restating the check as a base formula would answer a slightly different question, since allowed
-  values resolve through queries. The column filters itself instead, which is exact, and the
-  choice lasts for the session rather than being written into someone's base file.
-
-### Fixed
-
 - **A note carrying several classes appears in its class's generated table.** The filter tested
   `fileClass == "Book"`, and a note that names two classes stores a **list** — which no equality
   test matches. Measured on the demo vault: the generated Book view listed 8 rows instead of 9,
@@ -58,24 +107,6 @@ All notable changes to Fileclass are documented here. The format follows
   which document it is showing — rather than from the active file, which would decorate a hover
   preview of another note with this note's fields.
 
-### Added
-
-- **A wrench in the base toolbar: *Manage `<FileClass>`***, opening the schema of the class the
-  table is about. A table is where a schema shows its consequences, and the editor was three
-  clicks away in the file explorer. The class is the one that **declared the view**, so
-  `Books.base › Book` is Book's table even when a row is both a Book and an Article; a
-  hand-made editable view, which no class claims, falls back to the classes of its rows — one
-  and the button names it, several and it asks. It appears only on an editable
-  `fileclass-table` view.
-
-- **One view, one class.** Nothing stopped two fileClasses from pointing `baseFile`/`baseView`
-  at the same view, and they would then overwrite each other's columns on every sync, quietly
-  and indefinitely. Both the base setup and a class's options now refuse it, naming the class
-  that got there first — a view name of its own is one word away, and the same base can hold
-  both.
-
-### Fixed
-
 - **A generated base opened at startup no longer reports an unknown view type.** Obsidian
   restores its tabs before a plugin's `onLayoutReady`, so a vault closed on a generated base
   reopened on **"Unknown view type: fileclass-table"** — an error on a file Fileclass itself
@@ -83,47 +114,6 @@ All notable changes to Fileclass are documented here. The format follows
   Bases was switched on with one of those bases already open. The open base views are rebuilt
   as soon as the view type is registered; re-setting a leaf's own view state was measured to
   change nothing, since Obsidian skips a no-op state change.
-
-### Changed
-
-- **The property actions wrap as one row with *Add property*.** They were an inline box of
-  their own, and an inline box cannot be split across lines: with five actions on a class note —
-  119px of *Add property* plus 627px of buttons against a 720px panel — the whole set dropped
-  below, leaving the line above nearly empty and the group reading as a second, ragged block.
-  The buttons are now inline-level siblings of Obsidian's own, so the line breaks *between
-  buttons*: the row fills, then continues underneath. Each button's horizontal padding is
-  symmetric, so the space between two of them is the same wherever the break falls, and a label
-  never splits across two lines.
-
-- **A class note's `fields` row shows its schema, not its JSON.** A list of objects is a value
-  Obsidian has no editor for, so the panel printed the raw thing in the warning colour it
-  reserves for values nobody can make sense of — on the one note where that value is the whole
-  point. It reads **N fields** now, behind a wrench that opens the schema editor; the count is
-  what the class declares at its top level, and the tooltip adds how many live inside objects.
-  Switching the property buttons off puts the raw value back.
-
-### Added
-
-- **A class says when its table has fallen behind.** `baseSyncStatus()` — is the managed view
-  still a mirror of the class? — was written and never called, so a base generated before the
-  class gained a field, renamed one or reordered them was stale in a way nothing showed: the
-  only way to find out was to open the table and count columns. The base button in a class
-  note's Properties panel now reads **Sync the base**, in the accent colour, while the two
-  disagree, and clicking it syncs on the spot rather than reopening the generator. The check
-  costs a file read, so the button is built with what is already known and relabelled when the
-  answer lands; it is re-asked whenever the class's own shape changes, which is what makes a
-  synced base diverge in the first place.
-
-### Changed
-
-- **A fileClass note's Properties panel offers the class's own actions.** Beside *Add
-  property* it used to show *Add a class*, which on a class note would bind a class to a
-  class. It now carries what you actually do there: **Add a field** (the schema editor with
-  its dialog already open), **Options**, **Create a base** — *Modify the base* once there is
-  one — **Open the base**, which appears only when there is one to open, and **Bulk edit a
-  field**. Notes that are not class notes keep the set they had.
-
-### Fixed
 
 - **A stack of modals is last-in-first-out for the mouse too**
   ([#118](https://github.com/mdelobelle/fileclass/issues/118)). With movable modals on, every

@@ -128,7 +128,13 @@ thread, and a tight smoke test of that type's input path.
 | - | ---- | ------- | ----------- | ------ |
 | 037 | A field that follows your canvas | `Canvas`: the graph as a source, the engine writing by itself, and the filters that narrow it | `Reading map.canvas` (six books, four edges) | ✅ [published](https://www.youtube.com/watch?v=xeccqChw1kA) |
 | 038 | Groups on a canvas as data | `CanvasGroup`, `CanvasGroupLink`: the box a note sits in, what the box is wired to, and geometry as the rule | two groups on `Reading map.canvas`, and the activity one of them feeds | ✅ [published](https://www.youtube.com/watch?v=smt6cu8PLnE) |
-| 039 | The settings, one pass | behaviour toggles, indicators, defaults | — | |
+| 039 | ~~The settings, one pass~~ | — | — | 🚫 dropped: the settings tab describes itself, row by row, and [its page](https://mdelobelle.github.io/fileclass/settings/) says the rest. A film of twelve toggles teaches nothing a reader cannot get faster by scrolling. |
 
-**41 takes** (39 numbered, plus `010b` and `016b` — facets that earned their own
-take), roughly 50 minutes of finished video.
+**44 takes published**, 109 minutes of finished video — the whole series, arcs 1
+to 8. Numbered 000 to 038, with `010b`, `016b`, `025b`, `030b` and `030c` as facets
+that earned their own take, and 039 dropped (see above).
+
+What is deliberately not filmed, gathered in one place: `Formula` and `Lookup`
+(outside the plugin's scope), the CLI (a terminal under burned-in subtitles is not
+tooling we have, and its audience reads), the settings tab (039), and "coming from
+Metadata Menu" (a discussion thread, not a video).

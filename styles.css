@@ -1352,9 +1352,17 @@ body.is-mobile .prompt.fileclass-prompt {
 .modal-content.fileclass-scroll-body .setting-item-description {
 	font-size: var(--font-ui-smaller);
 }
-/* 32px is a page metric. In a dense list the button, not the text, sets the row's
-   height — so the row is 32px tall to hold one word. */
-.modal-content.fileclass-scroll-body button:not(.clickable-icon) {
+/*
+ * 32px is a page metric. In a dense list the button, not the text, sets the row's
+ * height — so the row is 32px tall to hold one word.
+ *
+ * Buttons that are a *shape* rather than a label are exempt: the colour swatches
+ * carry their own 30×30 and a `border-radius: 50%`, so being given this rule's
+ * height and horizontal padding turned every one of them into an ellipse (measured
+ * at 30×24, padding `0 8px`). Same for the side chips, which are square by intent.
+ */
+.modal-content.fileclass-scroll-body
+	button:not(.clickable-icon):not(.fileclass-color-circle):not(.fileclass-side-chip) {
 	height: var(--fc-button-h);
 	padding: 0 var(--size-4-2);
 	font-size: var(--fc-control-font);

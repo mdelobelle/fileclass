@@ -126,7 +126,7 @@ thread, and a tight smoke test of that type's input path.
 
 | # | Take | Feature | Vault gains | Status |
 | - | ---- | ------- | ----------- | ------ |
-| 037 | A field that follows your canvas | `Canvas` | a reading-map canvas | |
+| 037 | A field that follows your canvas | `Canvas`: the graph as a source, the engine writing by itself, and the filters that narrow it | `Reading map.canvas` (six books, four edges) | ✅ [published](https://www.youtube.com/watch?v=xeccqChw1kA) |
 | 038 | Groups on a canvas as data | `CanvasGroup`, `CanvasGroupLink` | — | |
 | 039 | The settings, one pass | behaviour toggles, indicators, defaults | — | |
 

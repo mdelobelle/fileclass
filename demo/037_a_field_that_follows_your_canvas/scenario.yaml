@@ -1,0 +1,78 @@
+# Narration for take 037 — see ../SCENARIO.md for the format.
+# Opens arc 8, and turns to the one family of fields nobody types: the canvas fields. Everything
+# before this take was a value you wrote, chose or inherited. This one is derived from a drawing.
+#
+# The vault opens on **`Reading map.canvas`**, a map the librarian drew: which book leads to
+# which. Six book nodes, four edges labelled *then* —
+# `Frankenstein → Foundation → Dune → The Dispossessed` and `The Lord of the Rings → Small Gods`.
+# The canvas ships with the fixture, because drawing one on camera is dragging boxes for a
+# minute; the **field** is added on camera, and one edge is drawn at step 7 to show what follows.
+#
+# The fixture is take 036's vault, plus that canvas and the `Library desk.md` dashboard the last
+# take wrote.
+#
+# Facts the script leans on, all measured in the app before scripting:
+#  - the type list offers **Canvas**, **CanvasGroup** and **CanvasGroupLink**; take 038 is the
+#    other two. `Canvas`'s options read *Canvas file* ("Path of the .canvas file whose graph feeds
+#    this field"), *Direction* ("Which edges to follow from this note" — Both sides / Incoming /
+#    Outgoing), then *Edge matching colors*, *Edge from side*, *Edge to side*, *Edge matching
+#    labels*, *Node matching colors* and *Matching files (base)*, each defaulting to "any";
+#  - with `direction: outgoing` on that canvas, the engine writes by itself:
+#    *Frankenstein* → `[[Foundation]]`, *Foundation* → `[[Dune]]`, *Dune* → `[[The Dispossessed]]`,
+#    *The Lord of the Rings* → `[[Small Gods]]`. A note at the end of a chain gets **no key**, and
+#    so does a note that is not on the canvas at all (*Atomic Habits*);
+#  - **drawing one more edge** — Dune → Small Gods — takes Dune's value to
+#    `[[The Dispossessed]], [[Small Gods]]`; **removing a node** takes it back to `[[Small Gods]]`
+#    and deletes the key from the note that left. That is step 7 and step 8, measured;
+#  - `direction: incoming` answers the other question: *Dune* ← `[[Foundation]]`,
+#    *The Dispossessed* ← `[[Dune]]`, and the two heads of the chains get no key;
+#  - a label filter works both ways: `then` keeps every edge of this canvas, `because` keeps none
+#    — which is how step 10 shows a filter narrowing without inventing a second canvas;
+#  - the switch is **Settings → Fileclass → Canvas fields engine**, on by default, and its own
+#    description says what it is for: *"Auto-fill Canvas/CanvasGroup/CanvasGroupLink fields from
+#    .canvas files. This writes to frontmatter automatically when a canvas changes."* Step 11 is
+#    that sentence in the take's own words — everywhere else in this plugin a value changes
+#    because the reader changed it; this engine is the only one that writes unasked, so the take
+#    shows where to stop it rather than leaving the reader to wonder whether it can be stopped.
+#
+# **Two things were fixed while scripting this take**, both visible in the modal it films: the
+# *Type* dropdown sat below the options it commands, so choosing `Canvas` pushed it off screen
+# behind nine new rows; and the colour swatches were 30×24 ellipses, squashed by the
+# compact-modal rule that sizes every button in a modal.
+title: "Fileclass — A field that follows your canvas"
+description: "Draw the graph; the notes carry it. The one field nobody types."
+doc: "fields/#canvas-fields-canvas--canvasgroup--canvasgrouplink" # deep link used in the description
+tags: "canvas, fields, graph, automatic"
+vault_name: "Demo"
+plugin: true
+settings:
+  classFilesPath: "Classes/"
+  fileClassAlias: "fileClass"
+initial_pause: 1500
+default_pause: 900
+
+steps:
+  - title: "Some things are easier drawn than written — and a graph is data too"
+    pause: 2700
+  - title: "A reading map: which book leads to which, drawn by hand"
+    pause: 2600
+  - title: "Add a field to Book, of type Canvas, and point it at that canvas file"
+    pause: 2800
+  - title: "Direction outgoing: what this book leads to"
+    pause: 2500
+  - title: "Save, and the field is already filled everywhere — nobody typed a thing"
+    pause: 2800
+  - title: "Dune leads to The Dispossessed, because that edge exists on the canvas"
+    pause: 2700
+  - title: "Draw one more edge and the note gains it while you draw"
+    pause: 2700
+  - title: "Take a note off the canvas and its key leaves with it — no value left behind"
+    pause: 2800
+  - title: "The other direction answers the other question: what led here"
+    pause: 2600
+  - title: "And the filters narrow it: only edges of one colour, one label, or notes a base returns"
+    pause: 2900
+  - title: "Everywhere else, a value changes because you changed it — this is the one engine that writes on its own, and it has a switch"
+    pause: 3100
+  - title: "Your canvas becomes a source, and the notes carry what you drew"
+    pause: 2700

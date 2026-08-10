@@ -1,0 +1,20 @@
+{
+  "items": [
+    {
+      "type": "group",
+      "title": "Film club",
+      "items": [
+        {
+          "type": "file",
+          "path": "Stalker.md",
+          "title": "Stalker"
+        },
+        {
+          "type": "file",
+          "path": "Solaris.md",
+          "title": "Solaris"
+        }
+      ]
+    }
+  ]
+}

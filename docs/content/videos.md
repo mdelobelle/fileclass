@@ -168,3 +168,7 @@ other. Captions are English; YouTube translates them into your language.
 ## Editing right in the table
 
 {{< video "034" >}}
+
+## What's missing, in a column
+
+{{< video "035" >}}

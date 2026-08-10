@@ -8,6 +8,12 @@ All notable changes to Fileclass are documented here. The format follows
 
 ### Changed
 
+- **The colour swatches are round again.** The compact-modal rule gives every button in a
+  modal a 24px height and horizontal padding, which is right for a button that holds a word and
+  wrong for one that *is* a shape: the canvas colour swatches carry their own 30×30 and a
+  `border-radius: 50%`, so they came out as 30×24 ellipses. They and the square side chips are
+  now exempt; an ordinary button in the same modal is still 24px tall.
+
 - **A field's type sits above its own options.** The Type dropdown was under them, so choosing
   `Canvas` grew nine rows *above* it — canvas file, direction, four edge filters, node colours,
   matching files — and pushed the control you had just used off the screen. Name, then Type,

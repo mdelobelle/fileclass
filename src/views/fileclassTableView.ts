@@ -14,6 +14,7 @@ import { Component, TFile, setIcon } from "obsidian";
 
 import type FileclassPlugin from "../../main";
 import { registerFileclassView } from "../engine/basesAdapter";
+import { fileClassClaimingView } from "./baseSync";
 import { EditContext, runControlAction } from "../fields/fieldActions";
 import { isInputSupported } from "../fields/support";
 import { hasAllowedValues, validateField } from "../fields/validate";
@@ -104,6 +105,16 @@ class FileclassTableView extends Component {
 		this.syncToolbarButton(ds);
 	}
 
+	/** Which base file and view this render belongs to, from the leaf that holds it. */
+	private viewIdentity(): { file: string; viewName: string } | undefined {
+		for (const leaf of this.plugin.app.workspace.getLeavesOfType("bases")) {
+			if (!leaf.view.containerEl.contains(this.containerEl)) continue;
+			const state = leaf.getViewState().state as { file?: string; viewName?: string } | undefined;
+			if (state?.file && state.viewName) return { file: state.file, viewName: state.viewName };
+		}
+		return undefined;
+	}
+
 	/**
 	 * A wrench in the base's own toolbar: the schema of the class this table is about.
 	 *
@@ -121,9 +132,16 @@ class FileclassTableView extends Component {
 			?.querySelector<HTMLElement>(".bases-toolbar");
 		if (!toolbar) return;
 
-		const classes = new Set<string>();
-		for (const entry of ds.data) {
-			for (const name of this.plugin.index.getFileClasses(entry.file)) classes.add(name);
+		// The class that *declared* this view, first: `Books.base > Book` is Book's view, and a
+		// row that is both a Book and an Article does not make it ambiguous. Only a view nobody
+		// claims — one written by hand — falls back to asking the rows.
+		const claimed = this.viewIdentity();
+		const owner = claimed && fileClassClaimingView(this.plugin, claimed.file, claimed.viewName);
+		const classes = new Set<string>(owner ? [owner] : []);
+		if (!owner) {
+			for (const entry of ds.data) {
+				for (const name of this.plugin.index.getFileClasses(entry.file)) classes.add(name);
+			}
 		}
 		if (!classes.size) {
 			this.toolbarItem?.remove();

@@ -27,9 +27,17 @@ All notable changes to Fileclass are documented here. The format follows
 
 - **A wrench in the base toolbar: *Manage `<FileClass>`***, opening the schema of the class the
   table is about. A table is where a schema shows its consequences, and the editor was three
-  clicks away in the file explorer. The class is read off the rows rather than the view's name —
-  one class among them and the button names it, several and it asks. It appears only on an
-  editable `fileclass-table` view.
+  clicks away in the file explorer. The class is the one that **declared the view**, so
+  `Books.base › Book` is Book's table even when a row is both a Book and an Article; a
+  hand-made editable view, which no class claims, falls back to the classes of its rows — one
+  and the button names it, several and it asks. It appears only on an editable
+  `fileclass-table` view.
+
+- **One view, one class.** Nothing stopped two fileClasses from pointing `baseFile`/`baseView`
+  at the same view, and they would then overwrite each other's columns on every sync, quietly
+  and indefinitely. Both the base setup and a class's options now refuse it, naming the class
+  that got there first — a view name of its own is one word away, and the same base can hold
+  both.
 
 ### Fixed
 

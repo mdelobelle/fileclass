@@ -12,7 +12,7 @@ import { isRootField } from "../schema/field";
 import { parseFileClass } from "../schema/fileClass";
 import { writeOptions } from "../schema/fileClassIo";
 import { buildOptionUpdates, EditableOptions } from "../schema/fileClassWrite";
-import { applyBaseSync } from "../views/baseSync";
+import { applyBaseSync, fileClassClaimingView } from "../views/baseSync";
 import { ClassScope, isBaseViewSynced } from "../views/baseYaml";
 import { BaseFileSuggest } from "./baseSuggest";
 import { openFileClassSchema } from "./fileClassSchemaModal";
@@ -258,14 +258,18 @@ export class FileClassOptionsModal extends Modal {
 	private async doSync(): Promise<void> {
 		const path = this.opts.baseFile?.trim();
 		if (!path) return;
+		const view = this.opts.baseView?.trim() || this.name;
+		const taken = fileClassClaimingView(this.plugin, path, view, this.name);
+		if (taken) {
+			new Notice(
+				`Fileclass: "${taken}" already mirrors into ${path} › ${view}. ` +
+					"Give this one a view name of its own."
+			);
+			return;
+		}
 		// Persist config, then apply with explicit path/view (cache may lag).
 		await writeOptions(this.app, this.file, buildOptionUpdates(this.opts));
-		await applyBaseSync(
-			this.plugin,
-			this.name,
-			normalizePath(path),
-			this.opts.baseView?.trim() || this.name
-		);
+		await applyBaseSync(this.plugin, this.name, normalizePath(path), view);
 		await this.updateStatus();
 	}
 

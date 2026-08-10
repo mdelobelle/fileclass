@@ -24,6 +24,11 @@ listing `file.name` and the fields — and records the choices on the fileClass
 (`baseFile`/`baseView`). Pointing at an **existing** base is safe: only the
 managed view is added or updated — your other views are left untouched.
 
+**One view, one class.** If another fileClass already mirrors into that file and
+view name, the setup says which and stops: two classes writing the same view
+would overwrite each other's columns on every sync. Give the second one a view
+name of its own — the same base can hold both.
+
 ### What the managed view filters on
 
 The filter matches **every way a note can be bound to the class**, not just the
@@ -81,9 +86,12 @@ A table is where a schema shows its consequences — a column too many, a type t
 reads wrong in every row. The base's own toolbar therefore carries a wrench:
 **Manage `<FileClass>`**, opening that class's [schema editor](../schema/#editing-a-fileclass).
 
-The class is read off the rows rather than the view's name: one class among them
-and the button names it, several and it asks which. It appears only on an
-editable `fileclass-table` view — switch to a native view and it goes.
+The class is the one that **declared the view** (`baseFile` / `baseView` on the
+class note), so `Books.base › Book` is Book's table even when a row is both a
+Book and an Article. On a `fileclass-table` view nobody claims — one you set up
+by hand — it falls back to the classes of the rows: one and the button names it,
+several and it asks which. It appears only on an editable view; switch to a
+native one and it goes.
 
 ## Keeping a base in sync
 

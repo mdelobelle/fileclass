@@ -39,8 +39,10 @@
 #    because those are the viewer's, which is take 033's own point;
 #  - the toolbar is Bases' own: `Habit · 5 results · Sort · Filter · Properties · Search · New`,
 #    plus **Manage Habit** — a wrench added in this branch, opening the class the table is
-#    about. It names the class when the rows share one and asks when they don't: on the Book
-#    view it reads *Manage fileClass*, since *As We May Think* brings Article along;
+#    about. The class is the one that *declared* the view, so the Book view reads **Manage
+#    Book** even though *As We May Think* brings Article along with it (an earlier pass read the
+#    rows instead and said *Manage fileClass* there, which was true of the rows and wrong about
+#    the table);
 #  - **New** creates `Untitled.md` already carrying `fileClass: Habit` and the four fields,
 #    empty, and the table gains its row at once — which is what issue #84 asks for, already
 #    working through the view's filter. It opens in a popover holding an embedded editor, and

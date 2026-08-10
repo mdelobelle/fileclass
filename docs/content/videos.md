@@ -180,3 +180,7 @@ other. Captions are English; YouTube translates them into your language.
 ## A field that follows your canvas
 
 {{< video "037" >}}
+
+## Groups on a canvas as data
+
+{{< video "038" >}}

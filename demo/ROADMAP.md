@@ -127,7 +127,7 @@ thread, and a tight smoke test of that type's input path.
 | # | Take | Feature | Vault gains | Status |
 | - | ---- | ------- | ----------- | ------ |
 | 037 | A field that follows your canvas | `Canvas`: the graph as a source, the engine writing by itself, and the filters that narrow it | `Reading map.canvas` (six books, four edges) | ✅ [published](https://www.youtube.com/watch?v=xeccqChw1kA) |
-| 038 | Groups on a canvas as data | `CanvasGroup`, `CanvasGroupLink`: the box a note sits in, what the box is wired to, and geometry as the rule | two groups on `Reading map.canvas`, and the activity one of them feeds | |
+| 038 | Groups on a canvas as data | `CanvasGroup`, `CanvasGroupLink`: the box a note sits in, what the box is wired to, and geometry as the rule | two groups on `Reading map.canvas`, and the activity one of them feeds | ✅ [published](https://www.youtube.com/watch?v=smt6cu8PLnE) |
 | 039 | The settings, one pass | behaviour toggles, indicators, defaults | — | |
 
 **41 takes** (39 numbered, plus `010b` and `016b` — facets that earned their own

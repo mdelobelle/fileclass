@@ -471,5 +471,16 @@
     "durationSeconds": 203,
     "recordedWith": "0.2.10",
     "privacyStatus": "public"
+  },
+  "038": {
+    "id": "smt6cu8PLnE",
+    "url": "https://www.youtube.com/watch?v=smt6cu8PLnE",
+    "title": "Fileclass #038 · Groups on a canvas as data",
+    "subject": "Groups on a canvas as data",
+    "scenario": "038_groups_on_a_canvas",
+    "doc": "fields/#canvas-fields-canvas--canvasgroup--canvasgrouplink",
+    "durationSeconds": 216,
+    "recordedWith": "0.2.10",
+    "privacyStatus": "public"
   }
 }

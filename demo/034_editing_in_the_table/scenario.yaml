@@ -26,15 +26,27 @@
 #    outside put 7000 in the cell without a reload;
 #  - the **Book detour** (steps 6 and 7) goes through the toolbar's Views menu — *All books ·
 #    How many editions · No author yet · Who owns what · **Book** · Add view* — and lands on the
-#    generated view: 20 columns, 8 rows, everything editable but `valid`, `Name` and `errors`.
+#    generated view: 20 columns, 9 rows, everything editable but `valid`, `Name` and `errors`.
 #    Measured there: `read` on *Dune* flips `true` → `false` on the click; `author` on
 #    *Frankenstein* opens a note picker (Mary Shelley, Jules Verne, …); `ownership` on *Dune*
 #    advances to `Lent out`. Twenty columns need scrolling sideways — the take scrolls to the
 #    three cells it touches rather than pretending they fit;
-#  - the toolbar is Bases' own: `Habit · 5 results · Sort · Filter · Properties · Search · New`.
-#    **New** creates `Untitled.md` already carrying `fileClass: Habit` and the four fields,
+#  - **nine rows, not eight.** Scripting this take is what found the filter testing
+#    `fileClass == "Book"`, which misses a note carrying *several* classes because the property
+#    is then a list: *As We May Think*, a Book and an Article, was absent from the table of a
+#    class it belongs to. Fixed in the same branch (`fileClass.containsAny("Book")`), and the
+#    fixture's managed view carries the new clause — its four hand-written views keep theirs,
+#    because those are the viewer's, which is take 033's own point;
+#  - the toolbar is Bases' own: `Habit · 5 results · Sort · Filter · Properties · Search · New`,
+#    plus **Manage Habit** — a wrench added in this branch, opening the class the table is
+#    about. It names the class when the rows share one and asks when they don't: on the Book
+#    view it reads *Manage fileClass*, since *As We May Think* brings Article along;
+#  - **New** creates `Untitled.md` already carrying `fileClass: Habit` and the four fields,
 #    empty, and the table gains its row at once — which is what issue #84 asks for, already
-#    working through the view's filter;
+#    working through the view's filter. It opens in a popover holding an embedded editor, and
+#    that editor had **none** of this plugin's controls (it belongs to no workspace leaf, so the
+#    file behind it could not be resolved); also fixed in this branch, which is why step 9 can
+#    say the panel comes with it;
 #  - `valid` and `errors` are take 035's subject and are named as such rather than explained.
 title: "Fileclass — Editing right in the table"
 description: "A table that takes your edits: every cell keeps the gesture its type already had."
@@ -63,11 +75,11 @@ steps:
     pause: 2700
   - title: "And a link cell offers the notes it can point at — every gesture is the one that type already had"
     pause: 2900
-  - title: "The name column doesn't budge: that's the file, not a field"
-    pause: 2500
-  - title: "Edit the note itself and the table follows — one set of data, two windows onto it"
-    pause: 2800
-  - title: "Sorting, filtering and searching stay Bases' own — and New hands you a note already carrying the class"
+  - title: "The name column doesn't budge, that's the file — and editing the note itself shows up here at once"
+    pause: 2900
+  - title: "Sorting, filtering and searching stay Bases' own, and New hands you a note already carrying the class, panel and all"
+    pause: 3000
+  - title: "A column that reads wrong in every row is a schema question — the wrench opens the class that wrote it"
     pause: 2900
   - title: "Valid and errors are the class talking about itself — that's the next take"
     pause: 2600

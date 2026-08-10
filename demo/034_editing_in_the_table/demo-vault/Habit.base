@@ -3,7 +3,7 @@ views:
     name: Habit
     filters:
       and:
-        - fileClass == "Habit"
+        - fileClass.containsAny("Habit")
         - '!file.inFolder("Templates")'
     order:
       - file.name

@@ -61,7 +61,7 @@ views:
     filters:
       and:
         - or:
-            - fileClass == "Book"
+            - fileClass.containsAny("Book")
             - file.inFolder("Reading list")
     order:
       - file.name

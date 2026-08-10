@@ -201,5 +201,17 @@ The choice lasts for the session; nothing is written to your base.
 
 ## Embedding
 
-Embed any base in a note with a native ` ```base ` code block — no Fileclass
-code block is involved.
+{{< video "036" >}}
+
+Embed any base in a note the way Obsidian does it — no Fileclass code block is
+involved:
+
+- **`![[Some.base]]`** embeds a base file, on its first view;
+- a **` ```base `** code block holds a base defined inline, in the note itself.
+
+An embedded **`fileclass-table`** is the same table as in its own tab: the cells
+take the same gestures, the `valid` column counts and filters, and the wrench in
+its toolbar opens the class. A note can hold several, each with its own toolbar.
+
+A dashboard note is then just a note: headings, prose, and the tables the classes
+already describe.

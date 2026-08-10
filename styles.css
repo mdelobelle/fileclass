@@ -232,6 +232,17 @@
 }
 
 /*
+ * A placeholder while the table has no data yet.
+ *
+ * It exists to keep the view container from being `:empty`, which Obsidian hides in an embed —
+ * and a hidden container makes the Bases controller suspend the very query that would fill it.
+ * Nothing to see; it only has to be a child.
+ */
+.fileclass-table-pending {
+	min-height: 1px;
+}
+
+/*
  * The `valid` column filters on itself (#142). Bases can register a view and nothing else, so
  * validity is not a property its own Filter menu can see; this header is the control instead.
  */

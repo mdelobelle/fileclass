@@ -120,7 +120,7 @@ thread, and a tight smoke test of that type's input path.
 | 033 | Schema changed? the base follows | `Sync this class to its base`, and the base button that reads *Sync the base* while the class and its table disagree | — (works on the vault as 032 leaves it) | ✅ [published](https://www.youtube.com/watch?v=wnt_FkyFd8I) |
 | 034 | Editing right in the table | `fileclass-table`: a cell per field, each keeping its type's gesture, the Bases toolbar with its typed *New*, and the wrench that opens the class | — (opens on `Habit.base`, as 033 leaves it) | ✅ [published](https://www.youtube.com/watch?v=EQTOTgjfuKs) |
 | 035 | What's missing, in a column | validation columns: three kinds of failure, the count in the header, and the filter it carries ([#142](https://github.com/mdelobelle/fileclass/issues/142)) | — (opens on `Books.base` › *Book*, as 034 leaves it) | ✅ [published](https://www.youtube.com/watch?v=4qNflzfclNI) |
-| 036 | A base inside a note | embedding | a dashboard note | |
+| 036 | A base inside a note | embedding: `![[x.base]]` and a `base` block, both editable, each with its own toolbar | a dashboard note, written on camera | ✅ [published](https://www.youtube.com/watch?v=6I9YZNaoqnc) |
 
 ## Arc 8 — canvas and settings
 

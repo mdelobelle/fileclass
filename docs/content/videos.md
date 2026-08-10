@@ -172,3 +172,7 @@ other. Captions are English; YouTube translates them into your language.
 ## What's missing, in a column
 
 {{< video "035" >}}
+
+## A base inside a note
+
+{{< video "036" >}}

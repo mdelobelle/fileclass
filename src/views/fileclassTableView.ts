@@ -44,6 +44,18 @@ interface BasesDatasetLike {
 }
 
 class FileclassTableView extends Component {
+	/**
+	 * The view type id, which the **embed** path reads and the leaf path does not.
+	 *
+	 * Measured by tracing every property the host asks of this object: in a leaf it reads
+	 * `load`, `type`, `focus`, then sets `allProperties` and `data` and calls `onDataUpdated`.
+	 * In an embed — a base code block, or a `![[Some.base]]` embed — it reads `type` and stops
+	 * there: no data, no `onDataUpdated`, "0 results" in the toolbar over an empty view, while
+	 * the native `table` type in the very same block rendered its rows. The native view carries
+	 * a `type` field; this one did not, so `undefined` never matched the configured type.
+	 */
+	readonly type = FILECLASS_TABLE_VIEW;
+
 	/** Set by the controller before `onDataUpdated()`. */
 	data?: BasesDatasetLike;
 	/** Our item in the base's toolbar, and the class it acts on (undefined = ask). */
@@ -70,6 +82,34 @@ class FileclassTableView extends Component {
 		super();
 	}
 
+	/**
+	 * An **embedded** base never asked its query to run.
+	 *
+	 * Measured: a `fileclass-table` in a ```base block, or a `![[Some.base]]` embed, stayed at
+	 * "0 results" with an empty view, while the native `table` type in the very same block
+	 * showed its rows — so it was not the filter, the file or the registration. The leaf path
+	 * runs the first query itself; the embed path leaves it to the view, and this one was
+	 * throwing the controller away (`_controller`) and could not ask.
+	 *
+	 * Guarded on there being no results yet, so the leaf path — where the scan has already run
+	 * or is about to — is not made to run it twice.
+	 */
+	/**
+	 * Fills the container before there is anything to show, which is what lets an **embedded**
+	 * base run its query at all.
+	 *
+	 * Obsidian hides an embedded view whose container is empty —
+	 * `.block-language-base .bases-view:empty { display: none }` — and the Bases controller
+	 * suspends `runQuery` until that container `isShown()`. A view that renders nothing until
+	 * its data arrives therefore waits for data that waits for it: measured, an embedded
+	 * `fileclass-table` sat at "0 results" with `display: none` on its container, while the
+	 * native type — which builds its table skeleton up front — showed its rows in the same
+	 * block. One child element is enough to break the circle.
+	 */
+	onload(): void {
+		this.placeholder();
+	}
+
 	/** The only data hook: render whatever the controller put on `this.data`. */
 	onDataUpdated(): void {
 		this.render();
@@ -89,10 +129,16 @@ class FileclassTableView extends Component {
 		return {};
 	}
 
+	/** Never leave the container `:empty` — see `onload`. */
+	private placeholder(): void {
+		this.containerEl.empty();
+		this.containerEl.createDiv({ cls: "fileclass-table-pending" });
+	}
+
 	private render(): void {
 		const ds = this.data;
+		if (!ds || !ds.properties?.length) return this.placeholder();
 		this.containerEl.empty();
-		if (!ds || !ds.properties?.length) return;
 
 		const showValidation = this.plugin.settings.enableValidationColumns;
 		const table = this.containerEl.createEl("table", { cls: "fileclass-table" });
@@ -116,14 +162,46 @@ class FileclassTableView extends Component {
 		this.syncToolbarButton(ds);
 	}
 
-	/** Which base file and view this render belongs to, from the leaf that holds it. */
+	/**
+	 * Which base file and view this render belongs to.
+	 *
+	 * Two homes, because there are two ways to render a base. A leaf states it outright
+	 * (`getViewState().state` is `{file, viewName}`). An **embed** has no leaf: it states it on
+	 * the element that holds it — `![[Books.base#Book]]` leaves `src="Books.base#Book"` on the
+	 * `.internal-embed`. Without that, an embedded table could not tell which class declared it
+	 * and fell back to asking its rows: on `Books.base#Book` the wrench read *Manage fileClass*,
+	 * because one of the nine rows is a Book **and** an Article.
+	 *
+	 * `![[Books.base]]` carries no view in its `src`, and then the rendered view is whichever
+	 * one the toolbar names — the base's first, or another the reader switched to.
+	 */
 	private viewIdentity(): { file: string; viewName: string } | undefined {
 		for (const leaf of this.plugin.app.workspace.getLeavesOfType("bases")) {
 			if (!leaf.view.containerEl.contains(this.containerEl)) continue;
 			const state = leaf.getViewState().state as { file?: string; viewName?: string } | undefined;
 			if (state?.file && state.viewName) return { file: state.file, viewName: state.viewName };
 		}
-		return undefined;
+
+		const src = this.containerEl.closest<HTMLElement>("[src]")?.getAttribute("src");
+		if (!src) return undefined;
+		const hash = src.indexOf("#");
+		const linkpath = hash < 0 ? src : src.slice(0, hash);
+		const subpath = hash < 0 ? "" : src.slice(hash + 1);
+		// A `src` is a link, not a path: `![[Books#Book]]` is legal and resolves by name.
+		const resolved = this.plugin.app.metadataCache.getFirstLinkpathDest(
+			linkpath,
+			this.plugin.app.workspace.getActiveFile()?.path ?? ""
+		);
+		const viewName = subpath || this.toolbarViewName();
+		if (!viewName) return undefined;
+		return { file: resolved?.path ?? linkpath, viewName };
+	}
+
+	/** The view the toolbar of this render says it is showing. */
+	private toolbarViewName(): string | undefined {
+		const scope = this.containerEl.closest(".bases-embed, .block-language-base, .view-content");
+		const label = scope?.querySelector(".bases-toolbar-views-menu .text-button-label");
+		return label?.textContent?.trim() || undefined;
 	}
 
 	/**
@@ -138,9 +216,10 @@ class FileclassTableView extends Component {
 	 * removed in `onunload` — which is when switching to a native view unloads this one.
 	 */
 	private syncToolbarButton(ds: BasesDatasetLike): void {
-		const toolbar = this.containerEl
-			.closest(".view-content")
-			?.querySelector<HTMLElement>(".bases-toolbar");
+		// The embed's own wrapper first, and only then the leaf: a note holding two embedded
+		// bases has two toolbars, and looking from `.view-content` found the other one's.
+		const scope = this.containerEl.closest(".bases-embed, .block-language-base, .view-content");
+		const toolbar = scope?.querySelector<HTMLElement>(".bases-toolbar");
 		if (!toolbar) return;
 
 		// The class that *declared* this view, first: `Books.base > Book` is Book's view, and a

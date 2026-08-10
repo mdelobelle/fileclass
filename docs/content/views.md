@@ -176,6 +176,21 @@ Toggle it under **Settings → Fileclass → Validation columns** (on by default
 The same checks back `fileclass validate` on the [CLI](../cli/) and the API's
 `validate()`.
 
+### Only the rows that need attention
+
+Click the **`valid`** header to see just those, click again for the ones with
+nothing to fix, once more for everything. The header carries the count of
+failures as it goes (`valid 2✗`), so you know whether it is worth looking before
+you look.
+
+It is the column that filters, not a Bases filter
+([#142](https://github.com/mdelobelle/fileclass/issues/142)): Bases lets a plugin
+register a **view** and nothing else, so validity is not a property its own Sort
+and Filter menus can see. Restating the check as a base formula was the
+alternative and it was rejected — allowed values are resolved through queries, so
+the formula would answer a slightly different question and the two would drift.
+The choice lasts for the session; nothing is written to your base.
+
 ## Embedding
 
 Embed any base in a note with a native ` ```base ` code block — no Fileclass

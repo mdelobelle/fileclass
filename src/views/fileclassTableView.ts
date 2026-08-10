@@ -49,6 +49,17 @@ class FileclassTableView extends Component {
 	/** Our item in the base's toolbar, and the class it acts on (undefined = ask). */
 	private toolbarItem?: HTMLElement;
 	private toolbarClass?: string;
+	/**
+	 * Which rows the `valid` column is showing (#142).
+	 *
+	 * Bases lets a plugin register a **view** and nothing else — no computed property, no
+	 * function (`registrations` holds view types only, measured). So validity cannot be a
+	 * property its Sort and Filter menus see, and expressing it as a base formula would mean
+	 * re-stating in Bases' language a check that resolves allowed values through queries: two
+	 * answers to one question, drifting apart. The column filters itself instead, which is
+	 * exact, and lives for the session rather than being written into someone's base file.
+	 */
+	private validFilter: "all" | "invalid" | "valid" = "all";
 	allProperties?: unknown;
 	config?: unknown;
 
@@ -86,7 +97,7 @@ class FileclassTableView extends Component {
 		const showValidation = this.plugin.settings.enableValidationColumns;
 		const table = this.containerEl.createEl("table", { cls: "fileclass-table" });
 		const headRow = table.createEl("thead").createEl("tr");
-		if (showValidation) headRow.createEl("th", { text: "valid", cls: "fc-valid-col" });
+		if (showValidation) this.renderValidHeader(headRow);
 		for (const col of ds.properties) headRow.createEl("th", { text: columnLabel(col) });
 		if (showValidation) headRow.createEl("th", { text: "errors", cls: "fc-errors-col" });
 
@@ -211,6 +222,66 @@ class FileclassTableView extends Component {
 			validCell.setText("✓");
 			validCell.addClass("fc-ok");
 		}
+		// Validation is per row and asynchronous, so the filter is applied again on every
+		// answer rather than once at the end — there is no "end" to wait for.
+		const row = validCell.closest("tr");
+		if (row instanceof HTMLElement) row.dataset.fcValid = errors.length ? "0" : "1";
+		this.applyValidFilter();
+	}
+
+	/**
+	 * The `valid` header, which is also the control that filters on it (#142): click to see
+	 * only the rows that need attention, click again for the ones that don't, once more for
+	 * everything. The count of failures rides along, since "how many" is the other half of the
+	 * question and it is already computed.
+	 */
+	private renderValidHeader(headRow: HTMLElement): void {
+		const th = headRow.createEl("th", { cls: "fc-valid-col fc-valid-header" });
+		th.tabIndex = 0;
+		const label = th.createSpan({ text: "valid" });
+		th.createSpan({ cls: "fc-valid-count" });
+		const cycle = (e: Event): void => {
+			e.preventDefault();
+			this.validFilter =
+				this.validFilter === "all" ? "invalid" : this.validFilter === "invalid" ? "valid" : "all";
+			this.applyValidFilter();
+		};
+		th.addEventListener("click", cycle);
+		th.addEventListener("keydown", (e) => {
+			if (e.key === "Enter" || e.key === " ") cycle(e);
+		});
+		label.setText("valid");
+	}
+
+	/** Hides what the current mode excludes, and says what it is doing in the header. */
+	private applyValidFilter(): void {
+		const table = this.containerEl.querySelector("table.fileclass-table");
+		if (!table) return;
+		const rows = Array.from(table.querySelectorAll<HTMLElement>("tbody tr"));
+		let invalid = 0;
+		for (const row of rows) {
+			const state = row.dataset.fcValid;
+			if (state === "0") invalid++;
+			// A row still being validated is shown: hiding it and putting it back would make
+			// the table flicker on every open.
+			const hide =
+				(this.validFilter === "invalid" && state === "1") ||
+				(this.validFilter === "valid" && state === "0");
+			row.toggleClass("fc-row-filtered", hide);
+		}
+		const th = table.querySelector<HTMLElement>("th.fc-valid-header");
+		if (!th) return;
+		const count = th.querySelector<HTMLElement>(".fc-valid-count");
+		count?.setText(invalid ? ` ${invalid}✗` : "");
+		th.toggleClass("is-filtering", this.validFilter !== "all");
+		th.setAttribute(
+			"aria-label",
+			this.validFilter === "all"
+				? `Fileclass: ${invalid || "no"} row${invalid === 1 ? "" : "s"} with something to fix — click to show only those`
+				: this.validFilter === "invalid"
+					? "Fileclass: showing only rows with something to fix — click for the rest"
+					: "Fileclass: showing only rows with nothing to fix — click to show all"
+		);
 	}
 
 	private renderCell(row: HTMLElement, entry: BasesEntryLike, col: string): void {

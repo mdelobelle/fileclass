@@ -1,0 +1,92 @@
+{
+  "nodes": [
+    {
+      "id": "nFrank",
+      "type": "file",
+      "file": "Frankenstein.md",
+      "x": -900,
+      "y": -200,
+      "width": 340,
+      "height": 110
+    },
+    {
+      "id": "nFound",
+      "type": "file",
+      "file": "Reading list/Foundation.md",
+      "x": -480,
+      "y": -200,
+      "width": 340,
+      "height": 110
+    },
+    {
+      "id": "nDune",
+      "type": "file",
+      "file": "Dune.md",
+      "x": -60,
+      "y": -200,
+      "width": 340,
+      "height": 110
+    },
+    {
+      "id": "nDisp",
+      "type": "file",
+      "file": "Reading list/The Dispossessed.md",
+      "x": 360,
+      "y": -200,
+      "width": 340,
+      "height": 110
+    },
+    {
+      "id": "nLotr",
+      "type": "file",
+      "file": "The Lord of the Rings.md",
+      "x": -480,
+      "y": 60,
+      "width": 340,
+      "height": 110
+    },
+    {
+      "id": "nSmall",
+      "type": "file",
+      "file": "Reading list/Small Gods.md",
+      "x": -60,
+      "y": 60,
+      "width": 340,
+      "height": 110
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "fromNode": "nFrank",
+      "fromSide": "right",
+      "toNode": "nFound",
+      "toSide": "left",
+      "label": "then"
+    },
+    {
+      "id": "e2",
+      "fromNode": "nFound",
+      "fromSide": "right",
+      "toNode": "nDune",
+      "toSide": "left",
+      "label": "then"
+    },
+    {
+      "id": "e3",
+      "fromNode": "nDune",
+      "fromSide": "right",
+      "toNode": "nDisp",
+      "toSide": "left",
+      "label": "then"
+    },
+    {
+      "id": "e4",
+      "fromNode": "nLotr",
+      "fromSide": "right",
+      "toNode": "nSmall",
+      "toSide": "left",
+      "label": "then"
+    }
+  ]
+}

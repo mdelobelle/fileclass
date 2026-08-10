@@ -1,0 +1,15 @@
+title: "Fileclass — A field that follows your canvas"
+description: "placeholder — written after the surfaces pass"
+doc: "fields/#canvas-fields-canvas--canvasgroup--canvasgrouplink"
+tags: "canvas, fields, graph"
+vault_name: "Demo"
+plugin: true
+settings:
+  classFilesPath: "Classes/"
+  fileClassAlias: "fileClass"
+initial_pause: 1500
+default_pause: 900
+
+steps:
+  - title: "placeholder"
+    pause: 2000

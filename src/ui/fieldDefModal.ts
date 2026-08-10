@@ -151,15 +151,9 @@ export class FieldDefModal extends Modal {
 			})
 		);
 
-		const optionsEl = contentEl.createDiv({ cls: "fileclass-field-options" });
-		const renderOptions = () =>
-			renderFieldOptionsSettings(optionsEl, this.type, this.draft, {
-				app: this.app,
-				dateDefaults: this.opts.dateDefaults,
-				classFields: this.opts.classFields,
-				fieldName: this.name,
-			});
-
+		// Type **before** its own options, which is the order in which they are decided.
+		// It used to sit under them: choosing `Canvas` grew nine rows above the dropdown and
+		// pushed it off screen, so the control you had just used disappeared as you used it.
 		new Setting(contentEl).setName("Type").addDropdown((d) => {
 			for (const t of EDITABLE_FIELD_TYPES) d.addOption(t, TYPE_LABELS[t] ?? t);
 			d.setValue(this.type).onChange((v) => {
@@ -168,6 +162,15 @@ export class FieldDefModal extends Modal {
 				renderChildren();
 			});
 		});
+
+		const optionsEl = contentEl.createDiv({ cls: "fileclass-field-options" });
+		const renderOptions = () =>
+			renderFieldOptionsSettings(optionsEl, this.type, this.draft, {
+				app: this.app,
+				dateDefaults: this.opts.dateDefaults,
+				classFields: this.opts.classFields,
+				fieldName: this.name,
+			});
 
 		// Shown for a group, refreshed when the type changes — picking Object here
 		// should offer its children without a trip through the schema screen.

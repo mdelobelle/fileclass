@@ -6,6 +6,13 @@ All notable changes to Fileclass are documented here. The format follows
 
 ## [Unreleased]
 
+### Changed
+
+- **A field's type sits above its own options.** The Type dropdown was under them, so choosing
+  `Canvas` grew nine rows *above* it — canvas file, direction, four edge filters, node colours,
+  matching files — and pushed the control you had just used off the screen. Name, then Type,
+  then whatever that type asks for, then Required: the order in which they are decided.
+
 ## [0.2.10] - 2026-08-10
 
 ### Added

@@ -1,0 +1,15 @@
+title: "Fileclass — A base inside a note"
+description: "placeholder — written after the surfaces pass"
+doc: "views/#embedding"
+tags: "bases, embedding, dashboard"
+vault_name: "Demo"
+plugin: true
+settings:
+  classFilesPath: "Classes/"
+  fileClassAlias: "fileClass"
+initial_pause: 1500
+default_pause: 900
+
+steps:
+  - title: "placeholder"
+    pause: 2000

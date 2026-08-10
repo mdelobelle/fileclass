@@ -6,6 +6,23 @@ All notable changes to Fileclass are documented here. The format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- **An embedded `fileclass-table` renders.** A base embedded in a note — `![[Some.base]]` or a
+  ` ```base ` block — showed an empty view and "0 results", while the native `table` type
+  rendered its rows in the very same block. The cause was ours and circular: Obsidian hides an
+  embedded view whose container is empty (`.block-language-base .bases-view:empty { display:
+  none }`), and the Bases controller suspends its query until that container is on screen — so a
+  view that draws nothing before its data arrives waited for data that waited for it. The
+  container now holds a placeholder from the moment the view loads, which is what the native
+  view gets from building its skeleton up front. Found by tracing every property the host reads
+  on the view object; the deciding measurement was `display: none` with `isShown()` false on our
+  container and `block` on the native one.
+
+- **A note with two embedded bases puts each wrench on its own toolbar.** The class's schema
+  button looked for the toolbar from the note's content element, so it found the first embed's
+  and both landed there. It now looks inside the embed it belongs to.
+
 ### Added
 
 - **The `valid` column filters on itself** ([#142](https://github.com/mdelobelle/fileclass/issues/142)).

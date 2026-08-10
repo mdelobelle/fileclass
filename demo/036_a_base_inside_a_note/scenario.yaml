@@ -24,8 +24,10 @@
 #  - **a ```base block** holds a query written in the note. With `type: fileclass-table` and
 #    `fileClass.containsAny("Book")` it renders 6 rows — the notes that *name* Book, since an
 #    inline block written by hand has no folder clause — `valid 3✗`, and a wrench reading
-#    *Manage fileClass*, because those six rows include *As We May Think*, which is a Book and an
-#    Article: a view no class declared falls back to asking its rows;
+#    *Manage fileClass*: nothing declared that view, so it asks its rows, and one of them is a
+#    Book **and** an Article. An `![[…]]` embed does name itself — `![[Books.base#Book]]` reads
+#    *Manage Book* — which is a fix from this branch: an embed has no leaf to ask, and the
+#    identity turned out to be on the embed element's `src`;
 #  - **editing works inside an embed**: clicking the `reading` cell of the 3rd took 📖📖 to
 #    📖📖📖 in the note itself;
 #  - a note holding **two** embedded bases gets **two** toolbars, each with its own wrench —

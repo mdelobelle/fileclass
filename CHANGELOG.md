@@ -19,6 +19,13 @@ All notable changes to Fileclass are documented here. The format follows
   on the view object; the deciding measurement was `display: none` with `isShown()` false on our
   container and `block` on the native one.
 
+- **An embedded view names its class.** `![[Books.base#Book]]` showed *Manage fileClass* — the
+  picker — because an embed has no workspace leaf to state which base and view it is rendering,
+  so it fell back to asking its rows, and one of Book's nine rows is also an Article. It now
+  reads the identity off the embed element (`src="Books.base#Book"`, resolved as a link), and
+  takes the view from the toolbar when the link names none. An inline ` ```base ` block still
+  falls back to its rows, which is right: nothing declared it.
+
 - **A note with two embedded bases puts each wrench on its own toolbar.** The class's schema
   button looked for the toolbar from the note's content element, so it found the first embed's
   and both landed there. It now looks inside the embed it belongs to.

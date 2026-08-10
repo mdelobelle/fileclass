@@ -162,14 +162,46 @@ class FileclassTableView extends Component {
 		this.syncToolbarButton(ds);
 	}
 
-	/** Which base file and view this render belongs to, from the leaf that holds it. */
+	/**
+	 * Which base file and view this render belongs to.
+	 *
+	 * Two homes, because there are two ways to render a base. A leaf states it outright
+	 * (`getViewState().state` is `{file, viewName}`). An **embed** has no leaf: it states it on
+	 * the element that holds it — `![[Books.base#Book]]` leaves `src="Books.base#Book"` on the
+	 * `.internal-embed`. Without that, an embedded table could not tell which class declared it
+	 * and fell back to asking its rows: on `Books.base#Book` the wrench read *Manage fileClass*,
+	 * because one of the nine rows is a Book **and** an Article.
+	 *
+	 * `![[Books.base]]` carries no view in its `src`, and then the rendered view is whichever
+	 * one the toolbar names — the base's first, or another the reader switched to.
+	 */
 	private viewIdentity(): { file: string; viewName: string } | undefined {
 		for (const leaf of this.plugin.app.workspace.getLeavesOfType("bases")) {
 			if (!leaf.view.containerEl.contains(this.containerEl)) continue;
 			const state = leaf.getViewState().state as { file?: string; viewName?: string } | undefined;
 			if (state?.file && state.viewName) return { file: state.file, viewName: state.viewName };
 		}
-		return undefined;
+
+		const src = this.containerEl.closest<HTMLElement>("[src]")?.getAttribute("src");
+		if (!src) return undefined;
+		const hash = src.indexOf("#");
+		const linkpath = hash < 0 ? src : src.slice(0, hash);
+		const subpath = hash < 0 ? "" : src.slice(hash + 1);
+		// A `src` is a link, not a path: `![[Books#Book]]` is legal and resolves by name.
+		const resolved = this.plugin.app.metadataCache.getFirstLinkpathDest(
+			linkpath,
+			this.plugin.app.workspace.getActiveFile()?.path ?? ""
+		);
+		const viewName = subpath || this.toolbarViewName();
+		if (!viewName) return undefined;
+		return { file: resolved?.path ?? linkpath, viewName };
+	}
+
+	/** The view the toolbar of this render says it is showing. */
+	private toolbarViewName(): string | undefined {
+		const scope = this.containerEl.closest(".bases-embed, .block-language-base, .view-content");
+		const label = scope?.querySelector(".bases-toolbar-views-menu .text-button-label");
+		return label?.textContent?.trim() || undefined;
 	}
 
 	/**

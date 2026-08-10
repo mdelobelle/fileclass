@@ -117,11 +117,17 @@ tests (§14) must catch it.
   under `.bases-embed` / `.block-language-base` in an embed. Anything injected into
   a toolbar must be scoped to the *closest* of those wrappers — a note holding two
   embedded bases has two toolbars.
-- **A leaf's view state carries the base and the view name**:
-  `leaf.getViewState().state === {file: "Books.base", viewName: "Book"}`. That is
-  how a rendered table knows which base/view it is, and therefore which fileClass
-  declared it (`baseFile`/`baseView`); an embed has no leaf, so a view rendered
-  there falls back to the classes of its rows.
+- **A rendered table can always name itself**, from one of two places:
+  - a leaf states it: `leaf.getViewState().state === {file: "Books.base", viewName:
+    "Book"}`;
+  - an **embed** states it on the element holding it: `![[Books.base#Book]]` leaves
+    `src="Books.base#Book"` (and `alt="Books.base > Book"`) on the `.internal-embed`,
+    reachable with `closest("[src]")`. `src` is a **link**, so resolve it with
+    `getFirstLinkpathDest`; with no `#`, the rendered view is the one the toolbar
+    names.
+  That is how a table knows which fileClass declared it (`baseFile`/`baseView`). An
+  inline ```` ```base ```` block has no file and no `src`: nothing declares it, so a
+  view there falls back to the classes of its rows.
 - **The registry exposes views only.** `instance.registrations` holds view types
   (`table`, `cards`, `list`, + ours) and the instance offers `registerView` /
   `deregisterView` / `getViewFactory` — there is **no** hook to contribute a

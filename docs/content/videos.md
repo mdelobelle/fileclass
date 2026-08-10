@@ -176,3 +176,7 @@ other. Captions are English; YouTube translates them into your language.
 ## A base inside a note
 
 {{< video "036" >}}
+
+## A field that follows your canvas
+
+{{< video "037" >}}

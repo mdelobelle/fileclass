@@ -460,5 +460,16 @@
     "durationSeconds": 144,
     "recordedWith": "0.2.10",
     "privacyStatus": "public"
+  },
+  "037": {
+    "id": "xeccqChw1kA",
+    "url": "https://www.youtube.com/watch?v=xeccqChw1kA",
+    "title": "Fileclass #037 · A field that follows your canvas",
+    "subject": "A field that follows your canvas",
+    "scenario": "037_a_field_that_follows_your_canvas",
+    "doc": "fields/#canvas-fields-canvas--canvasgroup--canvasgrouplink",
+    "durationSeconds": 203,
+    "recordedWith": "0.2.10",
+    "privacyStatus": "public"
   }
 }

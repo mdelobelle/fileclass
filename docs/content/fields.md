@@ -783,6 +783,8 @@ use JSON/YAML for arbitrary or externally-defined blobs. For the fuller decision
 
 ## Canvas fields (Canvas / CanvasGroup / CanvasGroupLink)
 
+{{< video "037" >}}
+
 These are **auto-maintained** from an Obsidian **`.canvas`** file — you don't
 edit them; the **Canvas engine** derives their value from the canvas graph and
 writes it to frontmatter whenever the canvas changes. Configure each field with

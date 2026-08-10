@@ -1,7 +1,42 @@
+# Narration for take 036 — see ../SCENARIO.md for the format.
+# Closes arc 7. Takes 032 to 035 built a table, kept it in step, made it editable and made it
+# say what was wrong. This one takes it out of its own tab and puts it where the work happens.
+#
+# The vault opens on **`Library desk.md`**, an empty note — no frontmatter, no class, nothing.
+# The take writes the whole dashboard on camera: a heading, an embed, a second heading, a base
+# block. Ending on a note that did not exist at the start is the point: a dashboard is a note.
+#
+# The fixture is take 035's vault after its on-camera fix — *Foundation* carries
+# `author: "[[Isaac Asimov]]"`, so Book's table reads `valid 5✗`.
+#
+# **This take found a bug and could not have been recorded before it was fixed.** An embedded
+# `fileclass-table` rendered nothing at all: empty view, "0 results", while the native `table`
+# type showed its rows in the same block. Ours and circular — Obsidian hides an embedded view
+# whose container is `:empty`, and the Bases controller suspends its query until that container
+# is shown, so a view that draws nothing before its data arrives waited for data that waited for
+# it. The container now carries a placeholder from the moment it loads. The whole chain is
+# written down in `.claude/docs/ARCHITECTURE.md` §3.1, along with the rest of what the host asks
+# of a registered view.
+#
+# Facts the script leans on, all measured in the app before scripting:
+#  - **`![[Habit.base]]`** renders the base's first view: 6 rows, the `valid` header, and the
+#    *Manage Habit* wrench in the embed's own toolbar;
+#  - **a ```base block** holds a query written in the note. With `type: fileclass-table` and
+#    `fileClass.containsAny("Book")` it renders 6 rows — the notes that *name* Book, since an
+#    inline block written by hand has no folder clause — `valid 3✗`, and a wrench reading
+#    *Manage fileClass*, because those six rows include *As We May Think*, which is a Book and an
+#    Article: a view no class declared falls back to asking its rows;
+#  - **editing works inside an embed**: clicking the `reading` cell of the 3rd took 📖📖 to
+#    📖📖📖 in the note itself;
+#  - a note holding **two** embedded bases gets **two** toolbars, each with its own wrench —
+#    which is a second fix from this branch: the lookup started at the note's content element and
+#    put both on the first embed's toolbar;
+#  - the `![[…]]` form embeds a base **file**, so it follows every later sync; the block form is
+#    a query that lives in this note and answers to nobody. Step 7 says which is which.
 title: "Fileclass — A base inside a note"
-description: "placeholder — written after the surfaces pass"
-doc: "views/#embedding"
-tags: "bases, embedding, dashboard"
+description: "Take the table out of its tab: a dashboard is just a note with tables in it."
+doc: "views/#embedding" # deep link used in the description
+tags: "bases, embedding, dashboard, notes"
 vault_name: "Demo"
 plugin: true
 settings:
@@ -11,5 +46,27 @@ initial_pause: 1500
 default_pause: 900
 
 steps:
-  - title: "placeholder"
-    pause: 2000
+  - title: "A base lives in its own file — but it doesn't have to stay there"
+    pause: 2600
+  - title: "Any note will do: a heading, and an embed link to the base"
+    pause: 2600
+  - title: "The table arrives whole — same columns, same rows, its own toolbar"
+    pause: 2700
+  - title: "And editable: click a cycle here and it is the note that gets written"
+    pause: 2700
+  - title: "The valid column counts and filters in a note too"
+    pause: 2500
+  - title: "The wrench in its toolbar opens the class, without leaving the page"
+    pause: 2600
+  - title: "A base block does the other half: the query is written in the note, not in a file"
+    pause: 2800
+  - title: "And it takes our view like any other — type fileclass-table, and the cells are live"
+    pause: 2800
+  - title: "Two tables in one note, each with its own toolbar and its own wrench"
+    pause: 2700
+  - title: "With your own words between them — this is a note, not an application's dashboard"
+    pause: 2800
+  - title: "The embedded one follows its file: sync the class and the table here follows"
+    pause: 2800
+  - title: "A class describes, a base looks, a note gathers — and it is all still files"
+    pause: 2800

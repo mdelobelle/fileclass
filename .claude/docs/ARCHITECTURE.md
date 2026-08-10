@@ -92,6 +92,45 @@ tests (§14) must catch it.
 - Context file: filters/formulas using `this.file` resolve against
   `controller.currentFile` — set it before `buildBasesContext` for
   embed-context views.
+- **What the host asks of a registered view** (traced property by property on the
+  object returned by the factory, August 2026):
+  - in a **leaf**: `load` → `type` → `focus`, then it *sets* `allProperties` and
+    `data` and calls `onDataUpdated()`;
+  - in an **embed** (`![[x.base]]` or a ```` ```base ```` block): `load` → `type`,
+    and then nothing until the container is shown. `onResize` is called later.
+  So `view.type` **is read** (the native views carry it as a field) and a custom
+  view should expose the view id.
+- **A custom view must fill its container immediately, or an embed deadlocks.**
+  Obsidian ships
+  `.workspace-leaf-content[data-type="markdown"] .block-language-base .bases-view:empty,
+  … .bases-embed .bases-view:empty { display: none }`, and `runQuery` suspends
+  until `viewContainerEl.isShown()` (it awaits `onNodeInserted` otherwise, read
+  from the minified source). A view that draws nothing before its data arrives is
+  therefore hidden, never shown, never fed: measured as "0 results" with
+  `display: none` and `isShown() === false` on our container, against `block` on
+  the native `table` in the same block. The native views escape it by building
+  their skeleton (thead, scroll element) in the constructor. One child element is
+  enough — `fileclassTableView` writes a `.fileclass-table-pending` div on `load`
+  and whenever it has nothing to render.
+- **The toolbar is a sibling of the view container**, not a parent: `.bases-header
+  > .bases-toolbar` beside `.bases-view`, both under `.view-content` in a leaf and
+  under `.bases-embed` / `.block-language-base` in an embed. Anything injected into
+  a toolbar must be scoped to the *closest* of those wrappers — a note holding two
+  embedded bases has two toolbars.
+- **A leaf's view state carries the base and the view name**:
+  `leaf.getViewState().state === {file: "Books.base", viewName: "Book"}`. That is
+  how a rendered table knows which base/view it is, and therefore which fileClass
+  declared it (`baseFile`/`baseView`); an embed has no leaf, so a view rendered
+  there falls back to the classes of its rows.
+- **The registry exposes views only.** `instance.registrations` holds view types
+  (`table`, `cards`, `list`, + ours) and the instance offers `registerView` /
+  `deregisterView` / `getViewFactory` — there is **no** hook to contribute a
+  computed property or a function, which is why validity cannot become something
+  Bases' own Sort/Filter menus see (#142).
+- **`property == "X"` does not match a list.** A note carrying several classes
+  stores `fileClass` as a YAML list, and equality never matches it (measured: 8
+  rows instead of 9). Generated filters use `property.containsAny("X")`, which
+  matches the scalar case too.
 
 ### 3.2 processFrontMatter (write path)
 Verified: **preserves order** of top-level keys, nested object keys, ObjectList
@@ -345,7 +384,21 @@ canvas file tracking (comes with the planned Canvas engine, §9.1).
   migration). Sync/regenerate never pushes a per-view scope back to base-wide.
   Anchored by a unit test (two fileClasses, two views survive a re-sync) and the
   e2e `two-fileclasses.base` fixture.
-- Embeds: users embed bases natively (```` ```base ````); no custom code block.
+- Embeds: users embed bases natively — `![[Some.base]]` or a ```` ```base ````
+  block; no custom code block of ours. An embedded `fileclass-table` is the same
+  view: editable cells, validation columns, and the *Manage `<FileClass>`* wrench,
+  each scoped to its own embed. See §3.1 for the two rules an embed enforces that a
+  leaf does not (fill the container, expose `type`).
+- **The class ↔ view link** (`baseFile`/`baseView` on the class note) is what names
+  the table: `Books.base › Book` is Book's view even when a row carries several
+  classes. It is also a uniqueness constraint — two classes mirroring into one view
+  would overwrite each other's `order:` on every sync, so the generator and the
+  options editor refuse it, naming the class that claimed it first
+  (`fileClassClaimingView`).
+- **The `valid` column filters on itself** (#142): its header cycles all → failures
+  → clean and carries the failure count. Session-only state, never written to the
+  base — and the only route available, since the registry takes no computed
+  properties (§3.1).
 
 ## 12. Public API + CLI/TUI
 

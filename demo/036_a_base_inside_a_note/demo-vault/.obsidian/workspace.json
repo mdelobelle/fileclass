@@ -12,10 +12,10 @@
             "id": "demo-note",
             "type": "leaf",
             "state": {
-              "type": "bases",
+              "type": "markdown",
               "state": {
-                "file": "Books.base",
-                "viewName": "Book"
+                "file": "Library desk.md",
+                "mode": "source"
               }
             }
           }
@@ -72,6 +72,7 @@
   },
   "active": "demo-note",
   "lastOpenFiles": [
+    "Library desk.md",
     "Books.base",
     "Habit.base",
     "Classes/Habit.md",

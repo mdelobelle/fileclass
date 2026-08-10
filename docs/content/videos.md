@@ -164,3 +164,7 @@ other. Captions are English; YouTube translates them into your language.
 ## Schema changed? the base follows
 
 {{< video "033" >}}
+
+## Editing right in the table
+
+{{< video "034" >}}

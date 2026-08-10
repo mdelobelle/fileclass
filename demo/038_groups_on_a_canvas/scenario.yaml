@@ -1,0 +1,73 @@
+# Narration for take 038 — see ../SCENARIO.md for the format.
+# Second of arc 8, and the other half of take 037: that one followed the arrows, this one reads
+# the boxes. `CanvasGroup` and `CanvasGroupLink` are the two types 037 named and did not show.
+#
+# The vault opens on **`Reading map.canvas`**, which now carries two groups the librarian drew —
+# **Science fiction** (blue) around Foundation, Dune and The Dispossessed, **Fantasy** (green)
+# around The Lord of the Rings and Small Gods — plus a node for *Reading group* with an edge
+# **from the Science fiction box** to it, labelled *feeds*. Frankenstein sits outside both boxes,
+# on purpose: a note in no group is half the lesson.
+#
+# The fixture is take 037's vault at its closing state: Book carries the `leads to` field that
+# take added, filled in by the engine (*Dune* holds `[[The Dispossessed]], [[Small Gods]]`, both
+# of them), and the canvas keeps the edge drawn on camera at its step 7. The node lifted off the
+# canvas at step 8 is back — that step showed a key disappearing and put it back with an undo,
+# which is why *The Dispossessed* still has a box around it here.
+#
+# Facts the script leans on, all measured in the app before scripting:
+#  - **`CanvasGroup`** names the box a note sits in: Foundation, Dune and The Dispossessed get
+#    `["Science fiction"]`, The Lord of the Rings and Small Gods `["Fantasy"]`. Frankenstein, in
+#    no box, gets **no key**, and neither does *Atomic Habits*, which is not on the canvas at all
+#    — the same "no value rather than an empty one" the arrows take showed;
+#  - **`CanvasGroupLink`** follows the edges of the *box*, not of the note: the three science
+#    fiction books each carry `[[Reading group]]`, because the edge leaves the group. The two
+#    fantasy books get no key, since their box is connected to nothing. That contrast is steps 8
+#    and 9, and it is the clearest way to say what this type is for;
+#  - a **group filter** narrows the same way an edge filter does: `groupLabels: [Fantasy]` leaves
+#    only the two fantasy books. Group colours work the same way (the boxes are colour 5 and 4,
+#    which Obsidian shows as blue and green);
+#  - **dragging Frankenstein into the Fantasy box** gives it `["Fantasy"]` — and no group link,
+#    since that box has no edge. Step 6 is that drag, and step 11 is why it works: containment is
+#    **geometric**, `isNodeInGroup` and nothing else. A box that encloses a node owns it;
+#  - the two types differ in what they ask for, measured in the Add-field modal: **CanvasGroup**
+#    shows *Canvas file*, *Group matching colors*, *Group matching labels* — and no *Direction*,
+#    since a box is not a way through. **CanvasGroupLink** keeps those and adds the whole edge
+#    set: *Direction*, edge colours, from/to sides, edge labels, node colours and *Matching files
+#    (base)*. Step 7 can therefore say it follows the box's edges without qualifying it.
+title: "Fileclass — Groups on a canvas as data"
+description: "A box drawn around notes is a statement — and the notes inside can carry it."
+doc: "fields/#canvas-fields-canvas--canvasgroup--canvasgrouplink" # deep link used in the description
+tags: "canvas, groups, fields, automatic"
+vault_name: "Demo"
+plugin: true
+settings:
+  classFilesPath: "Classes/"
+  fileClassAlias: "fileClass"
+initial_pause: 1500
+default_pause: 900
+
+steps:
+  - title: "A canvas has more than arrows — it has boxes drawn around things, and a box is a statement"
+    pause: 2900
+  - title: "Two of them on the reading map: Science fiction, and Fantasy"
+    pause: 2500
+  - title: "Give Book a CanvasGroup field: it names the box a note sits in"
+    pause: 2700
+  - title: "Every book inside a box now carries its name — nobody typed one of them"
+    pause: 2800
+  - title: "A book in no box has no key at all, and neither has one that isn't on the canvas"
+    pause: 2800
+  - title: "Drag a note into the other box and the value follows the drawing"
+    pause: 2700
+  - title: "Now the other type — CanvasGroupLink: what the box itself is connected to"
+    pause: 2800
+  - title: "One edge from the Science fiction box to the reading group, and all three books carry it"
+    pause: 2900
+  - title: "The fantasy ones don't: their box is connected to nothing"
+    pause: 2600
+  - title: "Filters narrow here too — only the boxes labelled Fantasy, or only the blue ones"
+    pause: 2800
+  - title: "The rule is geometry: a note is in a box because the box encloses it, nothing else"
+    pause: 2800
+  - title: "Move a box and your data moves with it — a drawing you can query"
+    pause: 2700

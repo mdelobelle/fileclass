@@ -783,6 +783,8 @@ use JSON/YAML for arbitrary or externally-defined blobs. For the fuller decision
 
 ## Canvas fields (Canvas / CanvasGroup / CanvasGroupLink)
 
+{{< video "038" >}}
+
 {{< video "037" >}}
 
 These are **auto-maintained** from an Obsidian **`.canvas`** file — you don't

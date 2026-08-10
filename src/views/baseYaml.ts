@@ -54,10 +54,27 @@ export interface ClassScope {
 export type FilterClause = string | { or: string[] };
 
 /**
- * The single filter clause matching notes that name the class in frontmatter,
- * e.g. `fileClass == "Book"`.
+ * The clause matching notes that name the class in frontmatter, e.g.
+ * `fileClass.containsAny("Book")`.
+ *
+ * `containsAny`, not `==`: a note may carry **several** classes, and then the property is a
+ * YAML list, which no equality test matches. Measured on the demo vault's generated Book view —
+ * 8 rows against 9, with *As We May Think* (`fileClass: [Book, Article]`) missing from the table
+ * of a class it belongs to. `containsAny` matches the scalar case too, verified on the same view
+ * (every single-class note kept its row), so one clause covers both.
  */
 export function fileClassFilterClause(alias: string, fileClassName: string): string {
+	return `${alias}.containsAny(${JSON.stringify(fileClassName)})`;
+}
+
+/**
+ * What the clause above used to be, and still is in every base generated before this version.
+ *
+ * Kept so `isGeneratedScopeFilter` recognises those filters as ours: a sync then repairs them
+ * in place. Treating them as hand-written would be the worse failure — the filter that loses
+ * multi-class notes would be preserved out of politeness.
+ */
+function legacyFileClassFilterClause(alias: string, fileClassName: string): string {
 	return `${alias} == ${JSON.stringify(fileClassName)}`;
 }
 
@@ -103,12 +120,18 @@ export function isGeneratedScopeFilter(filters: unknown, scope: ClassScope): boo
 	// creep into a file that forbids it — hence the explicit `unknown[]` casts.
 	if (!Array.isArray(group) || (group as unknown[]).length !== 1) return false;
 	const only: unknown = (group as unknown[])[0];
-	if (typeof only === "string") return only === fileClassFilterClause(scope.alias, scope.name);
+	if (typeof only === "string") {
+		return (
+			only === fileClassFilterClause(scope.alias, scope.name) ||
+			only === legacyFileClassFilterClause(scope.alias, scope.name)
+		);
+	}
 	if (!only || typeof only !== "object" || Object.keys(only).length !== 1) return false;
 	const clauses: unknown = (only as { or?: unknown }).or;
 	if (!Array.isArray(clauses)) return false;
+	const alias = escapeForRegExp(scope.alias);
 	const generated = new RegExp(
-		`^(?:${escapeForRegExp(scope.alias)} == |file\\.inFolder\\(|file\\.hasTag\\()`
+		`^(?:${alias}\\.containsAny\\(|${alias} == |file\\.inFolder\\(|file\\.hasTag\\()`
 	);
 	return (clauses as unknown[]).every((c) => typeof c === "string" && generated.test(c));
 }

@@ -29,8 +29,12 @@ managed view is added or updated — your other views are left untouched.
 The filter matches **every way a note can be bound to the class**, not just the
 frontmatter property:
 
-- `fileClass == "Author"` — the note names the class (whatever your *fileClass
-  alias* is);
+- `fileClass.containsAny("Author")` — the note names the class (whatever your
+  *fileClass alias* is). `containsAny`, not `==`: a note may carry
+  [several classes](../schema/#binding-a-note-to-fileclasses), and the property is
+  then a list, which no equality test matches — it was dropping those notes from
+  the table of a class they belong to. A base generated before this is still
+  recognised as ours, so the next **sync** rewrites the clause;
 - `file.inFolder("Authors")` — one clause per **Files paths** folder. `inFolder`
   rather than an equality on the folder, because binding is by prefix: a note in
   `Authors/Deep/` is bound too;
@@ -70,6 +74,16 @@ Once a base exists, the right-click menu on the fileClass note changes:
   the existing base.
 - **Open base for this fileClass** — opens the `.base` in a new tab. There's also
   the command **Fileclass: open this class's base**.
+
+### The class's schema, from the table
+
+A table is where a schema shows its consequences — a column too many, a type that
+reads wrong in every row. The base's own toolbar therefore carries a wrench:
+**Manage `<FileClass>`**, opening that class's [schema editor](../schema/#editing-a-fileclass).
+
+The class is read off the rows rather than the view's name: one class among them
+and the button names it, several and it asks which. It appears only on an
+editable `fileclass-table` view — switch to a native view and it goes.
 
 ## Keeping a base in sync
 

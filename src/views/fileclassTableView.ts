@@ -10,7 +10,7 @@
  * as safe stubs. Everything else in the base (query, filters, other views) stays
  * native.
  */
-import { Component, TFile } from "obsidian";
+import { Component, TFile, setIcon } from "obsidian";
 
 import type FileclassPlugin from "../../main";
 import { registerFileclassView } from "../engine/basesAdapter";
@@ -19,6 +19,7 @@ import { isInputSupported } from "../fields/support";
 import { hasAllowedValues, validateField } from "../fields/validate";
 import { resolveFieldValues } from "../fields/valuesIo";
 import { readFieldValue } from "../io/read";
+import { openFileClassSchema } from "../ui/fileClassSchemaModal";
 import { makeValuePreview } from "../ui/valuePreview";
 import { Field, isRootField } from "../schema/field";
 import {
@@ -44,6 +45,9 @@ interface BasesDatasetLike {
 class FileclassTableView extends Component {
 	/** Set by the controller before `onDataUpdated()`. */
 	data?: BasesDatasetLike;
+	/** Our item in the base's toolbar, and the class it acts on (undefined = ask). */
+	private toolbarItem?: HTMLElement;
+	private toolbarClass?: string;
 	allProperties?: unknown;
 	config?: unknown;
 
@@ -61,6 +65,8 @@ class FileclassTableView extends Component {
 
 	onunload(): void {
 		this.containerEl.empty();
+		this.toolbarItem?.remove();
+		this.toolbarItem = undefined;
 	}
 
 	// Lifecycle stubs the controller may call.
@@ -95,6 +101,64 @@ class FileclassTableView extends Component {
 				void this.fillValidation(entry.file, validCell, errCell, allowedCache);
 			}
 		}
+		this.syncToolbarButton(ds);
+	}
+
+	/**
+	 * A wrench in the base's own toolbar: the schema of the class this table is about.
+	 *
+	 * A table is where a schema shows its consequences — a column too many, a type that reads
+	 * wrong in every row — and the fix was three clicks away in the file explorer. The class is
+	 * read off the rows rather than the view's name, which is only the class's by convention:
+	 * one class among them names it, several open the picker, none hides the button.
+	 *
+	 * The toolbar belongs to the base, not to this view, so the item is created once and
+	 * removed in `onunload` — which is when switching to a native view unloads this one.
+	 */
+	private syncToolbarButton(ds: BasesDatasetLike): void {
+		const toolbar = this.containerEl
+			.closest(".view-content")
+			?.querySelector<HTMLElement>(".bases-toolbar");
+		if (!toolbar) return;
+
+		const classes = new Set<string>();
+		for (const entry of ds.data) {
+			for (const name of this.plugin.index.getFileClasses(entry.file)) classes.add(name);
+		}
+		if (!classes.size) {
+			this.toolbarItem?.remove();
+			this.toolbarItem = undefined;
+			return;
+		}
+		const only = classes.size === 1 ? [...classes][0] : undefined;
+		const label = only ? `Manage ${only}` : "Manage fileClass";
+
+		if (!this.toolbarItem?.isConnected) {
+			this.toolbarItem?.remove();
+			const item = toolbar.createDiv({ cls: "bases-toolbar-item fileclass-toolbar-manage" });
+			const button = item.createDiv({ cls: "text-icon-button" });
+			button.tabIndex = 0;
+			setIcon(button.createSpan({ cls: "text-button-icon" }), "wrench");
+			button.createSpan({ cls: "text-button-label" });
+			const open = (e: Event): void => {
+				e.preventDefault();
+				openFileClassSchema(this.plugin, this.toolbarClass);
+			};
+			button.addEventListener("click", open);
+			button.addEventListener("keydown", (e) => {
+				if (e.key === "Enter" || e.key === " ") open(e);
+			});
+			this.toolbarItem = item;
+		}
+		this.toolbarClass = only;
+		const labelEl = this.toolbarItem.querySelector(".text-button-label");
+		if (labelEl?.textContent !== label) labelEl?.setText(label);
+		this.toolbarItem.setAttribute(
+			"aria-label",
+			only
+				? `Fileclass: open ${only}'s schema`
+				: "Fileclass: open the schema of one of the classes in this table"
+		);
 	}
 
 	/** Validates a note's fields (all root fields, not just shown columns) and

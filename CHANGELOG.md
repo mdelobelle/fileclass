@@ -8,6 +8,31 @@ All notable changes to Fileclass are documented here. The format follows
 
 ### Fixed
 
+- **A note carrying several classes appears in its class's generated table.** The filter tested
+  `fileClass == "Book"`, and a note that names two classes stores a **list** — which no equality
+  test matches. Measured on the demo vault: the generated Book view listed 8 rows instead of 9,
+  the missing one being a note that is both a Book and an Article. The clause is now
+  `fileClass.containsAny("Book")`, which matches the single-class case just as well. Bases
+  generated before this are still recognised as Fileclass's own, so they read as **out of sync**
+  and the next sync rewrites the clause in place.
+
+- **The Properties controls appear in the Bases *New* popover.** Creating a note from a base's
+  toolbar opens an embedded editor that belongs to no workspace leaf, so the file behind it could
+  not be resolved and the row buttons, the type previews and the action row were all missing on
+  the one screen where you fill a new note in. The file is now taken from CodeMirror, which knows
+  which document it is showing — rather than from the active file, which would decorate a hover
+  preview of another note with this note's fields.
+
+### Added
+
+- **A wrench in the base toolbar: *Manage `<FileClass>`***, opening the schema of the class the
+  table is about. A table is where a schema shows its consequences, and the editor was three
+  clicks away in the file explorer. The class is read off the rows rather than the view's name —
+  one class among them and the button names it, several and it asks. It appears only on an
+  editable `fileclass-table` view.
+
+### Fixed
+
 - **A generated base opened at startup no longer reports an unknown view type.** Obsidian
   restores its tabs before a plugin's `onLayoutReady`, so a vault closed on a generated base
   reopened on **"Unknown view type: fileclass-table"** — an error on a file Fileclass itself

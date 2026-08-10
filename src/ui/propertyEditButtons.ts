@@ -20,7 +20,8 @@
  * here, behind a setting, dedup-guarded, best-effort, removed on unload. Core
  * features never depend on it.
  */
-import { Component, Notice, TFile, debounce, setIcon } from "obsidian";
+import { Component, Notice, TFile, debounce, editorInfoField, setIcon } from "obsidian";
+import { EditorView } from "@codemirror/view";
 
 import type FileclassPlugin from "../../main";
 import { insertMissingFields } from "../commands/insertMissingFields";
@@ -115,6 +116,14 @@ export class PropertyEditButtons extends Component {
 				this.watched.push(observer);
 			}
 		}
+		// A Properties editor can also live outside every leaf: the Bases toolbar's *New*
+		// opens `.bases-new-item-popover`, an embedded editor on the note it just created,
+		// and it appeared with none of these controls. Popovers are appended to the body, so
+		// one shallow observer there is enough to notice one arriving — `childList` without
+		// `subtree`, since the body's own children change about once a session.
+		const popovers = new MutationObserver(() => this.scheduleInject());
+		popovers.observe(document.body, { childList: true });
+		this.watched.push(popovers);
 	}
 
 	private detach(): void {
@@ -766,7 +775,13 @@ export class PropertyEditButtons extends Component {
 		for (const leaf of ws.getLeavesOfType("file-properties")) {
 			if (leaf.view.containerEl.contains(el)) return ws.getActiveFile();
 		}
-		return null;
+		// An embedded editor in a popover — the Bases *New* item, a hover preview — belongs to
+		// no leaf. CodeMirror knows which document it is showing, which is the honest answer:
+		// falling back to the active file would decorate a preview of another note with this
+		// note's fields.
+		const cm = el.closest<HTMLElement>(".cm-editor");
+		const file = cm ? EditorView.findFromDOM(cm)?.state.field(editorInfoField, false)?.file : null;
+		return file instanceof TFile ? file : null;
 	}
 
 	private removeAll(): void {

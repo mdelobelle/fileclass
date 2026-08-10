@@ -1,7 +1,45 @@
+# Narration for take 034 — see ../SCENARIO.md for the format.
+# Third of arc 7. Takes 032 and 033 built a table and kept it in step with its class; this one
+# is about what the table *is* — not a report you read, but a place you edit.
+#
+# The vault opens **on `Habit.base` itself**, the first fixture in the series to open on a base
+# rather than a note. That is also how this take found a bug: Obsidian restores its tabs before
+# a plugin's `onLayoutReady`, where the `fileclass-table` view type is registered, so the table
+# came up as "Unknown view type: fileclass-table" — an error on a file Fileclass wrote. Open
+# bases are rebuilt as soon as the type is registered; fixed in the same branch, which is why
+# the fixture can open here at all.
+#
+# The fixture is take 033's vault at its closing state: Habit carries `walking`, `watching` was
+# renamed to `screen time` in the class *and* in the notes, `Habit.base` is in step with all of
+# it, and its filter carries the viewer's own clause keeping `Templates/` out — which is why the
+# table shows five rows and not six.
+#
+# Facts the script leans on, all measured in the app before scripting:
+#  - the table renders `valid | Name | reading | screen time | listening | walking | errors`,
+#    five rows. Field cells carry `.fileclass-editable`; `Name`, `valid` and `errors` do not;
+#  - **a `Cycle` cell advances in place**: clicking `reading` on the 6th took 📖 to 📖📖, written
+#    into the note. **Alt-click** opens the picker instead (📖 / 📖📖 / 📖📖📖 / 📖📖📖📖);
+#  - **a `Number` cell opens its own input**: clicking `walking` gives a modal titled *Set
+#    walking*, with the − / + steppers and a Save;
+#  - **`Name` does nothing at all** — not even navigate. It is the file, not a field;
+#  - **the table follows the note**: writing `walking: 7000` into a day's frontmatter from
+#    outside put 7000 in the cell without a reload;
+#  - the **Book detour** (steps 6 and 7) goes through the toolbar's Views menu — *All books ·
+#    How many editions · No author yet · Who owns what · **Book** · Add view* — and lands on the
+#    generated view: 20 columns, 8 rows, everything editable but `valid`, `Name` and `errors`.
+#    Measured there: `read` on *Dune* flips `true` → `false` on the click; `author` on
+#    *Frankenstein* opens a note picker (Mary Shelley, Jules Verne, …); `ownership` on *Dune*
+#    advances to `Lent out`. Twenty columns need scrolling sideways — the take scrolls to the
+#    three cells it touches rather than pretending they fit;
+#  - the toolbar is Bases' own: `Habit · 5 results · Sort · Filter · Properties · Search · New`.
+#    **New** creates `Untitled.md` already carrying `fileClass: Habit` and the four fields,
+#    empty, and the table gains its row at once — which is what issue #84 asks for, already
+#    working through the view's filter;
+#  - `valid` and `errors` are take 035's subject and are named as such rather than explained.
 title: "Fileclass — Editing right in the table"
-description: "placeholder — written after the surfaces pass"
-doc: "views/#editable-table-view"
-tags: "bases, table, editing"
+description: "A table that takes your edits: every cell keeps the gesture its type already had."
+doc: "views/#editable-table-view" # deep link used in the description
+tags: "bases, table, editing, fileclass-table"
 vault_name: "Demo"
 plugin: true
 settings:
@@ -11,5 +49,27 @@ initial_pause: 1500
 default_pause: 900
 
 steps:
-  - title: "placeholder"
-    pause: 2000
+  - title: "A table you can only read is half a table — this one takes your edits"
+    pause: 2700
+  - title: "Habit's table: the class's fields as columns, in its order, and the five days it claims"
+    pause: 2800
+  - title: "Click a cycle and it advances in the cell — it is the note that gets written"
+    pause: 2700
+  - title: "Alt-click the same cell when you'd rather pick a value than walk up to it"
+    pause: 2700
+  - title: "A number opens its own input, steppers and all"
+    pause: 2500
+  - title: "The same table on Book, where the class is richer: a checkbox flips on the click"
+    pause: 2700
+  - title: "And a link cell offers the notes it can point at — every gesture is the one that type already had"
+    pause: 2900
+  - title: "The name column doesn't budge: that's the file, not a field"
+    pause: 2500
+  - title: "Edit the note itself and the table follows — one set of data, two windows onto it"
+    pause: 2800
+  - title: "Sorting, filtering and searching stay Bases' own — and New hands you a note already carrying the class"
+    pause: 2900
+  - title: "Valid and errors are the class talking about itself — that's the next take"
+    pause: 2600
+  - title: "Your notes are still files — this is just a good place to look at them all at once"
+    pause: 2700

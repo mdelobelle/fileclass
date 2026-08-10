@@ -449,5 +449,16 @@
     "durationSeconds": 150,
     "recordedWith": "0.2.9",
     "privacyStatus": "public"
+  },
+  "036": {
+    "id": "6I9YZNaoqnc",
+    "url": "https://www.youtube.com/watch?v=6I9YZNaoqnc",
+    "title": "Fileclass #036 · A base inside a note",
+    "subject": "A base inside a note",
+    "scenario": "036_a_base_inside_a_note",
+    "doc": "views/#embedding",
+    "durationSeconds": 144,
+    "recordedWith": "0.2.9",
+    "privacyStatus": "public"
   }
 }

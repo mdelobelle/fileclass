@@ -201,6 +201,8 @@ The choice lasts for the session; nothing is written to your base.
 
 ## Embedding
 
+{{< video "036" >}}
+
 Embed any base in a note the way Obsidian does it — no Fileclass code block is
 involved:
 

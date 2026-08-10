@@ -28,8 +28,12 @@
 #    *The Dispossessed* ← `[[Dune]]`, and the two heads of the chains get no key;
 #  - a label filter works both ways: `then` keeps every edge of this canvas, `because` keeps none
 #    — which is how step 10 shows a filter narrowing without inventing a second canvas;
-#  - the engine is `Settings → Fileclass → Canvas fields engine`, on by default. It is the one
-#    surface that writes frontmatter on its own, which is why step 11 names the switch.
+#  - the switch is **Settings → Fileclass → Canvas fields engine**, on by default, and its own
+#    description says what it is for: *"Auto-fill Canvas/CanvasGroup/CanvasGroupLink fields from
+#    .canvas files. This writes to frontmatter automatically when a canvas changes."* Step 11 is
+#    that sentence in the take's own words — everywhere else in this plugin a value changes
+#    because the reader changed it; this engine is the only one that writes unasked, so the take
+#    shows where to stop it rather than leaving the reader to wonder whether it can be stopped.
 #
 # **Two things were fixed while scripting this take**, both visible in the modal it films: the
 # *Type* dropdown sat below the options it commands, so choosing `Canvas` pushed it off screen
@@ -68,7 +72,7 @@ steps:
     pause: 2600
   - title: "And the filters narrow it: only edges of one colour, one label, or notes a base returns"
     pause: 2900
-  - title: "It is the one field that writes itself, so the switch is in the settings"
-    pause: 2700
+  - title: "Everywhere else, a value changes because you changed it — this is the one engine that writes on its own, and it has a switch"
+    pause: 3100
   - title: "Your canvas becomes a source, and the notes carry what you drew"
     pause: 2700

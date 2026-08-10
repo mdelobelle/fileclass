@@ -12,10 +12,9 @@
             "id": "demo-note",
             "type": "leaf",
             "state": {
-              "type": "markdown",
+              "type": "canvas",
               "state": {
-                "file": "Library desk.md",
-                "mode": "source"
+                "file": "Reading map.canvas"
               }
             }
           }
@@ -72,6 +71,7 @@
   },
   "active": "demo-note",
   "lastOpenFiles": [
+    "Reading map.canvas",
     "Library desk.md",
     "Books.base",
     "Habit.base",

@@ -272,8 +272,8 @@ the command palette or a note's right-click menu, closes the loop:
 
 ![An author note in reading mode: its properties, its prose, and a table of the books whose author it is](../reverse/reverse-relation.png)
 
-Fileclass writes a **view** into the target class's base and embeds it. Nothing is
-evaluated and nothing is stored: the table is Bases answering a filter, live.
+Fileclass writes a **view** into a base and embeds it. Nothing is evaluated and
+nothing is stored: the table is Bases answering a filter, live.
 
 ### One view serves every note
 
@@ -287,6 +287,17 @@ Because the view is shared, it is also yours to keep: run the command again and
 Fileclass reuses what it finds, with whatever columns, sort and filter you have
 given it since.
 
+### You choose where it lives
+
+The first run asks, offering the target class's own base — `Books.base` for a
+`Book by author`. Point it anywhere instead: an existing base gets one more view,
+a new path is created. Nothing is put in your vault without being named first, and
+a vault does not grow a `.base` per class that happens to be pointed at.
+
+From the second note onwards nothing is asked. Fileclass finds the view **by its
+name**, in whichever base you put it, so a relation you sent to a dashboard base
+stays there — one view, one copy.
+
 ### What the filter says
 
 Two clauses: the class's own scope — property, folders and tags, exactly as in
@@ -298,9 +309,10 @@ It compares **links**, not names. So an aliased link (`[[Frank Herbert|Herbert]]
 still matches, and two authors who share a basename in different folders keep
 their own books apart.
 
-The columns come from the class's own table when its base has one — trim that
-table to five columns and the reverse table arrives with the same five. The
-pointing field is left out: down this table it holds the host note on every row.
+The columns come from the class's own table when it has one — trim your Book table
+to five columns and the reverse table arrives with the same five, wherever you send
+it. The pointing field is left out: down this table it holds the host note on every
+row.
 
 ### Where the embed goes
 

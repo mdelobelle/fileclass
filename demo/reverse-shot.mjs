@@ -49,6 +49,16 @@ export default async function ({ page, sleep }) {
 		el?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
 		return !!el;
 	}));
+	await sleep(2500);
+	// Where the view lives, asked once — the default is the class's own base.
+	note("base offered", await page.evaluate(() => {
+		const modal = document.querySelector(".modal-container .modal");
+		const path = modal?.querySelector("input[type=text]")?.value ?? "(no prompt)";
+		Array.from(modal?.querySelectorAll("button") ?? [])
+			.find((b) => b.textContent.trim() === "Create the view")
+			?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+		return path;
+	}));
 	await sleep(4000);
 
 	// Reading mode: the table as a reader meets it, with no cursor artefacts.

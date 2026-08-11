@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
 	addReverseView,
 	appendEmbed,
+	baseHoldingView,
 	findEmbedLine,
 	linkCardinality,
 	reverseClause,
@@ -179,6 +180,41 @@ describe("adding the view to a base", () => {
 		const base: { views?: unknown } = {};
 		expect(addReverseView(base, "Book by author", { and: ["x"] }, [])).toBe("added");
 		expect((base.views as unknown[]).length).toBe(1);
+	});
+});
+
+describe("finding the view wherever it was put", () => {
+	const base = (name: string) => ({ views: [{ type: "fileclass-table", name }] });
+
+	it("finds it by name, not by a path derived from the class", () => {
+		// The reader chooses the base, so the next note showing the relation cannot compute where
+		// the view is — it has to recognise it. Otherwise a second base grows a second copy.
+		expect(
+			baseHoldingView(
+				[
+					{ path: "Bases/Authors.base", base: base("All authors") },
+					{ path: "Dashboards/Reading.base", base: base("Book by author") },
+				],
+				"Book by author"
+			)
+		).toBe("Dashboards/Reading.base");
+	});
+
+	it("returns null when no base holds it", () => {
+		expect(baseHoldingView([{ path: "a.base", base: base("Other") }], "Book by author")).toBeNull();
+		expect(baseHoldingView([], "Book by author")).toBeNull();
+	});
+
+	it("resolves a duplicate the same way every time, on the order it is given", () => {
+		const bases = [
+			{ path: "A.base", base: base("Book by author") },
+			{ path: "B.base", base: base("Book by author") },
+		];
+		expect(baseHoldingView(bases, "Book by author")).toBe("A.base");
+	});
+
+	it("ignores a base with nothing in it", () => {
+		expect(baseHoldingView([{ path: "a.base", base: {} }], "Book by author")).toBeNull();
 	});
 });
 

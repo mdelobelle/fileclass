@@ -436,12 +436,19 @@ Bases evaluates the filter and nothing is stored (§9 stands).
   note holding the embed (measured, §3.1), so `Book by author` answers for every
   author. Reuse is recognition by **name**, and a reused view is never touched —
   columns, sort and filters included, the same restraint `mirrorBaseView` shows.
+- **The reader picks the base**, once: `pickReverseBase` offers the class's own base
+  (else `<basesFolder><Class>.base`) and takes any path. So the view's home is *not*
+  derivable from the class, and `locateReverseView` searches every `.base` in the
+  vault by view name — otherwise the second note would create a second copy
+  elsewhere and one view would stop serving every note. Asked only on the run that
+  creates it; asking again would invite exactly that duplicate.
 - **The filter** is the class's own scope (`fileClassViewFilter`, so folder- and
   tag-bound notes stay in) plus one clause: `author == this.file.asLink()`, or
   `contributors.contains(this.file.asLink())` for a list. Two expressions, because
   no single one covers both cardinalities (§3.1). **Never** compare basenames.
-- **Columns** come from the class's managed view when its base holds one — the
-  shape the reader already chose — else the full field mirror; minus the pointing
+- **Columns** come from the class's managed view — read from the **class's** base,
+  not from the file being written, so a view sent to a dashboard base still looks
+  like the table the reader curated — else the full field mirror; minus the pointing
   field, which holds the host on every row of a reverse table.
 - **Discovery** asks each source view whether the host is among its candidates,
   memoised per `(baseFile, viewName)` in `QueryCache`. It runs **on invocation
@@ -451,9 +458,10 @@ Bases evaluates the filter and nothing is stored (§9 stands).
 - **Writing into a note's body** is the plugin's one write outside
   `processFrontMatter`: at the cursor when the editor is open in source mode, else
   appended. An existing embed is jumped to, never duplicated and never rewritten.
-- Fixture `demo/901_reverse_relation` + `demo/reverse-probe.mjs` re-verify the whole
-  chain (plain link, aliased link, namesake in another folder, reuse by the second
-  author) after an Obsidian upgrade.
+- Fixture `demo/901_reverse_relation` re-verifies the whole chain after an Obsidian
+  upgrade: `demo/reverse-probe.mjs` (plain link, aliased link, namesake in another
+  folder, reuse by the second author) and `demo/reverse-elsewhere.mjs` (the view sent
+  to a base of the reader's choosing, then found there by the next note).
 
 ## 12. Public API + CLI/TUI
 

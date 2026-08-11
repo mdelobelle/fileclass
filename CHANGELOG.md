@@ -21,6 +21,11 @@ All notable changes to Fileclass are documented here. The format follows
   after that only gets the embed, and it is reused with whatever columns, sort and filter you have
   given it since.
 
+  **You choose where it lives.** The first run asks, offering the class's own base; point it at any
+  base you already have instead, or at a new path. From the second note onwards nothing is asked —
+  the view is found by its name in whichever base you put it, so a relation sent to a dashboard base
+  stays there, as one copy.
+
   The filter compares **links**, not names: an aliased link (`[[Frank Herbert|Herbert]]`) still
   matches, and two authors sharing a basename in different folders keep their own books apart. It
   carries the class's whole scope too, so notes bound by folder or tag are in. Columns come from the

@@ -56,6 +56,20 @@ export default async function ({ page, sleep }) {
 			return f ? await window.app.vault.read(f) : `(missing ${p})`;
 		}, path);
 
+	// The base to create the view in is asked once, on the run that creates it.
+	const confirmBase = () =>
+		page.evaluate(() => {
+			const modal = document.querySelector(".modal-container .modal");
+			if (!modal) return "(no base prompt)";
+			const path = modal.querySelector("input[type=text]")?.value ?? "(no field)";
+			const cta = Array.from(modal.querySelectorAll("button")).find(
+				(b) => b.textContent.trim() === "Create the view"
+			);
+			if (!cta) return "(no button)";
+			cta.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+			return path;
+		});
+
 	const notices = () =>
 		page.evaluate(() =>
 			Array.from(document.querySelectorAll(".notice")).map((n) => n.textContent.trim())
@@ -68,6 +82,8 @@ export default async function ({ page, sleep }) {
 	await sleep(6000);
 	note("candidates offered", await modalItems());
 	note("picked", await pick("Book.author"));
+	await sleep(2500);
+	note("base offered", await confirmBase());
 	await sleep(4000);
 	note("notices", await notices());
 
@@ -103,6 +119,9 @@ export default async function ({ page, sleep }) {
 	await sleep(6000);
 	note("candidates offered", await modalItems());
 	note("picked", await pick("Book.author"));
+	await sleep(2500);
+	// Nothing to decide from the second author on: the view already exists.
+	note("base prompt on reuse", await confirmBase());
 	await sleep(4000);
 	note("notices", await notices());
 	note("Books.base view names", await page.evaluate(async () => {
@@ -118,6 +137,8 @@ export default async function ({ page, sleep }) {
 	await run();
 	await sleep(6000);
 	await pick("Book.author");
+	await sleep(2500);
+	await confirmBase();
 	await sleep(4000);
 	note("rows for James Clear (aliased link)", await rows());
 
@@ -126,6 +147,8 @@ export default async function ({ page, sleep }) {
 	await run();
 	await sleep(6000);
 	await pick("Book.author");
+	await sleep(2500);
+	await confirmBase();
 	await sleep(4000);
 	note("rows for the namesake", await rows());
 	await page.screenshot({ path: `${OUT}/reverse-namesake.png` });

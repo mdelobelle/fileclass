@@ -25,10 +25,12 @@ import {
 	openBaseLeaves,
 } from "./baseSync";
 import { mirrorOrder } from "./baseYaml";
+import { pickReverseBase } from "./reverseBaseModal";
 import {
 	LinkCardinality,
 	addReverseView,
 	appendEmbed,
+	baseHoldingView,
 	findEmbedLine,
 	linkCardinality,
 	reverseEmbed,
@@ -123,38 +125,110 @@ async function isCandidateOf(
 	}
 }
 
-/** Where the view goes: the class's own base, or one named after it in the bases folder. */
-export function targetBasePath(plugin: FileclassPlugin, targetClass: string): string {
+/** The base offered by default: the class's own, else one named after it in the bases folder. */
+export function defaultBasePath(plugin: FileclassPlugin, targetClass: string): string {
 	const declared = plugin.index.getFileClass(targetClass)?.options.baseFile?.trim();
 	return normalizePath(declared || `${plugin.settings.basesFolder}${targetClass}.base`);
 }
 
 /**
- * Writes the reverse view into the target class's base and returns its name, or null.
+ * The base already holding `viewName`, searched by name across every `.base` in the vault.
+ *
+ * The reader chooses where the view goes, so its home cannot be computed from the class — and the
+ * next note showing the same relation has to find it *wherever that was*, or it would create a
+ * second copy in a second base and one view would stop serving every note. Bases are few and
+ * small; this reads them, and skips any that will not parse.
+ */
+export async function locateReverseView(
+	plugin: FileclassPlugin,
+	viewName: string
+): Promise<string | null> {
+	const files = plugin.app.vault
+		.getFiles()
+		.filter((f) => f.extension === "base")
+		// Sorted, so two bases carrying the same view name resolve the same way every time.
+		.sort((a, b) => a.path.localeCompare(b.path));
+	const bases: { path: string; base: Record<string, unknown> }[] = [];
+	for (const file of files) {
+		try {
+			const parsed: unknown = parseYaml(await plugin.app.vault.read(file));
+			if (parsed && typeof parsed === "object") {
+				bases.push({ path: file.path, base: parsed as Record<string, unknown> });
+			}
+		} catch {
+			// A base we cannot parse holds no view we can claim to have found.
+		}
+	}
+	return baseHoldingView(bases, viewName);
+}
+
+/**
+ * The columns of the class's own table, read from **its** base wherever the reverse view is going.
+ *
+ * The shape belongs to the class, not to the file that happens to hold the new view: a reverse view
+ * sent to a dashboard base should still look like the Book table the reader curated in `Books.base`.
+ * Null when the class has no base, or no managed view in it.
+ */
+async function managedColumns(plugin: FileclassPlugin, targetClass: string): Promise<string[] | null> {
+	const file = plugin.app.vault.getFileByPath(defaultBasePath(plugin, targetClass));
+	if (!(file instanceof TFile)) return null;
+	try {
+		const base = (parseYaml(await plugin.app.vault.read(file)) ?? {}) as Record<string, unknown>;
+		return viewOrder(base, managedViewName(plugin, targetClass));
+	} catch {
+		return null;
+	}
+}
+
+/** A reverse view, and the base it lives in. */
+export interface ReverseViewRef {
+	path: string;
+	viewName: string;
+}
+
+/**
+ * The reverse view for `candidate` — found where it already is, or created where the reader says.
  *
  * Reuse is the normal outcome, not an optimisation: `this.file` in an embedded base resolves to
  * the host note (ARCHITECTURE §3.1), so the view the first author created answers for every other
- * one. Creating one view per host would be the bug this design exists to avoid.
+ * one. Creating one view per host would be the bug this design exists to avoid — which is also why
+ * the reader is asked **only** on the run that creates it: there is nothing to decide afterwards,
+ * and asking again would invite a second copy somewhere else.
  */
 export async function ensureReverseView(
 	plugin: FileclassPlugin,
 	candidate: ReverseCandidate
-): Promise<string | null> {
+): Promise<ReverseViewRef | null> {
 	const app = plugin.app;
-	const path = targetBasePath(plugin, candidate.targetClass);
 	const viewName = reverseViewName(candidate.targetClass, candidate.fieldName);
+
+	const existing = await locateReverseView(plugin, viewName);
+	if (existing) return { path: existing, viewName };
+
+	const path = await pickReverseBase(
+		plugin,
+		viewName,
+		candidate.targetClass,
+		defaultBasePath(plugin, candidate.targetClass)
+	);
+	if (!path) return null;
+
 	const filter = reverseViewFilter(
 		classScope(plugin, candidate.targetClass),
 		candidate.fieldName,
 		candidate.cardinality
 	);
-	/** The class's own fields, the fallback when there is no table to take a shape from. */
-	const declaredColumns = mirrorOrder(
-		plugin.index
-			.getResolvedFields(candidate.targetClass)
-			.filter((f) => isRootField(f))
-			.map((f) => f.name)
-	);
+	// The shape the reader chose for these notes in the class's own table — every column they
+	// removed included — falling back to the class's fields when there is no such table.
+	const columns =
+		(await managedColumns(plugin, candidate.targetClass)) ??
+		mirrorOrder(
+			plugin.index
+				.getResolvedFields(candidate.targetClass)
+				.filter((f) => isRootField(f))
+				.map((f) => f.name)
+		);
+	const order = reverseOrder(columns, candidate.fieldName);
 
 	const file = app.vault.getFileByPath(path);
 	if (!(file instanceof TFile)) {
@@ -166,9 +240,10 @@ export async function ensureReverseView(
 			return null;
 		}
 		const base = { views: [] as unknown[] };
-		addReverseView(base, viewName, filter, reverseOrder(declaredColumns, candidate.fieldName));
+		addReverseView(base, viewName, filter, order);
 		await app.vault.modify(created, stringifyYaml(base));
-		return viewName;
+		new Notice(`Fileclass: created ${path} with "${viewName}".`);
+		return { path, viewName };
 	}
 
 	// Bases holds an open base's layout in memory and writes it back over ours; every write path
@@ -184,15 +259,11 @@ export async function ensureReverseView(
 
 	try {
 		const base = (parseYaml(await app.vault.read(file)) ?? {}) as { views?: unknown };
-		// The class's own table, when this base holds it, is the shape the reader chose for these
-		// notes — including any column they removed. A reverse table is no place to be more verbose
-		// than the table it mirrors.
-		const columns = viewOrder(base, managedViewName(plugin, candidate.targetClass)) ?? declaredColumns;
-		if (addReverseView(base, viewName, filter, reverseOrder(columns, candidate.fieldName)) === "added") {
+		if (addReverseView(base, viewName, filter, order) === "added") {
 			await app.vault.modify(file, stringifyYaml(base));
 			new Notice(`Fileclass: "${viewName}" ready in ${file.name}.`);
 		}
-		return viewName;
+		return { path: file.path, viewName };
 	} catch (err) {
 		new Notice(`Fileclass: could not update ${file.name} (${(err as Error).message}).`);
 		return null;
@@ -306,9 +377,9 @@ async function applyReverseRelation(
 	host: TFile,
 	candidate: ReverseCandidate
 ): Promise<void> {
-	const viewName = await ensureReverseView(plugin, candidate);
-	if (!viewName) return;
-	await placeEmbed(plugin, host, targetBasePath(plugin, candidate.targetClass), viewName);
+	const view = await ensureReverseView(plugin, candidate);
+	if (!view) return;
+	await placeEmbed(plugin, host, view.path, view.viewName);
 }
 
 /** The open Markdown editor showing `host` in edit mode, if there is one. */

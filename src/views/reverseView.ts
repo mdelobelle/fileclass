@@ -123,6 +123,29 @@ interface BaseObject {
 	[key: string]: unknown;
 }
 
+/**
+ * The base holding a view of that name, out of every base in the vault.
+ *
+ * Reuse cannot be looked up by path: the reader chooses where the view goes, and the *next* note to
+ * show the same relation must find it wherever that was — otherwise a second base grows a second
+ * copy and `this.file` stops being the point. Searching by name makes the question independent of
+ * where anything was put, a copied base included.
+ *
+ * Paths come in sorted, so two bases carrying the same view name resolve the same way every time.
+ */
+export function baseHoldingView(
+	bases: readonly { path: string; base: BaseObject }[],
+	name: string
+): string | null {
+	return bases.find(({ base }) => hasView(base, name))?.path ?? null;
+}
+
+/** True when the parsed base declares a view of that name. */
+export function hasView(base: BaseObject, name: string): boolean {
+	const views = Array.isArray(base.views) ? (base.views as BaseView[]) : [];
+	return views.some((v) => v?.name === name);
+}
+
 /** A named view's `order`, if the base has that view and it declares one. */
 export function viewOrder(base: BaseObject, name: string): string[] | null {
 	const views = Array.isArray(base.views) ? (base.views as BaseView[]) : [];
@@ -150,7 +173,7 @@ export function addReverseView(
 ): "added" | "reused" {
 	const views = Array.isArray(base.views) ? (base.views as BaseView[]) : [];
 	if (!Array.isArray(base.views)) base.views = views;
-	if (views.some((v) => v?.name === name)) return "reused";
+	if (hasView(base, name)) return "reused";
 	views.push({ type: "fileclass-table", name, filters: filter, order });
 	return "added";
 }

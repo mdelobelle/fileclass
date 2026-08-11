@@ -1,0 +1,86 @@
+# Narration for take 039 — see ../SCENARIO.md for the format.
+# Closes arc 8, and the series. Every take so far looked at one thing: a field, a note, a class, a
+# table. This one steps back and looks at the **model** — what a vault's classes make together,
+# which until now existed only as frontmatter spread over the class notes.
+#
+# The number was free: the planned 039, "The settings, one pass", was dropped before it was ever
+# recorded (a settings tab reads better than it watches — see the roadmap), so nobody has seen a
+# 039 and the series stays contiguous.
+#
+# The vault opens on **`Classes/Book.md`**, so the take can go straight to the class folder's
+# right-click menu. The fixture is take 038's vault at its closing state: Book carries the
+# `shelf group` and `feeds` fields that take added, on top of `leads to` from 037.
+#
+# Facts the script leans on, all measured in the app before scripting:
+#  - the command is `Fileclass: Draw the schema canvas`, and *Draw the schema canvas* sits on the
+#    class folder's menu under *Create a class*. It writes `<class folder>/Schema.canvas`
+#    (Settings → Fileclass → Schema canvas overrides the path), and opens it — but only the first
+#    time, since a resync should not steal the tab you are reading;
+#  - on this vault it draws **11 classes, 18 nodes, 12 edges**, and the notice reads
+#    `drew 11 fileClass(es) into Classes/Schema.canvas`;
+#  - **a class node is a text node**: a `[[wikilink]]` and a two-column table of every field it
+#    declares with its type. Book's table runs **seventeen** rows on this vault — `lent to |
+#    Input` down to `feeds | CanvasGroupLink`, the two group fields take 038 added included — and
+#    its node is 380×709. Comic's shows `storage (4 inside) | Object`, a count rather than an
+#    expansion. Heights are fitted to what Obsidian renders — a row is 29 canvas units — so no
+#    table is cut off, which the first version did to every one of them;
+#  - the wikilink carries the **schema icon**, like any link to a class. That icon was missing on
+#    class links until this branch: the link surfaces asked for a note with *resolved* fields, and
+#    a class note has none of its own;
+#  - **inheritance** is an edge from child to parent, labelled `− acquired` on Movie (its
+#    `excludes`), capped at three names plus a count;
+#  - **bases and canvases are file nodes**, previewed live in a column of their own:
+#    `Authors.base` shows Mary Shelley and Jules Verne, `Series.base` shows Tintin. Edges read
+#    `candidates` for a `File`/`Media` field and `values` for a list's source — two mechanisms,
+#    said separately;
+#  - **claim cards**: Album's tags (`Album`, `vinyl`, `jazz` — `mapWithTag` puts the class's own
+#    name first), Book's `Reading list` folder, Movie's `Film club` bookmark group. Never a card
+#    for an empty claim;
+#  - **step 8 needs a broken tag on camera.** Adding `two words` to Album's *Tag names* gives
+#    `**Tags** / - Album / - ~~two words~~ (a tag cannot contain a space) / - vinyl / - jazz`:
+#    the index skips such a tag, so it binds nothing, and no other surface in Obsidian says so.
+#    The **card keeps its colour** here — it turns red only when *every* entry on it is dead,
+#    which is the case worth a colour: a class whose only claim cannot work;
+#  - **step 11 is the promise the whole design turns on.** Rehearsed: move Book to -1500,900 and
+#    widen it to 520, add a `sleep` field to Habit, run the command again. The notice reads
+#    `synced Classes/Schema.canvas (1 updated)` — *updated*, not *added*, since a new field
+#    rewrites a class's table rather than adding a node — `| sleep | Duration |` is in Habit's
+#    table, Book is still at -1500,900 and 520 wide, and a text node added by hand is untouched.
+#    A third run says `already matches your classes`.
+title: "Fileclass — The model your classes make"
+description: "Your classes form a model. One command draws it — and then it is yours to arrange."
+doc: "views/#the-schema-canvas" # deep link used in the description
+tags: "canvas, schema, model, diagram"
+vault_name: "Demo"
+plugin: true
+settings:
+  classFilesPath: "Classes/"
+  fileClassAlias: "fileClass"
+initial_pause: 1500
+default_pause: 900
+
+steps:
+  - title: "Your classes form a model — and until now nothing showed it to you"
+    pause: 2700
+  - title: "From the folder they live in: draw the schema canvas"
+    pause: 2500
+  - title: "Each class arrives carrying its schema — every field it declares, and its type"
+    pause: 2900
+  - title: "Inheritance is an edge, labelled with what the child drops"
+    pause: 2600
+  - title: "The bases your fields draw from sit beside them, previewed — candidates, or values"
+    pause: 2900
+  - title: "A canvas that feeds a field is on the diagram too"
+    pause: 2500
+  - title: "What each class claims — folders, tags, bookmark groups — on cards of their own"
+    pause: 2800
+  - title: "And what fails in silence: a tag with a space in it binds nothing, struck through with the reason"
+    pause: 3000
+  - title: "Click a class to open its schema, click a base to open the base — it is all navigable"
+    pause: 2800
+  - title: "Now arrange it: this is your canvas, not a picture the plugin owns"
+    pause: 2700
+  - title: "Add a field and sync again — the row arrives, and nothing you moved has moved"
+    pause: 2900
+  - title: "A model you can look at, and keep"
+    pause: 2600

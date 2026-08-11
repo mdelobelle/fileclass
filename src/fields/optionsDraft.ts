@@ -69,6 +69,13 @@ export interface OptionsDraft {
 	// Select / Cycle / Multi — undefined sourceType means an unsupported source
 	// (legacy dataview), left untouched by this editor.
 	sourceType?: "ValuesList" | "ValuesListNotePath" | "ValuesFromBase";
+	/**
+	 * The field, as saved, drew its values from a **Dataview query** — a source this plugin
+	 * does not run. Set only from the field's own options, never inferred from a missing
+	 * `sourceType`: the draft is shared across types, so switching `Input` → `Select` leaves it
+	 * unset and used to raise a "legacy Dataview source" warning on a field created seconds ago.
+	 */
+	legacyDvSource?: boolean;
 	values?: string[];
 	valuesListNotePath?: string;
 	// File / MultiFile / Media / MultiMedia (and base value sources)
@@ -188,7 +195,8 @@ export function optionsToDraft(type: FieldType, options: FieldOptions): OptionsD
 			if (lo.sourceType === "ValuesList") {
 				return { sourceType: "ValuesList", values: Object.values(lo.valuesList) };
 			}
-			return {}; // legacy dataview source — unsupported here, sourceType undefined
+			// A Dataview source is the only shape left, and the one the editor must flag.
+			return { legacyDvSource: true };
 		}
 		default:
 			if (LINK_TYPES.has(type)) {

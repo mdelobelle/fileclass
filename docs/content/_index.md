@@ -36,6 +36,11 @@ library with two classes, guided input, and a candidate list that narrows itself
 
 Then one short video per feature, on the [Videos](videos/) page.
 
+**Rather read?** The
+[written quickstart](https://github.com/mdelobelle/fileclass#quickstart--your-first-fileclass-in-five-minutes)
+takes the same path in five steps and five screenshots: the folder setting, a class
+with one `Select` field, both ways to bind a note, and filling the field in.
+
 ## Documentation
 
 - [Positioning](positioning/) — how Fileclass relates to core Properties, core

@@ -1,0 +1,22 @@
+# Not a take — numbered 900 so the take list stays 000–038 and this still resolves.
+# The fixture behind the README's quickstart screenshots.
+# `node demo/probe.mjs 900 demo/quickstart.mjs` stages this vault, replays the five gestures of
+# the README's quickstart and writes the PNGs into docs/static/quickstart/. Regenerate it when the UI moves —
+# the point of keeping it here is that a screenshot never has to be trusted from memory.
+#
+# Three notes and nothing else: what a reader actually has when they try this. The class folder
+# is deliberately **unset**, because setting it is step 1.
+title: "Fileclass — quickstart screenshots"
+description: "Fixture for the README quickstart; not a published take."
+tags: "quickstart"
+vault_name: "Demo"
+plugin: true
+settings:
+  classFilesPath: ""
+  fileClassAlias: "fileClass"
+initial_pause: 1200
+default_pause: 800
+
+steps:
+  - title: "not a take"
+    pause: 1000

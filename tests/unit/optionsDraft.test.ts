@@ -312,3 +312,24 @@ describe("Object/ObjectList display template", () => {
 		expect(buildFieldOptions("Object", draft)).toEqual({ foo: "bar" });
 	});
 });
+
+describe("a list field's values source", () => {
+	it("flags a Dataview source, which this plugin does not run", () => {
+		const draft = optionsToDraft("Select", { sourceType: "ValuesFromDVQuery", valuesList: {} });
+		expect(draft.legacyDvSource).toBe(true);
+		expect(draft.sourceType).toBeUndefined();
+	});
+
+	it("does not flag a field that has no options yet", () => {
+		// The editor's draft is shared across types: switching Input → Select used to leave
+		// `sourceType` unset and raise a "legacy Dataview source" warning on a new field.
+		expect(optionsToDraft("Select", {}).legacyDvSource).toBeUndefined();
+		expect(optionsToDraft("Select", []).legacyDvSource).toBeUndefined();
+	});
+
+	it("does not flag the three sources it does run", () => {
+		expect(optionsToDraft("Select", { sourceType: "ValuesList", valuesList: { 1: "a" } }).legacyDvSource).toBeUndefined();
+		expect(optionsToDraft("Cycle", { sourceType: "ValuesListNotePath", valuesListNotePath: "n.md" }).legacyDvSource).toBeUndefined();
+		expect(optionsToDraft("Multi", { sourceType: "ValuesFromBase", baseFile: "b.base" }).legacyDvSource).toBeUndefined();
+	});
+});

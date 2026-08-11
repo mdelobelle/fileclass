@@ -199,6 +199,48 @@ alternative and it was rejected — allowed values are resolved through queries,
 the formula would answer a slightly different question and the two would drift.
 The choice lasts for the session; nothing is written to your base.
 
+## The schema canvas
+
+A vault's fileClasses form a model — what inherits from what, which fields draw
+their values from a `.base`, which are fed by a `.canvas`, and which folders, tags
+and bookmark groups each class claims. That model lives in frontmatter spread over
+the class notes, which is to say it lives in your head.
+
+**Fileclass: draw the schema canvas** puts it on a canvas — also on the
+right-click menu of your class folder. Every node is a **file** node, so the
+diagram is navigable: click a class to open it, click a base to open the base.
+
+![A schema canvas: Media above its four children, their binding cards, and the bases and canvas their fields draw from](../schema/schema-canvas.png)
+
+- **classes**, laid out by inheritance: parents above, families side by side, and
+  classes in no chain stacked on the left;
+- an **`extends` edge**, labelled with what the child drops (`− acquired`), capped
+  at three names plus a count;
+- a **`.base` node** per base feeding a field, edged `candidates` for a
+  `File`/`Media` field and `values` for a `Select`/`Cycle`/`Multi` values source —
+  the same relation, said twice because it is two mechanisms;
+- a **`.canvas` node** per canvas feeding a [Canvas field](../fields/#canvas-fields-canvas--canvasgroup--canvasgrouplink);
+- a **claim card** per binding kind, listing what the class claims. A tag that
+  cannot bind is struck through with the reason — the index skips any tag with a
+  space in it, so a class named `Media Item` with *Map with tag* on claims
+  **nothing**, and nothing else in Obsidian says so.
+
+### The layout is yours
+
+The canvas is generated once and **arranged by you**. A sync afterwards keeps the
+geometry of every node it recognises — position, size, colour, a card's box even
+as its text is rewritten — adds what is new in a free slot, drops what the classes
+no longer justify, and never touches a node you added yourself.
+
+It is **explicit**, like [keeping a base in sync](#keeping-a-base-in-sync) and
+unlike the Canvas engine: a file you have arranged by hand is not one to rewrite
+unasked. Run the command again and it reports what changed, or tells you the
+canvas already matches your classes. If the canvas is open, it is written through
+the open view, so the diagram redraws and there is nothing to close.
+
+Where it lives: **Settings → Fileclass → Schema canvas**, or
+`<class folder>/Schema.canvas` by default.
+
 ## Embedding
 
 {{< video "036" >}}

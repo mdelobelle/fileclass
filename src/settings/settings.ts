@@ -41,6 +41,13 @@ export interface FileclassSettings {
 	 * not ask to edit and it shows up in a git diff.
 	 */
 	reorderOnInsert: boolean;
+	/**
+	 * Where the schema canvas lives (#149). Blank = `<class folder>/Schema.canvas`.
+	 *
+	 * A setting rather than a convention because the file is arranged by hand: someone who
+	 * moves it out of the class folder should not have a second one generated behind them.
+	 */
+	schemaCanvasPath: string;
 	/** Where keys no class declares go when the frontmatter is reordered. */
 	unknownKeysPosition: UnknownKeysPosition;
 	/**
@@ -97,6 +104,7 @@ export const DEFAULT_SETTINGS: FileclassSettings = {
 	enableContextMenu: true,
 	insertFieldsOnBind: true,
 	reorderOnInsert: false,
+	schemaCanvasPath: "",
 	unknownKeysPosition: "top",
 	shorterModal: false,
 	enableDraggableModals: false,

@@ -6,6 +6,26 @@ All notable changes to Fileclass are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- **A canvas that mirrors your fileClasses** ([#149](https://github.com/mdelobelle/fileclass/issues/149)).
+  **Fileclass: draw the schema canvas**, and an entry on the class folder's right-click menu,
+  draws the model your classes make: inheritance (with the child's `excludes` on the edge), a node
+  per `.base` feeding a field — `candidates` for a link field, `values` for a list's source — a
+  node per `.canvas` behind a Canvas field, and a card per class listing the folders, tags and
+  bookmark groups it claims. Every node is a file node, so the diagram is navigable.
+
+  It also says what silently does not work: the index skips any tag containing a space, so a class
+  named `Media Item` with *Map with tag* on claims nothing at all. Those entries are struck
+  through with the reason, which turns the picture into a diagnostic.
+
+  **The layout is yours.** The first run places everything — parents above children, families side
+  by side, unrelated classes stacked on the left. Every run after that keeps the geometry of what
+  it recognises, including a card's box while its text is rewritten, adds what is new in a free
+  slot, and never moves or removes a node you added. Sync is explicit, like a base's: a file you
+  arranged by hand is not one to rewrite unasked. When the canvas is open, it is written through
+  the open view, so it redraws with nothing to close.
+
 ### Fixed
 
 - **The class folder is not offered as a binding target.** *Files paths* listed every folder in

@@ -11,6 +11,7 @@
  */
 import { Component, TFile, debounce } from "obsidian";
 
+import { isSchemaCanvas } from "../../views/schemaCanvasSync";
 import type FileclassPlugin from "../../../main";
 import { getBaseFiles } from "../../engine/basesAdapter";
 import { readFieldValue } from "../../io/read";
@@ -71,10 +72,13 @@ export class CanvasEngine extends Component {
 
 	private mark(f: unknown): void {
 		if (!this.plugin.settings.enableCanvasEngine) return;
-		if (this.isCanvas(f)) {
-			this.dirty.add(f.path);
-			this.flush();
-		}
+		if (!this.isCanvas(f)) return;
+		// The schema canvas is *ours* (#149). Reading it would find no note whose Canvas field
+		// points at it and do nothing — wasted work on every sync, and a genuine loop the day
+		// someone does point a field at it.
+		if (isSchemaCanvas(this.plugin, f.path)) return;
+		this.dirty.add(f.path);
+		this.flush();
 	}
 
 	/** Queues every canvas file (e.g. after a re-index). */

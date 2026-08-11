@@ -19,6 +19,8 @@ import { EditContext, runControlAction } from "../fields/fieldActions";
 import { isInputSupported } from "../fields/support";
 import { hasAllowedValues, validateField } from "../fields/validate";
 import { resolveFieldValues } from "../fields/valuesIo";
+import { makeDisplayDeps } from "../fields/displayDeps";
+import { DisplayDeps, describeField } from "../fields/objectDisplay";
 import { readFieldValue } from "../io/read";
 import { openFileClassSchema } from "../ui/fileClassSchemaModal";
 import { makeValuePreview } from "../ui/valuePreview";
@@ -58,6 +60,9 @@ class FileclassTableView extends Component {
 
 	/** Set by the controller before `onDataUpdated()`. */
 	data?: BasesDatasetLike;
+
+	/** Per-render display deps, keyed by note path (#156). Cleared on every render. */
+	private readonly deps = new Map<string, DisplayDeps>();
 	/** Our item in the base's toolbar, and the class it acts on (undefined = ask). */
 	private toolbarItem?: HTMLElement;
 	private toolbarClass?: string;
@@ -139,6 +144,8 @@ class FileclassTableView extends Component {
 		const ds = this.data;
 		if (!ds || !ds.properties?.length) return this.placeholder();
 		this.containerEl.empty();
+		// A note's fields may have changed since the last render, and so may its groups' templates.
+		this.deps.clear();
 
 		const showValidation = this.plugin.settings.enableValidationColumns;
 		const table = this.containerEl.createEl("table", { cls: "fileclass-table" });
@@ -374,7 +381,7 @@ class FileclassTableView extends Component {
 			// Like the standard first column: a link to the note.
 			this.renderInternalLink(content, entry.file.path, entry.file.basename, source);
 		} else {
-			const raw = this.cellText(entry, col);
+			const raw = this.displayText(entry, col, field);
 			// A type preview (Color swatch / Icon glyph / image) leads the value.
 			if (field) {
 				const preview = makeValuePreview(field, raw, {
@@ -400,6 +407,36 @@ class FileclassTableView extends Component {
 			e.stopPropagation();
 			this.editCell(entry.file, field, e.altKey);
 		});
+	}
+
+	/**
+	 * The text a cell shows.
+	 *
+	 * For an `Object` or `ObjectList`, the field's **own** display (#156): `describeField` applies
+	 * the `displayTemplate`, recurses into a nested group and formats a `{{released|YYYY}}` child,
+	 * which is what every other Fileclass surface shows for the same value — the note-fields modal,
+	 * the property buttons, the API. Bases' `toString()` yields the stored JSON instead, and for a
+	 * nested group a doubly-escaped version of it, so the cell read worse than the native table's
+	 * while sitting next to an editor that speaks in `Study · C-4`.
+	 *
+	 * Every other type keeps Bases' value: it is the one that knows about formulas, file properties
+	 * and its own link rendering.
+	 */
+	private displayText(entry: BasesEntryLike, col: string, field?: Field): string {
+		if (field && (field.type === "Object" || field.type === "ObjectList")) {
+			const raw = readFieldValue(this.plugin.app, entry.file, field);
+			return describeField(field, raw, this.displayDeps(entry.file));
+		}
+		return this.cellText(entry, col);
+	}
+
+	/** Display deps for a note, built once per render — a group's display needs its whole field set. */
+	private displayDeps(file: TFile): DisplayDeps {
+		const cached = this.deps.get(file.path);
+		if (cached) return cached;
+		const deps = makeDisplayDeps(this.plugin.index.getFields(file));
+		this.deps.set(file.path, deps);
+		return deps;
 	}
 
 	private cellText(entry: BasesEntryLike, col: string): string {

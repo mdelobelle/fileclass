@@ -6,6 +6,16 @@ All notable changes to Fileclass are documented here. The format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- **A table now reads an `Object` the way the rest of the plugin does**
+  ([#156](https://github.com/mdelobelle/fileclass/issues/156)). An `Object` or `ObjectList` cell
+  showed the stored JSON — and for a nested group, a doubly-escaped version of it, which read worse
+  than the native table's. It now shows the field's `displayTemplate`, exactly as the note-fields
+  modal and the property buttons do: `Study · C-4` where the cell used to say
+  `{"room":"Study","shelf":"{\"unit\":\"C\",\"level\":\"4\"}"}`. The tooltip on a truncated cell
+  follows. Affected both types, and every table — its own tab or embedded in a note.
+
 ### Added
 
 - **Read a relation from the other end** ([#154](https://github.com/mdelobelle/fileclass/issues/154)).

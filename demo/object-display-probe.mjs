@@ -60,6 +60,17 @@ export default async function ({ page, sleep }) {
 	note("ObjectList · native table", await rows("Books.base", "probe native", "Dune"));
 	note("ObjectList · fileclass-table", await rows("Books.base", "probe ours", "Dune"));
 
+	// Cells are truncated with an ellipsis and carry the full value as a tooltip: it must be the
+	// rendered text too, or hovering would hand back the JSON the cell was fixed not to show.
+	note("hover title on the group cell", await page.evaluate(() => {
+		const hit = Array.from(document.querySelectorAll(".bases-tr, tbody tr")).find((r) =>
+			r.textContent.includes("Dune")
+		);
+		return Array.from(hit?.querySelectorAll("td") ?? [])
+			.map((c) => c.getAttribute("title"))
+			.filter(Boolean);
+	}));
+
 	// -- the plugin's own surface, which does apply the template ---------------------------------
 	note("note fields modal", await page.evaluate(async () => {
 		const file = window.app.vault.getAbstractFileByPath("The Yellow M.md");

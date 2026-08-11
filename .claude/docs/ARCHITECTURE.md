@@ -421,6 +421,11 @@ canvas file tracking (comes with the planned Canvas engine, §9.1).
   would overwrite each other's `order:` on every sync, so the generator and the
   options editor refuse it, naming the class that claimed it first
   (`fileClassClaimingView`).
+- **A group cell shows the field's own display** (#156): `Object`/`ObjectList` cells
+  render through `describeField`, not Bases' `toString()` — same string as the
+  note-fields modal, the property buttons and the API, so the value displayed and the
+  value edited agree. Every other type keeps Bases' value, which knows about formulas,
+  file properties and link rendering. Deps are built once per render, per note.
 - **The `valid` column filters on itself** (#142): its header cycles all → failures
   → clean and carries the failure count. Session-only state, never written to the
   base — and the only route available, since the registry takes no computed

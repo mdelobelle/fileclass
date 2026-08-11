@@ -126,6 +126,10 @@ table but lets you **edit cells in place**: clicking a `note.<field>` cell perfo
 everywhere). **Alt-click** always opens the input. `file.*` and `formula.*` cells
 stay read-only.
 
+In the view switcher it carries an icon of its own — a table with a small gear,
+where the native table is a bare grid — so a base holding both says which is which
+without being opened.
+
 Generated bases use it by default. In any other base, set a view's `type` to
 `fileclass-table` to get the same editing (the managed view keeps working with
 the sync — its type is preserved). It requires the core Bases plugin; with Bases

@@ -8,6 +8,10 @@ All notable changes to Fileclass are documented here. The format follows
 
 ### Changed
 
+- **The `fileclass-table` view type has an icon of its own.** It used the native table's glyph, so
+  in a base holding both the only way to tell them apart in the view switcher was to open them. It
+  is now a table with a small gear — still a table, marked as the one a schema drives.
+
 - **An `ObjectList`'s items are separated by a pipe** instead of a middle dot
   ([#157](https://github.com/mdelobelle/fileclass/issues/157)). Templates use `·` themselves, so
   the boundary between items was the same character as the punctuation inside one:

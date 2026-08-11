@@ -6,6 +6,16 @@ All notable changes to Fileclass are documented here. The format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- **A new `Select` no longer claims to come from Dataview.** Creating a field and choosing
+  *Select* raised *"This field's values come from a legacy Dataview source"* on a field seconds
+  old: the warning tested "this draft has no values source yet", and the draft is shared across
+  types, so switching `Input` → `Select` was enough to trigger it. It now comes from the field's
+  own options — the only shape it was ever meant for — and a list type quietly defaults to an
+  inline list. Found while building the screenshots for the written quickstart, on the exact path
+  a first-time reader takes.
+
 ### Changed
 
 - **The colour swatches are round again.** The compact-modal rule gives every button in a

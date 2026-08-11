@@ -428,15 +428,17 @@ function renderListSettings(
 ): void {
 	container.empty();
 
-	if (draft.sourceType === undefined) {
+	// Only a field that really carries a Dataview query says so. Testing "no source yet" instead
+	// warned on every field switched to `Select` from another type, the draft being shared.
+	if (draft.legacyDvSource) {
 		container.createEl("p", {
 			text:
 				"This field's values come from a legacy Dataview source. Switch it to an inline list, a note, or a Base view below.",
 			cls: "setting-item-description",
 		});
-		// Offer a source picker so the legacy source can be replaced.
-		draft.sourceType = "ValuesList";
 	}
+	// A list type always needs a source; an inline list is the one that needs no setting up.
+	draft.sourceType ??= "ValuesList";
 
 	new Setting(container).setName("Values source").addDropdown((d) => {
 		d.addOption("ValuesList", "Inline list");

@@ -734,7 +734,9 @@ use **Children**. The schema screen keeps its own shortcut for the same thing.
 {{< video "021" >}}
 
 Object/ObjectList fields have a **Display template** (in the schema editor)
-controlling how an item is summarized in the modal and the list editor:
+controlling how an item is summarized everywhere Fileclass shows the value — the
+note-fields modal, the list editor, the property buttons and a
+[table cell](../views/#editable-table-view):
 
 - `{{fieldName}}` — inserts a child field's display, e.g.
   `{{designation}} - {{ville}} - {{pays}}`.
@@ -749,7 +751,10 @@ With a template set, the summary also replaces the raw JSON that Obsidian prints
 a nested property in its own **Properties** panel — Obsidian types a mapping as
 `unknown` and shows it read-only, so nothing is taken away, and the JSON stays in the
 tooltip. Without a template, the panel is left exactly as Obsidian renders it.
-- For **ObjectList**, each item's display is prefixed by its **rank** (`1.`, `2.`…).
+- For **ObjectList**, each item's display is prefixed by its **rank** (`1.`, `2.`…),
+  and items are separated by a `|` — punctuation a template is unlikely to carry, so
+  the boundary between two items never reads as part of one:
+  `1. Paperback · 1990 | 2. Hardcover · 1965`.
 
 ## Structured fields (JSON / YAML)
 

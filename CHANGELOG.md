@@ -6,6 +6,16 @@ All notable changes to Fileclass are documented here. The format follows
 
 ## [Unreleased]
 
+### Changed
+
+- **An `ObjectList`'s items are separated by a pipe** instead of a middle dot
+  ([#157](https://github.com/mdelobelle/fileclass/issues/157)). Templates use `·` themselves, so
+  the boundary between items was the same character as the punctuation inside one:
+  `1. Paperback · 1990  ·  2. Hardcover · 1965` distinguished them by double spacing alone, which
+  survives neither a truncated table cell nor a skimmed modal. It now reads
+  `1. Paperback · 1990 | 2. Hardcover · 1965`, in every surface at once — the note-fields modal, the
+  property buttons, table cells, and the `display` string the public API returns.
+
 ### Fixed
 
 - **A table now reads an `Object` the way the rest of the plugin does**

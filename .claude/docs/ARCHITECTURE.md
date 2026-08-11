@@ -426,6 +426,35 @@ canvas file tracking (comes with the planned Canvas engine, §9.1).
   base — and the only route available, since the registry takes no computed
   properties (§3.1).
 
+### 11.1 Reverse relations (#154, `reverseView.ts` / `reverseSync.ts`)
+
+The relation a bound link field declares, read from the other end: from an author,
+the books whose `author` points at it. Fileclass **authors a view and embeds it**;
+Bases evaluates the filter and nothing is stored (§9 stands).
+
+- **One view per relation, not per note.** `this.file` in an embedded base is the
+  note holding the embed (measured, §3.1), so `Book by author` answers for every
+  author. Reuse is recognition by **name**, and a reused view is never touched —
+  columns, sort and filters included, the same restraint `mirrorBaseView` shows.
+- **The filter** is the class's own scope (`fileClassViewFilter`, so folder- and
+  tag-bound notes stay in) plus one clause: `author == this.file.asLink()`, or
+  `contributors.contains(this.file.asLink())` for a list. Two expressions, because
+  no single one covers both cardinalities (§3.1). **Never** compare basenames.
+- **Columns** come from the class's managed view when its base holds one — the
+  shape the reader already chose — else the full field mirror; minus the pointing
+  field, which holds the host on every row of a reverse table.
+- **Discovery** asks each source view whether the host is among its candidates,
+  memoised per `(baseFile, viewName)` in `QueryCache`. It runs **on invocation
+  only** (§6: each pass is O(vault)). Root fields with a base binding only: an
+  unbound link field would make every class a candidate from every note, and a
+  `Select` holding a name is not a relation.
+- **Writing into a note's body** is the plugin's one write outside
+  `processFrontMatter`: at the cursor when the editor is open in source mode, else
+  appended. An existing embed is jumped to, never duplicated and never rewritten.
+- Fixture `demo/901_reverse_relation` + `demo/reverse-probe.mjs` re-verify the whole
+  chain (plain link, aliased link, namesake in another folder, reuse by the second
+  author) after an Obsidian upgrade.
+
 ## 12. Public API + CLI/TUI
 
 **Goal:** a JSON-serializable public surface reusable from Obsidian's own CLI

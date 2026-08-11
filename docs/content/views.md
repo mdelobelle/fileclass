@@ -262,3 +262,64 @@ its toolbar opens the class. A note can hold several, each with its own toolbar.
 
 A dashboard note is then just a note: headings, prose, and the tables the classes
 already describe.
+
+## The other end of a relation
+
+`Book.author` takes its candidates from `Authors.base`. From a book you reach its
+author in one click — and from the author you reach nothing, even though the
+schema describes that relation completely. **Insert notes that point here**, from
+the command palette or a note's right-click menu, closes the loop:
+
+![An author note in reading mode: its properties, its prose, and a table of the books whose author it is](../reverse/reverse-relation.png)
+
+Fileclass writes a **view** into the target class's base and embeds it. Nothing is
+evaluated and nothing is stored: the table is Bases answering a filter, live.
+
+### One view serves every note
+
+The view is called **`Book by author`** — the class and the field, never the note
+you ran it from. Inside an embedded base, `this.file` is the note **holding the
+embed**, so the same view shows each author their own books. The first author to
+ask creates it; every author after that only gets the embed, and a base does not
+end up with four hundred near-identical views.
+
+Because the view is shared, it is also yours to keep: run the command again and
+Fileclass reuses what it finds, with whatever columns, sort and filter you have
+given it since.
+
+### What the filter says
+
+Two clauses: the class's own scope — property, folders and tags, exactly as in
+[a managed view](#what-the-managed-view-filters-on) — and the relation itself,
+`author == this.file.asLink()`, or `contributors.contains(this.file.asLink())`
+when the field holds several links.
+
+It compares **links**, not names. So an aliased link (`[[Frank Herbert|Herbert]]`)
+still matches, and two authors who share a basename in different folders keep
+their own books apart.
+
+The columns come from the class's own table when its base has one — trim that
+table to five columns and the reverse table arrives with the same five. The
+pointing field is left out: down this table it holds the host note on every row.
+
+### Where the embed goes
+
+At the **cursor** when the note is open in edit mode, appended at the end
+otherwise. If an embed of that view is already in the note, Fileclass takes you to
+it rather than adding a second one, and never rewrites the one that is there.
+
+### What it can read backwards
+
+A field qualifies when it holds links (`File`, `MultiFile`, `Media`,
+`MultiMedia`) **and** draws its candidates from a base view — that binding is what
+declares the relation. So:
+
+- a `Select` holding an author's name is not a relation: nothing resolves it to a
+  file, and no filter over it could survive a rename;
+- a link field with no base binding accepts any note in the vault, which would
+  make every class a candidate from every note;
+- links nested inside an `Object` are out of scope.
+
+Discovery asks each source view whether this note is one of its candidates, which
+is a scan of the vault per view. It runs only when you invoke the command — never
+on opening a note — and views shared by several fields are asked once.

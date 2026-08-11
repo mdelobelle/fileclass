@@ -40,7 +40,7 @@ function liveOptions(plugin: FileclassPlugin, name: string): FileClassOptions | 
  * tag that binds a note to this class. Read live, like the rest of `liveOptions`
  * — a class mapped to a folder a second ago must produce a view that sees it.
  */
-function classScope(plugin: FileclassPlugin, name: string): ClassScope {
+export function classScope(plugin: FileclassPlugin, name: string): ClassScope {
 	const options = liveOptions(plugin, name);
 	const tags = [...(options?.tagNames ?? [])];
 	// `mapWithTag` means the class name itself is the tag (single-word only).

@@ -6,6 +6,30 @@ All notable changes to Fileclass are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- **Read a relation from the other end** ([#154](https://github.com/mdelobelle/fileclass/issues/154)).
+  `Book.author` takes its candidates from `Authors.base`, so from a book you reach its author in
+  one click — and from the author, nothing. **Fileclass: insert notes that point here**, also on a
+  note's right-click menu, writes the view that reads it backwards into the target class's base and
+  embeds it in the note. Nothing is evaluated and nothing is stored: the table is Bases answering a
+  filter, live and editable in place.
+
+  **One view serves every note.** It is named after the class and the field —
+  `Book by author` — never after the note you ran it from, because inside an embedded base
+  `this.file` is the note holding the embed. The first author to ask creates the view; every author
+  after that only gets the embed, and it is reused with whatever columns, sort and filter you have
+  given it since.
+
+  The filter compares **links**, not names: an aliased link (`[[Frank Herbert|Herbert]]`) still
+  matches, and two authors sharing a basename in different folders keep their own books apart. It
+  carries the class's whole scope too, so notes bound by folder or tag are in. Columns come from the
+  class's own table when its base has one, minus the pointing field — down a reverse table that
+  column holds the same note on every row.
+
+  The embed goes in at the cursor when the note is open, appended otherwise; an embed already there
+  is jumped to, never duplicated and never rewritten.
+
 ## [0.2.11] - 2026-08-11
 
 ### Added

@@ -23,6 +23,7 @@ const cls = (name: string, over: Partial<SchemaClass> = {}): SchemaClass => ({
 	bookmarksGroups: [],
 	baseDeps: [],
 	canvasDeps: [],
+	fields: [],
 	...over,
 });
 
@@ -36,10 +37,38 @@ describe("ids are deterministic, because recognition depends on them", () => {
 });
 
 describe("what the canvas should show", () => {
-	it("gives every class a file node", () => {
-		const { nodes } = desiredSchemaCanvas([cls("Book"), cls("Media")]);
+	it("gives every class a text node carrying its schema", () => {
+		const { nodes } = desiredSchemaCanvas([
+			cls("Book", { fields: [{ name: "author", type: "File" }, { name: "pages", type: "Number" }] }),
+			cls("Media"),
+		]);
 		expect(nodes.map((n) => n.id)).toEqual(["fileclass:Book", "fileclass:Media"]);
-		expect(nodes[0]).toMatchObject({ type: "file", file: "Classes/Book.md" });
+		expect(nodes[0].type).toBe("text");
+		// A file node previewed the note and showed everything but the fields, which is what a
+		// schema is: the node says them itself now.
+		expect(nodes[0].text).toContain("[[Book]]");
+		expect(nodes[0].text).toContain("| author | File |");
+		expect(nodes[0].text).toContain("| pages | Number |");
+	});
+
+	it("says so when a class has no field yet, rather than an empty table", () => {
+		const { nodes } = desiredSchemaCanvas([cls("Draft")]);
+		expect(nodes[0].text).toContain("*no field yet*");
+	});
+
+	it("counts what an Object holds instead of expanding it", () => {
+		const { nodes } = desiredSchemaCanvas([
+			cls("Book", { fields: [{ name: "editions", type: "ObjectList", nested: 3 }] }),
+		]);
+		expect(nodes[0].text).toContain("| editions *(3 inside)* | ObjectList |");
+	});
+
+	it("is taller for a longer schema", () => {
+		const short = desiredSchemaCanvas([cls("A", { fields: [{ name: "x", type: "Input" }] })]);
+		const long = desiredSchemaCanvas([
+			cls("A", { fields: Array.from({ length: 8 }, (_, i) => ({ name: `f${i}`, type: "Input" })) }),
+		]);
+		expect(long.nodes[0].height ?? 0).toBeGreaterThan(short.nodes[0].height ?? 0);
 	});
 
 	it("draws inheritance, and labels it with what the child drops", () => {
@@ -165,18 +194,16 @@ describe("reconciling never moves what the reader arranged", () => {
 	it("keeps the position, size and colour of a node it already knows", () => {
 		const existing: CanvasDoc = {
 			nodes: [
-				{ id: "fileclass:Book", type: "file", file: "Classes/Book.md", x: 999, y: -50, width: 500, height: 240, color: "3" },
+				{ id: "fileclass:Book", type: "text", text: "[[Book]] (stale)", x: 999, y: -50, width: 500, height: 240, color: "3" },
 			],
 			edges: [],
 		};
 		const { doc } = reconcileSchemaCanvas(existing, desired);
-		expect(doc.nodes.find((n) => n.id === "fileclass:Book")).toMatchObject({
-			x: 999,
-			y: -50,
-			width: 500,
-			height: 240,
-			color: "3",
-		});
+		const book = doc.nodes.find((n) => n.id === "fileclass:Book");
+		expect(book).toMatchObject({ x: 999, y: -50, width: 500, height: 240, color: "3" });
+		// Geometry kept, content refreshed — the same contract as a claim card.
+		expect(book?.text).toContain("[[Book]]");
+		expect(book?.text).not.toContain("stale");
 	});
 
 	it("rewrites a claim card's text while keeping the box it was given", () => {
@@ -196,7 +223,7 @@ describe("reconciling never moves what the reader arranged", () => {
 	it("drops a node of ours the classes no longer justify, and its edges", () => {
 		const existing: CanvasDoc = {
 			nodes: [
-				{ id: "fileclass:Gone", type: "file", file: "Classes/Gone.md", x: 0, y: 0, width: 320, height: 100 },
+				{ id: "fileclass:Gone", type: "text", text: "[[Gone]]", x: 0, y: 0, width: 320, height: 100 },
 			],
 			edges: [
 				{ id: "edge:Gone:extends", fromNode: "fileclass:Gone", fromSide: "top", toNode: "fileclass:Book", toSide: "bottom" },
@@ -212,7 +239,7 @@ describe("reconciling never moves what the reader arranged", () => {
 		const existing: CanvasDoc = {
 			nodes: [
 				{ id: "abc123", type: "text", text: "my own note about this model", x: -400, y: 0, width: 300, height: 80 },
-				{ id: "fileclass:Book", type: "file", file: "Classes/Book.md", x: 0, y: 0, width: 320, height: 100 },
+				{ id: "fileclass:Book", type: "text", text: "[[Book]]", x: 0, y: 0, width: 320, height: 100 },
 			],
 			edges: [{ id: "mine1", fromNode: "abc123", fromSide: "right", toNode: "fileclass:Book", toSide: "left" }],
 		};

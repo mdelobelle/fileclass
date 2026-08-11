@@ -22,7 +22,7 @@ import {
 } from "@codemirror/view";
 
 import type FileclassPlugin from "../../../main";
-import { fileWithFields, makeIndicatorIcon } from "./indicatorDom";
+import { indicatorTargetFile, makeIndicatorIcon } from "./indicatorDom";
 
 /** Scope class for CM-managed widgets — never touched by the DOM removers. */
 const LP_SCOPE = "fileclass-indicator--lp";
@@ -114,7 +114,7 @@ export function buildLivePreviewExtension(plugin: FileclassPlugin) {
 									getLinkpath(text),
 									sourcePath
 								);
-								const file = dest && fileWithFields(plugin, dest.path);
+								const file = dest && indicatorTargetFile(plugin, dest.path);
 								if (file) {
 									pending = {
 										deco: Decoration.widget({

@@ -33,14 +33,8 @@ export interface SchemaClass {
 	baseDeps: { path: string; kind: "values" | "candidates" }[];
 	/** Canvases feeding a Canvas-family field. */
 	canvasDeps: string[];
-	/**
-	 * How many frontmatter keys the class note carries.
-	 *
-	 * A canvas `file` node renders the note's Properties block, and a fixed height cut it off
-	 * halfway: a class with `icon`, `fields`, `extends`, `excludes`, `tagNames` and a base to
-	 * mirror into shows six rows, and 150 units showed one. The node is sized to hold them.
-	 */
-	propertyCount?: number;
+	/** The class's own fields, in declaration order: what the node's table lists. */
+	fields: { name: string; type: string; nested?: number }[];
 }
 
 export interface CanvasNode {
@@ -88,11 +82,23 @@ interface Desired {
 }
 
 const NODE_W = 320;
-/** A file node previews the note's title and properties; 100 clipped both. */
+/** Wide enough for a two-column table of field names and types. */
+const CLASS_W = 380;
 const NODE_H = 150;
-/** Title, the "Properties" heading, one row per key, and the box's own padding. */
-const classHeight = (keys: number | undefined): number =>
-	keys === undefined ? NODE_H : Math.max(NODE_H, 110 + keys * 34);
+/**
+ * The wikilink, the table's header, one row per field, and room to breathe.
+ *
+ * Measured rather than guessed, in canvas units at a known scale: a table row is **29**, the
+ * link's line 27, and the whole content runs 223 units for three fields and 577 for fifteen —
+ * `135 + 30n`. The constant here adds a margin on top of that.
+ *
+ * Two wrong readings on the way, both worth not repeating. The first formula (120 + 30n) cut the
+ * last row off every table. Then `scrollHeight` said nothing was clipped, because the preview
+ * inside a node scrolls — and it *over*-states the need, since Obsidian's preview pads its
+ * bottom generously. The honest measure is the distance from the preview's top to the table's
+ * bottom, divided by the canvas scale read from its own API.
+ */
+const classHeight = (fields: number): number => 165 + Math.max(1, fields) * 32;
 const CARD_W = 300;
 /** A card is as tall as its lines: a title, one per entry, and room for the box's padding. */
 const cardHeight = (lines: number): number => 70 + Math.max(1, lines) * 30;
@@ -138,6 +144,30 @@ export function claimCardText(kind: ClaimKind, entries: string[]): string {
 	return [`**${title}**`, ...shown].join("\n");
 }
 
+/**
+ * A class's node: a link to its note, then its schema as a table.
+ *
+ * A `file` node was the first shape, and it was half a diagram: Obsidian previews the note, so
+ * you saw `icon`, `extends` and the `fields` key as raw JSON — everything except the fields
+ * themselves, which are the thing a schema *is*. A text node can say it in two columns, and the
+ * wikilink keeps the node navigable (and carries the schema icon, like any other link to a class).
+ *
+ * Own fields only: what a class inherits is drawn by the edge to its parent, and repeating a
+ * parent's fields in every child would make the diagram lie about where they are declared.
+ */
+export function classCardText(cls: SchemaClass): string {
+	const lines = [`[[${cls.name}]]`, "", "| Field | Type |", "| --- | --- |"];
+	if (!cls.fields.length) {
+		lines.push("| *no field yet* | |");
+	} else {
+		for (const f of cls.fields) {
+			const nested = f.nested ? ` *(${f.nested} inside)*` : "";
+			lines.push(`| ${f.name}${nested} | ${f.type} |`);
+		}
+	}
+	return lines.join("\n");
+}
+
 /** The tags a class claims, the implicit `mapWithTag` one included. */
 export function claimedTags(cls: SchemaClass): string[] {
 	return cls.mapWithTag ? [cls.name, ...cls.tagNames] : [...cls.tagNames];
@@ -181,9 +211,10 @@ export function desiredSchemaCanvas(classes: SchemaClass[]): Desired {
 	for (const cls of classes) {
 		add({
 			id: nodeIdFor.fileClass(cls.name),
-			type: "file",
-			file: cls.path,
-			height: classHeight(cls.propertyCount),
+			type: "text",
+			text: classCardText(cls),
+			height: classHeight(cls.fields.length),
+			width: CLASS_W,
 			hint: grid.get(cls.name),
 		});
 	}

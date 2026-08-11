@@ -6,14 +6,22 @@ All notable changes to Fileclass are documented here. The format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- **A link to a fileClass note shows the schema icon.** `[[Book]]` in a note got no icon while
+  the same class did in the file explorer: the link surfaces asked for a note with *resolved
+  fields*, and a class note has none of its own. Every surface now asks the same question — is
+  this a class note, or a note with fields — and gives the same answer.
+
 ### Added
 
 - **A canvas that mirrors your fileClasses** ([#149](https://github.com/mdelobelle/fileclass/issues/149)).
   **Fileclass: draw the schema canvas**, and an entry on the class folder's right-click menu,
-  draws the model your classes make: inheritance (with the child's `excludes` on the edge), a node
-  per `.base` feeding a field — `candidates` for a link field, `values` for a list's source — a
-  node per `.canvas` behind a Canvas field, and a card per class listing the folders, tags and
-  bookmark groups it claims. Every node is a file node, so the diagram is navigable.
+  draws the model your classes make. Each class carries **its schema as a table** — every field
+  with its type, `(N inside)` for an object — behind a link to its note; then inheritance with the
+  child's `excludes` on the edge, a preview of each `.base` feeding a field (`candidates` for a
+  link field, `values` for a list's source), a node per `.canvas` behind a Canvas field, and a card
+  per class listing the folders, tags and bookmark groups it claims.
 
   It also says what silently does not work: the index skips any tag containing a space, so a class
   named `Media Item` with *Map with tag* on claims nothing at all. Those entries are struck

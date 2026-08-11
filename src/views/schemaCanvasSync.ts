@@ -13,7 +13,7 @@ import { Notice, TFile, TFolder, normalizePath } from "obsidian";
 
 import type FileclassPlugin from "../../main";
 import { baseBindingOptionsFromOptions, canvasOptions, listOptionsFromOptions } from "../fields/options";
-import { FieldType } from "../schema/field";
+import { FieldType, isRootField } from "../schema/field";
 import { CanvasDoc, SchemaClass, desiredSchemaCanvas, reconcileSchemaCanvas } from "./schemaCanvas";
 
 /** Field types whose candidates come from a `.base` view. */
@@ -62,11 +62,19 @@ export function collectSchemaClasses(plugin: FileclassPlugin): SchemaClass[] {
 				if (path) canvases.add(normalizePath(path));
 			}
 		}
-		const frontmatter = plugin.app.metadataCache.getFileCache(file)?.frontmatter ?? {};
+		// Root fields in declaration order, with a count for what an Object holds: a schema read
+		// at a glance, not a full expansion of every nested field.
+		const roots = parsed.fields.filter((f) => isRootField(f));
+		const childCount = (id: string): number =>
+			parsed.fields.filter((f) => f.path.split("____").includes(id)).length;
 		out.push({
 			name,
 			path: file.path,
-			propertyCount: Object.keys(frontmatter).length,
+			fields: roots.map((f) => ({
+				name: f.name,
+				type: f.type,
+				nested: f.type === "Object" || f.type === "ObjectList" ? childCount(f.id) : undefined,
+			})),
 			extends: parsed.options.extends,
 			excludes: parsed.options.excludes,
 			mapWithTag: parsed.options.mapWithTag,

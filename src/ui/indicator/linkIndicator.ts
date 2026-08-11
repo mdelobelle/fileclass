@@ -16,7 +16,7 @@ import { EditorView } from "@codemirror/view";
 
 import type FileclassPlugin from "../../../main";
 import { INDEXED_EVENT } from "../../schema/fileclassIndex";
-import { fileWithFields, LINK_SCOPE, makeIndicatorIcon, removeIndicators } from "./indicatorDom";
+import { indicatorTargetFile, LINK_SCOPE, makeIndicatorIcon, removeIndicators } from "./indicatorDom";
 import { buildLivePreviewExtension, refreshLivePreviewIndicators } from "./livePreview";
 
 interface ViewWithFile {
@@ -129,7 +129,7 @@ export class LinkIndicator extends Component {
 				const name = (title.textContent ?? "").trim();
 				if (!name) return;
 				const dest = this.plugin.app.metadataCache.getFirstLinkpathDest(getLinkpath(name), "");
-				const file = dest && fileWithFields(this.plugin, dest.path);
+				const file = dest && indicatorTargetFile(this.plugin, dest.path);
 				if (!file) return;
 				title.insertAdjacentElement("afterend", makeIndicatorIcon(this.plugin, file, LINK_SCOPE));
 			});
@@ -149,7 +149,7 @@ export class LinkIndicator extends Component {
 		const linktext = getLinkpath(href.split("#")[0].trim());
 		if (!linktext) return;
 		const dest = this.plugin.app.metadataCache.getFirstLinkpathDest(linktext, sourcePath);
-		const file = dest && fileWithFields(this.plugin, dest.path);
+		const file = dest && indicatorTargetFile(this.plugin, dest.path);
 		if (!file) return;
 		link.insertAdjacentElement("afterend", makeIndicatorIcon(this.plugin, file, LINK_SCOPE));
 	}

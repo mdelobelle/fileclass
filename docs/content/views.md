@@ -207,16 +207,19 @@ and bookmark groups each class claims. That model lives in frontmatter spread ov
 the class notes, which is to say it lives in your head.
 
 **Fileclass: draw the schema canvas** puts it on a canvas — also on the
-right-click menu of your class folder. Every node is a **file** node, so the
-diagram is navigable: click a class to open it, click a base to open the base.
+right-click menu of your class folder.
 
 ![A schema canvas: Media above its four children, their binding cards, and the bases and canvas their fields draw from](../schema/schema-canvas.png)
 
-- **classes**, laid out by inheritance: parents above, families side by side, and
-  classes in no chain stacked on the left;
+- **one node per class**, carrying a link to its note and **its schema as a table**
+  — every field it declares, with its type, and `(N inside)` for an `Object` rather
+  than an expansion of it. The link behaves like any link to a class: the icon
+  beside it opens the schema editor. Laid out by inheritance — parents above,
+  families side by side, classes in no chain stacked on the left;
 - an **`extends` edge**, labelled with what the child drops (`− acquired`), capped
   at three names plus a count;
-- a **`.base` node** per base feeding a field, edged `candidates` for a
+- a **`.base` file node** per base feeding a field — a real preview of it, so the
+  table you depend on is right there — edged `candidates` for a
   `File`/`Media` field and `values` for a `Select`/`Cycle`/`Multi` values source —
   the same relation, said twice because it is two mechanisms;
 - a **`.canvas` node** per canvas feeding a [Canvas field](../fields/#canvas-fields-canvas--canvasgroup--canvasgrouplink);

@@ -16,7 +16,7 @@ import { INDEXED_EVENT } from "../../schema/fileclassIndex";
 import {
 	makeIndicatorIcon,
 	NAV_SCOPE,
-	navIndicatorFile,
+	indicatorTargetFile,
 	removeIndicators,
 } from "./indicatorDom";
 
@@ -96,7 +96,7 @@ export class FieldIndicator extends Component {
 
 	/** File eligible for a nav indicator: fileClass note or fields-bound note. */
 	private applies(path: string | null): TFile | null {
-		return navIndicatorFile(this.plugin, path);
+		return indicatorTargetFile(this.plugin, path);
 	}
 
 	private inject(target: HTMLElement, file: TFile): void {

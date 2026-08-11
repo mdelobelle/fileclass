@@ -158,6 +158,22 @@ export class FileclassSettingTab extends PluginSettingTab {
 			);
 
 		new Setting(containerEl)
+			.setName("Schema canvas")
+			.setDesc(
+				"Where Draw the schema canvas writes. Blank uses <class folder>/Schema.canvas. " +
+					"The file is yours to arrange afterwards: a sync keeps every position it finds."
+			)
+			.addText((text) =>
+				text
+					.setPlaceholder("Classes/Schema.canvas")
+					.setValue(this.plugin.settings.schemaCanvasPath)
+					.onChange(async (value) => {
+						this.plugin.settings.schemaCanvasPath = value;
+						await this.plugin.saveSettings();
+					})
+			);
+
+		new Setting(containerEl)
 			.setName("Canvas fields engine")
 			.setDesc(
 				"Auto-fill Canvas/CanvasGroup/CanvasGroupLink fields from .canvas files. This writes to frontmatter automatically when a canvas changes."

@@ -184,3 +184,7 @@ other. Captions are English; YouTube translates them into your language.
 ## Groups on a canvas as data
 
 {{< video "038" >}}
+
+## The model your classes make
+
+{{< video "039" >}}

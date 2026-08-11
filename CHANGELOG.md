@@ -8,6 +8,40 @@ All notable changes to Fileclass are documented here. The format follows
 
 ### Fixed
 
+- **A link on a canvas keeps its icon after the file is written.** A canvas renders its text
+  nodes as markdown, so `[[Book]]` on the schema canvas is an inline link like any other — but a
+  canvas is re-rendered whenever the file changes, and nothing re-decorated it: measured, three
+  icons after drawing the canvas and none after a resync, with a pan or a zoom never bringing
+  them back. Canvas leaves are watched now, like the backlinks pane and Bases views.
+
+- **A link to a fileClass note shows the schema icon.** `[[Book]]` in a note got no icon while
+  the same class did in the file explorer: the link surfaces asked for a note with *resolved
+  fields*, and a class note has none of its own. Every surface now asks the same question — is
+  this a class note, or a note with fields — and gives the same answer.
+
+### Added
+
+- **A canvas that mirrors your fileClasses** ([#149](https://github.com/mdelobelle/fileclass/issues/149)).
+  **Fileclass: draw the schema canvas**, and an entry on the class folder's right-click menu,
+  draws the model your classes make. Each class carries **its schema as a table** — every field
+  with its type, `(N inside)` for an object — behind a link to its note; then inheritance with the
+  child's `excludes` on the edge, a preview of each `.base` feeding a field (`candidates` for a
+  link field, `values` for a list's source), a node per `.canvas` behind a Canvas field, and a card
+  per class listing the folders, tags and bookmark groups it claims.
+
+  It also says what silently does not work: the index skips any tag containing a space, so a class
+  named `Media Item` with *Map with tag* on claims nothing at all. Those entries are struck
+  through with the reason, which turns the picture into a diagnostic.
+
+  **The layout is yours.** The first run places everything — parents above children, families side
+  by side, unrelated classes stacked on the left. Every run after that keeps the geometry of what
+  it recognises, including a card's box while its text is rewritten, adds what is new in a free
+  slot, and never moves or removes a node you added. Sync is explicit, like a base's: a file you
+  arranged by hand is not one to rewrite unasked. When the canvas is open, it is written through
+  the open view, so it redraws with nothing to close.
+
+### Fixed
+
 - **The class folder is not offered as a binding target.** *Files paths* listed every folder in
   the vault, the one holding your class notes included — and binding that one makes every class a
   note *of* the class it binds: schemas validating each other, a class note in its own table. The

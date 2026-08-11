@@ -158,6 +158,20 @@ the field's input is guided**. What to reach for next:
 - [generated tables](https://mdelobelle.github.io/fileclass/views/) — one command
   turns a class into an editable Bases view.
 
+## See the model your classes make
+
+Your classes form a model: what inherits from what, which fields draw their values
+from a base, which folders and tags each class claims. **Fileclass: draw the schema
+canvas** puts it on an Obsidian canvas: each class shows **its fields and their
+types**, the bases it depends on are previewed beside it, and the whole thing is
+**arranged by you** — a later sync keeps every position you gave it.
+
+![A schema canvas: Media above its four children with the fields they drop, cards listing what each class claims, and the bases and canvas their fields draw from](https://raw.githubusercontent.com/mdelobelle/fileclass/main/docs/static/schema/schema-canvas.png)
+
+It also reports what silently does not work: a tag that can never bind — the index
+skips any tag containing a space — is struck through with the reason.
+[More](https://mdelobelle.github.io/fileclass/views/#the-schema-canvas).
+
 ## Coming from Metadata Menu
 
 Your fileClass notes are read as-is. `Lookup` and `Formula` are out of scope (use

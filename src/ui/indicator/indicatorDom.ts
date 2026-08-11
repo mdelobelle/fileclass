@@ -30,10 +30,14 @@ export function fileWithFields(plugin: FileclassPlugin, path: string | null): TF
 }
 
 /**
- * The file for a nav-surface indicator: a fileClass note (→ opens the schema
- * editor) or a note with resolved fields (→ opens the note-fields modal).
+ * The file an indicator should decorate, on any surface: a **fileClass note** (the icon opens
+ * the schema editor) or a note with resolved fields (it opens the note-fields modal).
+ *
+ * The link surfaces used to ask `fileWithFields` instead, which requires *resolved fields* — a
+ * class note has none of its own, so `[[Book]]` in a note got no icon while the same class in
+ * the file explorer did. One rule now, and the same answer everywhere.
  */
-export function navIndicatorFile(plugin: FileclassPlugin, path: string | null): TFile | null {
+export function indicatorTargetFile(plugin: FileclassPlugin, path: string | null): TFile | null {
 	if (path && plugin.index.fileClassNameOfNote(path)) {
 		const file = plugin.app.vault.getFileByPath(path);
 		if (file instanceof TFile) return file;

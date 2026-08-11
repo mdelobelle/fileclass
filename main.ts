@@ -14,6 +14,7 @@ import { isBasesAvailable, onCorePluginChange } from "./src/engine/basesAdapter"
 import { QueryCache } from "./src/engine/queryCache";
 import { createFileClass } from "./src/commands/createFileClass";
 import { insertMissingFields } from "./src/commands/insertMissingFields";
+import { syncSchemaCanvas } from "./src/views/schemaCanvasSync";
 import { bulkInsertMissingFields } from "./src/commands/bulkInsertMissing";
 import { ChoiceSuggestModal } from "./src/fields/input/valueModals";
 import { reorderFrontmatter } from "./src/io/reorderFrontmatter";
@@ -325,6 +326,18 @@ export default class FileclassPlugin extends Plugin {
 				const name = active ? this.index.fileClassNameOfNote(active.path) : undefined;
 				if (!name || !fileClassBaseFile(this, name)) return false;
 				if (!checking) openFileClassBase(this, name);
+				return true;
+			},
+		});
+
+		// #149 — the model a vault's classes make, drawn. Explicit, like the base sync: the file
+		// is arranged by hand, so it is never written unasked.
+		this.addCommand({
+			id: "draw-schema-canvas",
+			name: "Draw the schema canvas",
+			checkCallback: (checking) => {
+				if (!this.index.fileClassNames.length) return false;
+				if (!checking) void syncSchemaCanvas(this);
 				return true;
 			},
 		});

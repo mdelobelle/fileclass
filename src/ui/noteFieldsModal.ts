@@ -37,7 +37,7 @@ import { openFileClassSchema } from "./fileClassSchemaModal";
 import { attachAltAffordance } from "./altAffordance";
 import { openFieldSettings } from "./fieldSettings";
 import { makeValuePreview } from "./valuePreview";
-import { makeIndicatorIcon, MODAL_SCOPE, navIndicatorFile } from "./indicator/indicatorDom";
+import { indicatorTargetFile, makeIndicatorIcon, MODAL_SCOPE } from "./indicator/indicatorDom";
 import { renderValueWithLinks } from "./valueLinks";
 
 export class NoteFieldsModal extends Modal {
@@ -312,7 +312,7 @@ export class NoteFieldsModal extends Modal {
 	private linkIndicator(linktext: string): HTMLElement | null {
 		const dest = this.app.metadataCache.getFirstLinkpathDest(linktext, this.file.path);
 		if (!dest) return null;
-		const target = navIndicatorFile(this.plugin, dest.path);
+		const target = indicatorTargetFile(this.plugin, dest.path);
 		return target ? makeIndicatorIcon(this.plugin, target, MODAL_SCOPE) : null;
 	}
 

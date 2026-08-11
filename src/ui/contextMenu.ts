@@ -15,6 +15,7 @@ import { reorderPlan } from "../schema/reorder";
 import { isClassFolder } from "../schema/classFolder";
 import { pickAndUpdateField } from "../fields/fieldActions";
 import { pickAndCreateBase } from "../views/baseFileGenerator";
+import { syncSchemaCanvas } from "../views/schemaCanvasSync";
 import { fileClassBaseFile, openFileClassBase } from "../views/baseSync";
 import { AddFileClassModal } from "./addFileClassModal";
 import { openBulkEdit } from "./bulkEditModal";
@@ -67,6 +68,13 @@ export class FileclassContextMenu extends Component {
 				.setTitle("Create a class")
 				.setIcon("file-spreadsheet")
 				.onClick(() => createFileClass(this.plugin))
+		);
+		// The model these classes make is not visible anywhere else (#149).
+		menu.addItem((entry) =>
+			entry
+				.setTitle("Draw the schema canvas")
+				.setIcon("git-fork")
+				.onClick(() => void syncSchemaCanvas(this.plugin))
 		);
 	}
 

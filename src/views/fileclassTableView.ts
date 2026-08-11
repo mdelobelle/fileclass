@@ -496,7 +496,11 @@ class FileclassTableView extends Component {
 export function registerFileclassTableView(plugin: FileclassPlugin): () => void {
 	return registerFileclassView(plugin.app, FILECLASS_TABLE_VIEW, {
 		name: "Fileclass table",
-		icon: "table",
+		// Not `table`, which is the native view's: in the view switcher the two sat side by side
+		// under the same glyph, and the only way to tell which one a base was using was to open it.
+		// This keeps the table silhouette — it is still a table — and marks it as the one a schema
+		// drives.
+		icon: "table-config",
 		factory: (_controller: unknown, containerEl: HTMLElement) =>
 			new FileclassTableView(plugin, containerEl),
 	});

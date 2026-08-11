@@ -201,6 +201,8 @@ The choice lasts for the session; nothing is written to your base.
 
 ## The schema canvas
 
+{{< video "039" >}}
+
 A vault's fileClasses form a model — what inherits from what, which fields draw
 their values from a `.base`, which are fed by a `.canvas`, and which folders, tags
 and bookmark groups each class claims. That model lives in frontmatter spread over

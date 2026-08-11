@@ -482,5 +482,16 @@
     "durationSeconds": 216,
     "recordedWith": "0.2.10",
     "privacyStatus": "public"
+  },
+  "039": {
+    "id": "zp6jflaZwj0",
+    "url": "https://www.youtube.com/watch?v=zp6jflaZwj0",
+    "title": "Fileclass #039 · The model your classes make",
+    "subject": "The model your classes make",
+    "scenario": "039_the_model_your_classes_make",
+    "doc": "views/#the-schema-canvas",
+    "durationSeconds": 155,
+    "recordedWith": "0.2.11",
+    "privacyStatus": "public"
   }
 }

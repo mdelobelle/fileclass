@@ -231,6 +231,17 @@
 	height: 15px;
 }
 
+/* A value a picker shows but will not add: greyed, with the reason on its second line. */
+.fileclass-toggle-row.fileclass-row-disabled .setting-item-name {
+	color: var(--text-faint);
+}
+.fileclass-toggle-row.fileclass-row-disabled {
+	cursor: default;
+}
+.fileclass-toggle-row.fileclass-row-disabled:hover {
+	background-color: transparent !important;
+}
+
 /*
  * A placeholder while the table has no data yet.
  *

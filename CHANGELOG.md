@@ -8,6 +8,13 @@ All notable changes to Fileclass are documented here. The format follows
 
 ### Fixed
 
+- **The class folder is not offered as a binding target.** *Files paths* listed every folder in
+  the vault, the one holding your class notes included — and binding that one makes every class a
+  note *of* the class it binds: schemas validating each other, a class note in its own table. The
+  row is still listed, greyed, with the reason on its second line, because a folder missing
+  without a word sends the reader looking for it. A class that already carries such a binding
+  keeps it switchable, so nothing written before this rule becomes a trap.
+
 - **A new `Select` no longer claims to come from Dataview.** Creating a field and choosing
   *Select* raised *"This field's values come from a legacy Dataview source"* on a field seconds
   old: the warning tested "this draft has no values source yet", and the draft is shared across

@@ -600,6 +600,14 @@ export interface MultiSelectOptions {
 	 * "(Other)" header.
 	 */
 	groups?: DisplayGroup[];
+	/**
+	 * Why a value cannot be **added** — shown, greyed, rather than hidden.
+	 *
+	 * A value missing from a list is a question ("where is my class folder?"); a value
+	 * present and explained is an answer. One already selected stays switchable, so a
+	 * binding written before the rule can still be removed.
+	 */
+	disabledReason?: (value: string) => string | null;
 }
 
 /** Toggle list for Multi fields over a constrained set of values. */
@@ -792,14 +800,23 @@ export class MultiSelectModal extends Modal {
 			else this.selected.delete(value);
 			this.refreshCounts();
 		};
+		// A value that cannot be added is shown and explained, not dropped from the list.
+		// Already selected, it stays removable: a binding made before the rule is not a trap.
+		const reason = this.selected.has(value) ? null : (this.opts.disabledReason?.(value) ?? null);
 		let toggle: ToggleComponent | undefined;
 		const setting = new Setting(container)
 			.setName(value)
 			.addToggle((t) => {
 				toggle = t;
-				t.setValue(this.selected.has(value)).onChange(apply);
+				t.setValue(this.selected.has(value)).setDisabled(!!reason).onChange(apply);
 			});
 		setting.settingEl.addClass("fileclass-toggle-row");
+		if (reason) {
+			setting.setDesc(reason);
+			setting.settingEl.addClass("fileclass-row-disabled");
+			this.rows.push({ value, el: setting.settingEl });
+			return; // no click handler: the row is inert
+		}
 		const thumb = this.opts.preview?.(value);
 		if (thumb) {
 			setting.nameEl.prepend(thumb);

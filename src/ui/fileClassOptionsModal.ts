@@ -409,6 +409,7 @@ export class FileClassOptionsModal extends Modal {
 					title: `${name} — ${this.name}`,
 					allowed,
 					selected: chosen,
+					disabledReason: key === "filesPaths" ? (v) => this.classFolderReason(v) : undefined,
 					onSubmit: (values) => {
 						this.opts[key] = values;
 						paint();
@@ -430,6 +431,20 @@ export class FileClassOptionsModal extends Modal {
 			.sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
 			.map(([tag]) => tag.replace(/^#/, ""));
 		return { available, nothing: "no tag is used in this vault yet.", unit: "tags" };
+	}
+
+	/**
+	 * Why the class folder cannot be bound as a *Files paths* target.
+	 *
+	 * Binding it would make every class note a note **of** that class: the schemas would
+	 * start validating each other, and a class note would appear in its own table. The row
+	 * stays in the list, greyed and explained — a folder missing without a word would send the
+	 * reader looking for it.
+	 */
+	private classFolderReason(folder: string): string | null {
+		const classes = this.plugin.settings.classFilesPath.replace(/\/+$/, "");
+		if (!classes || folder.replace(/\/+$/, "") !== classes) return null;
+		return "Your class notes live here — binding it would make every class a note of this class.";
 	}
 
 	/** The vault's folders. The root is left out: binding it would claim every note. */

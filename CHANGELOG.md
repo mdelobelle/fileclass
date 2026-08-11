@@ -6,18 +6,7 @@ All notable changes to Fileclass are documented here. The format follows
 
 ## [Unreleased]
 
-### Fixed
-
-- **A link on a canvas keeps its icon after the file is written.** A canvas renders its text
-  nodes as markdown, so `[[Book]]` on the schema canvas is an inline link like any other — but a
-  canvas is re-rendered whenever the file changes, and nothing re-decorated it: measured, three
-  icons after drawing the canvas and none after a resync, with a pan or a zoom never bringing
-  them back. Canvas leaves are watched now, like the backlinks pane and Bases views.
-
-- **A link to a fileClass note shows the schema icon.** `[[Book]]` in a note got no icon while
-  the same class did in the file explorer: the link surfaces asked for a note with *resolved
-  fields*, and a class note has none of its own. Every surface now asks the same question — is
-  this a class note, or a note with fields — and gives the same answer.
+## [0.2.11] - 2026-08-11
 
 ### Added
 
@@ -40,7 +29,31 @@ All notable changes to Fileclass are documented here. The format follows
   arranged by hand is not one to rewrite unasked. When the canvas is open, it is written through
   the open view, so it redraws with nothing to close.
 
+### Changed
+
+- **The colour swatches are round again.** The compact-modal rule gives every button in a
+  modal a 24px height and horizontal padding, which is right for a button that holds a word and
+  wrong for one that *is* a shape: the canvas colour swatches carry their own 30×30 and a
+  `border-radius: 50%`, so they came out as 30×24 ellipses. They and the square side chips are
+  now exempt; an ordinary button in the same modal is still 24px tall.
+
+- **A field's type sits above its own options.** The Type dropdown was under them, so choosing
+  `Canvas` grew nine rows *above* it — canvas file, direction, four edge filters, node colours,
+  matching files — and pushed the control you had just used off the screen. Name, then Type,
+  then whatever that type asks for, then Required: the order in which they are decided.
+
 ### Fixed
+
+- **A link on a canvas keeps its icon after the file is written.** A canvas renders its text
+  nodes as markdown, so `[[Book]]` on the schema canvas is an inline link like any other — but a
+  canvas is re-rendered whenever the file changes, and nothing re-decorated it: measured, three
+  icons after drawing the canvas and none after a resync, with a pan or a zoom never bringing
+  them back. Canvas leaves are watched now, like the backlinks pane and Bases views.
+
+- **A link to a fileClass note shows the schema icon.** `[[Book]]` in a note got no icon while
+  the same class did in the file explorer: the link surfaces asked for a note with *resolved
+  fields*, and a class note has none of its own. Every surface now asks the same question — is
+  this a class note, or a note with fields — and gives the same answer.
 
 - **The class folder is not offered as a binding target.** *Files paths* listed every folder in
   the vault, the one holding your class notes included — and binding that one makes every class a
@@ -56,19 +69,6 @@ All notable changes to Fileclass are documented here. The format follows
   own options — the only shape it was ever meant for — and a list type quietly defaults to an
   inline list. Found while building the screenshots for the written quickstart, on the exact path
   a first-time reader takes.
-
-### Changed
-
-- **The colour swatches are round again.** The compact-modal rule gives every button in a
-  modal a 24px height and horizontal padding, which is right for a button that holds a word and
-  wrong for one that *is* a shape: the canvas colour swatches carry their own 30×30 and a
-  `border-radius: 50%`, so they came out as 30×24 ellipses. They and the square side chips are
-  now exempt; an ordinary button in the same modal is still 24px tall.
-
-- **A field's type sits above its own options.** The Type dropdown was under them, so choosing
-  `Canvas` grew nine rows *above* it — canvas file, direction, four edge filters, node colours,
-  matching files — and pushed the control you had just used off the screen. Name, then Type,
-  then whatever that type asks for, then Required: the order in which they are decided.
 
 ## [0.2.10] - 2026-08-10
 

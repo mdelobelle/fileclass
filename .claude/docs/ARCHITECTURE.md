@@ -663,6 +663,15 @@ dispatcher (`promptFieldValue`/`updateField`, one `processFrontMatter` write, D5
   verify at build time; otherwise the link indicator (19.4) is the entry point.
 
 ### 19.4 Field indicator (`src/ui/indicator/`) — the fragile boundary
+
+**Surfaces that re-render need watching, not decorating once.** Reading view goes through the
+markdown post-processor; Live Preview is a CodeMirror extension; the backlinks pane, Bases views
+and **canvas** leaves are plain DOM that Obsidian rebuilds on its own schedule — a canvas every
+time its file is written. Those are handled by `watch(viewType)`: a MutationObserver per leaf,
+debounced, re-decorating what came back. A surface decorated once and not watched loses its icons
+at the first re-render, silently (measured on the schema canvas: three icons, then none after a
+resync).
+
 - A small clickable icon injected next to a file's name that opens 19.1 for that
   file. **Default: icon only** (no values shown) — the lightest, most robust
   option; showing configured field values beside it (MDM's "extra attributes")

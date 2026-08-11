@@ -8,6 +8,12 @@ All notable changes to Fileclass are documented here. The format follows
 
 ### Fixed
 
+- **A link on a canvas keeps its icon after the file is written.** A canvas renders its text
+  nodes as markdown, so `[[Book]]` on the schema canvas is an inline link like any other — but a
+  canvas is re-rendered whenever the file changes, and nothing re-decorated it: measured, three
+  icons after drawing the canvas and none after a resync, with a pan or a zoom never bringing
+  them back. Canvas leaves are watched now, like the backlinks pane and Bases views.
+
 - **A link to a fileClass note shows the schema icon.** `[[Book]]` in a note got no icon while
   the same class did in the file explorer: the link surfaces asked for a note with *resolved
   fields*, and a class note has none of its own. Every surface now asks the same question — is

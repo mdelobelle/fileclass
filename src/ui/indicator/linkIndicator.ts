@@ -93,6 +93,12 @@ export class LinkIndicator extends Component {
 				});
 			}
 		}
+		// A canvas renders its text nodes as markdown, so `[[Book]]` on the schema canvas is an
+		// inline link like any other — and it is *re-rendered* whenever the file is written.
+		// Measured: three icons after drawing the canvas, none after a resync, and a pan or a
+		// zoom never brought them back. Watched like the other non-markdown surfaces, so a
+		// re-render is followed by a re-decoration.
+		if (s.enableInlineLinkIndicator) this.guard(() => this.watch("canvas"));
 		if (s.enableBacklinkIndicator) this.guard(() => this.watch("backlink"));
 		if (s.enableBasesIndicator) this.guard(() => this.watch("bases"));
 	}

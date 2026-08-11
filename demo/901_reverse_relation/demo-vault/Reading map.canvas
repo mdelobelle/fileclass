@@ -1,0 +1,137 @@
+{
+  "nodes": [
+    {
+      "id": "nFrank",
+      "type": "file",
+      "file": "Frankenstein.md",
+      "x": -900,
+      "y": -200,
+      "width": 340,
+      "height": 110
+    },
+    {
+      "id": "nFound",
+      "type": "file",
+      "file": "Reading list/Foundation.md",
+      "x": -480,
+      "y": -200,
+      "width": 340,
+      "height": 110
+    },
+    {
+      "id": "nDune",
+      "type": "file",
+      "file": "Dune.md",
+      "x": -60,
+      "y": -200,
+      "width": 340,
+      "height": 110
+    },
+    {
+      "id": "nDisp",
+      "type": "file",
+      "file": "Reading list/The Dispossessed.md",
+      "x": 360,
+      "y": -200,
+      "width": 340,
+      "height": 110
+    },
+    {
+      "id": "nLotr",
+      "type": "file",
+      "file": "The Lord of the Rings.md",
+      "x": -480,
+      "y": 60,
+      "width": 340,
+      "height": 110
+    },
+    {
+      "id": "nSmall",
+      "type": "file",
+      "file": "Reading list/Small Gods.md",
+      "x": -60,
+      "y": 60,
+      "width": 340,
+      "height": 110
+    },
+    {
+      "id": "gSf",
+      "type": "group",
+      "label": "Science fiction",
+      "x": -520,
+      "y": -280,
+      "width": 1300,
+      "height": 230,
+      "color": "5"
+    },
+    {
+      "id": "gFan",
+      "type": "group",
+      "label": "Fantasy",
+      "x": -520,
+      "y": 20,
+      "width": 880,
+      "height": 200,
+      "color": "4"
+    },
+    {
+      "id": "nRead",
+      "type": "file",
+      "file": "Reading group.md",
+      "x": 900,
+      "y": -200,
+      "width": 340,
+      "height": 110
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "fromNode": "nFrank",
+      "fromSide": "right",
+      "toNode": "nFound",
+      "toSide": "left",
+      "label": "then"
+    },
+    {
+      "id": "e2",
+      "fromNode": "nFound",
+      "fromSide": "right",
+      "toNode": "nDune",
+      "toSide": "left",
+      "label": "then"
+    },
+    {
+      "id": "e3",
+      "fromNode": "nDune",
+      "fromSide": "right",
+      "toNode": "nDisp",
+      "toSide": "left",
+      "label": "then"
+    },
+    {
+      "id": "e4",
+      "fromNode": "nLotr",
+      "fromSide": "right",
+      "toNode": "nSmall",
+      "toSide": "left",
+      "label": "then"
+    },
+    {
+      "id": "e6",
+      "fromNode": "gSf",
+      "fromSide": "right",
+      "toNode": "nRead",
+      "toSide": "left",
+      "label": "feeds"
+    },
+    {
+      "id": "e5",
+      "fromNode": "nDune",
+      "fromSide": "bottom",
+      "toNode": "nSmall",
+      "toSide": "top",
+      "label": "then"
+    }
+  ]
+}

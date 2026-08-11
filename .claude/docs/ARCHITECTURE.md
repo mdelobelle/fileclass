@@ -92,6 +92,26 @@ tests (§14) must catch it.
 - Context file: filters/formulas using `this.file` resolve against
   `controller.currentFile` — set it before `buildBasesContext` for
   embed-context views.
+- **In an *embedded* base, `this.file` is the note holding the embed** (measured on
+  1.13.2, August 2026): one `.base` embedded in `Host A.md` and `Host B.md` returns
+  Host A's rows in the first and Host B's in the second. This is what makes **one**
+  reverse-relation view serve every note of a class (#154) instead of one view per
+  note.
+- **Matching "the note whose link field points at the host"** — verified over CDP
+  against three cases: a plain link, an **aliased** link (`[[A1|Melville]]`), and two
+  notes sharing a basename in different folders.
+  - a `File` field: `author == this.file.asLink()` works, and so do
+    `author.asFile() == this.file`, `author.asFile().path == this.file.path` and
+    `author.linksTo(this.file)`. All four pass the alias and tell the namesakes apart —
+    Bases resolves links on both sides, whether the stored link is a basename or a full
+    path;
+  - a `MultiFile` field: `contributors.contains(this.file.asLink())` works, as does
+    `containsAny`. **`linksTo` and `==` both return nothing on a list.**
+  - **`author.contains(this.file.name)` is wrong** and looks right: it matched a second
+    note whose link pointed at a *different* file with the same basename. Never compare
+    basenames.
+  - So the cardinality needs **two expressions**, not one: there is no form that covers
+    both (`containsAny` on a scalar `File` returned nothing).
 - **What the host asks of a registered view** (traced property by property on the
   object returned by the factory, August 2026):
   - in a **leaf**: `load` → `type` → `focus`, then it *sets* `allProperties` and

@@ -6,6 +6,55 @@ All notable changes to Fileclass are documented here. The format follows
 
 ## [Unreleased]
 
+### Changed
+
+- **An `ObjectList`'s items are separated by a pipe** instead of a middle dot
+  ([#157](https://github.com/mdelobelle/fileclass/issues/157)). Templates use `·` themselves, so
+  the boundary between items was the same character as the punctuation inside one:
+  `1. Paperback · 1990  ·  2. Hardcover · 1965` distinguished them by double spacing alone, which
+  survives neither a truncated table cell nor a skimmed modal. It now reads
+  `1. Paperback · 1990 | 2. Hardcover · 1965`, in every surface at once — the note-fields modal, the
+  property buttons, table cells, and the `display` string the public API returns.
+
+### Fixed
+
+- **A table now reads an `Object` the way the rest of the plugin does**
+  ([#156](https://github.com/mdelobelle/fileclass/issues/156)). An `Object` or `ObjectList` cell
+  showed the stored JSON — and for a nested group, a doubly-escaped version of it, which read worse
+  than the native table's. It now shows the field's `displayTemplate`, exactly as the note-fields
+  modal and the property buttons do: `Study · C-4` where the cell used to say
+  `{"room":"Study","shelf":"{\"unit\":\"C\",\"level\":\"4\"}"}`. The tooltip on a truncated cell
+  follows. Affected both types, and every table — its own tab or embedded in a note.
+
+### Added
+
+- **Read a relation from the other end** ([#154](https://github.com/mdelobelle/fileclass/issues/154)).
+  `Book.author` takes its candidates from `Authors.base`, so from a book you reach its author in
+  one click — and from the author, nothing. **Fileclass: insert notes that point here**, also on a
+  note's right-click menu, writes the view that reads it backwards into the target class's base and
+  embeds it in the note. Nothing is evaluated and nothing is stored: the table is Bases answering a
+  filter, live and editable in place.
+
+  **One view serves every note.** It is named after the class and the field —
+  `Book by author` — never after the note you ran it from, because inside an embedded base
+  `this.file` is the note holding the embed. The first author to ask creates the view; every author
+  after that only gets the embed, and it is reused with whatever columns, sort and filter you have
+  given it since.
+
+  **You choose where it lives.** The first run asks, offering the class's own base; point it at any
+  base you already have instead, or at a new path. From the second note onwards nothing is asked —
+  the view is found by its name in whichever base you put it, so a relation sent to a dashboard base
+  stays there, as one copy.
+
+  The filter compares **links**, not names: an aliased link (`[[Frank Herbert|Herbert]]`) still
+  matches, and two authors sharing a basename in different folders keep their own books apart. It
+  carries the class's whole scope too, so notes bound by folder or tag are in. Columns come from the
+  class's own table when its base has one, minus the pointing field — down a reverse table that
+  column holds the same note on every row.
+
+  The embed goes in at the cursor when the note is open, appended otherwise; an embed already there
+  is jumped to, never duplicated and never rewritten.
+
 ## [0.2.11] - 2026-08-11
 
 ### Added

@@ -17,6 +17,7 @@ import { pickAndUpdateField } from "../fields/fieldActions";
 import { pickAndCreateBase } from "../views/baseFileGenerator";
 import { syncSchemaCanvas } from "../views/schemaCanvasSync";
 import { fileClassBaseFile, openFileClassBase } from "../views/baseSync";
+import { insertReverseRelation, vaultHasReverseRelations } from "../views/reverseSync";
 import { AddFileClassModal } from "./addFileClassModal";
 import { openBulkEdit } from "./bulkEditModal";
 import { openFileClassSchema } from "./fileClassSchemaModal";
@@ -166,6 +167,17 @@ export class FileclassContextMenu extends Component {
 				.setIcon("tag")
 				.onClick(() => new AddFileClassModal(this.plugin, file).open())
 		);
+		// The other end of a relation (#154). Offered on evidence the index can give for free —
+		// that some class declares a bound link field — because discovery is a vault scan and a
+		// right-click cannot wait for one. It says so itself when nothing points here.
+		if (vaultHasReverseRelations(this.plugin)) {
+			menu.addItem((item) =>
+				item
+					.setTitle("Insert notes that point here")
+					.setIcon("corner-left-down")
+					.onClick(() => void insertReverseRelation(this.plugin, file))
+			);
+		}
 		// One entry per class that applies (#23). Named, not a picker: from here the
 		// answer is usually one class, and this is one of the two routes for a class
 		// bound by tag, path or Base view — those leave no value to click in the

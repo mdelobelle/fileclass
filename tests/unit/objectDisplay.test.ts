@@ -78,7 +78,7 @@ describe("describeField — ObjectList", () => {
 		const list: Field = { id: "addrs", name: "addrs", type: "ObjectList", options: { displayTemplate: "{{ville}}" }, path: "", fileClassName: "T" };
 		const all = [list, field("ville", "Input", {}, "addrs")];
 		const value = [{ ville: "Paris" }, { ville: "Lyon" }];
-		expect(describeField(list, value, deps(all))).toBe("1. Paris  ·  2. Lyon");
+		expect(describeField(list, value, deps(all))).toBe("1. Paris | 2. Lyon");
 	});
 
 	it("is empty for an empty list", () => {
@@ -90,7 +90,20 @@ describe("describeField — ObjectList", () => {
 		const list: Field = { id: "addrs", name: "addrs", type: "ObjectList", options: { displayTemplate: "{{ville}} · {{pays}}" }, path: "", fileClassName: "T" };
 		const all = [list, field("ville", "Input", {}, "addrs"), field("pays", "Input", {}, "addrs")];
 		const value = [{ ville: "Paris", pays: "FR" }, {}];
-		expect(describeField(list, value, deps(all))).toBe("1. Paris · FR  ·  2. (empty)");
+		expect(describeField(list, value, deps(all))).toBe("1. Paris · FR | 2. (empty)");
+	});
+
+	it("separates items with punctuation a template does not use (#157)", () => {
+		// The separator used to be "  ·  ", which templates carry themselves: the boundary between
+		// items was the same character as the punctuation inside one, and only double spacing told
+		// them apart — which survives neither a truncated cell nor a reader skimming.
+		const list: Field = { id: "eds", name: "eds", type: "ObjectList", options: { displayTemplate: "{{format}} · {{year}}" }, path: "", fileClassName: "T" };
+		const all = [list, field("format", "Input", {}, "eds"), field("year", "Input", {}, "eds")];
+		const value = [{ format: "Paperback", year: "1990" }, { format: "Hardcover", year: "1965" }];
+		const text = describeField(list, value, deps(all));
+		expect(text).toBe("1. Paperback · 1990 | 2. Hardcover · 1965");
+		// One boundary for two items, whatever the template puts between fields.
+		expect(text.split(" | ")).toHaveLength(2);
 	});
 });
 

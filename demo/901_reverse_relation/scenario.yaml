@@ -1,0 +1,18 @@
+# Not a take — numbered 901 so the take list stays 000–039.
+# The fixture for #154's phase 0: does `this.file` resolve to the host note inside an embedded
+# base, and which filter expression matches a link — plain, aliased, and against a duplicate
+# basename — for a `File` field and for a `MultiFile` one.
+title: "Fileclass — reverse relation probe"
+description: "Fixture for #154 phase 0; not a published take."
+tags: "probe"
+vault_name: "Demo"
+plugin: true
+settings:
+  classFilesPath: "Classes/"
+  fileClassAlias: "fileClass"
+initial_pause: 1200
+default_pause: 800
+
+steps:
+  - title: "not a take"
+    pause: 1000

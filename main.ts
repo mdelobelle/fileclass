@@ -32,6 +32,7 @@ import { openFileClassSchema } from "./src/ui/fileClassSchemaModal";
 import { pickAndCreateBase } from "./src/views/baseFileGenerator";
 import { fileClassBaseFile, openFileClassBase, syncFileClassToBase } from "./src/views/baseSync";
 import { registerFileclassTableView } from "./src/views/fileclassTableView";
+import { insertReverseRelation, vaultHasReverseRelations } from "./src/views/reverseSync";
 import { createFileclassApi, FileclassApi } from "./src/api/fileclassApi";
 import { CanvasEngine } from "./src/fields/canvas/canvasEngine";
 import { FieldIndicator } from "./src/ui/indicator/fieldIndicator";
@@ -338,6 +339,20 @@ export default class FileclassPlugin extends Plugin {
 			checkCallback: (checking) => {
 				if (!this.index.fileClassNames.length) return false;
 				if (!checking) void syncSchemaCanvas(this);
+				return true;
+			},
+		});
+
+		// #154 — the relation the schema already describes, read from the other end. Discovery is
+		// O(vault) per source view, so it runs on invocation only; the check here is index-only.
+		this.addCommand({
+			id: "insert-reverse-relation",
+			name: "Insert notes that point here",
+			checkCallback: (checking) => {
+				const file = this.app.workspace.getActiveFile();
+				if (!file || file.extension !== "md") return false;
+				if (!vaultHasReverseRelations(this)) return false;
+				if (!checking) void insertReverseRelation(this, file);
 				return true;
 			},
 		});

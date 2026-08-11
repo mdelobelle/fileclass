@@ -29,7 +29,19 @@ const NATIVE_DATE_FORMAT: Partial<Record<FieldType, string>> = {
 	DateTime: "YYYY-MM-DD[T]HH:mm",
 	Time: "HH:mm",
 };
-const ITEM_SEP = "  ·  ";
+/**
+ * What separates one item of an `ObjectList` from the next (#157).
+ *
+ * A pipe, not the `·` this used to be: templates use `·` themselves — the demo vault's do — so the
+ * boundary between items was the same character as the punctuation inside one, and
+ * `1. Paperback · 1990  ·  2. Hardcover · 1965` told them apart by nothing but double spacing.
+ * That survives neither a truncated table cell nor a reader skimming a modal.
+ *
+ * No separator is impossible to write in a template, so this is a matter of what a display template
+ * plausibly carries: `·`, `-`, `,` and `—` are all common in one, a pipe is not, and it reads as a
+ * divider rather than as part of a value.
+ */
+const ITEM_SEP = " | ";
 // {{ name }} or {{ name | format }} — name is a child field name.
 const TOKEN_RE = /\{\{\s*([^}|]+?)\s*(?:\|\s*([^}]*?)\s*)?\}\}/g;
 

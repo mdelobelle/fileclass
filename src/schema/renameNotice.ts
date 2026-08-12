@@ -11,14 +11,13 @@
 import { Notice, TAbstractFile, TFile, TFolder } from "obsidian";
 
 import type FileclassPlugin from "../../main";
-import { appendToSchemaLog } from "./fileclassLog";
+import { logStamp } from "../log/logLine";
+import { logEvents } from "../log/schemaLog";
 import {
 	RenameEvent,
 	StaleReference,
 	consequenceOf,
 	describeStale,
-	logLines,
-	logStamp,
 	referenceLabel,
 	staleReferences,
 } from "./renamePaths";
@@ -47,6 +46,22 @@ export function warnOnStalePaths(plugin: FileclassPlugin, file: TAbstractFile, o
 		15000
 	);
 	// And kept, since a notice is gone in fifteen seconds and this is the kind of breakage found
-	// three weeks later.
-	void appendToSchemaLog(plugin, logLines(logStamp(new Date()), ev, found));
+	// three weeks later. One entry per reference, so the viewer can act on each.
+	const stamp = logStamp(new Date());
+	void logEvents(
+		plugin,
+		found.map(({ label, ref }) => ({
+			stamp,
+			level: "ERROR" as const,
+			event: ev.isFolder ? "schema.folder-moved" : "schema.file-moved",
+			message: `${label}: "${ev.oldPath}" moved to "${ev.newPath}" — ${consequenceOf(ref)}`,
+			details: {
+				fileClass: label.split(" › ")[0],
+				...(ref.field ? { field: ref.field } : {}),
+				key: ref.key,
+				from: ev.oldPath,
+				to: ev.newPath,
+			},
+		}))
+	);
 }

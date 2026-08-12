@@ -151,32 +151,3 @@ export function describeStale(oldPath: string, labels: readonly string[], conseq
 		`Until the definition is updated, ${consequence}.`
 	);
 }
-
-/**
- * One line of the log: what moved, where it was named, and what that costs.
- *
- * Padded into columns so a file read months later scans as a table — the log is read to answer
- * "when did this break?", which is a question about a list, not about a sentence.
- */
-export function logLines(stamp: string, ev: RenameEvent, refs: readonly { label: string; ref: StaleReference }[]): string[] {
-	const kind = ev.isFolder ? "folder" : "file";
-	const head = `${stamp}  ${kind} moved: "${ev.oldPath}" → "${ev.newPath}"`;
-	const width = Math.max(...refs.map((r) => r.label.length), 0);
-	return [
-		head,
-		...refs.map(
-			({ label, ref }) =>
-				`${" ".repeat(stamp.length)}  ${label.padEnd(width)}  ${ref.key}: ${ref.path}` +
-				`  — ${consequenceOf(ref)}`
-		),
-	];
-}
-
-/** `2026-08-12 08:20:14`, in the reader's own time: a log is read where it was written. */
-export function logStamp(date: Date): string {
-	const p = (n: number, w = 2): string => String(n).padStart(w, "0");
-	return (
-		`${date.getFullYear()}-${p(date.getMonth() + 1)}-${p(date.getDate())} ` +
-		`${p(date.getHours())}:${p(date.getMinutes())}:${p(date.getSeconds())}`
-	);
-}

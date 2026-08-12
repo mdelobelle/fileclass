@@ -1,0 +1,90 @@
+/*
+ * Running the schema audit against the real vault (#159).
+ *
+ * The rules are in `schemaAudit.ts`, injected with a world so they can be tested without one. This
+ * builds that world, walks the classes, logs what it finds and says one sentence about it.
+ *
+ * Run **once per session** after the first index build, and on demand from a command. Not on every
+ * rebuild: the index rebuilds on any change to any class note, and a sweep on each would log the
+ * same broken path forty times while somebody edits a schema.
+ */
+import { Notice, TFile, TFolder } from "obsidian";
+
+import type FileclassPlugin from "../../main";
+import { LogEntry, logStamp } from "../log/logLine";
+import { logEvents } from "../log/schemaLog";
+import { isRootField } from "./field";
+import { AuditWorld, AuditedClass, Finding, auditClass, describeAudit, findingLabel } from "./schemaAudit";
+
+/** The classes as the audit reads them, straight from the parsed schema. */
+function auditedClasses(plugin: FileclassPlugin): AuditedClass[] {
+	const out: AuditedClass[] = [];
+	for (const name of plugin.index.fileClassNames) {
+		const parsed = plugin.index.getFileClass(name);
+		if (!parsed) continue;
+		out.push({
+			name,
+			extends: parsed.options.extends,
+			excludes: parsed.options.excludes,
+			mapWithTag: parsed.options.mapWithTag,
+			tagNames: parsed.options.tagNames,
+			filesPaths: parsed.options.filesPaths,
+			baseFile: parsed.options.baseFile,
+			// Own fields: an inherited one belongs to the class that declared it, and reporting it
+			// on every child would turn one broken path into a list of them.
+			fields: parsed.fields.map((f) => ({
+				name: f.name,
+				options: (typeof f.options === "object" && !Array.isArray(f.options) ? f.options : {}) as Record<
+					string,
+					unknown
+				>,
+			})),
+		});
+	}
+	return out;
+}
+
+function world(plugin: FileclassPlugin): AuditWorld {
+	return {
+		fileExists: (path) => plugin.app.vault.getAbstractFileByPath(path) instanceof TFile,
+		folderExists: (path) => plugin.app.vault.getAbstractFileByPath(path) instanceof TFolder,
+		knownClasses: new Set(plugin.index.fileClassNames),
+		fieldsOf: (name) =>
+			(plugin.index.getFileClass(name)?.fields ?? []).filter((f) => isRootField(f)).map((f) => f.name),
+	};
+}
+
+/** Every problem the vault's schemas have right now. */
+export function auditSchemas(plugin: FileclassPlugin): Finding[] {
+	const w = world(plugin);
+	return auditedClasses(plugin).flatMap((cls) => auditClass(cls, w));
+}
+
+/**
+ * Sweeps, logs, and says one sentence.
+ *
+ * `announce` separates the two callers. The command always says something, "everything resolves"
+ * included — a check that answered silence would leave you wondering whether it ran. The automatic
+ * pass speaks only when there is something to say, since a vault that opens with a clean bill of
+ * health should just open.
+ */
+export async function runSchemaAudit(plugin: FileclassPlugin, announce: boolean): Promise<Finding[]> {
+	const findings = auditSchemas(plugin);
+	if (findings.length) {
+		const stamp = logStamp(new Date());
+		const entries: LogEntry[] = findings.map((f) => ({
+			stamp,
+			level: f.level,
+			event: `schema.${f.kind}`,
+			message: `${findingLabel(f)}: "${f.value}" — ${f.consequence}`,
+			details: { fileClass: f.fileClass, ...(f.field ? { field: f.field } : {}), value: f.value },
+		}));
+		await logEvents(plugin, entries);
+	}
+	if (announce) new Notice(describeAudit(findings));
+	else if (findings.length) {
+		// Unasked-for, so it stays short and points at where the detail is.
+		new Notice(describeAudit(findings), 10000);
+	}
+	return findings;
+}

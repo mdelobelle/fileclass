@@ -20,11 +20,24 @@ All notable changes to Fileclass are documented here. The format follows
   point at it — Comic › contributors, Book › author. Until the definition is updated, the field
   offers no candidates.* Fixing the definition stays your decision, taken in the schema editor.
 
-  Each warning is also appended to **`<class folder>/fileclass.log`** with a timestamp, every class
-  and field that named the path, and what each one loses — a notice lasts fifteen seconds, and this
-  is the kind of breakage found three weeks later. **Fileclass: open the schema log** opens it, and
-  **Settings → Fileclass → Schema log** turns the file off. A `.log` and not a note, because every
-  markdown file in the class folder is read as a fileClass.
+  Each warning is also appended to **`<class folder>/fileclass.log`** — a notice lasts fifteen
+  seconds, and this is the kind of breakage found three weeks later. One event per line, tab
+  separated, with a JSON tail: timestamp, level (`INFO`/`WARNING`/`ERROR`), event id, message,
+  details. **Fileclass: open the schema log** opens it, and **Settings → Fileclass → Schema log**
+  turns the file off. A `.log` and not a note, because every markdown file in the class folder is
+  read as a fileClass.
+
+  The log records **consequences, not edits**: `ERROR` when Fileclass cannot do what a definition
+  told it, `WARNING` when a definition will never do anything (a tag that cannot bind), `INFO` for a
+  write performed across files you did not have open. Editing history is git's job, and Obsidian's
+  File Recovery already answers "what did this look like yesterday".
+
+- **A sweep over what your classes point at** ([#159](https://github.com/mdelobelle/fileclass/issues/159)).
+  The warning above rides on Obsidian announcing a rename — move a file with the plugin off, from
+  your file manager, or from another machine over sync, and no event ever arrives. So Fileclass also
+  checks once per session, and on demand with **Fileclass: check what my classes point at**: every
+  values note, base, canvas and claimed folder a class names, plus two questions a path cannot
+  answer — does its `extends` name a class the vault has, and can each of its tags actually bind.
 
 ### Changed
 

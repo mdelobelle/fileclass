@@ -4,8 +4,6 @@ import {
 	RenameEvent,
 	consequenceOf,
 	describeStale,
-	logLines,
-	logStamp,
 	pathMatchesRename,
 	referenceLabel,
 	staleReferences,
@@ -168,43 +166,5 @@ describe("what each stale reference actually costs", () => {
 			"the field offers no candidates"
 		);
 		expect(consequenceOf({ key: "baseFile", path: "p" })).toBe("the class has no base to sync");
-	});
-});
-
-describe("the log", () => {
-	const stamp = "2026-08-12 08:20:14";
-
-	it("opens with what moved, then one line per place it was named", () => {
-		const lines = logLines(stamp, { oldPath: "Authors.base", newPath: "Writers.base", isFolder: false }, [
-			{ label: "Book › author", ref: { field: "author", key: "baseFile", path: "Authors.base" } },
-			{ label: "Comic › contributors", ref: { field: "contributors", key: "baseFile", path: "Authors.base" } },
-		]);
-		expect(lines[0]).toBe(`${stamp}  file moved: "Authors.base" → "Writers.base"`);
-		expect(lines).toHaveLength(3);
-		expect(lines[1]).toContain("Book › author");
-		expect(lines[1]).toContain("baseFile: Authors.base");
-		expect(lines[1]).toContain("the field offers no candidates");
-	});
-
-	it("says folder when a folder moved, since the consequence differs", () => {
-		const lines = logLines(stamp, { oldPath: "Reading list", newPath: "Library", isFolder: true }, [
-			{ label: "Book › filesPaths", ref: { key: "filesPaths", path: "Reading list" } },
-		]);
-		expect(lines[0]).toContain("folder moved");
-		expect(lines[1]).toContain("no longer carry the class");
-	});
-
-	it("lines the labels up, so a log read months later scans as a table", () => {
-		const lines = logLines(stamp, { oldPath: "a.md", newPath: "b.md", isFolder: false }, [
-			{ label: "A › x", ref: { field: "x", key: "valuesListNotePath", path: "a.md" } },
-			{ label: "Longer › yyy", ref: { field: "yyy", key: "valuesListNotePath", path: "a.md" } },
-		]);
-		const columnOf = (line: string): number => line.indexOf("valuesListNotePath");
-		expect(columnOf(lines[1])).toBe(columnOf(lines[2]));
-	});
-
-	it("stamps in the reader's own time, zero-padded", () => {
-		expect(logStamp(new Date(2026, 7, 12, 8, 20, 14))).toBe("2026-08-12 08:20:14");
-		expect(logStamp(new Date(2026, 0, 2, 3, 4, 5))).toBe("2026-01-02 03:04:05");
 	});
 });

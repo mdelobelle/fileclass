@@ -426,6 +426,18 @@ canvas file tracking (comes with the planned Canvas engine, §9.1).
   note-fields modal, the property buttons and the API, so the value displayed and the
   value edited agree. Every other type keeps Bases' value, which knows about formulas,
   file properties and link rendering. Deps are built once per render, per note.
+- **Registration always arrives late, so what is on screen must be redrawn.** Obsidian
+  restores its tabs before `onLayoutReady`, where the `fileclass-table` view type is
+  registered, so anything already rendering a base shows *"Unknown view type:
+  fileclass-table"* — an error on a file this plugin wrote. `rebuildOpenBases()` redraws
+  both kinds of surface, and the second was missed for a while: a `bases` **leaf**, and
+  a **markdown leaf whose note embeds one** (`![[X.base]]`, `![[X.base#View]]`, or a
+  ```base block). An embed does not live in a `bases` leaf, so iterating that type alone
+  left every dashboard broken until it was touched. Found by opening a take's own vault.
+  The rule now lives in `redrawOnRegister.ts` and is unit-tested: it asks what a surface
+  **holds**, not what it is called, so a canvas card rendering a note that embeds a base
+  is covered without another fix. The selector is the impure caller's and is verified in
+  the app, not in those tests — they run without a DOM.
 - **The `valid` column filters on itself** (#142): its header cycles all → failures
   → clean and carries the failure count. Session-only state, never written to the
   base — and the only route available, since the registry takes no computed
@@ -461,6 +473,38 @@ empty, and a folder-bound class silently stops claiming its notes.
 - Rotation is whole-file, numbering monotonic, pruning by lowest number: renaming
   archives on every rotation would rewrite history and make a file's name a lie
   about when it was written.
+
+### 10.2 The metadata cache is the wrong source right after somebody else wrote (#84)
+
+`hasFieldKey` (`src/io/read.ts`) answers "does this note already have that key?" from
+`metadataCache.getFileCache(file).frontmatter`, and `insertMissingFields` decides what
+to insert from it. That is fine for a note the reader has been looking at, and **wrong
+the instant another writer touched the file**: the cache still describes the previous
+content.
+
+Measured with Templater (`demo/902_templater` + `demo/templater-probe.mjs`): a template
+wrote `publisher: Chilton Books` and a computed `acquired`, the insert ran immediately
+after, every field looked missing, and both values were overwritten with empty
+defaults. Templater's own write and `processFrontMatter` were each verified innocent
+before the cache was suspected.
+
+**The rule, now applied everywhere that writes:** decide what is missing *inside* the
+`processFrontMatter` callback, from the frontmatter it hands you. `insertMissingFields`
+does that, so all six of its callers are covered — including *insert fields when adding
+a class*, which also runs on a note something else just wrote. `createNoteWithClass`
+keeps its own single pass (class + fields + seed in one write) for atomicity, using the
+same primitives.
+
+Deciding inside the write costs nothing, and this is why: **an unchanged
+`processFrontMatter` does not write.** Measured on 1.13.6 — a callback that touches
+nothing leaves the content *and* the mtime alone, so the "is anything missing?" question
+can be asked with the file open at no cost. (An earlier feature in this codebase took a
+dry run on a cloned frontmatter to avoid a write it turns out would never have
+happened.)
+
+A **read-only** count may still use the cache, and `propertyEditButtons` does: the note
+is on screen, its cache is warm, and no writer is mid-flight. The comment there says so,
+to stop the next person "fixing" it.
 
 ### 11.1 Reverse relations (#154, `reverseView.ts` / `reverseSync.ts`)
 

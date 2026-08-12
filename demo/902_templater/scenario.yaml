@@ -1,0 +1,33 @@
+# Not a take — numbered 902 so the take list stays 000–039.
+#
+# The fixture for the one path in #84 that reasoning cannot settle: **Templater**. Everything else
+# about creating a note with a class was measured against the core Templates plugin; Templater is
+# the engine that can run logic and, worse for us, **rename the file** while we hold a handle to it.
+#
+# It ships Templater's `manifest.json` and `data.json` — ours to configure — and fetches the bundle
+# on demand:
+#
+#     node demo/902_templater/install-templater.mjs
+#     node demo/probe.mjs 902 demo/templater-probe.mjs
+#
+# `trigger_on_file_creation` and `enable_folder_templates` are **off** on purpose: with either on,
+# Templater applies its own template to a new file before we do, which is the documented interaction
+# (a class should then leave *Note template* blank) and not what this probe is about.
+#
+# `Classes/Book.md` names `Templates/Templater book.md`, whose frontmatter sets `publisher` and an
+# author that is *not* the one the reverse table would seed — so one note answers three questions at
+# once: did Templater run, did its frontmatter merge into one block, and did the seed still win.
+title: "Fileclass — Templater probe"
+description: "Fixture for #84's Templater path; not a published take."
+tags: "probe"
+vault_name: "Demo"
+plugin: true
+settings:
+  classFilesPath: "Classes/"
+  fileClassAlias: "fileClass"
+initial_pause: 1200
+default_pause: 800
+
+steps:
+  - title: "not a take"
+    pause: 1000

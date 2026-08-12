@@ -30,3 +30,7 @@ docs/.hugo_build.lock
 # actually runs in live outside the repo, in ~/fileclass-demos/.
 demo/node_modules/
 demo/.probe-out/
+
+# A third-party plugin bundle, fetched on demand by demo/902_templater/install-templater.mjs
+demo/902_templater/demo-vault/.obsidian/plugins/templater-obsidian/main.js
+demo/902_templater/demo-vault/.obsidian/plugins/templater-obsidian/styles.css

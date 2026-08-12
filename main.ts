@@ -33,6 +33,7 @@ import { openFileClassSchema } from "./src/ui/fileClassSchemaModal";
 import { pickAndCreateBase } from "./src/views/baseFileGenerator";
 import { fileClassBaseFile, openFileClassBase, syncFileClassToBase } from "./src/views/baseSync";
 import { registerFileclassTableView } from "./src/views/fileclassTableView";
+import { EMBEDDED_BASE_SELECTOR, surfacesToRedraw } from "./src/views/redrawOnRegister";
 import { openSchemaLogModal } from "./src/ui/schemaLogModal";
 import { runSchemaAudit } from "./src/schema/schemaAuditRun";
 import { warnOnStalePaths } from "./src/schema/renameNotice";
@@ -165,7 +166,19 @@ export default class FileclassPlugin extends Plugin {
 	 * state change); rebuilding the view is what clears it.
 	 */
 	private rebuildOpenBases(): void {
-		for (const leaf of this.app.workspace.getLeavesOfType("bases")) {
+		// One pass over everything open, and the decision is `surfacesToRedraw`'s — a rule with tests
+		// rather than a condition spelled out here, since the first version of it was wrong in a way
+		// nothing could catch: it asked what a leaf was called instead of what it held.
+		const open: { leaf: WorkspaceLeaf; viewType: string; holdsEmbeddedBase: boolean }[] = [];
+		this.app.workspace.iterateAllLeaves((leaf) => {
+			const view = leaf.view as { getViewType?: () => string; containerEl?: HTMLElement };
+			open.push({
+				leaf,
+				viewType: view.getViewType?.() ?? "",
+				holdsEmbeddedBase: !!view.containerEl?.querySelector(EMBEDDED_BASE_SELECTOR),
+			});
+		});
+		for (const { leaf } of surfacesToRedraw(open)) {
 			(leaf as WorkspaceLeaf & { rebuildView?: () => void }).rebuildView?.();
 		}
 	}

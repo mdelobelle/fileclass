@@ -177,6 +177,14 @@ other. Captions are English; YouTube translates them into your language.
 
 {{< video "036" >}}
 
+## The other end of a relation
+
+{{< video "036b" >}}
+
+## A note that arrives already related
+
+{{< video "036c" >}}
+
 ## A field that follows your canvas
 
 {{< video "037" >}}

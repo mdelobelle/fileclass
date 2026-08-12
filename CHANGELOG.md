@@ -8,6 +8,27 @@ All notable changes to Fileclass are documented here. The format follows
 
 ### Fixed
 
+- **An embedded table no longer opens as "Unknown view type".** Obsidian restores its tabs before a
+  plugin can register a view type, so a note whose body embeds a base rendered its embeds too early
+  and showed *Unknown view type: fileclass-table* over each of them until something made the note
+  redraw. Bases opened in their own tab were already handled; a note **embedding** one is a markdown
+  tab, which the repair skipped. Both are redrawn now.
+
+- **A template's values are no longer wiped when Templater writes them.** Creating a note with a
+  class applied the template, then inserted the class's fields — and the insert decided what was
+  "missing" from Obsidian's metadata cache, which a template that had *just* written the file leaves
+  stale. Everything looked missing, so `publisher: Chilton Books` and a date the template had
+  computed were both overwritten with empty defaults. The class, the fields and the seed are now
+  written in a single pass that reads the frontmatter it is holding rather than the cache. Verified
+  against Templater 2.25, including a template that renames the file it is applied to.
+
+  **The same rule now applies wherever fields are inserted** — the command, both menus, the modals,
+  the API and *insert fields when adding a class*, six call sites in all. Any of them could empty a
+  value written a moment earlier by another plugin. Nothing is written when nothing is missing:
+  measured, an unchanged frontmatter write leaves the file and its mtime alone.
+
+### Fixed
+
 - **Excluding a grandparent's field is no longer reported as a mistake.** The schema sweep checked
   `excludes` against the **direct parent's** fields, so on a chain three deep — `Comic extends Book
   extends Media` dropping one of `Media`'s fields — it logged *"the parent declares no such field"*

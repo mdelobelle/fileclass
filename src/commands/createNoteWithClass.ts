@@ -21,10 +21,11 @@ import { Modal, Notice, Setting, TFile, normalizePath } from "obsidian";
 import type FileclassPlugin from "../../main";
 import { applyTemplate } from "../engine/templateAdapter";
 import { logEvent } from "../log/schemaLog";
+import { missingRootFields } from "../fields/missingFields";
+import { defaultValueFor } from "../fields/support";
 import { Seed, noteFolder, safeFileName, uniquePath } from "../schema/newNote";
 import { modalTitle } from "../ui/modalTitle";
 import { NoteFieldsModal } from "../ui/noteFieldsModal";
-import { insertMissingFields } from "./insertMissingFields";
 
 export interface CreateNoteRequest {
 	fileClass: string;
@@ -140,8 +141,18 @@ export async function createNoteWithClass(
 		return null;
 	}
 
-	// 3. the class, then its fields.
+	// 3. the class, its fields and the seed — in **one** write, deciding what is missing from the
+	// frontmatter this callback holds.
+	//
+	// `insertMissingFields` is safe to call now (it decides inside its own write, for the same
+	// reason), but this path keeps its single pass: creation then costs one write instead of three,
+	// and the order the seed sits in — after the defaults, over whatever the template left — is
+	// visible here rather than spread across three calls.
+	const seed = req.seed;
+	const seedValue = seed ? resolveSeedValue(plugin, seed, target) : "";
+	const fields = plugin.index.getFields(target);
 	await app.fileManager.processFrontMatter(target, (fm: Record<string, unknown>) => {
+		const has = (name: string): boolean => Object.prototype.hasOwnProperty.call(fm, name);
 		const alias = plugin.settings.fileClassAlias;
 		// Always written, even when the folder already binds it: the alias is the highest-priority
 		// binding and the only one that survives the note being moved.
@@ -153,24 +164,15 @@ export async function createNoteWithClass(
 		} else {
 			fm[alias] = req.fileClass;
 		}
-	});
 
-	await insertMissingFields(app, target, plugin.index.getFields(target), { quiet: true, reorder: false });
-
-	// The seed overwrites whatever the template left on that one field — see the header.
-	const seed = req.seed;
-	if (seed) {
-		const linked = seed.linkTo ? app.vault.getAbstractFileByPath(seed.linkTo) : null;
-		const value =
-			linked instanceof TFile
-				? app.fileManager.generateMarkdownLink(linked, target.path)
-				: seed.value ?? "";
-		if (value) {
-			await app.fileManager.processFrontMatter(target, (fm: Record<string, unknown>) => {
-				fm[seed.field] = value;
-			});
+		// Only what the template did not already set: its values are kept, by construction.
+		for (const field of missingRootFields(fields, (f) => has(f.name))) {
+			fm[field.name] = defaultValueFor(field);
 		}
-	}
+
+		// The seed overwrites whatever the template left on that one field — see the header.
+		if (seed && seedValue) fm[seed.field] = seedValue;
+	});
 
 	void logEvent(plugin, "INFO", "schema.note-created", `${req.fileClass}: created ${target.path}`, {
 		fileClass: req.fileClass,
@@ -182,6 +184,19 @@ export async function createNoteWithClass(
 	await app.workspace.getLeaf(false).openFile(target);
 	if (plugin.settings.openFieldsOnCreate) new NoteFieldsModal(plugin, target).open();
 	return target;
+}
+
+/**
+ * The seed's value, in the vault's own link format when it names a note.
+ *
+ * Resolved before the write, because `generateMarkdownLink` needs the new note's path and the write
+ * callback is no place to be doing lookups.
+ */
+function resolveSeedValue(plugin: FileclassPlugin, seed: Seed, target: TFile): string {
+	const linked = seed.linkTo ? plugin.app.vault.getAbstractFileByPath(seed.linkTo) : null;
+	return linked instanceof TFile
+		? plugin.app.fileManager.generateMarkdownLink(linked, target.path)
+		: seed.value ?? "";
 }
 
 /**

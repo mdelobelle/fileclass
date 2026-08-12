@@ -17,7 +17,7 @@ import { registerFileclassView } from "../engine/basesAdapter";
 import { createNoteWithClass } from "../commands/createNoteWithClass";
 import { Seed } from "../schema/newNote";
 import { fileClassClaimingView } from "./baseSync";
-import { reverseFieldOfView } from "./reverseView";
+import { fieldForView } from "./reverseView";
 import { EditContext, runControlAction } from "../fields/fieldActions";
 import { isInputSupported } from "../fields/support";
 import { hasAllowedValues, validateField } from "../fields/validate";
@@ -270,11 +270,10 @@ class FileclassTableView extends Component {
 	private seedFor(fileClass: string): Seed | undefined {
 		const claimed = this.viewIdentity();
 		if (!claimed) return undefined;
-		const fields = this.plugin.index
-			.getResolvedFields(fileClass)
-			.filter((f) => isRootField(f))
-			.map((f) => f.name);
-		const field = reverseFieldOfView(fileClass, claimed.viewName, fields);
+		// The class says which of its fields this view reads backwards; its name is never consulted,
+		// so a view called `A's Bs` seeds exactly as one called `Book by author` does.
+		const declared = this.plugin.index.getFileClass(fileClass)?.options.relatedViews ?? [];
+		const field = fieldForView(declared, claimed.file, claimed.viewName);
 		if (!field) return undefined;
 		const host = this.hostNote();
 		if (!host) return undefined;

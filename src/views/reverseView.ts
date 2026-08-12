@@ -60,6 +60,55 @@ function fieldPath(fieldName: string): string {
 }
 
 /**
+ * A declared view reference — `Books.base#Book by author` — split into its two halves.
+ *
+ * One string rather than two keys, and deliberately the **embed's own syntax**: this is the form
+ * the reader already writes in every note that shows the view, so a schema that names it the same
+ * way reads as the same thing rather than as a second notation to learn.
+ *
+ * Null when there is no `#`: a base without a view names no relation, and guessing "the first view"
+ * would be a decision taken on the reader's behalf about which relation they meant.
+ */
+export function parseViewRef(ref: string): { path: string; viewName: string } | null {
+	const at = ref.indexOf("#");
+	if (at <= 0) return null;
+	const path = ref.slice(0, at).trim();
+	const viewName = ref.slice(at + 1).trim();
+	return path && viewName ? { path, viewName } : null;
+}
+
+/** The reverse of `parseViewRef`. */
+export function formatViewRef(path: string, viewName: string): string {
+	return `${path}#${viewName}`;
+}
+
+/** The declared view for a field, if the class declares one. */
+export function relatedViewFor(
+	entries: readonly { field: string; view: string }[],
+	field: string
+): { path: string; viewName: string } | null {
+	const entry = entries.find((e) => e.field === field);
+	return entry ? parseViewRef(entry.view) : null;
+}
+
+/**
+ * The field a given view reads backwards, according to the class's own declarations.
+ *
+ * This is what lets a table know it is a reverse relation — and therefore what to seed — when its
+ * name is `A's Bs` or anything else its author chose. The name is not consulted at all.
+ */
+export function fieldForView(
+	entries: readonly { field: string; view: string }[],
+	path: string,
+	viewName: string
+): string | undefined {
+	return entries.find((e) => {
+		const ref = parseViewRef(e.view);
+		return ref && ref.path === path && ref.viewName === viewName;
+	})?.field;
+}
+
+/**
  * The view's name: `Book by author`.
  *
  * Deliberately says the class and the field, and **not** the host note: one view answers for
@@ -69,21 +118,6 @@ function fieldPath(fieldName: string): string {
  */
 export function reverseViewName(targetClass: string, fieldName: string): string {
 	return `${targetClass} by ${fieldName}`;
-}
-
-/**
- * The field a reverse view is about, read back from its name (#84).
- *
- * The name is this plugin's own convention, so it can be inverted exactly rather than parsed: each
- * candidate field is asked whether it would have produced this name. That is what lets a table
- * embedded in an author's note offer "New Book with Frank Herbert" — it knows which field to seed.
- */
-export function reverseFieldOfView(
-	targetClass: string,
-	viewName: string,
-	fieldNames: readonly string[]
-): string | undefined {
-	return fieldNames.find((name) => reverseViewName(targetClass, name) === viewName);
 }
 
 /** The embed a note carries to show that view. */
@@ -136,23 +170,6 @@ interface BaseView {
 interface BaseObject {
 	views?: unknown;
 	[key: string]: unknown;
-}
-
-/**
- * The base holding a view of that name, out of every base in the vault.
- *
- * Reuse cannot be looked up by path: the reader chooses where the view goes, and the *next* note to
- * show the same relation must find it wherever that was — otherwise a second base grows a second
- * copy and `this.file` stops being the point. Searching by name makes the question independent of
- * where anything was put, a copied base included.
- *
- * Paths come in sorted, so two bases carrying the same view name resolve the same way every time.
- */
-export function baseHoldingView(
-	bases: readonly { path: string; base: BaseObject }[],
-	name: string
-): string | null {
-	return bases.find(({ base }) => hasView(base, name))?.path ?? null;
 }
 
 /** True when the parsed base declares a view of that name. */

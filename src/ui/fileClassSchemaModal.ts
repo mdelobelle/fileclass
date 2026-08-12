@@ -103,7 +103,7 @@ export class FileClassSchemaModal extends Modal {
 					.setDisabled(!hasBase)
 					.onClick(() => {
 						leave();
-						openFileClassBase(this.plugin, this.name);
+						void openFileClassBase(this.plugin, this.name);
 					})
 			)
 			.addExtraButton((b) =>

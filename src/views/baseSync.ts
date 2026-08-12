@@ -26,6 +26,7 @@ import { logEvent } from "../log/schemaLog";
 import { isRootField } from "../schema/field";
 import { FileClassOptions, parseFileClass } from "../schema/fileClass";
 import { buildBaseYaml, ClassScope, isBaseViewSynced, mirrorBaseView } from "./baseYaml";
+import { hasView } from "./reverseView";
 
 export type BaseSyncStatus = "none" | "synced" | "diverged";
 
@@ -94,14 +95,34 @@ export function fileClassBaseFile(plugin: FileclassPlugin, name: string): TFile 
 	return file instanceof TFile ? file : null;
 }
 
-/** Opens the fileClass's base file in a new tab (Notice if none is set yet). */
-export function openFileClassBase(plugin: FileclassPlugin, name: string): void {
+/**
+ * Opens the fileClass's base **on its managed view** (Notice if it has no base yet).
+ *
+ * Opening the file alone lands on whichever view the base lists first — usually not this class's,
+ * since a base is free to hold several and ours is generally appended. The class already says which
+ * view is its own (`baseView`), so the tab opens there; that is what the entry promises.
+ *
+ * The view state is set only when the base really holds that view: a class whose base was never
+ * synced names a view that does not exist, and asking Bases for it would be asking for an error
+ * instead of a base.
+ */
+export async function openFileClassBase(plugin: FileclassPlugin, name: string): Promise<void> {
 	const file = fileClassBaseFile(plugin, name);
 	if (!file) {
 		new Notice(`Fileclass: "${name}" has no base yet.`);
 		return;
 	}
-	void plugin.app.workspace.getLeaf("tab").openFile(file);
+	const leaf = plugin.app.workspace.getLeaf("tab");
+	await leaf.openFile(file);
+
+	const viewName = managedViewName(plugin, name);
+	try {
+		const base = (parseYaml(await plugin.app.vault.read(file)) ?? {}) as Record<string, unknown>;
+		if (!hasView(base, viewName)) return;
+	} catch {
+		return;
+	}
+	await leaf.setViewState({ type: "bases", state: { file: file.path, viewName } });
 }
 
 function rootFieldNames(plugin: FileclassPlugin, name: string): string[] {

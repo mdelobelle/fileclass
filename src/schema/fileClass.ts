@@ -15,6 +15,10 @@ export interface FileClassOptions {
 	baseFile?: string;
 	/** Name of the managed view in `baseFile` (defaults to the fileClass name). */
 	baseView?: string;
+	/** Where notes of this class are created (#84); falls back to a single `filesPaths` entry. */
+	fileClassNotesFolder?: string;
+	/** A template applied to a new note of this class, before its fields are written. */
+	fileClassNoteTemplate?: string;
 	/** Field names to remove from inherited fields. */
 	excludes: string[];
 	mapWithTag: boolean;
@@ -88,6 +92,9 @@ export function parseFileClass(name: string, frontmatter: Frontmatter): ParsedFi
 		excludes: toStringArray(fm.excludes),
 		mapWithTag: stringToBoolean(fm.mapWithTag),
 		tagNames: toStringArray(fm.tagNames),
+		fileClassNotesFolder: typeof fm.fileClassNotesFolder === "string" ? fm.fileClassNotesFolder : undefined,
+		fileClassNoteTemplate:
+			typeof fm.fileClassNoteTemplate === "string" ? fm.fileClassNoteTemplate : undefined,
 		filesPaths: toStringArray(fm.filesPaths),
 		bookmarksGroups: toStringArray(fm.bookmarksGroups),
 		version: typeof fm.version === "string" ? fm.version : fm.version != null ? String(fm.version) : undefined,

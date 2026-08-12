@@ -48,6 +48,8 @@ export interface FileclassSettings {
 	schemaLogArchives: number;
 	/** Insert a class's missing fields as soon as the class is bound to a note. */
 	insertFieldsOnBind: boolean;
+	/** Open the note-fields modal on a note created with a class (#84). */
+	openFieldsOnCreate: boolean;
 	/**
 	 * Rewrite a note's frontmatter in its class's field order after inserting missing fields
 	 * (#104). Off by default: it rewrites the whole block, so it touches lines the user did
@@ -119,6 +121,7 @@ export const DEFAULT_SETTINGS: FileclassSettings = {
 	schemaLogMaxEntries: 500,
 	schemaLogArchives: 5,
 	insertFieldsOnBind: true,
+	openFieldsOnCreate: true,
 	reorderOnInsert: false,
 	schemaCanvasPath: "",
 	unknownKeysPosition: "top",

@@ -17,6 +17,25 @@ All notable changes to Fileclass are documented here. The format follows
 
 ### Added
 
+- **Create a note that already belongs to a class** ([#84](https://github.com/mdelobelle/fileclass/issues/84)).
+  A table shows every note of a class except the one you are about to write. **Fileclass: create a
+  note with a class**, and a **New _Class_** button in a `fileclass-table`'s toolbar, do the whole
+  gesture: a name, the right folder, the class's template, the binding, every field, and the fields
+  modal opened on it.
+
+  Where it lands follows a cascade: the class's new **Notes folder** option, else the single folder
+  it already binds through *Files paths*, else Obsidian's default. **The template is applied first
+  and the fields second** — the other order gives two `---` blocks and broken YAML, this one merges,
+  so a duplicate frontmatter is impossible and a value the template set is kept.
+
+  On a [reverse-relation](https://github.com/mdelobelle/fileclass/issues/154) table read from an
+  author's note the button reads **New Book with Frank Herbert**, and the note arrives with `author`
+  already pointing at him — the one value a template's default does not win, because clicking that
+  button is an instruction rather than a preference.
+
+  Two new class options (**Notes folder**, **Note template**) and one setting
+  (**Open the fields when creating a note**, on by default).
+
 - **A fileClass says when something it points at moves**
   ([#159](https://github.com/mdelobelle/fileclass/issues/159)). A schema stores paths — the note a
   `Select` reads its values from, the `.base` a link field draws candidates from, the `.canvas` a

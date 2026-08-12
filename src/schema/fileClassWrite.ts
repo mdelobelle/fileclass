@@ -87,6 +87,8 @@ export interface EditableOptions {
 	extends?: string;
 	baseFile?: string;
 	baseView?: string;
+	fileClassNotesFolder?: string;
+	fileClassNoteTemplate?: string;
 	mapWithTag?: boolean;
 	tagNames?: string[];
 	filesPaths?: string[];
@@ -106,6 +108,8 @@ export function buildOptionUpdates(o: EditableOptions): Record<string, unknown> 
 		extends: o.extends?.trim() ? o.extends.trim() : null,
 		baseFile: o.baseFile?.trim() ? o.baseFile.trim() : null,
 		baseView: o.baseView?.trim() ? o.baseView.trim() : null,
+		fileClassNotesFolder: o.fileClassNotesFolder?.trim() ? o.fileClassNotesFolder.trim() : null,
+		fileClassNoteTemplate: o.fileClassNoteTemplate?.trim() ? o.fileClassNoteTemplate.trim() : null,
 		mapWithTag: !!o.mapWithTag,
 		tagNames: list(o.tagNames),
 		filesPaths: list(o.filesPaths),

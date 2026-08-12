@@ -15,6 +15,7 @@ import { BulkChange, BulkPreview, BulkScope } from "../api/fileclassApi";
 import { Filter, FilterOp } from "../api/filter";
 import { displayValue } from "../fields/display";
 import { EditContext, promptFieldValue } from "../fields/fieldActions";
+import { logEvent } from "../log/schemaLog";
 import { Field, isRootField } from "../schema/field";
 import { BaseFileSuggest, BaseViewSuggest } from "./baseSuggest";
 import { makeStickyFooter } from "./modalFooter";
@@ -243,7 +244,24 @@ export class BulkEditModal extends Modal {
 		new BulkPreviewModal(this.app, {
 			field,
 			preview,
-			apply: (paths) => this.plugin.api.applyValueToPaths(paths, field.name, this.value),
+			apply: async (paths) => {
+				const result = await this.plugin.api.applyValueToPaths(paths, field.name, this.value);
+				// A value written into notes nobody had open — the rule for INFO.
+				void logEvent(
+					this.plugin,
+					"INFO",
+					"schema.bulk-edit",
+					`${field.fileClassName} › ${field.name}: set in ${result.changed} note(s)`,
+					{
+						fileClass: field.fileClassName,
+						field: field.name,
+						notes: result.changed,
+						skipped: result.skipped,
+						errors: result.errors.length,
+					}
+				);
+				return result;
+			},
 			onApplied: () => this.close(),
 		}).open();
 	}

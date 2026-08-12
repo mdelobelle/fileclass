@@ -16,6 +16,7 @@ import type FileclassPlugin from "../../main";
 import { getBaseFiles } from "../engine/basesAdapter";
 import { ChoiceSuggestModal } from "../fields/input/valueModals";
 import { baseBindingOptionsFromOptions } from "../fields/options";
+import { logEvent } from "../log/schemaLog";
 import { isRootField } from "../schema/field";
 import {
 	classScope,
@@ -243,6 +244,12 @@ export async function ensureReverseView(
 		addReverseView(base, viewName, filter, order);
 		await app.vault.modify(created, stringifyYaml(base));
 		new Notice(`Fileclass: created ${path} with "${viewName}".`);
+		void logEvent(plugin, "INFO", "views.reverse-created", `${candidate.targetClass}: created ${path} › ${viewName}`, {
+			fileClass: candidate.targetClass,
+			field: candidate.fieldName,
+			base: path,
+			view: viewName,
+		});
 		return { path, viewName };
 	}
 
@@ -262,6 +269,12 @@ export async function ensureReverseView(
 		if (addReverseView(base, viewName, filter, order) === "added") {
 			await app.vault.modify(file, stringifyYaml(base));
 			new Notice(`Fileclass: "${viewName}" ready in ${file.name}.`);
+			void logEvent(plugin, "INFO", "views.reverse-created", `${candidate.targetClass}: added "${viewName}" to ${file.path}`, {
+				fileClass: candidate.targetClass,
+				field: candidate.fieldName,
+				base: file.path,
+				view: viewName,
+			});
 		}
 		return { path: file.path, viewName };
 	} catch (err) {

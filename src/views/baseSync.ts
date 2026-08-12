@@ -22,6 +22,7 @@ import {
 } from "obsidian";
 
 import type FileclassPlugin from "../../main";
+import { logEvent } from "../log/schemaLog";
 import { isRootField } from "../schema/field";
 import { FileClassOptions, parseFileClass } from "../schema/fileClass";
 import { buildBaseYaml, ClassScope, isBaseViewSynced, mirrorBaseView } from "./baseYaml";
@@ -150,6 +151,12 @@ export async function applyBaseSync(
 	if (!(file instanceof TFile)) {
 		await ensureParentFolder(plugin, path);
 		await app.vault.create(path, buildBaseYaml(scope, fields, view));
+		void logEvent(plugin, "INFO", "schema.base-created", `${name}: created ${path} › ${view}`, {
+			fileClass: name,
+			base: path,
+			view,
+			fields: fields.length,
+		});
 		new Notice(`Fileclass: created ${path}`);
 		return;
 	}
@@ -177,6 +184,12 @@ export async function applyBaseSync(
 	}
 	if (mirrorBaseView(base, view, fields, scope)) {
 		await app.vault.modify(file, stringifyYaml(base));
+		void logEvent(plugin, "INFO", "schema.base-synced", `${name}: mirrored ${fields.length} field(s) into ${path} › ${view}`, {
+			fileClass: name,
+			base: path,
+			view,
+			fields: fields.length,
+		});
 	}
 	new Notice(`Fileclass: synced ${path}`);
 }

@@ -13,6 +13,7 @@ import { Notice, TFile, TFolder, normalizePath } from "obsidian";
 
 import type FileclassPlugin from "../../main";
 import { baseBindingOptionsFromOptions, canvasOptions, listOptionsFromOptions } from "../fields/options";
+import { logEvent } from "../log/schemaLog";
 import { FieldType, isRootField } from "../schema/field";
 import { CanvasDoc, SchemaClass, desiredSchemaCanvas, reconcileSchemaCanvas } from "./schemaCanvas";
 
@@ -199,6 +200,16 @@ export async function syncSchemaCanvas(plugin: FileclassPlugin): Promise<void> {
 		file instanceof TFile
 			? `Fileclass: synced ${path} (${parts.join(", ")}).`
 			: `Fileclass: drew ${classes.length} fileClass(es) into ${path}.`
+	);
+	// A file the reader arranges by hand, rewritten by a command: worth a line saying what moved.
+	void logEvent(
+		plugin,
+		"INFO",
+		file instanceof TFile ? "schema.canvas-synced" : "schema.canvas-drawn",
+		file instanceof TFile
+			? `${path}: ${parts.join(", ")}`
+			: `${path}: drew ${classes.length} fileClass(es)`,
+		{ canvas: path, added: added.length, updated: updated.length, removed: removed.length }
 	);
 	// Opened only when it did not exist a moment ago: a resync should not steal the tab you
 	// were reading, and the open view has already redrawn itself.

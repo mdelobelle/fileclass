@@ -38,6 +38,12 @@ All notable changes to Fileclass are documented here. The format follows
   wrench on every line that names a fileClass — straight to its schema, because a log you cannot act
   on is read twice and then ignored. *Check now* re-runs the sweep from inside it.
 
+  The `INFO` level now has its producers: a field renamed across notes, missing fields inserted
+  across a class, a bulk edit, a base created or synced, the schema canvas drawn, a
+  reverse-relation view created, and the Canvas engine filling fields from a `.canvas` — the one
+  surface that writes frontmatter without being asked. Each records how many notes it touched, and
+  a run that changed nothing says nothing.
+
   A problem is **logged once**, not once per sweep, and its repair is logged too
   (`schema.resolved`), so the file reads as a record of what happened rather than a snapshot of what
   is wrong. Comes back after being fixed? Logged again.

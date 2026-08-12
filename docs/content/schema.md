@@ -294,6 +294,12 @@ Three levels, with a rule behind them:
 | **WARNING** | A definition that will never do anything, silently: a tag that cannot bind, an `excludes` naming a field the parent never declared. |
 | **INFO** | A write Fileclass performed across files you did not have open: a rename migrated, a base synced, a canvas drawn. |
 
+What writes an `INFO` line, today: a field renamed across notes, missing fields
+inserted across a class, a bulk edit, a base created or synced, the schema canvas
+drawn, a reverse-relation view created, and the Canvas engine filling fields from a
+`.canvas` — the one surface that writes frontmatter without being asked. Each says
+how many notes it touched.
+
 The log records **consequences, not edits**. Your editing history is git's job, and
 Obsidian's File Recovery already answers "what did this look like yesterday" — a log
 that also carried every keystroke would bury the one line that says something broke.

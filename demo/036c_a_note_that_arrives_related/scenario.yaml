@@ -1,0 +1,87 @@
+# Narration for take 036c — see ../SCENARIO.md for the format.
+# Follows 036b, which made an author's page list their books. That table shows every book of this
+# author except the one you are about to write, which is the one you came to write. This take closes
+# that gap: a note that arrives typed *and* already related.
+#
+# The vault opens on **`Frank Herbert.md`**, now carrying the reverse table 036b inserted — one row,
+# Dune.
+#
+# The fixture is take 036b's vault at its closing state:
+#  - `Books.base` holds `Book by author`, `Comics.base` holds `Comic by contributors`;
+#  - `Frank Herbert`, `Mary Shelley`, `James Clear` and `Hergé` each embed the view that answers for
+#    them;
+#  - `Dune` reads `read: true`, the value 036b's step 11 clicked from the author's own page.
+#
+# One deviation: **`Templates/New book.md` now sets `ownership: Wanted`.** The template has been in
+# the vault since take 031, with every field empty — so "the template's values survive" would have
+# been a claim about nothing on screen. One plausible default makes step 11 visible: the new note
+# keeps `Wanted` (the template's) while `author` is overwritten by the button (the seed's), which is
+# the whole rule in one frame.
+#
+# Facts the script leans on, all measured in the app before scripting:
+#  - the button sits in the table's own toolbar and **says what it will do**: on a reverse view read
+#    from an author's note it reads `New Book with Frank Herbert`, and elsewhere `New Book`. Beside
+#    it is the wrench from 0.2.11, so the toolbar carries "make one" and "manage the class";
+#  - it appears **only when the table is about one class**. With several, there is nothing to create
+#    without asking, and the command palette is where that question belongs;
+#  - it asks for **one name** and suggests the class's own — not "Book — Frank Herbert", which reads
+#    like a title and is not one;
+#  - **the folder is not typed.** Book declares no notes folder of its own, so the cascade takes the
+#    single folder it already binds: the note lands in `Reading list/`, measured;
+#  - the note arrives with `fileClass: Book` **and every field the class declares**, empty — and
+#    `author` already pointing at Frank Herbert, in the vault's own link format;
+#  - the fields modal opens on it, because *Open the fields when creating a note* is on by default.
+#    The fields themselves are always inserted; only the modal is a setting;
+#  - **record with the window wide.** With *Readable line length* on, the embed is 704px and the
+#    toolbar carries nine items — the view name, the result count, Sort, Filter, Properties, Search,
+#    Bases' own New, then our wrench and our New button. They read correctly in a fullscreen window
+#    and crowd in a narrow one, ours first since they come last. Measured at 704px, and the reason
+#    the frame matters for these two takes more than for the earlier ones;
+#  - back on the author's page, the new book is a **second row**: the table is a live filter, so
+#    nothing had to be refreshed;
+#  - the same gesture without a relation is `Fileclass: create a note with a class`, which asks which
+#    class first. From a class note it takes that class without asking;
+#  - a class can name its **own folder** and its **own template**. The template is applied *first*
+#    and the fields second, so a template's own frontmatter merges instead of doubling. Measured on a
+#    scratch vault, with a template setting `publisher` and a *different* author: one `---` block,
+#    `publisher` kept, `author` overwritten by the button's value, and `{{title}}` substituted in the
+#    body. **In this fixture** the same two rules land on `Templates/New book.md`: `ownership: Wanted`
+#    survives, `author` does not. The seed is the only exception to "a template's values are kept",
+#    because clicking that button is an instruction where a default is a preference.
+title: "Fileclass — A note that arrives already related"
+description: "The one note a table cannot show is the one you came to write. One click, and it arrives typed and related."
+doc: "schema/#creating-a-note-with-a-class" # deep link used in the description
+tags: "notes, relations, templates, schema"
+vault_name: "Demo"
+plugin: true
+settings:
+  classFilesPath: "Classes/"
+  fileClassAlias: "fileClass"
+initial_pause: 1500
+default_pause: 900
+
+steps:
+  - title: "This table shows every book of this author — except the one you came to write"
+    pause: 2900
+  - title: "The toolbar says what it will do: a new Book, with Frank Herbert"
+    pause: 2700
+  - title: "It asks for one thing — a name"
+    pause: 2400
+  - title: "And the note lands in the class's own folder. Nobody typed a path"
+    pause: 2800
+  - title: "It is already a Book: the binding, and every field the class declares"
+    pause: 2800
+  - title: "With the author filled in — the table you clicked from decided that one"
+    pause: 2800
+  - title: "The fields open straight away, so the values go in now rather than later"
+    pause: 2800
+  - title: "Back on the author's page, the book is simply there: the table is a live filter"
+    pause: 2900
+  - title: "Without a relation, the same gesture: create a note with a class"
+    pause: 2600
+  - title: "A class can name its own folder, and its own template"
+    pause: 2600
+  - title: "The template goes first, so its values survive and the frontmatter stays one block"
+    pause: 2900
+  - title: "A schema that describes your notes, and now writes them"
+    pause: 2700

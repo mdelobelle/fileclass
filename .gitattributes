@@ -1,0 +1,20 @@
+# The built bundle is committed, because installing this plugin straight from GitHub needs it —
+# and that makes every pair of branches that touches the code conflict on a minified file. Git
+# would try to interleave two builds line by line, which can only produce a bundle matching no
+# source at all.
+#
+# `merge=ours` keeps the current branch's bundle instead; `npm run build` then regenerates it from
+# the merged sources, and CI fails the branch if that was forgotten (the "Bundle matches the
+# sources" step in .github/workflows/ci.yml). The check is what makes this safe rather than quiet.
+#
+# **`ours` is not a built-in driver** — verified the hard way, the conflict came back regardless
+# until it was declared. Git looks it up in the clone's own config, which no repository file can
+# set (a repo that could define merge commands would be a repo that runs code on clone). Hence the
+# `prepare` script in package.json, which registers it on `npm install`; by hand it is:
+#
+#     git config merge.ours.driver true
+main.js merge=ours
+
+# Same reasoning in the demo fixtures: a `.canvas` is JSON that Obsidian writes, and a three-way
+# merge of it yields a file the app declines to open.
+*.canvas merge=ours

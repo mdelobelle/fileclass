@@ -16,6 +16,11 @@ All notable changes to Fileclass are documented here. The format follows
   written in a single pass that reads the frontmatter it is holding rather than the cache. Verified
   against Templater 2.25, including a template that renames the file it is applied to.
 
+  **The same rule now applies wherever fields are inserted** — the command, both menus, the modals,
+  the API and *insert fields when adding a class*, six call sites in all. Any of them could empty a
+  value written a moment earlier by another plugin. Nothing is written when nothing is missing:
+  measured, an unchanged frontmatter write leaves the file and its mtime alone.
+
 ### Fixed
 
 - **Excluding a grandparent's field is no longer reported as a mistake.** The schema sweep checked

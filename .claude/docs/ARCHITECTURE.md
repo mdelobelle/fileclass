@@ -476,14 +476,23 @@ after, every field looked missing, and both values were overwritten with empty
 defaults. Templater's own write and `processFrontMatter` were each verified innocent
 before the cache was suspected.
 
-So `createNoteWithClass` writes the class, the missing fields **and** the seed in one
-`processFrontMatter`, deciding what is missing from the object that callback holds —
-exact, atomic, and independent of the cache.
+**The rule, now applied everywhere that writes:** decide what is missing *inside* the
+`processFrontMatter` callback, from the frontmatter it hands you. `insertMissingFields`
+does that, so all six of its callers are covered — including *insert fields when adding
+a class*, which also runs on a note something else just wrote. `createNoteWithClass`
+keeps its own single pass (class + fields + seed in one write) for atomicity, using the
+same primitives.
 
-The hazard remains reachable from the other callers of `insertMissingFields` (six of
-them, including *insert fields when adding a class*, which also runs on a note that was
-just written). Fixing it there means computing the missing set inside the write callback
-rather than before it; not done, and recorded here rather than left as a surprise.
+Deciding inside the write costs nothing, and this is why: **an unchanged
+`processFrontMatter` does not write.** Measured on 1.13.6 — a callback that touches
+nothing leaves the content *and* the mtime alone, so the "is anything missing?" question
+can be asked with the file open at no cost. (An earlier feature in this codebase took a
+dry run on a cloned frontmatter to avoid a write it turns out would never have
+happened.)
+
+A **read-only** count may still use the cache, and `propertyEditButtons` does: the note
+is on screen, its cache is warm, and no writer is mid-flight. The comment there says so,
+to stop the next person "fixing" it.
 
 ### 11.1 Reverse relations (#154, `reverseView.ts` / `reverseSync.ts`)
 

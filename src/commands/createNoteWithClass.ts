@@ -144,11 +144,10 @@ export async function createNoteWithClass(
 	// 3. the class, its fields and the seed — in **one** write, deciding what is missing from the
 	// frontmatter this callback holds.
 	//
-	// Not `insertMissingFields`, and this is the whole reason: its presence test reads the metadata
-	// cache (`hasFieldKey`), which a template that has just written the file leaves stale. Measured
-	// with Templater — every field looked missing, so the insert wrote an empty default over
-	// `publisher: Chilton Books` and over a date the template had computed. The cache is fine for a
-	// note the reader has been looking at; it is the wrong source the instant somebody else wrote.
+	// `insertMissingFields` is safe to call now (it decides inside its own write, for the same
+	// reason), but this path keeps its single pass: creation then costs one write instead of three,
+	// and the order the seed sits in — after the defaults, over whatever the template left — is
+	// visible here rather than spread across three calls.
 	const seed = req.seed;
 	const seedValue = seed ? resolveSeedValue(plugin, seed, target) : "";
 	const fields = plugin.index.getFields(target);

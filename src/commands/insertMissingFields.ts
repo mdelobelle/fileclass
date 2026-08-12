@@ -8,9 +8,7 @@ import { App, Notice, TFile } from "obsidian";
 
 import { missingRootFields } from "../fields/missingFields";
 import { defaultValueFor } from "../fields/support";
-import { hasFieldKey } from "../io/read";
 import { reorderFrontmatter } from "../io/reorderFrontmatter";
-import { ValueWrite, writeValues } from "../io/write";
 import { Field } from "../schema/field";
 import { UnknownKeysPosition } from "../schema/reorder";
 import { getPlugin, hasPlugin } from "../globals";
@@ -50,17 +48,25 @@ export async function insertMissingFields(
 		reorder?: UnknownKeysPosition | false;
 	} = {}
 ): Promise<number> {
-	const missing = missingRootFields(fields, (f) => hasFieldKey(app, file, f));
-	const writes: ValueWrite[] = missing.map((field) => ({
-		namePath: [field.name],
-		value: defaultValueFor(field),
-	}));
+	// What is missing is decided **inside the write**, from the frontmatter this callback holds.
+	//
+	// Not from `metadataCache`: that cache describes the note as it was, and the instant another
+	// writer touched the file it is a description of the past. Measured with Templater (#84) — it
+	// wrote `publisher: Chilton Books` and a computed date, this ran immediately after, every field
+	// looked missing, and both values were overwritten with empty defaults.
+	//
+	// Deciding here costs nothing, because a callback that mutates nothing writes nothing: measured
+	// on 1.13.6, an unchanged `processFrontMatter` leaves both the content and the mtime alone.
+	let inserted: Field[] = [];
+	await app.fileManager.processFrontMatter(file, (fm: Record<string, unknown>) => {
+		inserted = missingRootFields(fields, (f) => Object.prototype.hasOwnProperty.call(fm, f.name));
+		for (const field of inserted) fm[field.name] = defaultValueFor(field);
+	});
 
-	if (!writes.length) {
+	if (!inserted.length) {
 		if (!silent && !quiet) new Notice("Fileclass: no missing fields to insert.");
 		return 0;
 	}
-	await writeValues(app, file, writes);
 	// A second write, deliberately: the reorder needs the keys to exist before it can place
 	// them, and it writes nothing at all when they already sit in the right order.
 	const policy = reorder === undefined ? settingPolicy() : reorder;
@@ -68,11 +74,11 @@ export async function insertMissingFields(
 	if (!quiet) {
 		new Notice(
 			reordered
-				? `Fileclass: inserted ${writes.length} field(s), in the class's order.`
-				: `Fileclass: inserted ${writes.length} field(s).`
+				? `Fileclass: inserted ${inserted.length} field(s), in the class's order.`
+				: `Fileclass: inserted ${inserted.length} field(s).`
 		);
 	}
-	return writes.length;
+	return inserted.length;
 }
 
 /** The reorder-on-insert preference, or nothing when it is off (or the plugin is unloaded). */

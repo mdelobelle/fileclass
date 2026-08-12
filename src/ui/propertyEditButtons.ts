@@ -183,6 +183,9 @@ export class PropertyEditButtons extends Component {
 		const fields = this.plugin.index.getFields(file);
 		const bound = this.plugin.index.getFileClasses(file).length;
 		const missing = bound
+			// The metadata cache is the right source *here*: this is a count on a note the reader is
+			// looking at, so its cache is warm, and no writer is mid-flight. The write path decides
+			// inside its own `processFrontMatter` instead — see insertMissingFields (§10.2).
 			? missingRootFields(fields, (f) => hasFieldKey(this.plugin.app, file, f))
 			: [];
 		// Cheap enough to ask on every render: one pass over the note's keys, no I/O — the

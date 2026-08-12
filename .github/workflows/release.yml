@@ -40,6 +40,26 @@ jobs:
             main.js
             styles.css
 
+      # The notes are the CHANGELOG's own section for this version — the text written while
+      # the work happened, rather than a list of commit subjects. It also means there is
+      # exactly **one** release per tag: this job used to run beside a `gh release create`
+      # done by hand, so every version ended up with two drafts, and the one deleted was
+      # usually this one — the only one whose assets are built here and attested.
+      - name: Notes for this version, from the changelog
+        run: |
+          tag="${GITHUB_REF#refs/tags/}"
+          awk -v tag="$tag" '
+            $0 ~ "^## \\[" tag "\\]" { found = 1; next }
+            found && /^## \[/ { exit }
+            found { print }
+          ' CHANGELOG.md > release-notes.md
+          if [ ! -s release-notes.md ]; then
+            echo "::error file=CHANGELOG.md::no '## [$tag]' section — the release notes would be empty"
+            exit 1
+          fi
+          echo "--- notes for $tag ---"
+          head -20 release-notes.md
+
       - name: Create release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -49,6 +69,6 @@ jobs:
           # Obsidian only downloads main.js/manifest.json/styles.css — no extras.
           gh release create "$tag" \
             --title="$tag" \
-            --generate-notes \
+            --notes-file release-notes.md \
             --draft \
             main.js manifest.json styles.css

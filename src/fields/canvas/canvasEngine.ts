@@ -14,6 +14,7 @@ import { Component, TFile, debounce } from "obsidian";
 import { isSchemaCanvas } from "../../views/schemaCanvasSync";
 import type FileclassPlugin from "../../../main";
 import { getBaseFiles } from "../../engine/basesAdapter";
+import { logEvent } from "../../log/schemaLog";
 import { readFieldValue } from "../../io/read";
 import { ValueWrite, writeValues } from "../../io/write";
 import { Field, FieldType } from "../../schema/field";
@@ -103,6 +104,9 @@ export class CanvasEngine extends Component {
 			canvasFile instanceof TFile ? parseCanvas(await app.vault.read(canvasFile)) : { nodes: [], edges: [] };
 
 		const written = new Set<string>();
+		// Counted, because this is the one surface that writes frontmatter without being asked —
+		// the log's INFO exists for exactly that, and a run that changed nothing says nothing.
+		let filled = 0;
 		for (const node of data.nodes) {
 			if (node.type !== "file" || !node.file) continue;
 			const note = app.vault.getFileByPath(node.file);
@@ -111,11 +115,24 @@ export class CanvasEngine extends Component {
 			if (!fields.length) continue;
 			written.add(note.path);
 			const writes = await this.writesForNote(note, node, data, fields);
-			if (writes.length) await writeValues(app, note, writes);
+			if (writes.length) {
+				await writeValues(app, note, writes);
+				filled += 1;
+			}
 		}
 
-		await this.clearDroppedNotes(canvasPath, written);
+		const cleared = await this.clearDroppedNotes(canvasPath, written);
 		this.lastNotes.set(canvasPath, written);
+		if (filled || cleared) {
+			const parts = [filled ? `filled ${filled}` : "", cleared ? `cleared ${cleared}` : ""].filter(Boolean);
+			void logEvent(
+				this.plugin,
+				"INFO",
+				"canvas.autofilled",
+				`${canvasPath}: ${parts.join(", ")} note(s) from the canvas`,
+				{ canvas: canvasPath, filled, cleared }
+			);
+		}
 	}
 
 	/** Canvas-family fields of `note` bound to this canvas. */
@@ -176,10 +193,11 @@ export class CanvasEngine extends Component {
 		}
 	}
 
-	/** Notes that were connected last run but no longer are → clear their fields. */
-	private async clearDroppedNotes(canvasPath: string, written: Set<string>): Promise<void> {
+	/** Notes that were connected last run but no longer are → clear their fields; how many. */
+	private async clearDroppedNotes(canvasPath: string, written: Set<string>): Promise<number> {
 		const previous = this.lastNotes.get(canvasPath);
-		if (!previous) return;
+		if (!previous) return 0;
+		let cleared = 0;
 		for (const notePath of previous) {
 			if (written.has(notePath)) continue;
 			const note = this.plugin.app.vault.getFileByPath(notePath);
@@ -187,8 +205,12 @@ export class CanvasEngine extends Component {
 			const writes = this.canvasFields(note, canvasPath)
 				.filter((f) => this.norm(readFieldValue(this.plugin.app, note, f)).length > 0)
 				.map((f) => ({ namePath: [f.name], value: null }));
-			if (writes.length) await writeValues(this.plugin.app, note, writes);
+			if (writes.length) {
+				await writeValues(this.plugin.app, note, writes);
+				cleared += 1;
+			}
 		}
+		return cleared;
 	}
 
 	private toLink(sourcePath: string, ref: CanvasFileRef): string {

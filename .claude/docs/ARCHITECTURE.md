@@ -431,6 +431,37 @@ canvas file tracking (comes with the planned Canvas engine, §9.1).
   base — and the only route available, since the registry takes no computed
   properties (§3.1).
 
+### 10.1 Paths a schema stores, when they move (#159, `renamePaths.ts` / `renameNotice.ts`)
+
+A fileClass stores paths as **plain strings** in frontmatter: `valuesListNotePath`,
+a field's `baseFile`, `canvasPath`, the class's `baseFile`, and `filesPaths`.
+Obsidian rewrites links in a note's *body* on rename and leaves these alone — a
+property limit, not ours. Measured on 1.13.6: the values list empties, candidates
+empty, and a folder-bound class silently stops claiming its notes.
+
+- **Detect, warn, never repair.** A definition is the author's; rewriting one
+  unasked is the kind of help that has to be undone, and the plugin already refuses
+  it elsewhere (`mirrorBaseView` on filters, the schema canvas on layout). The
+  earlier draft of this feature *did* rewrite, and was rejected for that reason.
+- The consequence is **per key**, not one sentence: a folder binding feeds no
+  values, it decides which notes carry the class at all (`consequenceOf`).
+- Cost control: frontmatter comes from `metadataCache`, no file is opened, and
+  nothing is written when no class named the path — verified by mtime on all 11
+  class notes of the 901 fixture.
+- The log is `<class folder>/fileclass.log` — a **`.log`**, because
+  `FileclassIndex.rebuild` reads every markdown file under that folder as a
+  fileClass, so a `.md` log there would come back as a class.
+- **A dot-folder is invisible to the vault API** (measured, 1.13.6):
+  `vault.createFolder("Classes/.logs")` and `vault.create` inside it both succeed
+  and write to disk, while `getAbstractFileByPath("Classes/.logs")` stays **null**
+  — so the archives were unreadable to the code that had just written them, every
+  rotation reused `archive_0001` and the second threw on an existing name.
+  `adapter.exists/list/read/write/mkdir/remove` handle them correctly. Anything
+  under a dot-folder goes through `vault.adapter`, never the vault API.
+- Rotation is whole-file, numbering monotonic, pruning by lowest number: renaming
+  archives on every rotation would rewrite history and make a file's name a lie
+  about when it was written.
+
 ### 11.1 Reverse relations (#154, `reverseView.ts` / `reverseSync.ts`)
 
 The relation a bound link field declares, read from the other end: from an author,

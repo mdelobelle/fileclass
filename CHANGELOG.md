@@ -6,6 +6,62 @@ All notable changes to Fileclass are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- **A fileClass says when something it points at moves**
+  ([#159](https://github.com/mdelobelle/fileclass/issues/159)). A schema stores paths — the note a
+  `Select` reads its values from, the `.base` a link field draws candidates from, the `.canvas` a
+  Canvas field follows, the folders the class claims. Obsidian rewrites links inside a note's body
+  on a rename; a path in frontmatter is a plain string and nothing rewrites it, so the reference
+  goes dangling and the effect is silent: an empty values list, a field with no candidates, or —
+  worst — a folder binding whose notes quietly stop carrying the class.
+
+  Fileclass now names it, and **changes nothing**: *"Authors.base" moved, and fileClasses still
+  point at it — Comic › contributors, Book › author. Until the definition is updated, the field
+  offers no candidates.* Fixing the definition stays your decision, taken in the schema editor.
+
+  Each warning is also appended to **`<class folder>/fileclass.log`** — a notice lasts fifteen
+  seconds, and this is the kind of breakage found three weeks later. One event per line, tab
+  separated, with a JSON tail: timestamp, level (`INFO`/`WARNING`/`ERROR`), event id, message,
+  details. **Fileclass: open the schema log** opens it, and **Settings → Fileclass → Schema log**
+  turns the file off. A `.log` and not a note, because every markdown file in the class folder is
+  read as a fileClass.
+
+  The log records **consequences, not edits**: `ERROR` when Fileclass cannot do what a definition
+  told it, `WARNING` when a definition will never do anything (a tag that cannot bind), `INFO` for a
+  write performed across files you did not have open. Editing history is git's job, and Obsidian's
+  File Recovery already answers "what did this look like yesterday".
+
+- **A window onto the log** ([#159](https://github.com/mdelobelle/fileclass/issues/159)).
+  **Fileclass: open the schema log** opens a reader rather than a `.log` Obsidian will not render:
+  an icon and a colour per level, chips that filter by level, a search over the messages, and a
+  wrench on every line that names a fileClass — straight to its schema, because a log you cannot act
+  on is read twice and then ignored. *Check now* re-runs the sweep from inside it.
+
+  The `INFO` level now has its producers: a field renamed across notes, missing fields inserted
+  across a class, a bulk edit, a base created or synced, the schema canvas drawn, a
+  reverse-relation view created, and the Canvas engine filling fields from a `.canvas` — the one
+  surface that writes frontmatter without being asked. Each records how many notes it touched, and
+  a run that changed nothing says nothing.
+
+  A problem is **logged once**, not once per sweep, and its repair is logged too
+  (`schema.resolved`), so the file reads as a record of what happened rather than a snapshot of what
+  is wrong. Comes back after being fixed? Logged again.
+
+- **Retention for the log** ([#159](https://github.com/mdelobelle/fileclass/issues/159)). The live
+  file keeps a set number of entries (**Settings → Fileclass → Schema log size**, 500 by default);
+  past that it rolls over to `<class folder>/.logs/archive_0001.log`, `0002`, and so on, with
+  **Archives kept** bounding how many are held. Numbering only goes up and nothing is renamed on
+  rotation, so an archive's name always means when it was written; pruning removes the lowest.
+  The window grows an **Include N archives** toggle once there are any.
+
+- **A sweep over what your classes point at** ([#159](https://github.com/mdelobelle/fileclass/issues/159)).
+  The warning above rides on Obsidian announcing a rename — move a file with the plugin off, from
+  your file manager, or from another machine over sync, and no event ever arrives. So Fileclass also
+  checks once per session, and on demand with **Fileclass: check what my classes point at**: every
+  values note, base, canvas and claimed folder a class names, plus two questions a path cannot
+  answer — does its `extends` name a class the vault has, and can each of its tags actually bind.
+
 ### Changed
 
 - **The `fileclass-table` view type has an icon of its own.** It used the native table's glyph, so

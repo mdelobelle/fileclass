@@ -32,6 +32,9 @@ import { openFileClassSchema } from "./src/ui/fileClassSchemaModal";
 import { pickAndCreateBase } from "./src/views/baseFileGenerator";
 import { fileClassBaseFile, openFileClassBase, syncFileClassToBase } from "./src/views/baseSync";
 import { registerFileclassTableView } from "./src/views/fileclassTableView";
+import { openSchemaLogModal } from "./src/ui/schemaLogModal";
+import { runSchemaAudit } from "./src/schema/schemaAuditRun";
+import { warnOnStalePaths } from "./src/schema/renameNotice";
 import { insertReverseRelation, vaultHasReverseRelations } from "./src/views/reverseSync";
 import { createFileclassApi, FileclassApi } from "./src/api/fileclassApi";
 import { CanvasEngine } from "./src/fields/canvas/canvasEngine";
@@ -109,6 +112,10 @@ export default class FileclassPlugin extends Plugin {
 			this.refreshBasesAvailability();
 			this.registerFileclassTableView();
 			this.index.rebuild();
+			// Once per session, after the first build. Not on every rebuild: the index rebuilds on
+			// any change to any class note, and a sweep per rebuild would log the same broken path
+			// forty times while somebody edits a schema.
+			void runSchemaAudit(this, false);
 		});
 
 		// Bases can be switched on after we loaded; without this the session stays in
@@ -343,6 +350,22 @@ export default class FileclassPlugin extends Plugin {
 			},
 		});
 
+		// The log the rename warnings write into: findable without hunting for a `.log` in the
+		// file explorer, which does not show one.
+		this.addCommand({
+			id: "open-schema-log",
+			name: "Open the schema log",
+			callback: () => openSchemaLogModal(this),
+		});
+
+		// The sweep the rename warning cannot do: a file moved while the plugin was off, from the
+		// Finder, or by a sync client on another machine breaks a schema with nobody in the room.
+		this.addCommand({
+			id: "audit-schemas",
+			name: "Check what my classes point at",
+			callback: () => void runSchemaAudit(this, true),
+		});
+
 		// #154 — the relation the schema already describes, read from the other end. Discovery is
 		// O(vault) per source view, so it runs on invocation only; the check here is index-only.
 		this.addCommand({
@@ -406,6 +429,10 @@ export default class FileclassPlugin extends Plugin {
 			this.app.vault.on("rename", (file, oldPath) => {
 				if (this.affectsSchema(oldPath)) scheduleRebuild();
 				onChange(file);
+				// A path stored in a schema is a plain string: Obsidian rewrites the links in a
+				// note's body on a rename and leaves this one pointing at what moved (#159). Said,
+				// never repaired — the definition is the author's.
+				warnOnStalePaths(this, file, oldPath);
 			})
 		);
 	}

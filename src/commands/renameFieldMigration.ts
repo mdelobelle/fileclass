@@ -12,6 +12,7 @@
  * order-preserving (`renameProperty`).
  */
 import { App, Modal, Notice, Setting, TFile } from "obsidian";
+import { logEvent } from "../log/schemaLog";
 
 import type FileclassPlugin from "../../main";
 import { Field } from "../schema/field";
@@ -84,6 +85,20 @@ export async function migrateRenamedField(
 	new Notice(
 		`Fileclass: renamed "${from}" to "${field.name}" in ${candidates.length} note(s)` +
 			(written > candidates.length ? ` (${written} occurrences).` : ".")
+	);
+	// The widest write the plugin performs — a key changing name in notes you were not looking at.
+	void logEvent(
+		plugin,
+		"INFO",
+		"schema.field-renamed",
+		`${field.fileClassName} › ${field.name}: renamed from "${from}" in ${candidates.length} note(s)`,
+		{
+			fileClass: field.fileClassName,
+			field: field.name,
+			from,
+			notes: candidates.length,
+			occurrences: written,
+		}
 	);
 }
 

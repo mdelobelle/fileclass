@@ -237,3 +237,107 @@ When adding or editing a field, its type reveals the relevant settings:
 
 Every change is a single `processFrontMatter` write on the fileClass note,
 preserving unknown keys.
+
+## When something a fileClass points at moves
+
+A fileClass stores **paths**: the note a `Select` reads its values from, the `.base`
+a link field takes candidates from, the `.canvas` a Canvas field follows, the base
+the class syncs to, the folders it claims.
+
+Obsidian rewrites the links inside a note's **body** when a file is renamed. A path
+in frontmatter is a plain string, so nothing rewrites it — a known limit of
+properties, not a Fileclass one. Renamed and left alone, the reference is dangling
+and the effect is silent: a values list that comes up empty, a field with no
+candidates, or — the one with teeth — a folder binding whose notes quietly stop
+carrying the class.
+
+So Fileclass **tells you, and changes nothing**:
+
+> Fileclass: "Authors.base" moved, and fileClasses still point at it — Comic ›
+> contributors, Book › author. Until the definition is updated, the field offers no
+> candidates.
+
+Your definition stays yours: fixing it is a decision, taken in the schema editor
+where you can see the rest of the field.
+
+### The sweep
+
+The warning above rides on Obsidian telling Fileclass about a rename. Move a file
+while the plugin is off, from your file manager, or from another machine over sync,
+and no event ever arrives. So Fileclass also **sweeps** once per session, after the
+first index build, and on demand:
+
+**Fileclass: check what my classes point at** asks every class whether what it names
+still exists — the values notes, the bases, the canvases, the folders it claims —
+and adds two questions a path cannot answer: does its `extends` name a class the
+vault has, and can each of its tags actually bind.
+
+> Fileclass: 3 broken references, 1 that will never bind — see the schema log.
+
+### The log
+
+A notice lasts fifteen seconds, and this is the kind of breakage found three weeks
+later. Everything above is also appended to **`<class folder>/fileclass.log`**, one
+event per line — timestamp, level, event id, message, and JSON details:
+
+```
+2026-08-12 08:37:41	ERROR	schema.missing-path	Book › author: "Gone.base" — the field offers no candidates	{"fileClass":"Book","field":"author","value":"Gone.base"}
+2026-08-12 08:37:41	ERROR	schema.missing-folder	Book: "Gone folder" — no note is bound by this folder	{"fileClass":"Book","value":"Gone folder"}
+2026-08-12 08:37:41	WARNING	schema.dead-tag	Album: "two words" — a tag cannot contain a space, so it binds nothing	{"fileClass":"Album","value":"two words"}
+```
+
+Three levels, with a rule behind them:
+
+| Level | What it means |
+|-------|---------------|
+| **ERROR** | Fileclass cannot do what a definition told it: a path pointing at nothing, an `extends` naming a class the vault does not have. |
+| **WARNING** | A definition that will never do anything, silently: a tag that cannot bind, an `excludes` naming a field the parent never declared. |
+| **INFO** | A write Fileclass performed across files you did not have open: a rename migrated, a base synced, a canvas drawn. |
+
+What writes an `INFO` line, today: a field renamed across notes, missing fields
+inserted across a class, a bulk edit, a base created or synced, the schema canvas
+drawn, a reverse-relation view created, and the Canvas engine filling fields from a
+`.canvas` — the one surface that writes frontmatter without being asked. Each says
+how many notes it touched.
+
+The log records **consequences, not edits**. Your editing history is git's job, and
+Obsidian's File Recovery already answers "what did this look like yesterday" — a log
+that also carried every keystroke would bury the one line that says something broke.
+
+**Fileclass: open the schema log** opens it in a window rather than in the file:
+each level carries an icon and a colour, the chips filter by level (they are the
+counts you just read, made clickable), the search narrows on the message, and every
+line that names a fileClass has a wrench through to its schema — a log you cannot act
+on is read twice and then ignored. **Check now** re-runs the sweep without leaving.
+
+The file itself is a `.log` rather than a note on purpose: every markdown file in the
+class folder is read as a fileClass, so a `.md` log living there would come back as a
+class of its own. *Open the file* shows it raw.
+
+**A problem is logged once**, not once per sweep — otherwise a session that re-listed
+the same twelve findings would drown the line saying something *changed*. When it is
+fixed, that is a line too:
+
+```
+2026-08-12 09:03:12	INFO	schema.resolved	Book › author: "Gone.base" — fixed
+```
+
+so the file reads as a record of what happened rather than a snapshot of what is
+wrong. A problem that comes back after being fixed is logged again.
+
+### Retention
+
+A log nobody prunes eventually costs more to open than it is worth, and this one is
+written by vault events — a busy month of renames fills it without anybody noticing.
+
+**Settings → Fileclass → Schema log size** is how many entries the live file keeps
+(500 by default; 0 lets it grow). Past that, the whole file rolls over to
+**`<class folder>/.logs/archive_0001.log`**, then `0002`, and so on. **Archives
+kept** bounds how many are held (5 by default; 0 discards the overflow instead).
+
+Numbering only ever goes up, and nothing is renamed on rotation: an archive's name
+means when it was written, and pruning removes the lowest numbers. In the window, a
+toggle appears once archives exist — **Include N archives** merges them into the
+list, off by default, since the live file is what answers "what just happened".
+
+Turn the whole thing off in **Settings → Fileclass → Schema log**; the notices stay.

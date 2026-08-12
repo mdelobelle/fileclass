@@ -11,6 +11,7 @@
  * Nothing here writes before the answer.
  */
 import { App, Modal, Notice, Setting, TFile } from "obsidian";
+import { logEvent } from "../log/schemaLog";
 
 import type FileclassPlugin from "../../main";
 import { missingRootFields } from "../fields/missingFields";
@@ -70,6 +71,14 @@ export async function bulkInsertMissingFields(
 	}
 	new Notice(
 		`Fileclass: inserted ${written} field(s) across ${candidates.length} note(s) of "${fileClassName}".`
+	);
+	// A write across notes nobody had open: the log's INFO is exactly for this.
+	void logEvent(
+		plugin,
+		"INFO",
+		"schema.fields-inserted",
+		`${fileClassName}: inserted ${written} field(s) across ${candidates.length} note(s)`,
+		{ fileClass: fileClassName, fields: written, notes: candidates.length }
 	);
 }
 

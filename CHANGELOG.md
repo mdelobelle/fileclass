@@ -4,6 +4,16 @@ All notable changes to Fileclass are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); this project uses
 [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Fixed
+
+- **"Open its base" lands on the class's own view.** It opened the base file and let Bases pick,
+  which means the view listed first — usually not the class's, since a base is free to hold several
+  and the managed one is generally appended. The class already declares which view is its own
+  (`baseView`), so the tab now opens there. A class whose base does not hold that view — declared but
+  never synced — still opens the base rather than asking Bases for something that is not there.
+
 ## [0.2.13] - 2026-08-12
 
 ### Changed

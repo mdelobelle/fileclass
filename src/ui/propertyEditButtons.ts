@@ -278,7 +278,7 @@ export class PropertyEditButtons extends Component {
 		if (base) {
 			wrapper.append(
 				this.makeActionButton("table", "Open the base", `Open ${base.path}`, () =>
-					openFileClassBase(this.plugin, fcName)
+					void openFileClassBase(this.plugin, fcName)
 				)
 			);
 		}

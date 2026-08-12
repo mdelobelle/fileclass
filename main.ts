@@ -373,7 +373,7 @@ export default class FileclassPlugin extends Plugin {
 				const active = this.app.workspace.getActiveFile();
 				const name = active ? this.index.fileClassNameOfNote(active.path) : undefined;
 				if (!name || !fileClassBaseFile(this, name)) return false;
-				if (!checking) openFileClassBase(this, name);
+				if (!checking) void openFileClassBase(this, name);
 				return true;
 			},
 		});

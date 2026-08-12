@@ -110,7 +110,7 @@ export class FileclassContextMenu extends Component {
 				item
 					.setTitle("Open base for this fileClass")
 					.setIcon("table")
-					.onClick(() => openFileClassBase(this.plugin, fcName))
+					.onClick(() => void openFileClassBase(this.plugin, fcName))
 			);
 		}
 		menu.addItem((item) =>

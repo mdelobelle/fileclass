@@ -45,6 +45,16 @@ export function hasAllowedValues(type: FieldType): boolean {
 	return CHOICE_TYPES.has(type);
 }
 
+/**
+ * A list value's items, accepting the scalar a single value is often written as.
+ *
+ * Only for the types where that form is indistinguishable downstream — never a general claim that a
+ * list may be a scalar. `MultiFile` and `MultiMedia` are exactly where it is distinguishable.
+ */
+function asItems(value: unknown): unknown[] {
+	return Array.isArray(value) ? value : [value];
+}
+
 export function isEmpty(value: unknown): boolean {
 	return value == null || value === "";
 }
@@ -120,8 +130,12 @@ export function validateField(
 				? invalid(`"${field.name}" must be text`)
 				: VALID;
 		case "MultiInput": {
-			if (!Array.isArray(value)) return invalid(`"${field.name}" must be a list`);
-			for (const item of value) {
+			// A single value written as a scalar is accepted. Measured: `contains`, `containsAny`
+			// and `==` all match `themes: Ecology` exactly as they match `themes: [Ecology]`, so
+			// nothing that queries a vault can tell the two apart — and a vault coming from Metadata
+			// Menu is full of the scalar form, which wrote it that way for a single item. Flagging it
+			// was noise about a difference that costs nothing.
+			for (const item of asItems(value)) {
 				if (item !== null && typeof item === "object") {
 					return invalid(`"${field.name}" items must be text`);
 				}
@@ -136,8 +150,9 @@ export function validateField(
 		case "Cycle":
 			return validateInList(value, field, allowedValues);
 		case "Multi": {
-			if (!Array.isArray(value)) return invalid(`"${field.name}" must be a list`);
-			for (const item of value) {
+			// Same as MultiInput: for a list of plain values the storage form is invisible to every
+			// query, so only the values themselves are worth checking.
+			for (const item of asItems(value)) {
 				const r = validateInList(item, field, allowedValues);
 				if (!r.ok) return r;
 			}
@@ -150,9 +165,16 @@ export function validateField(
 				: invalid(`"${field.name}" must be a link`);
 		case "MultiFile":
 		case "MultiMedia":
+			// Here the form **is** visible, which is why this one stays. Measured: with the same link
+			// stored as a list on one note and as a scalar on another,
+			// `contributors.contains(this.file.asLink())` — the expression a reverse view is built
+			// from — returns the list one and skips the scalar. Bases types a scalar link as a single
+			// link, and a single link does not answer a membership test; a filter that fails excludes
+			// the file silently (§3.1). So the note vanishes from the very view meant to list it, and
+			// the message names that rather than the shape.
 			return Array.isArray(value)
 				? VALID
-				: invalid(`"${field.name}" must be a list of links`);
+				: invalid(`"${field.name}" is a single link, not a list — views filtering on it skip this note`);
 		case "Duration":
 			return isValidDuration(String(value))
 				? VALID

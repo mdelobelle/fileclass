@@ -62,15 +62,20 @@ describe("Select / Cycle membership", () => {
 describe("Multi", () => {
 	it("requires a list and validates each item", () => {
 		const allowed = ["a", "b"];
-		expect(validateField(make("Multi"), "a", allowed).ok).toBe(false); // not a list
+		// A single value written as a scalar is accepted: `contains`, `containsAny` and `==` all
+		// match it exactly as they match a list of one (measured), and Metadata Menu wrote it that
+		// way — the error was noise about a difference nothing can observe.
+		expect(validateField(make("Multi"), "a", allowed).ok).toBe(true);
+		expect(validateField(make("Multi"), "z", allowed).ok).toBe(false); // still checked
 		expect(validateField(make("Multi"), ["a", "b"], allowed).ok).toBe(true);
 		expect(validateField(make("Multi"), ["a", "z"], allowed).ok).toBe(false);
 	});
 });
 
 describe("MultiInput", () => {
-	it("requires a list of scalar items (no allowed-values constraint)", () => {
-		expect(validateField(make("MultiInput"), "x").ok).toBe(false); // not a list
+	it("takes a list of scalar items, or a single one written as a scalar", () => {
+		expect(validateField(make("MultiInput"), "x").ok).toBe(true);
+		expect(validateField(make("MultiInput"), { a: 1 }).ok).toBe(false); // still not an object
 		expect(validateField(make("MultiInput"), []).ok).toBe(true);
 		expect(validateField(make("MultiInput"), ["a", "b"]).ok).toBe(true);
 		expect(validateField(make("MultiInput"), ["a", 2]).ok).toBe(true); // any scalar
@@ -175,5 +180,30 @@ describe("type predicates — list vs choice", () => {
 		expect(["Select", "Cycle", "Multi"].every((t) => hasAllowedValues(t as FieldType))).toBe(true);
 		expect(hasAllowedValues("MultiFile")).toBe(false); // draws from candidates, not a list
 		expect(hasAllowedValues("Input")).toBe(false);
+	});
+});
+
+describe("a single value written as a scalar", () => {
+	/*
+	 * The rule is not "a list may always be a scalar" — it is "flag the difference only where
+	 * something can see it". Measured on Bases: for a list of plain values the two forms answer
+	 * `contains`, `containsAny` and `==` identically; for a list of **links** they do not, and the
+	 * scalar is skipped by the very filter a reverse view is built from.
+	 */
+	it("is fine for a list of values", () => {
+		expect(validateField(make("Multi"), "Ecology", ["Ecology", "Politics"]).ok).toBe(true);
+		expect(validateField(make("MultiInput"), "one award").ok).toBe(true);
+	});
+
+	it("is not fine for a list of links, and the message says what it costs", () => {
+		const r = validateField(make("MultiFile"), "[[Hergé]]");
+		expect(r.ok).toBe(false);
+		expect(r.message).toContain("single link");
+		expect(r.message).toContain("skip this note");
+	});
+
+	it("leaves the list forms alone", () => {
+		expect(validateField(make("MultiFile"), ["[[Hergé]]"]).ok).toBe(true);
+		expect(validateField(make("MultiMedia"), ["[[cover.png]]"]).ok).toBe(true);
 	});
 });

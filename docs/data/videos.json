@@ -461,6 +461,28 @@
     "recordedWith": "0.2.10",
     "privacyStatus": "public"
   },
+  "036b": {
+    "id": "EyptbmltFuI",
+    "url": "https://www.youtube.com/watch?v=EyptbmltFuI",
+    "title": "Fileclass #036b · The other end of a relation",
+    "subject": "The other end of a relation",
+    "scenario": "036b_the_other_end_of_a_relation",
+    "doc": "views/#the-other-end-of-a-relation",
+    "durationSeconds": 185,
+    "recordedWith": "0.2.11",
+    "privacyStatus": "public"
+  },
+  "036c": {
+    "id": "MVW2X4KqAEE",
+    "url": "https://www.youtube.com/watch?v=MVW2X4KqAEE",
+    "title": "Fileclass #036c · A note that arrives already related",
+    "subject": "A note that arrives already related",
+    "scenario": "036c_a_note_that_arrives_related",
+    "doc": "schema/#creating-a-note-with-a-class",
+    "durationSeconds": 143,
+    "recordedWith": "0.2.11",
+    "privacyStatus": "public"
+  },
   "037": {
     "id": "xeccqChw1kA",
     "url": "https://www.youtube.com/watch?v=xeccqChw1kA",

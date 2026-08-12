@@ -269,6 +269,8 @@ already describe.
 
 ## The other end of a relation
 
+{{< video "036b" >}}
+
 `Book.author` takes its candidates from `Authors.base`. From a book you reach its
 author in one click — and from the author you reach nothing, even though the
 schema describes that relation completely. **Insert notes that point here**, from

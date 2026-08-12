@@ -6,6 +6,21 @@ All notable changes to Fileclass are documented here. The format follows
 
 ## [Unreleased]
 
+### Changed
+
+- **A single value written as a scalar is no longer flagged, unless it costs something.** `themes:
+  Ecology` instead of `themes: [Ecology]` was reported as invalid for every list type, which is a lot
+  of noise in a vault migrated from Metadata Menu — it wrote single values that way. Measured on
+  Bases: for a list of **values**, `contains`, `containsAny` and `==` match the scalar exactly as they
+  match a list of one, so nothing can tell them apart and `Multi`/`MultiInput` now accept it.
+
+  For a list of **links** it stays an error, because there the difference is visible: with the same
+  link stored as a list on one note and a scalar on another,
+  `contributors.contains(this.file.asLink())` — the filter a reverse-relation view is built from —
+  returns the first and skips the second, so the note vanishes from the table meant to list it. The
+  message now names that instead of the shape: *"contributors" is a single link, not a list — views
+  filtering on it skip this note*.
+
 ### Fixed
 
 - **"Open its base" lands on the class's own view.** It opened the base file and let Bases pick,

@@ -177,6 +177,28 @@ The `fileclass-table` view can prepend a **`valid`** column and append an
   `Select`'s allowed list, malformed dates, …).
 - **`errors`** lists the messages for the failing fields (full text on hover).
 
+### One value, written without a list
+
+A note that carries a single value often writes it as a scalar — `themes: Ecology`
+rather than `themes: [Ecology]`. Metadata Menu wrote it that way, so a migrated vault
+is full of them.
+
+For a list of **values** (`Multi`, `MultiInput`) that is not flagged: measured on Bases,
+`contains`, `containsAny` and `==` match the scalar exactly as they match a list of one,
+so nothing that queries your vault can tell the two apart.
+
+For a list of **links** (`MultiFile`, `MultiMedia`) it is, because there the difference
+is visible: a scalar link is a *link*, and a link does not answer a membership test.
+`contributors.contains(this.file.asLink())` — the filter a
+[reverse-relation view](#the-other-end-of-a-relation) is built from — returns the notes
+whose value is a list and silently skips the others. The note then disappears from the
+very table meant to list it, which is why the message names the consequence:
+
+> "contributors" is a single link, not a list — views filtering on it skip this note
+
+Editing the field from the note-fields modal or the Properties buttons writes it back as
+a list.
+
 Validation covers **all** of the note's root fields, not just the columns shown.
 Toggle it under **Settings → Fileclass → Validation columns** (on by default).
 The same checks back `fileclass validate` on the [CLI](../cli/) and the API's

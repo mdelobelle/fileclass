@@ -4,39 +4,36 @@ All notable changes to Fileclass are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); this project uses
 [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
-
-### Fixed
-
-- **An embedded table no longer opens as "Unknown view type".** Obsidian restores its tabs before a
-  plugin can register a view type, so a note whose body embeds a base rendered its embeds too early
-  and showed *Unknown view type: fileclass-table* over each of them until something made the note
-  redraw. Bases opened in their own tab were already handled; a note **embedding** one is a markdown
-  tab, which the repair skipped. Both are redrawn now.
-
-- **A template's values are no longer wiped when Templater writes them.** Creating a note with a
-  class applied the template, then inserted the class's fields — and the insert decided what was
-  "missing" from Obsidian's metadata cache, which a template that had *just* written the file leaves
-  stale. Everything looked missing, so `publisher: Chilton Books` and a date the template had
-  computed were both overwritten with empty defaults. The class, the fields and the seed are now
-  written in a single pass that reads the frontmatter it is holding rather than the cache. Verified
-  against Templater 2.25, including a template that renames the file it is applied to.
-
-  **The same rule now applies wherever fields are inserted** — the command, both menus, the modals,
-  the API and *insert fields when adding a class*, six call sites in all. Any of them could empty a
-  value written a moment earlier by another plugin. Nothing is written when nothing is missing:
-  measured, an unchanged frontmatter write leaves the file and its mtime alone.
-
-### Fixed
-
-- **Excluding a grandparent's field is no longer reported as a mistake.** The schema sweep checked
-  `excludes` against the **direct parent's** fields, so on a chain three deep — `Comic extends Book
-  extends Media` dropping one of `Media`'s fields — it logged *"the parent declares no such field"*
-  about ordinary use. `excludes` drops *inherited* fields and inheritance runs the whole chain, so
-  the check now asks the chain. A name no ancestor declares is still reported, with wording that
-  says so.
+## [0.2.12] - 2026-08-12
 
 ### Added
+
+- **Read a relation from the other end** ([#154](https://github.com/mdelobelle/fileclass/issues/154)).
+  `Book.author` takes its candidates from `Authors.base`, so from a book you reach its author in
+  one click — and from the author, nothing. **Fileclass: insert notes that point here**, also on a
+  note's right-click menu, writes the view that reads it backwards into the target class's base and
+  embeds it in the note. Nothing is evaluated and nothing is stored: the table is Bases answering a
+  filter, live and editable in place.
+
+  **One view serves every note.** It is named after the class and the field —
+  `Book by author` — never after the note you ran it from, because inside an embedded base
+  `this.file` is the note holding the embed. The first author to ask creates the view; every author
+  after that only gets the embed, and it is reused with whatever columns, sort and filter you have
+  given it since.
+
+  **You choose where it lives.** The first run asks, offering the class's own base; point it at any
+  base you already have instead, or at a new path. From the second note onwards nothing is asked —
+  the view is found by its name in whichever base you put it, so a relation sent to a dashboard base
+  stays there, as one copy.
+
+  The filter compares **links**, not names: an aliased link (`[[Frank Herbert|Herbert]]`) still
+  matches, and two authors sharing a basename in different folders keep their own books apart. It
+  carries the class's whole scope too, so notes bound by folder or tag are in. Columns come from the
+  class's own table when its base has one, minus the pointing field — down a reverse table that
+  column holds the same note on every row.
+
+  The embed goes in at the cursor when the note is open, appended otherwise; an embed already there
+  is jumped to, never duplicated and never rewritten.
 
 - **Create a note that already belongs to a class** ([#84](https://github.com/mdelobelle/fileclass/issues/84)).
   A table shows every note of a class except the one you are about to write. **Fileclass: create a
@@ -81,6 +78,13 @@ All notable changes to Fileclass are documented here. The format follows
   write performed across files you did not have open. Editing history is git's job, and Obsidian's
   File Recovery already answers "what did this look like yesterday".
 
+- **A sweep over what your classes point at** ([#159](https://github.com/mdelobelle/fileclass/issues/159)).
+  The warning above rides on Obsidian announcing a rename — move a file with the plugin off, from
+  your file manager, or from another machine over sync, and no event ever arrives. So Fileclass also
+  checks once per session, and on demand with **Fileclass: check what my classes point at**: every
+  values note, base, canvas and claimed folder a class names, plus two questions a path cannot
+  answer — does its `extends` name a class the vault has, and can each of its tags actually bind.
+
 - **A window onto the log** ([#159](https://github.com/mdelobelle/fileclass/issues/159)).
   **Fileclass: open the schema log** opens a reader rather than a `.log` Obsidian will not render:
   an icon and a colour per level, chips that filter by level, a search over the messages, and a
@@ -104,13 +108,6 @@ All notable changes to Fileclass are documented here. The format follows
   rotation, so an archive's name always means when it was written; pruning removes the lowest.
   The window grows an **Include N archives** toggle once there are any.
 
-- **A sweep over what your classes point at** ([#159](https://github.com/mdelobelle/fileclass/issues/159)).
-  The warning above rides on Obsidian announcing a rename — move a file with the plugin off, from
-  your file manager, or from another machine over sync, and no event ever arrives. So Fileclass also
-  checks once per session, and on demand with **Fileclass: check what my classes point at**: every
-  values note, base, canvas and claimed folder a class names, plus two questions a path cannot
-  answer — does its `extends` name a class the vault has, and can each of its tags actually bind.
-
 ### Changed
 
 - **The `fileclass-table` view type has an icon of its own.** It used the native table's glyph, so
@@ -127,6 +124,34 @@ All notable changes to Fileclass are documented here. The format follows
 
 ### Fixed
 
+- **An embedded table no longer opens as "Unknown view type".** Obsidian restores its tabs before a
+  plugin can register a view type, so a note whose body embeds a base rendered its embeds too early
+  and showed *Unknown view type: fileclass-table* over each of them until something made the note
+  redraw. Bases opened in their own tab were already handled; a note **embedding** one is a markdown
+  tab, which the repair skipped. Both are redrawn now.
+
+- **A template's values are no longer wiped when Templater writes them.** Creating a note with a
+  class applied the template, then inserted the class's fields — and the insert decided what was
+  "missing" from Obsidian's metadata cache, which a template that had *just* written the file leaves
+  stale. Everything looked missing, so `publisher: Chilton Books` and a date the template had
+  computed were both overwritten with empty defaults. The class, the fields and the seed are now
+  written in a single pass that reads the frontmatter it is holding rather than the cache. Verified
+  against Templater 2.25, including a template that renames the file it is applied to.
+
+  **The same rule now applies wherever fields are inserted** — the command, both menus, the modals,
+  the API and *insert fields when adding a class*, six call sites in all. Any of them could empty a
+  value written a moment earlier by another plugin. Nothing is written when nothing is missing:
+  measured, an unchanged frontmatter write leaves the file and its mtime alone.
+
+
+- **Excluding a grandparent's field is no longer reported as a mistake.** The schema sweep checked
+  `excludes` against the **direct parent's** fields, so on a chain three deep — `Comic extends Book
+  extends Media` dropping one of `Media`'s fields — it logged *"the parent declares no such field"*
+  about ordinary use. `excludes` drops *inherited* fields and inheritance runs the whole chain, so
+  the check now asks the chain. A name no ancestor declares is still reported, with wording that
+  says so.
+
+
 - **A table now reads an `Object` the way the rest of the plugin does**
   ([#156](https://github.com/mdelobelle/fileclass/issues/156)). An `Object` or `ObjectList` cell
   showed the stored JSON — and for a nested group, a doubly-escaped version of it, which read worse
@@ -134,35 +159,6 @@ All notable changes to Fileclass are documented here. The format follows
   modal and the property buttons do: `Study · C-4` where the cell used to say
   `{"room":"Study","shelf":"{\"unit\":\"C\",\"level\":\"4\"}"}`. The tooltip on a truncated cell
   follows. Affected both types, and every table — its own tab or embedded in a note.
-
-### Added
-
-- **Read a relation from the other end** ([#154](https://github.com/mdelobelle/fileclass/issues/154)).
-  `Book.author` takes its candidates from `Authors.base`, so from a book you reach its author in
-  one click — and from the author, nothing. **Fileclass: insert notes that point here**, also on a
-  note's right-click menu, writes the view that reads it backwards into the target class's base and
-  embeds it in the note. Nothing is evaluated and nothing is stored: the table is Bases answering a
-  filter, live and editable in place.
-
-  **One view serves every note.** It is named after the class and the field —
-  `Book by author` — never after the note you ran it from, because inside an embedded base
-  `this.file` is the note holding the embed. The first author to ask creates the view; every author
-  after that only gets the embed, and it is reused with whatever columns, sort and filter you have
-  given it since.
-
-  **You choose where it lives.** The first run asks, offering the class's own base; point it at any
-  base you already have instead, or at a new path. From the second note onwards nothing is asked —
-  the view is found by its name in whichever base you put it, so a relation sent to a dashboard base
-  stays there, as one copy.
-
-  The filter compares **links**, not names: an aliased link (`[[Frank Herbert|Herbert]]`) still
-  matches, and two authors sharing a basename in different folders keep their own books apart. It
-  carries the class's whole scope too, so notes bound by folder or tag are in. Columns come from the
-  class's own table when its base has one, minus the pointing field — down a reverse table that
-  column holds the same note on every row.
-
-  The embed goes in at the cursor when the note is open, appended otherwise; an embed already there
-  is jumped to, never duplicated and never rewritten.
 
 ## [0.2.11] - 2026-08-11
 

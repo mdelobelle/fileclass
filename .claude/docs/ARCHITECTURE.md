@@ -462,6 +462,29 @@ empty, and a folder-bound class silently stops claiming its notes.
   archives on every rotation would rewrite history and make a file's name a lie
   about when it was written.
 
+### 10.2 The metadata cache is the wrong source right after somebody else wrote (#84)
+
+`hasFieldKey` (`src/io/read.ts`) answers "does this note already have that key?" from
+`metadataCache.getFileCache(file).frontmatter`, and `insertMissingFields` decides what
+to insert from it. That is fine for a note the reader has been looking at, and **wrong
+the instant another writer touched the file**: the cache still describes the previous
+content.
+
+Measured with Templater (`demo/902_templater` + `demo/templater-probe.mjs`): a template
+wrote `publisher: Chilton Books` and a computed `acquired`, the insert ran immediately
+after, every field looked missing, and both values were overwritten with empty
+defaults. Templater's own write and `processFrontMatter` were each verified innocent
+before the cache was suspected.
+
+So `createNoteWithClass` writes the class, the missing fields **and** the seed in one
+`processFrontMatter`, deciding what is missing from the object that callback holds —
+exact, atomic, and independent of the cache.
+
+The hazard remains reachable from the other callers of `insertMissingFields` (six of
+them, including *insert fields when adding a class*, which also runs on a note that was
+just written). Fixing it there means computing the missing set inside the write callback
+rather than before it; not done, and recorded here rather than left as a surprise.
+
 ### 11.1 Reverse relations (#154, `reverseView.ts` / `reverseSync.ts`)
 
 The relation a bound link field declares, read from the other end: from an author,

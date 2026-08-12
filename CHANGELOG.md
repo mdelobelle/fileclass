@@ -8,6 +8,16 @@ All notable changes to Fileclass are documented here. The format follows
 
 ### Fixed
 
+- **A template's values are no longer wiped when Templater writes them.** Creating a note with a
+  class applied the template, then inserted the class's fields — and the insert decided what was
+  "missing" from Obsidian's metadata cache, which a template that had *just* written the file leaves
+  stale. Everything looked missing, so `publisher: Chilton Books` and a date the template had
+  computed were both overwritten with empty defaults. The class, the fields and the seed are now
+  written in a single pass that reads the frontmatter it is holding rather than the cache. Verified
+  against Templater 2.25, including a template that renames the file it is applied to.
+
+### Fixed
+
 - **Excluding a grandparent's field is no longer reported as a mistake.** The schema sweep checked
   `excludes` against the **direct parent's** fields, so on a chain three deep — `Comic extends Book
   extends Media` dropping one of `Media`'s fields — it logged *"the parent declares no such field"*

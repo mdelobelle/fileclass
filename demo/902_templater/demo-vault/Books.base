@@ -1,0 +1,97 @@
+formulas:
+  Editions: note.editions.length
+  FirstYear: note.editions[0].year
+views:
+  - type: table
+    name: All books
+    filters:
+      and:
+        - fileClass == "Book"
+    sort:
+      - property: published
+        direction: ASC
+    order:
+      - file.name
+      - shelf
+      - author
+      - publisher
+      - genre
+      - published
+  - type: table
+    name: How many editions
+    filters:
+      and:
+        - fileClass == "Book"
+    sort:
+      - property: formula.Editions
+        direction: DESC
+    order:
+      - file.name
+      - formula.Editions
+      - formula.FirstYear
+      - publisher
+  - type: table
+    name: No author yet
+    filters:
+      and:
+        - fileClass == "Book"
+        - author.isEmpty()
+    sort:
+      - property: file.name
+        direction: ASC
+    order:
+      - file.name
+      - author
+      - published
+  - type: table
+    name: Who owns what
+    filters:
+      or:
+        - fileClass.containsAny("Book")
+        - file.inFolder("Reading list")
+    sort:
+      - property: file.name
+        direction: ASC
+    order:
+      - file.name
+      - ownership
+      - author
+  - type: fileclass-table
+    name: Book
+    filters:
+      and:
+        - or:
+            - fileClass.containsAny("Book")
+            - file.inFolder("Reading list")
+    order:
+      - file.name
+      - lent to
+      - author
+      - editions
+      - storage
+      - pages
+      - genre
+      - read
+      - ownership
+      - published
+      - next interval
+      - review
+      - themes
+      - awards
+      - cover
+      - acquired
+      - publisher
+      - rating
+  - type: fileclass-table
+    name: Book by author
+    filters:
+      and:
+        - or:
+            - fileClass.containsAny("Book")
+            - file.inFolder("Reading list")
+        - author == this.file.asLink()
+    order:
+      - file.name
+      - author
+      - publisher
+      - acquired

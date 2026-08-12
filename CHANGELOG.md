@@ -8,6 +8,12 @@ All notable changes to Fileclass are documented here. The format follows
 
 ### Fixed
 
+- **An embedded table no longer opens as "Unknown view type".** Obsidian restores its tabs before a
+  plugin can register a view type, so a note whose body embeds a base rendered its embeds too early
+  and showed *Unknown view type: fileclass-table* over each of them until something made the note
+  redraw. Bases opened in their own tab were already handled; a note **embedding** one is a markdown
+  tab, which the repair skipped. Both are redrawn now.
+
 - **A template's values are no longer wiped when Templater writes them.** Creating a note with a
   class applied the template, then inserted the class's fields — and the insert decided what was
   "missing" from Obsidian's metadata cache, which a template that had *just* written the file leaves

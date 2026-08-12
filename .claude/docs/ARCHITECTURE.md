@@ -426,6 +426,14 @@ canvas file tracking (comes with the planned Canvas engine, §9.1).
   note-fields modal, the property buttons and the API, so the value displayed and the
   value edited agree. Every other type keeps Bases' value, which knows about formulas,
   file properties and link rendering. Deps are built once per render, per note.
+- **Registration always arrives late, so what is on screen must be redrawn.** Obsidian
+  restores its tabs before `onLayoutReady`, where the `fileclass-table` view type is
+  registered, so anything already rendering a base shows *"Unknown view type:
+  fileclass-table"* — an error on a file this plugin wrote. `rebuildOpenBases()` redraws
+  both kinds of surface, and the second was missed for a while: a `bases` **leaf**, and
+  a **markdown leaf whose note embeds one** (`![[X.base]]`, `![[X.base#View]]`, or a
+  ```base block). An embed does not live in a `bases` leaf, so iterating that type alone
+  left every dashboard broken until it was touched. Found by opening a take's own vault.
 - **The `valid` column filters on itself** (#142): its header cycles all → failures
   → clean and carries the failure count. Session-only state, never written to the
   base — and the only route available, since the registry takes no computed

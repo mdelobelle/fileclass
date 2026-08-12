@@ -168,6 +168,20 @@ export default class FileclassPlugin extends Plugin {
 		for (const leaf of this.app.workspace.getLeavesOfType("bases")) {
 			(leaf as WorkspaceLeaf & { rebuildView?: () => void }).rebuildView?.();
 		}
+		// And the notes that **embed** one, which are markdown leaves and so were missed here: a
+		// dashboard restored at startup renders its embeds before this registration and shows
+		// "Unknown view type: fileclass-table" over each of them, on a note the plugin's own take
+		// records. Reported from a recording session; the leaf path was fixed for #142 and this one
+		// was not, because a `bases` leaf is not where an embed lives.
+		this.app.workspace.iterateAllLeaves((leaf) => {
+			const view = leaf.view as { getViewType?: () => string; containerEl?: HTMLElement };
+			if (view.getViewType?.() !== "markdown") return;
+			// Both spellings of an embedded base, plus the inline code block.
+			const holdsBase = view.containerEl?.querySelector(
+				'.internal-embed[src$=".base"], .internal-embed[src*=".base#"], .block-language-base'
+			);
+			if (holdsBase) (leaf as WorkspaceLeaf & { rebuildView?: () => void }).rebuildView?.();
+		});
 	}
 
 	onunload(): void {

@@ -15,7 +15,7 @@ const world = (over: Partial<AuditWorld> = {}): AuditWorld => ({
 	fileExists: (p) => ["Values/Rating.md", "Authors.base", "Reading map.canvas", "Books.base"].includes(p),
 	folderExists: (p) => ["Reading list"].includes(p),
 	knownClasses: new Set(["Media", "Book"]),
-	fieldsOf: () => ["acquired", "rating"],
+	inheritedFieldNames: () => ["acquired", "rating"],
 	...over,
 });
 
@@ -120,9 +120,21 @@ describe("what the audit calls silent", () => {
 		expect(auditClass(cls({ tagNames: ["novel", "#comics"] }), world())).toEqual([]);
 	});
 
-	it("finds an excludes naming a field the parent never declared", () => {
+	it("finds an excludes naming a field no ancestor declares", () => {
 		const [found] = auditClass(cls({ extends: "Media", excludes: ["nonesuch"] }), world());
 		expect(found).toMatchObject({ kind: "unknown-exclude", level: "WARNING" });
+	});
+
+	it("accepts an excludes naming a **grandparent's** field", () => {
+		// `excludes` drops *inherited* fields, and inheritance runs the whole chain: Comic extends
+		// Book extends Media, and excluding one of Media's fields from Comic is ordinary use.
+		// Reported by a user, on a chain three deep.
+		const chain = world({
+			knownClasses: new Set(["Media", "Book", "Comic"]),
+			inheritedFieldNames: (name) =>
+				name === "Comic" ? ["author", "acquired"] : name === "Book" ? ["acquired"] : [],
+		});
+		expect(auditClass(cls({ name: "Comic", extends: "Book", excludes: ["acquired"] }), chain)).toEqual([]);
 	});
 
 	it("says nothing about excludes when the parent itself is missing", () => {

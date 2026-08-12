@@ -34,3 +34,13 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      # `main.js` is committed so the plugin installs straight from GitHub, and `.gitattributes`
+      # keeps git from merging two builds together — which means a merge can leave a bundle that
+      # predates the sources it ships with. This is the step that catches that.
+      - name: Bundle matches the sources
+        run: |
+          if ! git diff --exit-code -- main.js; then
+            echo "::error file=main.js::main.js does not match a fresh build. Run 'npm run build' and commit it."
+            exit 1
+          fi

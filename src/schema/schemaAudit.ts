@@ -37,8 +37,15 @@ export interface AuditWorld {
 	folderExists(path: string): boolean;
 	/** Class names the vault has, for `extends`. */
 	knownClasses: ReadonlySet<string>;
-	/** A parent's own field names, for `excludes`. */
-	fieldsOf(fileClass: string): readonly string[];
+	/**
+	 * Every field name this class **inherits**, across the whole ancestor chain — what `excludes` is
+	 * allowed to name.
+	 *
+	 * The chain, not the direct parent: `excludes` drops inherited fields and inheritance runs all
+	 * the way up, so excluding a grandparent's field is ordinary use. Asking the parent alone
+	 * reported it as a mistake — a user hit this on a three-deep chain.
+	 */
+	inheritedFieldNames(fileClass: string): readonly string[];
 }
 
 /** The schema shape the audit reads — the same frontmatter the index parses. */
@@ -118,10 +125,10 @@ export function auditClass(cls: AuditedClass, world: AuditWorld): Finding[] {
 	}
 
 	if (cls.extends && world.knownClasses.has(cls.extends)) {
-		const parentFields = new Set(world.fieldsOf(cls.extends));
+		const inherited = new Set(world.inheritedFieldNames(cls.name));
 		for (const excluded of cls.excludes ?? []) {
-			if (excluded && !parentFields.has(excluded)) {
-				at(undefined, "unknown-exclude", "WARNING", excluded, "the parent declares no such field");
+			if (excluded && !inherited.has(excluded)) {
+				at(undefined, "unknown-exclude", "WARNING", excluded, "no ancestor declares that field");
 			}
 		}
 	}

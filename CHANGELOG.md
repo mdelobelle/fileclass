@@ -6,6 +6,15 @@ All notable changes to Fileclass are documented here. The format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- **Excluding a grandparent's field is no longer reported as a mistake.** The schema sweep checked
+  `excludes` against the **direct parent's** fields, so on a chain three deep — `Comic extends Book
+  extends Media` dropping one of `Media`'s fields — it logged *"the parent declares no such field"*
+  about ordinary use. `excludes` drops *inherited* fields and inheritance runs the whole chain, so
+  the check now asks the chain. A name no ancestor declares is still reported, with wording that
+  says so.
+
 ### Added
 
 - **Create a note that already belongs to a class** ([#84](https://github.com/mdelobelle/fileclass/issues/84)).

@@ -45,6 +45,11 @@
 #  - Comic has no managed table, so its reverse view takes the **full field mirror** — eight columns
 #    (series, publisher, pages, storage, acquired, rating). That is the documented fallback, and it
 #    still frames;
+#  - **record with the window wide.** With *Readable line length* on, the embed is 704px and the
+#    toolbar carries nine items — the view name, the result count, Sort, Filter, Properties, Search,
+#    Bases' own New, then our wrench and our New button. They read correctly in a fullscreen window
+#    and crowd in a narrow one, ours first since they come last. Measured at 704px, and the reason
+#    the frame matters for these two takes more than for the earlier ones;
 #  - the columns come from the class's **own** table, minus the pointing field: down a reverse table
 #    `author` holds the same note on every row;
 #  - the cells are editable here as anywhere — a `Cycle` clicked in the author's note writes the

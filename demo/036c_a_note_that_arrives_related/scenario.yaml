@@ -32,6 +32,11 @@
 #    `author` already pointing at Frank Herbert, in the vault's own link format;
 #  - the fields modal opens on it, because *Open the fields when creating a note* is on by default.
 #    The fields themselves are always inserted; only the modal is a setting;
+#  - **record with the window wide.** With *Readable line length* on, the embed is 704px and the
+#    toolbar carries nine items — the view name, the result count, Sort, Filter, Properties, Search,
+#    Bases' own New, then our wrench and our New button. They read correctly in a fullscreen window
+#    and crowd in a narrow one, ours first since they come last. Measured at 704px, and the reason
+#    the frame matters for these two takes more than for the earlier ones;
 #  - back on the author's page, the new book is a **second row**: the table is a live filter, so
 #    nothing had to be refreshed;
 #  - the same gesture without a relation is `Fileclass: create a note with a class`, which asks which

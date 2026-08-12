@@ -434,6 +434,10 @@ canvas file tracking (comes with the planned Canvas engine, §9.1).
   a **markdown leaf whose note embeds one** (`![[X.base]]`, `![[X.base#View]]`, or a
   ```base block). An embed does not live in a `bases` leaf, so iterating that type alone
   left every dashboard broken until it was touched. Found by opening a take's own vault.
+  The rule now lives in `redrawOnRegister.ts` and is unit-tested: it asks what a surface
+  **holds**, not what it is called, so a canvas card rendering a note that embeds a base
+  is covered without another fix. The selector is the impure caller's and is verified in
+  the app, not in those tests — they run without a DOM.
 - **The `valid` column filters on itself** (#142): its header cycles all → failures
   → clean and carries the failure count. Session-only state, never written to the
   base — and the only route available, since the registry takes no computed

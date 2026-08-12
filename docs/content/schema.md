@@ -174,8 +174,6 @@ menu** (*Create a class*), not only from the command palette.
 
 ## Creating a note with a class
 
-{{< video "034" >}}
-
 A table shows every note of a class except the one you are about to write.
 **Fileclass: create a note with a class**, or the **New _Class_** button in a
 `fileclass-table`'s toolbar, does the whole gesture: it asks for a name, creates the

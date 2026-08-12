@@ -32,6 +32,16 @@ All notable changes to Fileclass are documented here. The format follows
   write performed across files you did not have open. Editing history is git's job, and Obsidian's
   File Recovery already answers "what did this look like yesterday".
 
+- **A window onto the log** ([#159](https://github.com/mdelobelle/fileclass/issues/159)).
+  **Fileclass: open the schema log** opens a reader rather than a `.log` Obsidian will not render:
+  an icon and a colour per level, chips that filter by level, a search over the messages, and a
+  wrench on every line that names a fileClass — straight to its schema, because a log you cannot act
+  on is read twice and then ignored. *Check now* re-runs the sweep from inside it.
+
+  A problem is **logged once**, not once per sweep, and its repair is logged too
+  (`schema.resolved`), so the file reads as a record of what happened rather than a snapshot of what
+  is wrong. Comes back after being fixed? Logged again.
+
 - **A sweep over what your classes point at** ([#159](https://github.com/mdelobelle/fileclass/issues/159)).
   The warning above rides on Obsidian announcing a rename — move a file with the plugin off, from
   your file manager, or from another machine over sync, and no event ever arrives. So Fileclass also

@@ -12,9 +12,18 @@ import { Notice, TFile, TFolder } from "obsidian";
 
 import type FileclassPlugin from "../../main";
 import { LogEntry, logStamp } from "../log/logLine";
-import { logEvents } from "../log/schemaLog";
+import { logEvents, readSchemaLog } from "../log/schemaLog";
 import { isRootField } from "./field";
-import { AuditWorld, AuditedClass, Finding, auditClass, describeAudit, findingLabel } from "./schemaAudit";
+import {
+	AuditWorld,
+	AuditedClass,
+	Finding,
+	auditClass,
+	describeAudit,
+	diffFindings,
+	findingLabel,
+	fingerprint,
+} from "./schemaAudit";
 
 /** The classes as the audit reads them, straight from the parsed schema. */
 function auditedClasses(plugin: FileclassPlugin): AuditedClass[] {
@@ -70,17 +79,36 @@ export function auditSchemas(plugin: FileclassPlugin): Finding[] {
  */
 export async function runSchemaAudit(plugin: FileclassPlugin, announce: boolean): Promise<Finding[]> {
 	const findings = auditSchemas(plugin);
-	if (findings.length) {
-		const stamp = logStamp(new Date());
-		const entries: LogEntry[] = findings.map((f) => ({
+
+	// Only what changed since the log last heard about it: a sweep per session that re-listed the
+	// same twelve problems would drown the one line saying something *moved*, and the retention cap
+	// would then rotate away real history to store copies.
+	const { fresh, resolved } = diffFindings(await readSchemaLog(plugin), findings);
+	const stamp = logStamp(new Date());
+	const entries: LogEntry[] = [
+		...fresh.map((f) => ({
 			stamp,
 			level: f.level,
 			event: `schema.${f.kind}`,
 			message: `${findingLabel(f)}: "${f.value}" — ${f.consequence}`,
-			details: { fileClass: f.fileClass, ...(f.field ? { field: f.field } : {}), value: f.value },
-		}));
-		await logEvents(plugin, entries);
-	}
+			details: {
+				fileClass: f.fileClass,
+				...(f.field ? { field: f.field } : {}),
+				value: f.value,
+				fingerprint: fingerprint(f),
+			},
+		})),
+		// A problem going away is worth a line too: the file is then a record of what happened, not
+		// a snapshot of what is wrong.
+		...resolved.map((fp) => ({
+			stamp,
+			level: "INFO" as const,
+			event: "schema.resolved",
+			message: `${fp.split("|")[1]}${fp.split("|")[2] ? ` › ${fp.split("|")[2]}` : ""}: "${fp.split("|")[3]}" — fixed`,
+			details: { fileClass: fp.split("|")[1], fingerprint: fp },
+		})),
+	];
+	await logEvents(plugin, entries);
 	if (announce) new Notice(describeAudit(findings));
 	else if (findings.length) {
 		// Unasked-for, so it stays short and points at where the detail is.

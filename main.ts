@@ -32,7 +32,7 @@ import { openFileClassSchema } from "./src/ui/fileClassSchemaModal";
 import { pickAndCreateBase } from "./src/views/baseFileGenerator";
 import { fileClassBaseFile, openFileClassBase, syncFileClassToBase } from "./src/views/baseSync";
 import { registerFileclassTableView } from "./src/views/fileclassTableView";
-import { openSchemaLogFile } from "./src/log/schemaLog";
+import { openSchemaLogModal } from "./src/ui/schemaLogModal";
 import { runSchemaAudit } from "./src/schema/schemaAuditRun";
 import { warnOnStalePaths } from "./src/schema/renameNotice";
 import { insertReverseRelation, vaultHasReverseRelations } from "./src/views/reverseSync";
@@ -355,7 +355,7 @@ export default class FileclassPlugin extends Plugin {
 		this.addCommand({
 			id: "open-schema-log",
 			name: "Open the schema log",
-			callback: () => void openSchemaLogFile(this),
+			callback: () => openSchemaLogModal(this),
 		});
 
 		// The sweep the rename warning cannot do: a file moved while the plugin was off, from the

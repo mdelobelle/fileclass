@@ -1510,3 +1510,129 @@ body.fileclass-shorter-modals .modal-content.fileclass-scroll-body {
 	color: var(--text-muted);
 	font-size: var(--font-ui-smaller);
 }
+
+/* -- Schema log window (#159) ------------------------------------------------
+   A log is scanned before it is read: the level carries a colour and an icon so
+   a screenful answers "is anything broken?" without a single word being read. */
+.fileclass-log-modal .fileclass-log-controls {
+	display: flex;
+	align-items: center;
+	gap: var(--size-4-3);
+	flex-wrap: wrap;
+	margin-bottom: var(--size-4-2);
+}
+
+.fileclass-log-modal .fileclass-log-levels {
+	display: flex;
+	gap: var(--size-4-1);
+}
+
+/* A chip is the count you just read, made clickable — no dropdown in between. */
+.fileclass-log-modal .fileclass-log-chip {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--size-4-1);
+	padding: var(--size-4-1) var(--size-4-2);
+	border-radius: var(--radius-s);
+	background: var(--background-modifier-hover);
+	color: var(--text-muted);
+	font-size: var(--font-ui-smaller);
+	cursor: pointer;
+	box-shadow: none;
+	height: auto;
+}
+
+.fileclass-log-modal .fileclass-log-chip .fileclass-log-chip-icon {
+	display: inline-flex;
+}
+
+.fileclass-log-modal .fileclass-log-chip-icon svg {
+	width: var(--icon-s);
+	height: var(--icon-s);
+}
+
+.fileclass-log-modal .fileclass-log-chip.is-warning { color: var(--text-warning); }
+.fileclass-log-modal .fileclass-log-chip.is-error { color: var(--text-error); }
+
+/* Off is stated by the chip itself, since the list it filters may be empty for
+   other reasons — a filter you cannot see is a bug report waiting to happen. */
+.fileclass-log-modal .fileclass-log-chip.is-off {
+	opacity: 0.45;
+	text-decoration: line-through;
+}
+
+.fileclass-log-modal .fileclass-log-search {
+	flex: 1 1 12em;
+	border: none;
+	padding: 0;
+}
+
+.fileclass-log-modal .fileclass-log-count {
+	color: var(--text-muted);
+	font-size: var(--font-ui-smaller);
+	margin-bottom: var(--size-4-1);
+}
+
+.fileclass-log-modal .fileclass-log-list {
+	max-height: 45vh;
+	overflow-y: auto;
+}
+
+.fileclass-log-modal .fileclass-log-row {
+	display: flex;
+	align-items: flex-start;
+	gap: var(--size-4-2);
+	padding: var(--size-4-2);
+	border-left: 3px solid var(--background-modifier-border);
+	border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.fileclass-log-modal .fileclass-log-row.is-warning { border-left-color: var(--text-warning); }
+.fileclass-log-modal .fileclass-log-row.is-error { border-left-color: var(--text-error); }
+
+.fileclass-log-modal .fileclass-log-icon {
+	display: flex;
+	color: var(--text-muted);
+	padding-top: 2px;
+}
+
+.fileclass-log-modal .fileclass-log-row.is-warning .fileclass-log-icon { color: var(--text-warning); }
+.fileclass-log-modal .fileclass-log-row.is-error .fileclass-log-icon { color: var(--text-error); }
+
+.fileclass-log-modal .fileclass-log-body {
+	flex: 1;
+	min-width: 0;
+}
+
+/* The message wraps rather than truncating: it names a class and a field, and an
+   ellipsis would cut off exactly the part worth reading. */
+.fileclass-log-modal .fileclass-log-message {
+	overflow-wrap: anywhere;
+}
+
+.fileclass-log-modal .fileclass-log-meta {
+	display: flex;
+	gap: var(--size-4-2);
+	color: var(--text-faint);
+	font-size: var(--font-ui-smaller);
+	margin-top: 2px;
+}
+
+.fileclass-log-modal .fileclass-log-event {
+	font-family: var(--font-monospace);
+}
+
+.fileclass-log-modal .fileclass-log-action {
+	flex: 0 0 auto;
+	padding: var(--size-4-1);
+	background: transparent;
+	box-shadow: none;
+	color: var(--text-muted);
+	cursor: pointer;
+	height: auto;
+}
+
+.fileclass-log-modal .fileclass-log-action:hover {
+	color: var(--text-normal);
+	background: var(--background-modifier-hover);
+}

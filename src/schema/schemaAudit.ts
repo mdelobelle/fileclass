@@ -129,6 +129,57 @@ export function auditClass(cls: AuditedClass, world: AuditWorld): Finding[] {
 	return found;
 }
 
+/**
+ * What makes two findings the same problem, across sweeps.
+ *
+ * Not the message, which is prose and may be reworded: the kind, the class, the field and the
+ * offending value. A problem that persists keeps its fingerprint, so it is logged once and not once
+ * per session.
+ */
+export function fingerprint(f: Pick<Finding, "kind" | "fileClass" | "field" | "value">): string {
+	return [f.kind, f.fileClass, f.field ?? "", f.value].join("|");
+}
+
+/** A log entry, as much of it as the diff needs. */
+export interface LoggedFinding {
+	event: string;
+	details?: Record<string, unknown>;
+}
+
+/** The fingerprint an already-logged entry stands for, or null when it is not a finding. */
+export function loggedFingerprint(entry: LoggedFinding): string | null {
+	const fp = entry.details?.fingerprint;
+	return typeof fp === "string" && fp ? fp : null;
+}
+
+/**
+ * What this sweep should write, given everything already written.
+ *
+ * A log that repeated its findings every session would drown the one line that says something
+ * *changed* — and the retention cap would then rotate away real history to make room for copies.
+ * So a problem is logged when it appears, and again only if it comes back after being fixed.
+ *
+ * Its disappearance is worth a line too: `schema.resolved` turns the file into a record of what
+ * happened rather than a snapshot of what is wrong, which is what a timestamped log is for.
+ */
+export function diffFindings(
+	history: readonly LoggedFinding[],
+	current: readonly Finding[]
+): { fresh: Finding[]; resolved: string[] } {
+	const open = new Set<string>();
+	for (const entry of history) {
+		const fp = loggedFingerprint(entry);
+		if (!fp) continue;
+		if (entry.event === "schema.resolved") open.delete(fp);
+		else open.add(fp);
+	}
+	const currentPrints = new Set(current.map(fingerprint));
+	return {
+		fresh: current.filter((f) => !open.has(fingerprint(f))),
+		resolved: [...open].filter((fp) => !currentPrints.has(fp)),
+	};
+}
+
 /** `Book › author` — how a finding names itself in a notice, a log line or the viewer. */
 export function findingLabel(f: Finding): string {
 	return f.field ? `${f.fileClass} › ${f.field}` : f.fileClass;

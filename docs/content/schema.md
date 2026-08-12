@@ -298,8 +298,25 @@ The log records **consequences, not edits**. Your editing history is git's job, 
 Obsidian's File Recovery already answers "what did this look like yesterday" — a log
 that also carried every keystroke would bury the one line that says something broke.
 
-Open it with **Fileclass: open the schema log**. It is a `.log` rather than a note on
-purpose: every markdown file in the class folder is read as a fileClass, so a `.md`
-log living there would come back as a class of its own.
+**Fileclass: open the schema log** opens it in a window rather than in the file:
+each level carries an icon and a colour, the chips filter by level (they are the
+counts you just read, made clickable), the search narrows on the message, and every
+line that names a fileClass has a wrench through to its schema — a log you cannot act
+on is read twice and then ignored. **Check now** re-runs the sweep without leaving.
+
+The file itself is a `.log` rather than a note on purpose: every markdown file in the
+class folder is read as a fileClass, so a `.md` log living there would come back as a
+class of its own. *Open the file* shows it raw.
+
+**A problem is logged once**, not once per sweep — otherwise a session that re-listed
+the same twelve findings would drown the line saying something *changed*. When it is
+fixed, that is a line too:
+
+```
+2026-08-12 09:03:12	INFO	schema.resolved	Book › author: "Gone.base" — fixed
+```
+
+so the file reads as a record of what happened rather than a snapshot of what is
+wrong. A problem that comes back after being fixed is logged again.
 
 Turn it off in **Settings → Fileclass → Schema log**; the notices stay.

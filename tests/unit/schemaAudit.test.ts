@@ -3,9 +3,12 @@ import { describe, expect, it } from "vitest";
 import {
 	AuditWorld,
 	AuditedClass,
+	Finding,
 	auditClass,
 	describeAudit,
+	diffFindings,
 	findingLabel,
+	fingerprint,
 } from "../../src/schema/schemaAudit";
 
 const world = (over: Partial<AuditWorld> = {}): AuditWorld => ({
@@ -150,5 +153,59 @@ describe("how findings are named and counted", () => {
 		expect(describeAudit([f("ERROR"), f("ERROR"), f("WARNING")])).toBe(
 			"Fileclass: 2 broken references, 1 that will never bind — see the schema log."
 		);
+	});
+});
+
+describe("a sweep only writes what changed", () => {
+	const finding = (over: Partial<Finding> = {}): Finding => ({
+		fileClass: "Book",
+		field: "author",
+		kind: "missing-path",
+		level: "ERROR",
+		value: "Gone.base",
+		consequence: "the field offers no candidates",
+		...over,
+	});
+	const logged = (f: Finding, event = `schema.${f.kind}`) => ({
+		event,
+		details: { fingerprint: fingerprint(f) },
+	});
+
+	it("writes a problem the first time it is seen", () => {
+		expect(diffFindings([], [finding()]).fresh).toHaveLength(1);
+	});
+
+	it("stays quiet about one already in the log", () => {
+		// Otherwise every session re-lists the same twelve problems, and the line that says
+		// something *changed* is lost in the copies.
+		const f = finding();
+		expect(diffFindings([logged(f)], [f]).fresh).toEqual([]);
+	});
+
+	it("records a problem that went away", () => {
+		const f = finding();
+		expect(diffFindings([logged(f)], []).resolved).toEqual([fingerprint(f)]);
+	});
+
+	it("writes it again if it comes back after being fixed", () => {
+		const f = finding();
+		const history = [logged(f), logged(f, "schema.resolved")];
+		expect(diffFindings(history, [f]).fresh).toHaveLength(1);
+	});
+
+	it("tells two findings apart by class, field and value, not by wording", () => {
+		const a = finding();
+		const b = finding({ field: "cover" });
+		expect(diffFindings([logged(a)], [a, b]).fresh).toEqual([b]);
+		// The message is prose and may be reworded; the fingerprint must not move with it.
+		const reworded = finding({ consequence: "something else entirely" });
+		expect(diffFindings([logged(a)], [reworded]).fresh).toEqual([]);
+	});
+
+	it("ignores log lines that are not findings", () => {
+		const f = finding();
+		const history = [{ event: "schema.file-moved" }, { event: "schema.migrated", details: {} }];
+		expect(diffFindings(history, [f]).fresh).toEqual([f]);
+		expect(diffFindings(history, []).resolved).toEqual([]);
 	});
 });

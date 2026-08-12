@@ -58,8 +58,14 @@ function world(plugin: FileclassPlugin): AuditWorld {
 		fileExists: (path) => plugin.app.vault.getAbstractFileByPath(path) instanceof TFile,
 		folderExists: (path) => plugin.app.vault.getAbstractFileByPath(path) instanceof TFolder,
 		knownClasses: new Set(plugin.index.fileClassNames),
-		fieldsOf: (name) =>
-			(plugin.index.getFileClass(name)?.fields ?? []).filter((f) => isRootField(f)).map((f) => f.name),
+		// The whole chain's own fields, which is what this class inherits and therefore what its
+		// `excludes` may name — the direct parent alone flagged a grandparent's field as a mistake.
+		inheritedFieldNames: (name) =>
+			plugin.index
+				.getAncestors(name)
+				.flatMap((ancestor) => plugin.index.getFileClass(ancestor)?.fields ?? [])
+				.filter((f) => isRootField(f))
+				.map((f) => f.name),
 	};
 }
 

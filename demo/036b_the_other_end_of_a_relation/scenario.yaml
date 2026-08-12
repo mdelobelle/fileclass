@@ -1,0 +1,88 @@
+# Narration for take 036b — see ../SCENARIO.md for the format.
+# Inserted after 036, which put a table inside a note. This one answers the question that note
+# raises: a book names its author, so why does the author know nothing about the books?
+#
+# The vault opens on **`Frank Herbert.md`**, an author note with three properties and two lines of
+# prose — nothing about Dune.
+#
+# The fixture is take 036's vault at its closing state, with three deviations, all deliberate:
+#  - **`Library desk.md` carries what 036 wrote on camera** (a heading, `![[Habit.base]]`, a
+#    sentence, and a `base` block over Book). The exact words typed on camera were the presenter's;
+#    what matters here is that the note exists and holds two tables;
+#  - **`Atomic Habits` now names its author `[[James Clear|Clear]]`.** Step 8 turns on it: the
+#    filter compares *links*, not text, and an aliased link is the case where a name comparison
+#    silently loses a row. It was the measured trap of the whole feature (#154 phase 0), so the take
+#    shows it rather than claiming it;
+#  - **Book's managed view is trimmed to six columns.** A reverse table takes its columns from the
+#    class's own table, and Book's carried eighteen — which scrolls out of a 1080p frame and would
+#    turn step 6 into a tour of a horizontal scrollbar. Trimming it is also what makes the rule
+#    *visible*: the reverse table arrives with the same columns minus its own field, because that is
+#    where they come from. One line to revert if the framing allows the full set.
+#
+# Facts the script leans on, all measured in the app before scripting:
+#  - the command is **`Fileclass: insert notes that point here`**, and the same entry sits on a
+#    note's right-click menu. It is offered only when some class declares a link field bound to a
+#    base — an index-only check, since discovery is a vault scan and a right-click cannot wait;
+#  - on this vault, from any author, discovery offers **two** relations: `Book.author` and
+#    `Comic.contributors`. Both draw from `Authors.base#All authors`, so the two cost **one** scan;
+#  - the base prompt appears **once**, offering `Books.base` — the class's own base. From the second
+#    author on, nothing is asked: the view is found by its name, in whichever base it was put;
+#  - the view is called **`Book by author`** and its filter is the class's whole scope plus
+#    `author == this.file.asLink()`. Frank Herbert's table shows **Dune** and nothing else;
+#  - `this.file` inside an embedded base is the note **holding the embed**, which is why one view
+#    serves every author — measured on 1.13.2 and again on 1.13.6;
+#  - **Mary Shelley** gets `Frankenstein` with no prompt at all, from the same view;
+#  - **James Clear**, whose only book calls him `Clear`, gets `Atomic Habits` — the alias matches
+#    because links are compared, not names;
+#  - **Hergé** is the list case: `Comic.contributors` is a `MultiFile`, so its clause is
+#    `contributors.contains(this.file.asLink())`, and *Tintin in Tibet* names him beside Bob De Moor;
+#  - **step 10 needs a path typed on camera**, and this is why its wording changed after rehearsal.
+#    Comic declares no base of its own, so the prompt offers `Comic.base` — a *new* file, beside the
+#    `Comics.base` this vault has had since take 033. Left alone the take would create a second
+#    comics base in front of the viewer. Typing `Comics.base` instead is one gesture, and it shows
+#    the thing the prompt exists for: the view lives where you say, not where the plugin guessed.
+#    Rehearsed: the table then lands in `Comics.base` and reads *Tintin in Tibet*;
+#  - Comic has no managed table, so its reverse view takes the **full field mirror** — eight columns
+#    (series, publisher, pages, storage, acquired, rating). That is the documented fallback, and it
+#    still frames;
+#  - the columns come from the class's **own** table, minus the pointing field: down a reverse table
+#    `author` holds the same note on every row;
+#  - the cells are editable here as anywhere — a `Cycle` clicked in the author's note writes the
+#    book's frontmatter.
+title: "Fileclass — The other end of a relation"
+description: "A book names its author. One command lets the author name the books — without storing a thing."
+doc: "views/#the-other-end-of-a-relation" # deep link used in the description
+tags: "relations, bases, reverse, schema"
+vault_name: "Demo"
+plugin: true
+settings:
+  classFilesPath: "Classes/"
+  fileClassAlias: "fileClass"
+initial_pause: 1500
+default_pause: 900
+
+steps:
+  - title: "A book knows its author. From the author, nothing knows the books"
+    pause: 2700
+  - title: "Your schema already describes that relation — it only reads one way"
+    pause: 2700
+  - title: "So ask for the other way: insert the notes that point here"
+    pause: 2600
+  - title: "Two relations answer — books by their author, comics by their contributors"
+    pause: 2900
+  - title: "Take the books, and say where the view should live: its own base, by default"
+    pause: 2900
+  - title: "The table arrives in the note — Dune, and only Dune"
+    pause: 2700
+  - title: "Nothing was computed and nothing was stored: the filter compares links"
+    pause: 2800
+  - title: "Which is why an alias still matches — this book calls him Clear"
+    pause: 2800
+  - title: "One view serves every author: Mary Shelley is asked nothing, and gets Frankenstein"
+    pause: 3000
+  - title: "A list works the same — and this one goes in the comics base you already have"
+    pause: 2800
+  - title: "And the cells are live here too: fix a value from the author's own page"
+    pause: 2800
+  - title: "The relation was in your schema all along — now it reads both ways"
+    pause: 2800

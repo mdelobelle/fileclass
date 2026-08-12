@@ -1636,3 +1636,16 @@ body.fileclass-shorter-modals .modal-content.fileclass-scroll-body {
 	color: var(--text-normal);
 	background: var(--background-modifier-hover);
 }
+
+/* The clause the adopt command offers to add: shown as what it is — an expression that will
+   land in the reader's own base — rather than as prose about one. */
+.modal .fileclass-clause-preview {
+	font-family: var(--font-monospace);
+	font-size: var(--font-ui-smaller);
+	background: var(--background-secondary);
+	border-radius: var(--radius-s);
+	padding: var(--size-4-2);
+	margin: var(--size-4-2) 0;
+	white-space: pre-wrap;
+	overflow-wrap: anywhere;
+}

@@ -315,12 +315,25 @@ If your vault predates Fileclass, those views probably exist already — hand-wr
 filters on `this.file`, embedded in hundreds of notes under names you chose. Nothing
 has to be renamed and no embed has to be touched.
 
-Open the base on that view and run **Fileclass: use this view for a relation**. It
-asks which relation the view shows, changes **one word** in the base — the view's
-`type`, so its cells become editable — and writes the `relatedViews` entry. The name,
-the filters, the columns and every `![[Base#View]]` in your vault stay exactly as they
-are, and the table gains in-cell editing, the validation column, the wrench and the
-**New _Class_ with …** button.
+Open the base on that view and run **Fileclass: use this view for a relation**. It asks
+which relation the view shows, changes **one word** in the base — the view's `type`, so
+its cells become editable — and writes the `relatedViews` entry. The name, the columns
+and every `![[Base#View]]` in your vault stay exactly as they are, and the table gains
+in-cell editing, the validation column, the wrench and the **New _Class_ with …**
+button.
+
+**Your filter is kept**, and read rather than replaced: a view already filtering on
+`this.file` — in any of the forms that work, `==`, `.asFile()`, `.linksTo()`,
+`.contains()` — is left alone.
+
+If it filters on **nothing of the kind**, the command says so before writing:
+
+> "Every book" does not filter on the note it is read from. Embedded in a note, it
+> would show every row to every note.
+
+and offers to add `author == this.file.asLink()` beside what is already there. *Adopt
+without it* is a real answer — you may be about to write the clause yourself — and
+closing the question writes nothing at all.
 
 ### You choose where it lives
 

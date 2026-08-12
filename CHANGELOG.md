@@ -38,6 +38,12 @@ All notable changes to Fileclass are documented here. The format follows
   validation column, the wrench, and the **New _Class_ with …** button that seeds the field the view
   filters on. The base is reopened on that view when it is done.
 
+  A view that already filters on `this.file` is left alone, in whichever form it uses (`==`,
+  `.asFile()`, `.linksTo()`, `.contains()` — all four were measured working). One that filters on
+  nothing of the kind gets a question rather than a silent adoption: embedded in a note it would show
+  every row to every note, so the command offers to add the clause beside what is already there.
+  Declining adopts it as it stands; closing the question writes nothing.
+
 ## [0.2.12] - 2026-08-12
 
 ### Added

@@ -158,6 +158,46 @@ export function reverseOrder(columns: readonly string[], pointingField: string):
 	return mirrorOrder(columns.filter((c) => !dropped.has(c)));
 }
 
+/**
+ * Whether a view's filters already read this field backwards.
+ *
+ * A **loose** test on purpose: any clause naming both the field and `this.file` counts. Four
+ * expressions do that job — `==` on a link, `asFile() ==`, `linksTo`, `contains` — and all four were
+ * measured working (§3.1); a view somebody wrote years ago will use whichever one they knew. Asking
+ * for one exact string would mean "correcting" a filter that was already right.
+ *
+ * The walk covers the nested groups Bases allows, since a hand-written filter often puts the
+ * relation inside an `and`/`or` beside a scope clause.
+ */
+export function filtersReadFieldBackwards(filters: unknown, fieldName: string): boolean {
+	const mentions = (clause: string): boolean =>
+		clause.includes("this.file") && clause.includes(fieldName);
+	const walk = (node: unknown): boolean => {
+		if (typeof node === "string") return mentions(node);
+		if (Array.isArray(node)) return node.some(walk);
+		if (node && typeof node === "object") return Object.values(node).some(walk);
+		return false;
+	};
+	return walk(filters);
+}
+
+/**
+ * The same filters with `clause` added to the top-level `and`.
+ *
+ * Added, never rewritten: whatever the view already selects stays, and the relation narrows it. A
+ * `filters:` that is a bare string (the short form Bases accepts) becomes an `and` of the two, which
+ * is the same selection plus the new condition — not a reinterpretation of the old one.
+ */
+export function withReverseClause(filters: unknown, clause: string): { and: unknown[] } {
+	if (filters && typeof filters === "object" && Array.isArray((filters as { and?: unknown }).and)) {
+		const group = filters as { and: unknown[] };
+		return { ...group, and: [...group.and, clause] };
+	}
+	if (typeof filters === "string" && filters.trim()) return { and: [filters, clause] };
+	if (filters && typeof filters === "object") return { and: [filters, clause] };
+	return { and: [clause] };
+}
+
 /** A view as it appears in a parsed `.base`. */
 interface BaseView {
 	type?: string;

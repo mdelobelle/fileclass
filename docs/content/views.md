@@ -283,26 +283,67 @@ nothing is stored: the table is Bases answering a filter, live.
 
 ### One view serves every note
 
-The view is called **`Book by author`** — the class and the field, never the note
-you ran it from. Inside an embedded base, `this.file` is the note **holding the
-embed**, so the same view shows each author their own books. The first author to
-ask creates it; every author after that only gets the embed, and a base does not
-end up with four hundred near-identical views.
+Inside an embedded base, `this.file` is the note **holding the embed**, so one view
+shows each author their own books. The first author to ask creates it; every author
+after that only gets the embed, and a base does not end up with four hundred
+near-identical views.
 
 Because the view is shared, it is also yours to keep: run the command again and
-Fileclass reuses what it finds, with whatever columns, sort and filter you have
-given it since.
+Fileclass reuses what it finds, with whatever columns, sort and filter you have given
+it since.
+
+### The class says which view, and the name is yours
+
+A class records the view it uses for each of its link fields:
+
+```yaml
+relatedViews:
+  - field: author
+    view: Books.base#A's Bs
+  - field: editor
+    view: Dashboards/Reading.base#Edited here
+```
+
+Written the way an embed is (`Base#View`), so it reads the same in a schema as in a
+note. Fileclass creates the entry when it creates the view, and **never consults a
+view's name** afterwards: rename the view to anything you like and everything keeps
+working, because the class points at it rather than describing it.
+
+### A view you already have
+
+If your vault predates Fileclass, those views probably exist already — hand-written
+filters on `this.file`, embedded in hundreds of notes under names you chose. Nothing
+has to be renamed and no embed has to be touched.
+
+Open the base on that view and run **Fileclass: use this view for a relation**. It asks
+which relation the view shows, changes **one word** in the base — the view's `type`, so
+its cells become editable — and writes the `relatedViews` entry. The name, the columns
+and every `![[Base#View]]` in your vault stay exactly as they are, and the table gains
+in-cell editing, the validation column, the wrench and the **New _Class_ with …**
+button.
+
+**Your filter is kept**, and read rather than replaced: a view already filtering on
+`this.file` — in any of the forms that work, `==`, `.asFile()`, `.linksTo()`,
+`.contains()` — is left alone.
+
+If it filters on **nothing of the kind**, the command says so before writing:
+
+> "Every book" does not filter on the note it is read from. Embedded in a note, it
+> would show every row to every note.
+
+and offers to add `author == this.file.asLink()` beside what is already there. *Adopt
+without it* is a real answer — you may be about to write the clause yourself — and
+closing the question writes nothing at all.
 
 ### You choose where it lives
 
 The first run asks, offering the target class's own base — `Books.base` for a
-`Book by author`. Point it anywhere instead: an existing base gets one more view,
-a new path is created. Nothing is put in your vault without being named first, and
-a vault does not grow a `.base` per class that happens to be pointed at.
+`Book by author`. Point it anywhere instead: an existing base gets one more view, a new
+path is created. Nothing is put in your vault without being named first, and a vault
+does not grow a `.base` per class that happens to be pointed at.
 
-From the second note onwards nothing is asked. Fileclass finds the view **by its
-name**, in whichever base you put it, so a relation you sent to a dashboard base
-stays there — one view, one copy.
+From the second note onwards nothing is asked: the class now declares that view, so
+Fileclass goes straight to it.
 
 ### What the filter says
 

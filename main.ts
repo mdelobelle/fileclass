@@ -13,6 +13,7 @@ import { setPlugin, clearPlugin } from "./src/globals";
 import { isBasesAvailable, onCorePluginChange } from "./src/engine/basesAdapter";
 import { QueryCache } from "./src/engine/queryCache";
 import { createFileClass } from "./src/commands/createFileClass";
+import { adoptRelatedView } from "./src/commands/adoptRelatedView";
 import { createNoteWithClass } from "./src/commands/createNoteWithClass";
 import { insertMissingFields } from "./src/commands/insertMissingFields";
 import { syncSchemaCanvas } from "./src/views/schemaCanvasSync";
@@ -403,6 +404,18 @@ export default class FileclassPlugin extends Plugin {
 			id: "audit-schemas",
 			name: "Check what my classes point at",
 			callback: () => void runSchemaAudit(this, true),
+		});
+
+		// The other half of #154 for a vault that predates it: a view somebody already wrote, and
+		// hundreds of embeds pointing at it by a name of their choosing.
+		this.addCommand({
+			id: "adopt-related-view",
+			name: "Use this view for a relation",
+			checkCallback: (checking) => {
+				if (!this.index.fileClassNames.length) return false;
+				if (!checking) adoptRelatedView(this);
+				return true;
+			},
 		});
 
 		// #154 — the relation the schema already describes, read from the other end. Discovery is

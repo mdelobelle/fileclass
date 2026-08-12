@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 
 import { noteFolder, safeFileName, seedWins, uniquePath } from "../../src/schema/newNote";
-import { reverseFieldOfView } from "../../src/views/reverseView";
 
 describe("where a new note goes", () => {
 	it("uses the class's own folder when it declares one", () => {
@@ -87,20 +86,5 @@ describe("what a seed overrides", () => {
 
 	it("is not consulted when there is no seed", () => {
 		expect(seedWins("x", undefined, "author")).toBe(false);
-	});
-});
-
-describe("reading a reverse view's field back from its name", () => {
-	it("inverts the convention exactly, rather than parsing prose", () => {
-		expect(reverseFieldOfView("Book", "Book by author", ["author", "cover"])).toBe("author");
-	});
-
-	it("says nothing about a view that is not one of ours", () => {
-		expect(reverseFieldOfView("Book", "All books", ["author"])).toBeUndefined();
-		expect(reverseFieldOfView("Book", "Book by author", ["cover"])).toBeUndefined();
-	});
-
-	it("copes with a field name that contains the word by", () => {
-		expect(reverseFieldOfView("Book", "Book by written by", ["written by"])).toBe("written by");
 	});
 });

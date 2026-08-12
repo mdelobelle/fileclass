@@ -4,6 +4,46 @@ All notable changes to Fileclass are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); this project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.2.13] - 2026-08-12
+
+### Changed
+
+- **BREAKING — a reverse-relation view is now declared by the class, not recognised by its name.**
+  0.2.12 found the view for a relation by the name it had given it (`Book by author`). A class now
+  records it instead:
+
+  ```yaml
+  relatedViews:
+    - field: author
+      view: Books.base#A's Bs
+  ```
+
+  keyed on the **field**, since a class can reach the same parent through two of them (`author` and
+  `editor`), and written the way an embed is so it reads the same in a schema as in a note.
+
+  Renaming a view is therefore free, which is the point: a view can be called whatever your vault
+  already calls it. There is **no fallback on the old convention** — deliberately, rather than carry
+  an exception nobody will remember the reason for. If you created a reverse view with 0.2.12, open
+  its base on that view and run *Use this view for a relation* once; it will be found by the
+  declaration from then on.
+
+### Added
+
+- **Use a view you already have** ([#154](https://github.com/mdelobelle/fileclass/issues/154)). A
+  vault that predates Fileclass has these views already — hand-written `this.file` filters, embedded
+  in hundreds of notes under names their author chose. **Fileclass: use this view for a relation**
+  takes one as it stands: it asks which relation the view shows, changes the view's `type` so its
+  cells become editable, and writes the `relatedViews` entry. The name, the filters, the columns and
+  every `![[Base#View]]` in the vault are untouched — and the table gains in-cell editing, the
+  validation column, the wrench, and the **New _Class_ with …** button that seeds the field the view
+  filters on. The base is reopened on that view when it is done.
+
+  A view that already filters on `this.file` is left alone, in whichever form it uses (`==`,
+  `.asFile()`, `.linksTo()`, `.contains()` — all four were measured working). One that filters on
+  nothing of the kind gets a question rather than a silent adoption: embedded in a note it would show
+  every row to every note, so the command offers to add the clause beside what is already there.
+  Declining adopts it as it stands; closing the question writes nothing.
+
 ## [0.2.12] - 2026-08-12
 
 ### Added

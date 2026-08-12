@@ -19,6 +19,12 @@ export interface FileClassOptions {
 	fileClassNotesFolder?: string;
 	/** A template applied to a new note of this class, before its fields are written. */
 	fileClassNoteTemplate?: string;
+	/**
+	 * The views that list this class's notes for one of *their* notes — the other end of a link
+	 * field (#154, #84). Declared rather than inferred: the view is named by its author, and a
+	 * convention would break the day they renamed it.
+	 */
+	relatedViews: RelatedView[];
 	/** Field names to remove from inherited fields. */
 	excludes: string[];
 	mapWithTag: boolean;
@@ -28,6 +34,29 @@ export interface FileClassOptions {
 	version?: string;
 	/** Preset display order of field ids. */
 	fieldsOrder: string[];
+}
+
+/** One declared reverse view: which field it reads backwards, and where it lives. */
+export interface RelatedView {
+	/** The link field of *this* class whose target the view filters on. */
+	field: string;
+	/** `Books.base#Book by author` — the form an embed uses, so it reads the same either place. */
+	view: string;
+}
+
+/** `relatedViews` as written, keeping only the entries that name both halves. */
+export function toRelatedViews(value: unknown): RelatedView[] {
+	if (!Array.isArray(value)) return [];
+	const out: RelatedView[] = [];
+	for (const entry of value) {
+		if (!entry || typeof entry !== "object") continue;
+		const field = (entry as { field?: unknown }).field;
+		const view = (entry as { view?: unknown }).view;
+		if (typeof field === "string" && field.trim() && typeof view === "string" && view.trim()) {
+			out.push({ field: field.trim(), view: view.trim() });
+		}
+	}
+	return out;
 }
 
 export interface ParsedFileClass {
@@ -95,6 +124,7 @@ export function parseFileClass(name: string, frontmatter: Frontmatter): ParsedFi
 		fileClassNotesFolder: typeof fm.fileClassNotesFolder === "string" ? fm.fileClassNotesFolder : undefined,
 		fileClassNoteTemplate:
 			typeof fm.fileClassNoteTemplate === "string" ? fm.fileClassNoteTemplate : undefined,
+		relatedViews: toRelatedViews(fm.relatedViews),
 		filesPaths: toStringArray(fm.filesPaths),
 		bookmarksGroups: toStringArray(fm.bookmarksGroups),
 		version: typeof fm.version === "string" ? fm.version : fm.version != null ? String(fm.version) : undefined,

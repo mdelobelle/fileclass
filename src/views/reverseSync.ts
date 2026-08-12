@@ -18,6 +18,7 @@ import { ChoiceSuggestModal } from "../fields/input/valueModals";
 import { baseBindingOptionsFromOptions } from "../fields/options";
 import { logEvent } from "../log/schemaLog";
 import { isRootField } from "../schema/field";
+import { toRelatedViews } from "../schema/fileClass";
 import {
 	classScope,
 	confirmCloseOpenBase,
@@ -31,8 +32,9 @@ import {
 	LinkCardinality,
 	addReverseView,
 	appendEmbed,
-	baseHoldingView,
 	findEmbedLine,
+	formatViewRef,
+	relatedViewFor,
 	linkCardinality,
 	reverseEmbed,
 	reverseOrder,
@@ -133,34 +135,40 @@ export function defaultBasePath(plugin: FileclassPlugin, targetClass: string): s
 }
 
 /**
- * The base already holding `viewName`, searched by name across every `.base` in the vault.
+ * The view this class declares for `field`, if it declares one.
  *
- * The reader chooses where the view goes, so its home cannot be computed from the class — and the
- * next note showing the same relation has to find it *wherever that was*, or it would create a
- * second copy in a second base and one view would stop serving every note. Bases are few and
- * small; this reads them, and skips any that will not parse.
+ * **Declared, not recognised.** The view belongs to whoever named it — `A's Bs` is as good a name as
+ * `Book by author`, and better if two thousand notes already embed it — so the class says which view
+ * reads which field backwards, and nothing here consults a name. A rename then changes nothing at
+ * all, which is the whole point of writing it down.
  */
-export async function locateReverseView(
+export function declaredReverseView(
 	plugin: FileclassPlugin,
-	viewName: string
-): Promise<string | null> {
-	const files = plugin.app.vault
-		.getFiles()
-		.filter((f) => f.extension === "base")
-		// Sorted, so two bases carrying the same view name resolve the same way every time.
-		.sort((a, b) => a.path.localeCompare(b.path));
-	const bases: { path: string; base: Record<string, unknown> }[] = [];
-	for (const file of files) {
-		try {
-			const parsed: unknown = parseYaml(await plugin.app.vault.read(file));
-			if (parsed && typeof parsed === "object") {
-				bases.push({ path: file.path, base: parsed as Record<string, unknown> });
-			}
-		} catch {
-			// A base we cannot parse holds no view we can claim to have found.
-		}
-	}
-	return baseHoldingView(bases, viewName);
+	targetClass: string,
+	field: string
+): ReverseViewRef | null {
+	const declared = plugin.index.getFileClass(targetClass)?.options.relatedViews ?? [];
+	const ref = relatedViewFor(declared, field);
+	return ref ? { path: normalizePath(ref.path), viewName: ref.viewName } : null;
+}
+
+/** Writes the declaration onto the class note, so the next note finds the same view. */
+async function declareReverseView(
+	plugin: FileclassPlugin,
+	targetClass: string,
+	field: string,
+	ref: ReverseViewRef
+): Promise<void> {
+	const note = plugin.index.getFileClassFile(targetClass);
+	if (!(note instanceof TFile)) return;
+	await plugin.app.fileManager.processFrontMatter(note, (fm: Record<string, unknown>) => {
+		const entries = toRelatedViews(fm.relatedViews);
+		const view = formatViewRef(ref.path, ref.viewName);
+		const existing = entries.findIndex((e) => e.field === field);
+		if (existing >= 0) entries[existing] = { field, view };
+		else entries.push({ field, view });
+		fm.relatedViews = entries;
+	});
 }
 
 /**
@@ -203,8 +211,8 @@ export async function ensureReverseView(
 	const app = plugin.app;
 	const viewName = reverseViewName(candidate.targetClass, candidate.fieldName);
 
-	const existing = await locateReverseView(plugin, viewName);
-	if (existing) return { path: existing, viewName };
+	const declared = declaredReverseView(plugin, candidate.targetClass, candidate.fieldName);
+	if (declared) return declared;
 
 	const path = await pickReverseBase(
 		plugin,
@@ -243,6 +251,7 @@ export async function ensureReverseView(
 		const base = { views: [] as unknown[] };
 		addReverseView(base, viewName, filter, order);
 		await app.vault.modify(created, stringifyYaml(base));
+		await declareReverseView(plugin, candidate.targetClass, candidate.fieldName, { path, viewName });
 		new Notice(`Fileclass: created ${path} with "${viewName}".`);
 		void logEvent(plugin, "INFO", "views.reverse-created", `${candidate.targetClass}: created ${path} › ${viewName}`, {
 			fileClass: candidate.targetClass,
@@ -276,6 +285,10 @@ export async function ensureReverseView(
 				view: viewName,
 			});
 		}
+		await declareReverseView(plugin, candidate.targetClass, candidate.fieldName, {
+			path: file.path,
+			viewName,
+		});
 		return { path: file.path, viewName };
 	} catch (err) {
 		new Notice(`Fileclass: could not update ${file.name} (${(err as Error).message}).`);

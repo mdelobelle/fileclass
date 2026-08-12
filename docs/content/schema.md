@@ -25,6 +25,9 @@ excludes: [draft]       # inherited field names to drop
 mapWithTag: true        # bind notes tagged #Book to this fileClass
 tagNames: [novel]       # extra tags that bind to this fileClass
 filesPaths: [Library]   # bind notes under these folders
+relatedViews:           # the views that list this class for one of *their* notes
+  - field: author
+    view: Books.base#A's Bs
 limit: 20
 icon: book
 version: "2.0"

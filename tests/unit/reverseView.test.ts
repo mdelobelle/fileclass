@@ -3,14 +3,19 @@ import { describe, expect, it } from "vitest";
 import {
 	addReverseView,
 	appendEmbed,
-	baseHoldingView,
+	fieldForView,
+	filtersReadFieldBackwards,
 	findEmbedLine,
+	formatViewRef,
+	parseViewRef,
+	relatedViewFor,
 	linkCardinality,
 	reverseClause,
 	reverseEmbed,
 	reverseOrder,
 	reverseViewFilter,
 	reverseViewName,
+	withReverseClause,
 	viewOrder,
 } from "../../src/views/reverseView";
 import { ClassScope } from "../../src/views/baseYaml";
@@ -183,41 +188,6 @@ describe("adding the view to a base", () => {
 	});
 });
 
-describe("finding the view wherever it was put", () => {
-	const base = (name: string) => ({ views: [{ type: "fileclass-table", name }] });
-
-	it("finds it by name, not by a path derived from the class", () => {
-		// The reader chooses the base, so the next note showing the relation cannot compute where
-		// the view is — it has to recognise it. Otherwise a second base grows a second copy.
-		expect(
-			baseHoldingView(
-				[
-					{ path: "Bases/Authors.base", base: base("All authors") },
-					{ path: "Dashboards/Reading.base", base: base("Book by author") },
-				],
-				"Book by author"
-			)
-		).toBe("Dashboards/Reading.base");
-	});
-
-	it("returns null when no base holds it", () => {
-		expect(baseHoldingView([{ path: "a.base", base: base("Other") }], "Book by author")).toBeNull();
-		expect(baseHoldingView([], "Book by author")).toBeNull();
-	});
-
-	it("resolves a duplicate the same way every time, on the order it is given", () => {
-		const bases = [
-			{ path: "A.base", base: base("Book by author") },
-			{ path: "B.base", base: base("Book by author") },
-		];
-		expect(baseHoldingView(bases, "Book by author")).toBe("A.base");
-	});
-
-	it("ignores a base with nothing in it", () => {
-		expect(baseHoldingView([{ path: "a.base", base: {} }], "Book by author")).toBeNull();
-	});
-});
-
 describe("the embed in the host note", () => {
 	it("finds one that is already there", () => {
 		const body = "# Melville\n\n![[Bases/Books.base#Book by author]]\n";
@@ -244,5 +214,112 @@ describe("the embed in the host note", () => {
 		const { body, line } = appendEmbed("", "![[x#y]]");
 		expect(body).toBe("![[x#y]]\n");
 		expect(line).toBe(0);
+	});
+});
+
+describe("a view a class declares for one of its fields", () => {
+	const entries = [
+		{ field: "author", view: "Books.base#A's Bs" },
+		{ field: "editor", view: "Books.base#Foo" },
+	];
+
+	it("splits a reference the way an embed writes it", () => {
+		expect(parseViewRef("Books.base#Book by author")).toEqual({
+			path: "Books.base",
+			viewName: "Book by author",
+		});
+		expect(formatViewRef("Books.base", "A's Bs")).toBe("Books.base#A's Bs");
+	});
+
+	it("keeps a view name containing a hash", () => {
+		// Only the first `#` separates; the rest belongs to the name its author chose.
+		expect(parseViewRef("B.base#Notes #2")).toEqual({ path: "B.base", viewName: "Notes #2" });
+	});
+
+	it("refuses a reference that names no view", () => {
+		// "the first view" would be a decision about which relation they meant.
+		expect(parseViewRef("Books.base")).toBeNull();
+		expect(parseViewRef("#Orphan")).toBeNull();
+		expect(parseViewRef("Books.base#")).toBeNull();
+	});
+
+	it("finds the view for a field", () => {
+		expect(relatedViewFor(entries, "author")).toEqual({ path: "Books.base", viewName: "A's Bs" });
+		expect(relatedViewFor(entries, "cover")).toBeNull();
+	});
+
+	it("finds the field a view reads backwards, whatever it is called", () => {
+		// This is what makes a table named `A's Bs` seed exactly like one named by convention.
+		expect(fieldForView(entries, "Books.base", "A's Bs")).toBe("author");
+		expect(fieldForView(entries, "Books.base", "Foo")).toBe("editor");
+	});
+
+	it("says nothing about a view nobody declared", () => {
+		expect(fieldForView(entries, "Books.base", "All books")).toBeUndefined();
+		expect(fieldForView(entries, "Other.base", "A's Bs")).toBeUndefined();
+	});
+
+	it("lets two fields point at the same class through different views", () => {
+		// The reason the declaration is keyed on the field: `author` and `editor` both reach Author,
+		// and a key on the parent class would have collapsed them into one.
+		expect(relatedViewFor(entries, "author")?.viewName).toBe("A's Bs");
+		expect(relatedViewFor(entries, "editor")?.viewName).toBe("Foo");
+	});
+});
+
+describe("does a view already read the field backwards", () => {
+	it("recognises the four expressions that work, not one exact string", () => {
+		// All four were measured matching an aliased link and telling namesakes apart (§3.1); a view
+		// written years ago uses whichever its author knew, and "correcting" it would be wrong.
+		for (const clause of [
+			'author == this.file.asLink()',
+			"author.asFile() == this.file",
+			"author.linksTo(this.file)",
+			"author.contains(this.file.asLink())",
+		]) {
+			expect(filtersReadFieldBackwards({ and: [clause] }, "author")).toBe(true);
+		}
+	});
+
+	it("looks inside nested groups", () => {
+		const filters = { and: ['fileClass.containsAny("Book")', { or: ["x", "author.linksTo(this.file)"] }] };
+		expect(filtersReadFieldBackwards(filters, "author")).toBe(true);
+	});
+
+	it("is not fooled by another field's clause", () => {
+		expect(filtersReadFieldBackwards({ and: ["editor == this.file.asLink()"] }, "author")).toBe(false);
+	});
+
+	it("says no when nothing mentions the note being read from", () => {
+		expect(filtersReadFieldBackwards({ and: ['fileClass.containsAny("Book")'] }, "author")).toBe(false);
+		expect(filtersReadFieldBackwards(undefined, "author")).toBe(false);
+	});
+});
+
+describe("adding the clause to a filter somebody else wrote", () => {
+	it("appends to the existing and, keeping every other clause", () => {
+		const filters = { and: ['fileClass.containsAny("Book")'] };
+		expect(withReverseClause(filters, "author == this.file.asLink()")).toEqual({
+			and: ['fileClass.containsAny("Book")', "author == this.file.asLink()"],
+		});
+	});
+
+	it("keeps a sibling key the view had", () => {
+		const filters = { and: ["x"], not: ["y"] };
+		expect(withReverseClause(filters, "c")).toEqual({ and: ["x", "c"], not: ["y"] });
+	});
+
+	it("wraps the short form rather than reinterpreting it", () => {
+		// `filters: "expr"` is a selection; the result must be that selection *and* the relation.
+		expect(withReverseClause("published > 2000", "c")).toEqual({ and: ["published > 2000", "c"] });
+	});
+
+	it("keeps an or-group whole by nesting it, not flattening it", () => {
+		const filters = { or: ["a", "b"] };
+		expect(withReverseClause(filters, "c")).toEqual({ and: [{ or: ["a", "b"] }, "c"] });
+	});
+
+	it("starts one when there is no filter at all", () => {
+		expect(withReverseClause(undefined, "c")).toEqual({ and: ["c"] });
 	});
 });

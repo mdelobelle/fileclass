@@ -77,6 +77,10 @@ describe("buildOptionUpdates", () => {
 			extends: null,
 			baseFile: null,
 			baseView: null,
+			// Unset new-note options are nulled like every other blank, so a class note never keeps
+			// a key the modal cleared (#84).
+			fileClassNotesFolder: null,
+			fileClassNoteTemplate: null,
 			mapWithTag: true,
 			tagNames: ["x"],
 			filesPaths: null,

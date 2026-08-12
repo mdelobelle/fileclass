@@ -172,6 +172,46 @@ binding alone and insert them yourself.
 A fileClass note can also be created from the **class-files folder's right-click
 menu** (*Create a class*), not only from the command palette.
 
+## Creating a note with a class
+
+{{< video "034" >}}
+
+A table shows every note of a class except the one you are about to write.
+**Fileclass: create a note with a class**, or the **New _Class_** button in a
+`fileclass-table`'s toolbar, does the whole gesture: it asks for a name, creates the
+note in the right folder, applies the class's template, writes the binding and every
+field, and opens the fields modal on it.
+
+**Where it lands** — the class's **Notes folder** if it declares one; otherwise the
+single folder it already binds through *Files paths* (a class bound to one folder has
+said where its notes live); otherwise Obsidian's default for new notes. With several
+bound folders, nothing is guessed and the default is used.
+
+**The order matters, and it is the design.** The template is applied *first*, the
+fields *second*. The other way round gives two `---` blocks and broken YAML; this way
+`processFrontMatter` merges into whatever the template left, so **a duplicate
+frontmatter is impossible**, and a value the template set is kept — only missing keys
+are filled.
+
+The binding is always written, even when the target folder already binds the note:
+the `fileClass` key is the highest-priority binding and the only one that survives the
+note being moved.
+
+### From a reverse relation, already filled in
+
+On a [reverse-relation table](../views/#the-other-end-of-a-relation) read from an
+author's note, the button says **New Book with Frank Herbert** and the new note
+arrives with `author` already pointing at him. That one value is the exception to the
+rule above: a template's default for `author` is a preference, clicking that button is
+an instruction, so the seed wins.
+
+### Which class, from a table
+
+The view's own declaration — `baseFile` + `baseView` on a class note — says which
+class a table is about, so no filter is parsed. A table about several classes offers
+no button: there is nothing to create without asking, and the command is where that
+question belongs.
+
 ## Creating notes with a template (Templater / Templates)
 
 {{< video "031" >}}
@@ -180,8 +220,17 @@ Fileclass is **frontmatter-only**, so it composes cleanly with the core
 **Templates** plugin and **Templater**: keep managing the note *body* with your
 template, and let Fileclass manage the *frontmatter*.
 
-The trick to avoid running **Insert missing fields** on every new note is to
-bake the fields into the template **once**:
+A class can name its own template in **Note template**, applied by *create a note
+with a class* above — Templater when it is installed, otherwise the core plugin's
+`{{title}}`, `{{date}}` and `{{time}}` substitutions, applied directly (its own
+command asks which template, a question the class has already answered).
+
+> **Templater folder templates.** If Templater already applies a folder template to
+> the target folder, leave **Note template** blank — otherwise both run and the note
+> gets the template twice.
+
+The other route, for notes you create by hand, is to bake the fields into the template
+**once**:
 
 1. Create a template note and run **Add fileClass** on it — from its right-click
    menu, from **Fileclass: add a class to this note**, or from the footer of the

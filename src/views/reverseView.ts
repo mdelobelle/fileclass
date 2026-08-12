@@ -71,6 +71,21 @@ export function reverseViewName(targetClass: string, fieldName: string): string 
 	return `${targetClass} by ${fieldName}`;
 }
 
+/**
+ * The field a reverse view is about, read back from its name (#84).
+ *
+ * The name is this plugin's own convention, so it can be inverted exactly rather than parsed: each
+ * candidate field is asked whether it would have produced this name. That is what lets a table
+ * embedded in an author's note offer "New Book with Frank Herbert" — it knows which field to seed.
+ */
+export function reverseFieldOfView(
+	targetClass: string,
+	viewName: string,
+	fieldNames: readonly string[]
+): string | undefined {
+	return fieldNames.find((name) => reverseViewName(targetClass, name) === viewName);
+}
+
 /** The embed a note carries to show that view. */
 export function reverseEmbed(basePath: string, viewName: string): string {
 	return `![[${basePath}#${viewName}]]`;

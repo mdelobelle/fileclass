@@ -42,6 +42,13 @@ All notable changes to Fileclass are documented here. The format follows
   (`schema.resolved`), so the file reads as a record of what happened rather than a snapshot of what
   is wrong. Comes back after being fixed? Logged again.
 
+- **Retention for the log** ([#159](https://github.com/mdelobelle/fileclass/issues/159)). The live
+  file keeps a set number of entries (**Settings → Fileclass → Schema log size**, 500 by default);
+  past that it rolls over to `<class folder>/.logs/archive_0001.log`, `0002`, and so on, with
+  **Archives kept** bounding how many are held. Numbering only goes up and nothing is renamed on
+  rotation, so an archive's name always means when it was written; pruning removes the lowest.
+  The window grows an **Include N archives** toggle once there are any.
+
 - **A sweep over what your classes point at** ([#159](https://github.com/mdelobelle/fileclass/issues/159)).
   The warning above rides on Obsidian announcing a rename — move a file with the plugin off, from
   your file manager, or from another machine over sync, and no event ever arrives. So Fileclass also

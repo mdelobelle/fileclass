@@ -209,6 +209,37 @@ export class FileclassSettingTab extends PluginSettingTab {
 			);
 
 		new Setting(containerEl)
+			.setName("Schema log size")
+			.setDesc(
+				"Entries the live log keeps before rolling over to <class folder>/.logs/archive_NNNN.log. " +
+					"0 lets it grow."
+			)
+			.addText((t) =>
+				t
+					.setPlaceholder("500")
+					.setValue(String(this.plugin.settings.schemaLogMaxEntries))
+					.onChange(async (value) => {
+						const n = Number.parseInt(value, 10);
+						this.plugin.settings.schemaLogMaxEntries = Number.isFinite(n) && n >= 0 ? n : 0;
+						await this.plugin.saveSettings();
+					})
+			);
+
+		new Setting(containerEl)
+			.setName("Archives kept")
+			.setDesc("How many rolled-over log files to keep. 0 discards the overflow instead.")
+			.addText((t) =>
+				t
+					.setPlaceholder("5")
+					.setValue(String(this.plugin.settings.schemaLogArchives))
+					.onChange(async (value) => {
+						const n = Number.parseInt(value, 10);
+						this.plugin.settings.schemaLogArchives = Number.isFinite(n) && n >= 0 ? n : 0;
+						await this.plugin.saveSettings();
+					})
+			);
+
+		new Setting(containerEl)
 			.setName("Insert fields when adding a class")
 			.setDesc(
 				"Binding a fileClass to a note adds its missing fields to the frontmatter straight away, instead of leaving you to run Insert missing fields."

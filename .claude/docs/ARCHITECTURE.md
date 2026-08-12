@@ -451,6 +451,16 @@ empty, and a folder-bound class silently stops claiming its notes.
 - The log is `<class folder>/fileclass.log` — a **`.log`**, because
   `FileclassIndex.rebuild` reads every markdown file under that folder as a
   fileClass, so a `.md` log there would come back as a class.
+- **A dot-folder is invisible to the vault API** (measured, 1.13.6):
+  `vault.createFolder("Classes/.logs")` and `vault.create` inside it both succeed
+  and write to disk, while `getAbstractFileByPath("Classes/.logs")` stays **null**
+  — so the archives were unreadable to the code that had just written them, every
+  rotation reused `archive_0001` and the second threw on an existing name.
+  `adapter.exists/list/read/write/mkdir/remove` handle them correctly. Anything
+  under a dot-folder goes through `vault.adapter`, never the vault API.
+- Rotation is whole-file, numbering monotonic, pruning by lowest number: renaming
+  archives on every rotation would rewrite history and make a file's name a lie
+  about when it was written.
 
 ### 11.1 Reverse relations (#154, `reverseView.ts` / `reverseSync.ts`)
 

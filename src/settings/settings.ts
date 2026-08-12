@@ -38,6 +38,14 @@ export interface FileclassSettings {
 	 * elsewhere (#159). A notice lasts fifteen seconds; this is what you read three weeks later.
 	 */
 	enableSchemaLog: boolean;
+	/**
+	 * How many entries the live log keeps before the file rolls over to an archive (#159).
+	 * Counted in entries rather than bytes: the cap exists so the window opens on a readable
+	 * amount of history. 0 turns rotation off and lets the file grow.
+	 */
+	schemaLogMaxEntries: number;
+	/** How many rolled-over archives to keep under `<class folder>/.logs`. 0 discards them. */
+	schemaLogArchives: number;
 	/** Insert a class's missing fields as soon as the class is bound to a note. */
 	insertFieldsOnBind: boolean;
 	/**
@@ -108,6 +116,8 @@ export const DEFAULT_SETTINGS: FileclassSettings = {
 	enableValidationColumns: true,
 	enableContextMenu: true,
 	enableSchemaLog: true,
+	schemaLogMaxEntries: 500,
+	schemaLogArchives: 5,
 	insertFieldsOnBind: true,
 	reorderOnInsert: false,
 	schemaCanvasPath: "",

@@ -83,6 +83,9 @@ export async function runSchemaAudit(plugin: FileclassPlugin, announce: boolean)
 	// Only what changed since the log last heard about it: a sweep per session that re-listed the
 	// same twelve problems would drown the one line saying something *moved*, and the retention cap
 	// would then rotate away real history to store copies.
+	//
+	// The live file only — a rotation therefore restates the standing problems once, which is what a
+	// fresh file should say: it opens on where things stand, not on a history it no longer holds.
 	const { fresh, resolved } = diffFindings(await readSchemaLog(plugin), findings);
 	const stamp = logStamp(new Date());
 	const entries: LogEntry[] = [

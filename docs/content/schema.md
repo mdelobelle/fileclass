@@ -319,4 +319,19 @@ fixed, that is a line too:
 so the file reads as a record of what happened rather than a snapshot of what is
 wrong. A problem that comes back after being fixed is logged again.
 
-Turn it off in **Settings → Fileclass → Schema log**; the notices stay.
+### Retention
+
+A log nobody prunes eventually costs more to open than it is worth, and this one is
+written by vault events — a busy month of renames fills it without anybody noticing.
+
+**Settings → Fileclass → Schema log size** is how many entries the live file keeps
+(500 by default; 0 lets it grow). Past that, the whole file rolls over to
+**`<class folder>/.logs/archive_0001.log`**, then `0002`, and so on. **Archives
+kept** bounds how many are held (5 by default; 0 discards the overflow instead).
+
+Numbering only ever goes up, and nothing is renamed on rotation: an archive's name
+means when it was written, and pruning removes the lowest numbers. In the window, a
+toggle appears once archives exist — **Include N archives** merges them into the
+list, off by default, since the live file is what answers "what just happened".
+
+Turn the whole thing off in **Settings → Fileclass → Schema log**; the notices stay.

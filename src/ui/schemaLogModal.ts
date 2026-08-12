@@ -12,7 +12,13 @@ import { Modal, Notice, Setting, setIcon } from "obsidian";
 
 import type FileclassPlugin from "../../main";
 import { LOG_LEVELS, LogEntry, LogLevel } from "../log/logLine";
-import { openSchemaLogFile, readSchemaLog, schemaLogPath } from "../log/schemaLog";
+import {
+	openSchemaLogFile,
+	readSchemaArchives,
+	readSchemaLog,
+	schemaArchiveCount,
+	schemaLogPath,
+} from "../log/schemaLog";
 import { runSchemaAudit } from "../schema/schemaAuditRun";
 import { openFileClassSchema } from "./fileClassSchemaModal";
 import { makeStickyFooter } from "./modalFooter";
@@ -50,6 +56,7 @@ class SchemaLogModal extends Modal {
 	private entries: LogEntry[] = [];
 	private readonly levels = new Set<LogLevel>(LOG_LEVELS);
 	private query = "";
+	private withArchives = false;
 	private listEl!: HTMLElement;
 	private countEl!: HTMLElement;
 
@@ -87,6 +94,22 @@ class SchemaLogModal extends Modal {
 			})
 		);
 
+		// Rotated history is opt-in: the live file answers "what just happened", which is what the
+		// window is opened for, and reading every archive to answer it would be a tax on the common
+		// case. The control only appears when there is something to include.
+		const archives = await schemaArchiveCount(this.plugin);
+		if (archives) {
+			new Setting(controls)
+				.setClass("fileclass-log-archives")
+				.setName(`Include ${archives} archive${archives > 1 ? "s" : ""}`)
+				.addToggle((t) =>
+					t.setValue(false).onChange((v) => {
+						this.withArchives = v;
+						void this.reload();
+					})
+				);
+		}
+
 		this.countEl = contentEl.createDiv({ cls: "fileclass-log-count" });
 		this.listEl = contentEl.createDiv({ cls: "fileclass-log-list" });
 		this.renderList();
@@ -110,7 +133,14 @@ class SchemaLogModal extends Modal {
 	/** Re-runs the sweep and re-reads, so the window answers "and now?" without reopening. */
 	private async recheck(): Promise<void> {
 		await runSchemaAudit(this.plugin, true);
-		this.entries = await readSchemaLog(this.plugin);
+		await this.reload();
+	}
+
+	/** Re-reads what the window is currently showing — the live file, plus archives when asked. */
+	private async reload(): Promise<void> {
+		const live = await readSchemaLog(this.plugin);
+		// Archives first: they are older, and the list is reversed for display anyway.
+		this.entries = this.withArchives ? [...(await readSchemaArchives(this.plugin)), ...live] : live;
 		this.renderList();
 	}
 

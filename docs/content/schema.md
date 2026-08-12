@@ -237,3 +237,45 @@ When adding or editing a field, its type reveals the relevant settings:
 
 Every change is a single `processFrontMatter` write on the fileClass note,
 preserving unknown keys.
+
+## When something a fileClass points at moves
+
+A fileClass stores **paths**: the note a `Select` reads its values from, the `.base`
+a link field takes candidates from, the `.canvas` a Canvas field follows, the base
+the class syncs to, the folders it claims.
+
+Obsidian rewrites the links inside a note's **body** when a file is renamed. A path
+in frontmatter is a plain string, so nothing rewrites it — a known limit of
+properties, not a Fileclass one. Renamed and left alone, the reference is dangling
+and the effect is silent: a values list that comes up empty, a field with no
+candidates, or — the one with teeth — a folder binding whose notes quietly stop
+carrying the class.
+
+So Fileclass **tells you, and changes nothing**:
+
+> Fileclass: "Authors.base" moved, and fileClasses still point at it — Comic ›
+> contributors, Book › author. Until the definition is updated, the field offers no
+> candidates.
+
+Your definition stays yours: fixing it is a decision, taken in the schema editor
+where you can see the rest of the field.
+
+### The log
+
+A notice lasts fifteen seconds, and this is the kind of breakage found three weeks
+later. Each warning is also appended to **`<class folder>/fileclass.log`**, with a
+timestamp, every class and field that named the path, and what each one loses:
+
+```
+2026-08-12 08:15:51  file moved: "Authors.base" → "Writers.base"
+                     Comic › contributors  baseFile: Authors.base  — the field offers no candidates
+                     Book › author         baseFile: Authors.base  — the field offers no candidates
+2026-08-12 08:15:55  folder moved: "Reading list" → "Library"
+                     Book › filesPaths  filesPaths: Reading list  — notes in that folder no longer carry the class
+```
+
+Open it with **Fileclass: open the schema log**. It is a `.log` rather than a note
+on purpose: every markdown file in the class folder is read as a fileClass, so a
+`.md` log living there would come back as a class of its own.
+
+Turn it off in **Settings → Fileclass → Schema log**; the notices stay.

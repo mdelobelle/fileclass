@@ -33,6 +33,11 @@ export interface FileclassSettings {
 	enableValidationColumns: boolean;
 	/** Add Fileclass entries to the file/editor context menus. */
 	enableContextMenu: boolean;
+	/**
+	 * Keep a `fileclass.log` beside the class notes, recording what left a definition pointing
+	 * elsewhere (#159). A notice lasts fifteen seconds; this is what you read three weeks later.
+	 */
+	enableSchemaLog: boolean;
 	/** Insert a class's missing fields as soon as the class is bound to a note. */
 	insertFieldsOnBind: boolean;
 	/**
@@ -102,6 +107,7 @@ export const DEFAULT_SETTINGS: FileclassSettings = {
 	enableCanvasEngine: true,
 	enableValidationColumns: true,
 	enableContextMenu: true,
+	enableSchemaLog: true,
 	insertFieldsOnBind: true,
 	reorderOnInsert: false,
 	schemaCanvasPath: "",

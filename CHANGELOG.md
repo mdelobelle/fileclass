@@ -6,6 +6,26 @@ All notable changes to Fileclass are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- **A fileClass says when something it points at moves**
+  ([#159](https://github.com/mdelobelle/fileclass/issues/159)). A schema stores paths — the note a
+  `Select` reads its values from, the `.base` a link field draws candidates from, the `.canvas` a
+  Canvas field follows, the folders the class claims. Obsidian rewrites links inside a note's body
+  on a rename; a path in frontmatter is a plain string and nothing rewrites it, so the reference
+  goes dangling and the effect is silent: an empty values list, a field with no candidates, or —
+  worst — a folder binding whose notes quietly stop carrying the class.
+
+  Fileclass now names it, and **changes nothing**: *"Authors.base" moved, and fileClasses still
+  point at it — Comic › contributors, Book › author. Until the definition is updated, the field
+  offers no candidates.* Fixing the definition stays your decision, taken in the schema editor.
+
+  Each warning is also appended to **`<class folder>/fileclass.log`** with a timestamp, every class
+  and field that named the path, and what each one loses — a notice lasts fifteen seconds, and this
+  is the kind of breakage found three weeks later. **Fileclass: open the schema log** opens it, and
+  **Settings → Fileclass → Schema log** turns the file off. A `.log` and not a note, because every
+  markdown file in the class folder is read as a fileClass.
+
 ### Changed
 
 - **The `fileclass-table` view type has an icon of its own.** It used the native table's glyph, so

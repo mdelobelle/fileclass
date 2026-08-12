@@ -32,6 +32,8 @@ import { openFileClassSchema } from "./src/ui/fileClassSchemaModal";
 import { pickAndCreateBase } from "./src/views/baseFileGenerator";
 import { fileClassBaseFile, openFileClassBase, syncFileClassToBase } from "./src/views/baseSync";
 import { registerFileclassTableView } from "./src/views/fileclassTableView";
+import { openSchemaLog } from "./src/schema/fileclassLog";
+import { warnOnStalePaths } from "./src/schema/renameNotice";
 import { insertReverseRelation, vaultHasReverseRelations } from "./src/views/reverseSync";
 import { createFileclassApi, FileclassApi } from "./src/api/fileclassApi";
 import { CanvasEngine } from "./src/fields/canvas/canvasEngine";
@@ -343,6 +345,14 @@ export default class FileclassPlugin extends Plugin {
 			},
 		});
 
+		// The log the rename warnings write into: findable without hunting for a `.log` in the
+		// file explorer, which does not show one.
+		this.addCommand({
+			id: "open-schema-log",
+			name: "Open the schema log",
+			callback: () => void openSchemaLog(this),
+		});
+
 		// #154 — the relation the schema already describes, read from the other end. Discovery is
 		// O(vault) per source view, so it runs on invocation only; the check here is index-only.
 		this.addCommand({
@@ -406,6 +416,10 @@ export default class FileclassPlugin extends Plugin {
 			this.app.vault.on("rename", (file, oldPath) => {
 				if (this.affectsSchema(oldPath)) scheduleRebuild();
 				onChange(file);
+				// A path stored in a schema is a plain string: Obsidian rewrites the links in a
+				// note's body on a rename and leaves this one pointing at what moved (#159). Said,
+				// never repaired — the definition is the author's.
+				warnOnStalePaths(this, file, oldPath);
 			})
 		);
 	}

@@ -196,6 +196,19 @@ export class FileclassSettingTab extends PluginSettingTab {
 			);
 
 		new Setting(containerEl)
+			.setName("Schema log")
+			.setDesc(
+				"Record in <class folder>/fileclass.log what leaves a fileClass pointing at something " +
+					"that moved. Fileclass never edits a definition itself."
+			)
+			.addToggle((toggle) =>
+				toggle.setValue(this.plugin.settings.enableSchemaLog).onChange(async (value) => {
+					this.plugin.settings.enableSchemaLog = value;
+					await this.plugin.saveSettings();
+				})
+			);
+
+		new Setting(containerEl)
 			.setName("Insert fields when adding a class")
 			.setDesc(
 				"Binding a fileClass to a note adds its missing fields to the frontmatter straight away, instead of leaving you to run Insert missing fields."

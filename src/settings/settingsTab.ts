@@ -196,6 +196,19 @@ export class FileclassSettingTab extends PluginSettingTab {
 			);
 
 		new Setting(containerEl)
+			.setName("Open the fields when creating a note")
+			.setDesc(
+				"After Fileclass creates a note with a class, open its fields modal so the values can be " +
+					"filled straight away. The fields themselves are always inserted."
+			)
+			.addToggle((toggle) =>
+				toggle.setValue(this.plugin.settings.openFieldsOnCreate).onChange(async (value) => {
+					this.plugin.settings.openFieldsOnCreate = value;
+					await this.plugin.saveSettings();
+				})
+			);
+
+		new Setting(containerEl)
 			.setName("Schema log")
 			.setDesc(
 				"Record in <class folder>/fileclass.log what leaves a fileClass pointing at something " +

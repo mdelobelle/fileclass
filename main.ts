@@ -13,6 +13,7 @@ import { setPlugin, clearPlugin } from "./src/globals";
 import { isBasesAvailable, onCorePluginChange } from "./src/engine/basesAdapter";
 import { QueryCache } from "./src/engine/queryCache";
 import { createFileClass } from "./src/commands/createFileClass";
+import { createNoteWithClass } from "./src/commands/createNoteWithClass";
 import { insertMissingFields } from "./src/commands/insertMissingFields";
 import { syncSchemaCanvas } from "./src/views/schemaCanvasSync";
 import { bulkInsertMissingFields } from "./src/commands/bulkInsertMissing";
@@ -260,6 +261,31 @@ export default class FileclassPlugin extends Plugin {
 							(n) => n,
 							(n) => void bulkInsertMissingFields(this, n),
 							"Insert missing fields across which class?"
+						).open();
+				}
+				return true;
+			},
+		});
+
+		// #84 — the note a table cannot show, because it does not exist yet.
+		this.addCommand({
+			id: "create-note",
+			name: "Create a note with a class",
+			checkCallback: (checking) => {
+				if (!this.index.fileClassNames.length) return false;
+				if (!checking) {
+					const active = this.app.workspace.getActiveFile();
+					const current = active ? this.index.fileClassNameOfNote(active.path) : undefined;
+					// The class of the note in front of you when it is a class note — you are looking at
+					// its schema, so it is the one you mean; otherwise ask.
+					if (current) void createNoteWithClass(this, { fileClass: current });
+					else
+						new ChoiceSuggestModal(
+							this.app,
+							[...this.index.fileClassNames].sort((a, b) => a.localeCompare(b)),
+							(n) => n,
+							(n) => void createNoteWithClass(this, { fileClass: n }),
+							"Create a note with which class?"
 						).open();
 				}
 				return true;

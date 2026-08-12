@@ -14,7 +14,8 @@ import { writeOptions } from "../schema/fileClassIo";
 import { buildOptionUpdates, EditableOptions } from "../schema/fileClassWrite";
 import { applyBaseSync, fileClassClaimingView } from "../views/baseSync";
 import { ClassScope, isBaseViewSynced } from "../views/baseYaml";
-import { BaseFileSuggest } from "./baseSuggest";
+import { BaseFileSuggest, NoteFileSuggest } from "./baseSuggest";
+import { FolderSuggest } from "./folderSuggest";
 import { openFileClassSchema } from "./fileClassSchemaModal";
 import { IconSuggest, paintIcon } from "./iconSuggest";
 import { MultiSelectModal } from "../fields/input/valueModals";
@@ -46,6 +47,8 @@ export class FileClassOptionsModal extends Modal {
 			extends: o.extends,
 			baseFile: o.baseFile,
 			baseView: o.baseView,
+			fileClassNotesFolder: o.fileClassNotesFolder,
+			fileClassNoteTemplate: o.fileClassNoteTemplate,
 			mapWithTag: o.mapWithTag,
 			tagNames: o.tagNames,
 			filesPaths: o.filesPaths,
@@ -154,6 +157,32 @@ export class FileClassOptionsModal extends Modal {
 		this.bindingPicker("Tag names", "tagNames", () => this.vaultTags());
 		this.bindingPicker("Files paths", "filesPaths", () => this.vaultFolders());
 		this.bindingPicker("Bookmark groups", "bookmarksGroups", () => this.bookmarkGroups());
+
+		new Setting(contentEl).setName("New notes").setHeading();
+		new Setting(contentEl)
+			.setName("Notes folder")
+			.setDesc(
+				"Where a note created with this class goes. Blank falls back to its single bound folder, " +
+					"then to Obsidian's default for new notes."
+			)
+			.addText((t) => {
+				t.setValue(this.opts.fileClassNotesFolder ?? "").onChange((v) => {
+					this.opts.fileClassNotesFolder = v;
+				});
+				new FolderSuggest(this.app, t.inputEl);
+			});
+		new Setting(contentEl)
+			.setName("Note template")
+			.setDesc(
+				"Applied before the fields are written, so a template's own frontmatter merges rather " +
+					"than duplicating. Leave blank if a Templater folder template already covers the folder."
+			)
+			.addText((t) => {
+				t.setValue(this.opts.fileClassNoteTemplate ?? "").onChange((v) => {
+					this.opts.fileClassNoteTemplate = v;
+				});
+				new NoteFileSuggest(this.app, t.inputEl);
+			});
 
 		new Setting(contentEl).setName("Sync to base").setHeading();
 		new Setting(contentEl)

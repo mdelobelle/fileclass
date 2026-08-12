@@ -14,7 +14,10 @@ import { Component, TFile, setIcon } from "obsidian";
 
 import type FileclassPlugin from "../../main";
 import { registerFileclassView } from "../engine/basesAdapter";
+import { createNoteWithClass } from "../commands/createNoteWithClass";
+import { Seed } from "../schema/newNote";
 import { fileClassClaimingView } from "./baseSync";
+import { reverseFieldOfView } from "./reverseView";
 import { EditContext, runControlAction } from "../fields/fieldActions";
 import { isInputSupported } from "../fields/support";
 import { hasAllowedValues, validateField } from "../fields/validate";
@@ -66,6 +69,9 @@ class FileclassTableView extends Component {
 	/** Our item in the base's toolbar, and the class it acts on (undefined = ask). */
 	private toolbarItem?: HTMLElement;
 	private toolbarClass?: string;
+	/** The "New <Class>" item beside it, and the class it creates (#84). */
+	private newItem?: HTMLElement;
+	private newClass?: string;
 	/**
 	 * Which rows the `valid` column is showing (#142).
 	 *
@@ -124,6 +130,8 @@ class FileclassTableView extends Component {
 		this.containerEl.empty();
 		this.toolbarItem?.remove();
 		this.toolbarItem = undefined;
+		this.newItem?.remove();
+		this.newItem = undefined;
 	}
 
 	// Lifecycle stubs the controller may call.
@@ -204,6 +212,86 @@ class FileclassTableView extends Component {
 		return { file: resolved?.path ?? linkpath, viewName };
 	}
 
+	/**
+	 * "New Book", beside the wrench — the note this table cannot show because it does not exist yet.
+	 *
+	 * Only when the table is about **one** class: with several, there is nothing to create without
+	 * asking, and the command in the palette is where that question belongs.
+	 *
+	 * On a reverse-relation view read from an author's note it becomes "New Book with Frank Herbert"
+	 * and seeds the field the view filters on (#154 + #84): the row you are about to write already
+	 * has one value decided, and it is the one the table is about.
+	 */
+	private syncNewButton(toolbar: HTMLElement, only: string | undefined): void {
+		if (!only) {
+			this.newItem?.remove();
+			this.newItem = undefined;
+			return;
+		}
+		const seed = this.seedFor(only);
+		const label = seed ? seed.label : `New ${only}`;
+
+		if (!this.newItem?.isConnected) {
+			this.newItem?.remove();
+			const item = toolbar.createDiv({ cls: "bases-toolbar-item fileclass-toolbar-new" });
+			const button = item.createDiv({ cls: "text-icon-button" });
+			button.tabIndex = 0;
+			setIcon(button.createSpan({ cls: "text-button-icon" }), "file-plus-2");
+			button.createSpan({ cls: "text-button-label" });
+			const create = (e: Event): void => {
+				e.preventDefault();
+				const fileClass = this.newClass;
+				if (fileClass) void createNoteWithClass(this.plugin, { fileClass, seed: this.seedFor(fileClass) });
+			};
+			button.addEventListener("click", create);
+			button.addEventListener("keydown", (e) => {
+				if (e.key === "Enter" || e.key === " ") create(e);
+			});
+			this.newItem = item;
+		}
+		this.newClass = only;
+		const labelEl = this.newItem.querySelector(".text-button-label");
+		if (labelEl?.textContent !== label) labelEl?.setText(label);
+		this.newItem.setAttribute(
+			"aria-label",
+			seed
+				? `Fileclass: create a ${only} already linked to ${seed.label.replace(/^.*?with /, "")}`
+				: `Fileclass: create a note with the ${only} class`
+		);
+	}
+
+	/**
+	 * The value a new row would already have, when this table is a reverse relation.
+	 *
+	 * The view's name is this plugin's own convention, so it is inverted rather than parsed; the host
+	 * is the note whose editor holds this embed, found by containment rather than by "the active
+	 * file", which is a different note as soon as there are two panes.
+	 */
+	private seedFor(fileClass: string): Seed | undefined {
+		const claimed = this.viewIdentity();
+		if (!claimed) return undefined;
+		const fields = this.plugin.index
+			.getResolvedFields(fileClass)
+			.filter((f) => isRootField(f))
+			.map((f) => f.name);
+		const field = reverseFieldOfView(fileClass, claimed.viewName, fields);
+		if (!field) return undefined;
+		const host = this.hostNote();
+		if (!host) return undefined;
+		return { field, linkTo: host.path, label: `New ${fileClass} with ${host.basename}` };
+	}
+
+	/** The note holding this embed, if this table is embedded in one. */
+	private hostNote(): TFile | null {
+		let found: TFile | null = null;
+		this.plugin.app.workspace.iterateAllLeaves((leaf) => {
+			const view = leaf.view as { file?: TFile; containerEl?: HTMLElement };
+			if (found || !view?.file || !view.containerEl) return;
+			if (view.containerEl.contains(this.containerEl)) found = view.file;
+		});
+		return found;
+	}
+
 	/** The view the toolbar of this render says it is showing. */
 	private toolbarViewName(): string | undefined {
 		const scope = this.containerEl.closest(".bases-embed, .block-language-base, .view-content");
@@ -265,6 +353,7 @@ class FileclassTableView extends Component {
 			});
 			this.toolbarItem = item;
 		}
+		this.syncNewButton(toolbar, only);
 		this.toolbarClass = only;
 		const labelEl = this.toolbarItem.querySelector(".text-button-label");
 		if (labelEl?.textContent !== label) labelEl?.setText(label);

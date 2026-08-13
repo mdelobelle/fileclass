@@ -160,8 +160,39 @@ export function mirrorOrder(fieldNames: string[]): string[] {
 }
 
 /**
- * True when the base's managed view (`viewName`) already mirrors the fields —
- * i.e. it exists, is a table, and its `order` equals `file.name` + the fields.
+ * The columns a sync must leave alone: `formula.*` and `file.*`.
+ *
+ * A reader adds `formula.Editions` or `file.mtime` to a managed view, and a sync that rebuilt the
+ * order from the fields alone deleted it every time (reported). These two families are safe to keep
+ * because they **cannot be a field column**: a field's column is a bare property name or `note.<name>`,
+ * never prefixed `formula.` or `file.`.
+ *
+ * A bare column over a property no class declares is *not* kept, and that is deliberate: it is
+ * indistinguishable from the ghost of a field the class dropped, and resurrecting those forever is
+ * worse than dropping one somebody added by hand. The mirror stays bijective over property columns —
+ * which is what makes removing a field from a class actually remove its column.
+ */
+export function keptColumns(order: readonly unknown[], fieldNames: readonly string[]): string[] {
+	void fieldNames; // the rule is about the prefix, not about which fields exist
+	return order.filter(
+		(c): c is string => typeof c === "string" && (c.startsWith("formula.") || (c.startsWith("file.") && c !== "file.name"))
+	);
+}
+
+/**
+ * The order a managed view should have: ours, then whatever the reader added.
+ *
+ * The fields stay in the class's order — that is what "mirrors the fileClass" means, and it is the
+ * one thing a sync is for. The extras keep their relative order and sit after them: a stable place
+ * rather than a guessed one, so the next sync moves nothing.
+ */
+export function mirrorOrderKeeping(fieldNames: string[], existing: readonly unknown[]): string[] {
+	return [...mirrorOrder(fieldNames), ...keptColumns(existing, fieldNames)];
+}
+
+/**
+ * True when the base's managed view (`viewName`) already mirrors the fields — it exists, is a table,
+ * and its `order` is `file.name` + the fields, followed by whatever columns the reader added.
  * Used to report the sync status without writing.
  */
 export function isBaseViewSynced(
@@ -184,7 +215,7 @@ export function isBaseViewSynced(
 	) {
 		return false;
 	}
-	const desired = mirrorOrder(fieldNames);
+	const desired = mirrorOrderKeeping(fieldNames, view.order);
 	return view.order.length === desired.length && view.order.every((v, i) => v === desired[i]);
 }
 
@@ -209,12 +240,11 @@ export function mirrorBaseView(
 	const b = base as BaseObject;
 	if (!Array.isArray(b?.views)) return false; // malformed; the generator owns creation
 	const views = b.views as BaseView[];
-	const desired = mirrorOrder(fieldNames);
 	const filters = fileClassViewFilter(scope);
 
 	const view = views.find((v) => isManagedTable(v, viewName));
 	if (!view) {
-		views.push({ type: FILECLASS_TABLE_VIEW, name: viewName, filters, order: desired });
+		views.push({ type: FILECLASS_TABLE_VIEW, name: viewName, filters, order: mirrorOrder(fieldNames) });
 		return true;
 	}
 	let changed = false;
@@ -226,6 +256,8 @@ export function mirrorBaseView(
 		changed = true;
 	}
 	const current = Array.isArray(view.order) ? view.order : [];
+	// Computed from what is there, so a column the reader added survives every sync.
+	const desired = mirrorOrderKeeping(fieldNames, current);
 	if (current.length !== desired.length || current.some((v, i) => v !== desired[i])) {
 		view.order = desired;
 		changed = true;

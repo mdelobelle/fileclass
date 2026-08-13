@@ -42,11 +42,16 @@ All notable changes to Fileclass are documented here. The format follows
 
 ### Changed
 
-- **A sync keeps the columns you added to a managed view.** It set the order to `file.name` + the
-  class's fields and deleted everything else, so a `formula.Editions` column had to be re-added after
-  every sync. Those and `file.*` columns are now kept, after the fields. A bare column over a property
-  no class declares is still removed: nothing can tell it apart from the leftover of a field the class
-  used to have, and that same rule is what makes removing a field remove its column.
+- **A sync keeps the columns you added to a managed view, and leaves them where they are.** It set the
+  order to `file.name` + the class's fields and deleted everything else, so a `formula.Editions` had to
+  be re-added after every sync. Now every `file.*` and `formula.*` column stays in the slot it
+  occupies — a `formula.Room` sitting third stays third, `file.name` stays wherever you put it — and
+  only the remaining slots are refilled with the class's fields, in the class's order. Fields the view
+  had no room for are appended; a second sync moves nothing.
+
+  A bare column over a property no class declares is still removed: nothing can tell it apart from the
+  leftover of a field the class used to have, and that same rule is what makes removing a field remove
+  its column.
 
 - **A single value written as a scalar is no longer flagged, unless it costs something.** `themes:
   Ecology` instead of `themes: [Ecology]` was reported as invalid for every list type, which is a lot

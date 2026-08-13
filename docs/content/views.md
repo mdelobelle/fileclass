@@ -142,11 +142,15 @@ onto it.
 Links in cells behave like links anywhere: click to open, and **hover for the page
 preview** (with Ctrl/Cmd held, if that is how you have the Page preview plugin set up).
 
-**Columns you added are kept.** A sync sets the managed view's columns to `file.name` +
-the class's fields, in the class's order — and leaves any `formula.*` or `file.*` column
-you put there, after them. A bare column over a property no class declares is still
-removed, because nothing can tell it apart from the leftover of a field the class used to
-have; that is also what makes removing a field remove its column.
+**Columns you added stay where you put them.** A sync brings the *field* columns back to
+the class's order — that is what it is for — and does not touch the others: every
+`formula.*` and `file.*` column keeps its position, so a formula sitting third stays
+third and `file.name` stays wherever you moved it. Only the slots holding fields are
+refilled, fields the view had no room for are appended, and a second sync moves nothing.
+
+A bare column over a property no class declares is still removed, because nothing can
+tell it apart from the leftover of a field the class used to have — which is also what
+makes removing a field from a class remove its column.
 
 > It renders all rows (no virtualization yet), so very large bases are better
 > viewed with a native `table` view.

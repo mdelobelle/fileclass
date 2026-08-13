@@ -6,9 +6,8 @@ import {
 	fileClassViewFilter,
 	isBaseViewSynced,
 	isGeneratedScopeFilter,
-	keptColumns,
+	mergeOrder,
 	mirrorBaseView,
-	mirrorOrderKeeping,
 } from "../../src/views/baseYaml";
 
 /** The common case: a class its notes name in frontmatter, nothing else. */
@@ -334,32 +333,65 @@ describe("sync status notices a scope that moved", () => {
 	});
 });
 
-describe("columns a sync must not delete", () => {
-	it("keeps a formula column", () => {
-		// Reported: a sync rebuilt the order from the fields alone and dropped it every time.
-		expect(keptColumns(["file.name", "author", "formula.Editions"], ["author"])).toEqual([
-			"formula.Editions",
+describe("columns a sync must not move", () => {
+	it("keeps a formula column where the reader put it", () => {
+		// The reported bug: `file.name` was forced to the front and formulas pushed to the end, so a
+		// sync rearranged a table nobody had asked to rearrange.
+		expect(mergeOrder(["file.name", "author", "formula.Room", "pages"], ["author", "pages"])).toEqual([
+			"file.name",
+			"author",
+			"formula.Room",
+			"pages",
 		]);
 	});
 
-	it("keeps a file column other than the name", () => {
-		expect(keptColumns(["file.name", "file.mtime", "author"], ["author"])).toEqual(["file.mtime"]);
+	it("keeps file.name wherever it already sits", () => {
+		expect(mergeOrder(["author", "file.name", "pages"], ["author", "pages"])).toEqual([
+			"author",
+			"file.name",
+			"pages",
+		]);
 	});
 
-	it("drops a bare column no field declares, on purpose", () => {
-		// It is indistinguishable from the ghost of a field the class removed, and resurrecting those
-		// forever is worse than dropping one somebody added by hand. This is what makes removing a
-		// field from a class actually remove its column.
-		expect(keptColumns(["file.name", "author", "old"], ["author"])).toEqual([]);
+	it("puts the fields back in the class's order, in the slots that are left", () => {
+		expect(mergeOrder(["file.name", "pages", "formula.X", "author"], ["author", "pages"])).toEqual([
+			"file.name",
+			"author",
+			"formula.X",
+			"pages",
+		]);
 	});
 
-	it("puts ours first and the reader's after, so the next sync moves nothing", () => {
-		const once = mirrorOrderKeeping(["author", "pages"], ["file.name", "formula.X", "author"]);
-		expect(once).toEqual(["file.name", "author", "pages", "formula.X"]);
-		expect(mirrorOrderKeeping(["author", "pages"], once)).toEqual(once);
+	it("appends a field the view had no slot for", () => {
+		expect(mergeOrder(["file.name", "author", "formula.X"], ["author", "pages"])).toEqual([
+			"file.name",
+			"author",
+			"formula.X",
+			"pages",
+		]);
+	});
+
+	it("closes the slots a shorter class leaves behind, keeping the extras", () => {
+		expect(mergeOrder(["file.name", "author", "formula.X", "pages", "old"], ["author"])).toEqual([
+			"file.name",
+			"author",
+			"formula.X",
+		]);
+	});
+
+	it("adds file.name only when the order does not mention it", () => {
+		expect(mergeOrder(["author"], ["author"])).toEqual(["file.name", "author"]);
+	});
+
+	it("is idempotent — the second sync moves nothing", () => {
+		const once = mergeOrder(["file.name", "pages", "formula.X", "author"], ["author", "pages"]);
+		expect(mergeOrder(once, ["author", "pages"])).toEqual(once);
 	});
 
 	it("survives an order holding things that are not strings", () => {
-		expect(keptColumns(["file.name", null, 3, { a: 1 }, "formula.Y"], [])).toEqual(["formula.Y"]);
+		expect(mergeOrder(["file.name", null, 3, { a: 1 }, "formula.Y"], [])).toEqual([
+			"file.name",
+			"formula.Y",
+		]);
 	});
 });

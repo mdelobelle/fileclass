@@ -64,6 +64,15 @@ class FileclassTableView extends Component {
 	/** Set by the controller before `onDataUpdated()`. */
 	data?: BasesDatasetLike;
 
+	/**
+	 * Where Obsidian parks the hover preview it opens for one of our links.
+	 *
+	 * A `hover-link` handler names a **hover parent**, and Obsidian stores the popover on it so it can
+	 * close it when that parent goes away. Declaring the field makes this view a real parent rather
+	 * than an object the API writes an unexpected property onto.
+	 */
+	hoverPopover: unknown = null;
+
 	/** Per-render display deps, keyed by note path (#156). Cleared on every render. */
 	private readonly deps = new Map<string, DisplayDeps>();
 	/** Our item in the base's toolbar, and the class it acts on (undefined = ask). */
@@ -551,6 +560,22 @@ class FileclassTableView extends Component {
 			e.preventDefault();
 			e.stopPropagation();
 			void this.plugin.app.workspace.openLinkText(linktext, sourcePath, e.ctrlKey || e.metaKey);
+		});
+
+		// The hover preview is Obsidian's, but it does not watch the DOM for links a plugin drew: the
+		// Page preview plugin listens for a `hover-link` event and shows the popover itself, honouring
+		// its own setting (hover, or Ctrl/Cmd + hover). Without this, a link in a cell was the only
+		// link in the app that showed nothing.
+		a.addEventListener("mouseover", (event) => {
+			this.plugin.app.workspace.trigger("hover-link", {
+				event,
+				// The source names who is asking, and Page preview keys its per-source setting on it.
+				source: "fileclass-table",
+				hoverParent: this,
+				targetEl: a,
+				linktext,
+				sourcePath,
+			});
 		});
 	}
 

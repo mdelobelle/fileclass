@@ -34,7 +34,19 @@ All notable changes to Fileclass are documented here. The format follows
   one, so a vault configured then keeps working; saving the class through its options rewrites it as a
   list and clears the old keys, so a vault never carries two answers to the same question.
 
+### Added
+
+- **A link in a table cell shows its page preview on hover** (with Ctrl/Cmd, if that is how the Page
+  preview plugin is set). Obsidian does not watch the DOM for links a plugin drew — it listens for a
+  `hover-link` event — so a link in a cell was the only link in the app that showed nothing.
+
 ### Changed
+
+- **A sync keeps the columns you added to a managed view.** It set the order to `file.name` + the
+  class's fields and deleted everything else, so a `formula.Editions` column had to be re-added after
+  every sync. Those and `file.*` columns are now kept, after the fields. A bare column over a property
+  no class declares is still removed: nothing can tell it apart from the leftover of a field the class
+  used to have, and that same rule is what makes removing a field remove its column.
 
 - **A single value written as a scalar is no longer flagged, unless it costs something.** `themes:
   Ecology` instead of `themes: [Ecology]` was reported as invalid for every list type, which is a lot

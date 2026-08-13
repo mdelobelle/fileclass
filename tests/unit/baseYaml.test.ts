@@ -6,7 +6,9 @@ import {
 	fileClassViewFilter,
 	isBaseViewSynced,
 	isGeneratedScopeFilter,
+	keptColumns,
 	mirrorBaseView,
+	mirrorOrderKeeping,
 } from "../../src/views/baseYaml";
 
 /** The common case: a class its notes name in frontmatter, nothing else. */
@@ -329,5 +331,35 @@ describe("sync status notices a scope that moved", () => {
 	it("never calls a hand-edited filter out of sync", () => {
 		const b = base({ and: ['fileClass == "Author"', 'language != "German"'] });
 		expect(isBaseViewSynced(b, "Author", ["language"], mapped)).toBe(true);
+	});
+});
+
+describe("columns a sync must not delete", () => {
+	it("keeps a formula column", () => {
+		// Reported: a sync rebuilt the order from the fields alone and dropped it every time.
+		expect(keptColumns(["file.name", "author", "formula.Editions"], ["author"])).toEqual([
+			"formula.Editions",
+		]);
+	});
+
+	it("keeps a file column other than the name", () => {
+		expect(keptColumns(["file.name", "file.mtime", "author"], ["author"])).toEqual(["file.mtime"]);
+	});
+
+	it("drops a bare column no field declares, on purpose", () => {
+		// It is indistinguishable from the ghost of a field the class removed, and resurrecting those
+		// forever is worse than dropping one somebody added by hand. This is what makes removing a
+		// field from a class actually remove its column.
+		expect(keptColumns(["file.name", "author", "old"], ["author"])).toEqual([]);
+	});
+
+	it("puts ours first and the reader's after, so the next sync moves nothing", () => {
+		const once = mirrorOrderKeeping(["author", "pages"], ["file.name", "formula.X", "author"]);
+		expect(once).toEqual(["file.name", "author", "pages", "formula.X"]);
+		expect(mirrorOrderKeeping(["author", "pages"], once)).toEqual(once);
+	});
+
+	it("survives an order holding things that are not strings", () => {
+		expect(keptColumns(["file.name", null, 3, { a: 1 }, "formula.Y"], [])).toEqual(["formula.Y"]);
 	});
 });

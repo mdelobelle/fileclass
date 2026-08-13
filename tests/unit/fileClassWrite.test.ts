@@ -77,8 +77,9 @@ describe("buildOptionUpdates", () => {
 			extends: null,
 			baseFile: null,
 			baseView: null,
-			// Unset new-note options are nulled like every other blank, so a class note never keeps
-			// a key the modal cleared (#84).
+			// The destinations list, and the single pair 0.2.13 wrote cleared on save — a class read
+			// from the old spelling is rewritten in the new one, rather than keeping both.
+			newNotes: null,
 			fileClassNotesFolder: null,
 			fileClassNoteTemplate: null,
 			mapWithTag: true,

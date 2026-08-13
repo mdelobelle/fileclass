@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 
-import { noteFolder, safeFileName, seedWins, uniquePath } from "../../src/schema/newNote";
+import {
+	destinationLabel,
+	noteDestinations,
+	noteFolder,
+	safeFileName,
+	seedWins,
+	uniquePath,
+} from "../../src/schema/newNote";
 
 describe("where a new note goes", () => {
 	it("uses the class's own folder when it declares one", () => {
@@ -86,5 +93,81 @@ describe("what a seed overrides", () => {
 
 	it("is not consulted when there is no seed", () => {
 		expect(seedWins("x", undefined, "author")).toBe(false);
+	});
+});
+
+describe("the destinations a class offers", () => {
+	it("reads the list it declares", () => {
+		expect(
+			noteDestinations({
+				newNotes: [
+					{ folder: "1_People/Contacts", template: "Templates/Person pro.md" },
+					{ folder: "2_Artists", template: "Templates/Person artist.md" },
+				],
+			})
+		).toHaveLength(2);
+	});
+
+	it("drops an entry that names neither a folder nor a template", () => {
+		expect(noteDestinations({ newNotes: [{}, { folder: "  " }, { template: "T.md" }] })).toEqual([
+			{ folder: undefined, template: "T.md" },
+		]);
+	});
+
+	it("still reads the single pair 0.2.13 wrote, as a list of one", () => {
+		// A vault configured then keeps working; the options editor writes the list, so the first
+		// save through it leaves the old pair behind.
+		expect(
+			noteDestinations({ fileClassNotesFolder: "People", fileClassNoteTemplate: "T.md" })
+		).toEqual([{ folder: "People", template: "T.md" }]);
+	});
+
+	it("prefers the list when a vault carries both", () => {
+		expect(
+			noteDestinations({
+				newNotes: [{ folder: "New" }],
+				fileClassNotesFolder: "Old",
+			})
+		).toEqual([{ folder: "New", template: undefined }]);
+	});
+
+	it("offers nothing when the class says nothing", () => {
+		expect(noteDestinations({})).toEqual([]);
+		expect(noteDestinations({ filesPaths: ["Library"] })).toEqual([]);
+	});
+});
+
+describe("how a destination names itself", () => {
+	it("uses the last segment of each path, not the path", () => {
+		// A row reading `1_People/Contacts › 3_Templater/Templates/Person pro.md` spends its width on
+		// the part that distinguishes nothing.
+		expect(
+			destinationLabel({ folder: "1_People/Contacts", template: "3_Templater/Templates/Person pro.md" })
+		).toBe("Contacts › Person pro");
+	});
+
+	it("says which folder when there is no template", () => {
+		expect(destinationLabel({ folder: "2_Artists" })).toBe("2_Artists");
+	});
+
+	it("names the default folder when only a template is given", () => {
+		expect(destinationLabel({ template: "Templates/Person.md" })).toBe("the default folder › Person");
+	});
+
+	it("falls back when it holds nothing", () => {
+		expect(destinationLabel({})).toBe("New note");
+	});
+});
+
+describe("the folder a chosen destination lands in", () => {
+	it("wins over everything else", () => {
+		expect(
+			noteFolder({ fileClassNotesFolder: "Old", filesPaths: ["Bound"] }, "Inbox", { folder: "Chosen" })
+		).toBe("Chosen");
+	});
+
+	it("falls back through the cascade when the destination names no folder", () => {
+		// A destination may be a template alone — "same folder as always, different starting point".
+		expect(noteFolder({ filesPaths: ["Bound"] }, "Inbox", { template: "T.md" })).toBe("Bound");
 	});
 });

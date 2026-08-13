@@ -14,8 +14,9 @@ import { writeOptions } from "../schema/fileClassIo";
 import { buildOptionUpdates, EditableOptions } from "../schema/fileClassWrite";
 import { applyBaseSync, fileClassClaimingView } from "../views/baseSync";
 import { ClassScope, isBaseViewSynced } from "../views/baseYaml";
-import { BaseFileSuggest, NoteFileSuggest } from "./baseSuggest";
-import { FolderSuggest } from "./folderSuggest";
+import { BaseFileSuggest } from "./baseSuggest";
+import { confirmRemoveDestination, editNoteDestination } from "./noteDestinationModal";
+import { destinationLabel, noteDestinations } from "../schema/newNote";
 import { openFileClassSchema } from "./fileClassSchemaModal";
 import { IconSuggest, paintIcon } from "./iconSuggest";
 import { MultiSelectModal } from "../fields/input/valueModals";
@@ -47,8 +48,9 @@ export class FileClassOptionsModal extends Modal {
 			extends: o.extends,
 			baseFile: o.baseFile,
 			baseView: o.baseView,
-			fileClassNotesFolder: o.fileClassNotesFolder,
-			fileClassNoteTemplate: o.fileClassNoteTemplate,
+			// Read from either spelling, written as the list: opening and saving a class configured
+			// with 0.2.13's single pair migrates it, without a second way to configure being kept.
+			newNotes: noteDestinations(o),
 			mapWithTag: o.mapWithTag,
 			tagNames: o.tagNames,
 			filesPaths: o.filesPaths,
@@ -159,30 +161,7 @@ export class FileClassOptionsModal extends Modal {
 		this.bindingPicker("Bookmark groups", "bookmarksGroups", () => this.bookmarkGroups());
 
 		new Setting(contentEl).setName("New notes").setHeading();
-		new Setting(contentEl)
-			.setName("Notes folder")
-			.setDesc(
-				"Where a note created with this class goes. Blank falls back to its single bound folder, " +
-					"then to Obsidian's default for new notes."
-			)
-			.addText((t) => {
-				t.setValue(this.opts.fileClassNotesFolder ?? "").onChange((v) => {
-					this.opts.fileClassNotesFolder = v;
-				});
-				new FolderSuggest(this.app, t.inputEl);
-			});
-		new Setting(contentEl)
-			.setName("Note template")
-			.setDesc(
-				"Applied before the fields are written, so a template's own frontmatter merges rather " +
-					"than duplicating. Leave blank if a Templater folder template already covers the folder."
-			)
-			.addText((t) => {
-				t.setValue(this.opts.fileClassNoteTemplate ?? "").onChange((v) => {
-					this.opts.fileClassNoteTemplate = v;
-				});
-				new NoteFileSuggest(this.app, t.inputEl);
-			});
+		this.destinationList(contentEl);
 
 		new Setting(contentEl).setName("Sync to base").setHeading();
 		new Setting(contentEl)
@@ -399,6 +378,73 @@ export class FileClassOptionsModal extends Modal {
 	 * renamed, a tag can fall out of use for a week, and dropping the binding on sight would
 	 * quietly untype every note it reached.
 	 */
+	/**
+	 * The class's destinations, one row each, then an "Add new".
+	 *
+	 * Rows carry the **basenames** — `Contacts › Person (pro)` — because the folder and template
+	 * paths repeat a prefix that distinguishes nothing, and the part the reader chose is the last
+	 * segment. The full paths are one click away, in the editor that wrote them.
+	 */
+	private destinationList(container: HTMLElement): void {
+		const host = container.createDiv({ cls: "fileclass-destinations" });
+		const paint = (): void => {
+			host.empty();
+			const list = this.opts.newNotes ?? [];
+			if (!list.length) {
+				new Setting(host).setDesc(
+					"None yet. Without one, a new note goes to the class's single bound folder — or Obsidian's " +
+						"default — and starts from nothing but its schema."
+				);
+			}
+			list.forEach((destination, index) => {
+				const row = new Setting(host).setName(destinationLabel(destination));
+				// The paths, since the row deliberately shows neither.
+				row.setDesc(
+					[destination.folder, destination.template].filter(Boolean).join("  ·  ") || "no folder, no template"
+				);
+				row.addExtraButton((b) =>
+					b
+						.setIcon("pencil")
+						.setTooltip("Edit")
+						.onClick(() => {
+							void editNoteDestination(this.plugin, destination, true).then((edited) => {
+								if (!edited) return;
+								const next = [...(this.opts.newNotes ?? [])];
+								next[index] = edited;
+								this.opts.newNotes = next;
+								paint();
+								this.guard?.refresh();
+							});
+						})
+				);
+				row.addExtraButton((b) =>
+					b
+						.setIcon("trash-2")
+						.setTooltip("Remove")
+						.onClick(() => {
+							void confirmRemoveDestination(this.plugin, destinationLabel(destination)).then((yes) => {
+								if (!yes) return;
+								this.opts.newNotes = (this.opts.newNotes ?? []).filter((_, i) => i !== index);
+								paint();
+								this.guard?.refresh();
+							});
+						})
+				);
+			});
+			new Setting(host).addButton((b) =>
+				b.setButtonText("Add new").onClick(() => {
+					void editNoteDestination(this.plugin).then((added) => {
+						if (!added) return;
+						this.opts.newNotes = [...(this.opts.newNotes ?? []), added];
+						paint();
+						this.guard?.refresh();
+					});
+				})
+			);
+		};
+		paint();
+	}
+
 	private bindingPicker(
 		name: string,
 		key: "tagNames" | "filesPaths" | "bookmarksGroups",

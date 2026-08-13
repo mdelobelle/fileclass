@@ -185,10 +185,36 @@ A table shows every note of a class except the one you are about to write.
 note in the right folder, applies the class's template, writes the binding and every
 field, and opens the fields modal on it.
 
-**Where it lands** — the class's **Notes folder** if it declares one; otherwise the
-single folder it already binds through *Files paths* (a class bound to one folder has
-said where its notes live); otherwise Obsidian's default for new notes. With several
-bound folders, nothing is guessed and the default is used.
+### One class, several contexts
+
+A class often means the same schema in different situations. A `Person` met
+professionally starts from one template and lands in one folder; the same class for an
+artist starts from another and lands elsewhere. So a class keeps a **list of
+destinations**, each a name, a folder and a template:
+
+```yaml
+newNotes:
+  - name: Professional
+    folder: 1_People/Contacts
+    template: Templates/Person pro.md
+  - name: Artist
+    folder: 2_Artists
+    template: Templates/Person artist.md
+```
+
+Edit them in the class's **Options → New notes**: one row per destination, named, with
+its folder and template underneath, an *Edit* and a *Remove* (which asks first — the
+folder and the template themselves are never touched). **Add new** opens the same
+little modal used for editing.
+
+When you create a note, a class offering **several** asks which one first — *Which kind
+of Person?* — and a class offering **one** asks nothing at all and goes straight to the
+name.
+
+**Where it lands** — the chosen destination's folder; else the class's single folder
+bound through *Files paths* (a class bound to one folder has said where its notes live);
+else Obsidian's default for new notes. With several bound folders, nothing is guessed
+and the default is used.
 
 **The order matters, and it is the design.** The template is applied *first*, the
 fields *second*. The other way round gives two `---` blocks and broken YAML; this way

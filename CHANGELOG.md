@@ -6,6 +6,34 @@ All notable changes to Fileclass are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- **A class can offer several destinations for its new notes.** One folder and one template per class
+  could not express what a class usually means: a `Person` met professionally starts from one template
+  and lands in one folder, the same class for an artist starts from another and lands elsewhere. A
+  class now keeps a list, each entry with a **name**, a folder and a template:
+
+  ```yaml
+  newNotes:
+    - name: Professional
+      folder: 1_People/Contacts
+      template: Templates/Person pro.md
+    - name: Artist
+      folder: 2_Artists
+      template: Templates/Person artist.md
+  ```
+
+  **Options → New notes** lists them, one named row per destination showing its paths underneath,
+  with *Edit* and *Remove* (which asks first, and never touches the folder or the template
+  themselves). *Add new* opens the same modal as *Edit*.
+
+  Creating a note asks which destination **only when there is a choice** — with one, it goes straight
+  to the name.
+
+  0.2.13's single `fileClassNotesFolder`/`fileClassNoteTemplate` pair is still **read**, as a list of
+  one, so a vault configured then keeps working; saving the class through its options rewrites it as a
+  list and clears the old keys, so a vault never carries two answers to the same question.
+
 ### Changed
 
 - **A single value written as a scalar is no longer flagged, unless it costs something.** `themes:

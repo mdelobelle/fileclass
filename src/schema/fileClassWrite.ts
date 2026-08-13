@@ -4,6 +4,8 @@
  * key/values, preserving each field entry's unknown keys (D5). The Obsidian
  * write layer (fileClassIo.ts) applies these inside a single processFrontMatter.
  */
+import { NoteDestination } from "./newNote";
+
 
 /** A raw `fields[]` entry; extra keys (options, command, display…) are kept. */
 export interface RawFieldEntry {
@@ -87,8 +89,8 @@ export interface EditableOptions {
 	extends?: string;
 	baseFile?: string;
 	baseView?: string;
-	fileClassNotesFolder?: string;
-	fileClassNoteTemplate?: string;
+	/** The destinations for new notes (#84 follow-up); supersedes the two keys 0.2.13 wrote. */
+	newNotes?: NoteDestination[];
 	mapWithTag?: boolean;
 	tagNames?: string[];
 	filesPaths?: string[];
@@ -108,8 +110,11 @@ export function buildOptionUpdates(o: EditableOptions): Record<string, unknown> 
 		extends: o.extends?.trim() ? o.extends.trim() : null,
 		baseFile: o.baseFile?.trim() ? o.baseFile.trim() : null,
 		baseView: o.baseView?.trim() ? o.baseView.trim() : null,
-		fileClassNotesFolder: o.fileClassNotesFolder?.trim() ? o.fileClassNotesFolder.trim() : null,
-		fileClassNoteTemplate: o.fileClassNoteTemplate?.trim() ? o.fileClassNoteTemplate.trim() : null,
+		newNotes: o.newNotes?.length ? o.newNotes : null,
+		// Cleared on save: a class that used 0.2.13's single pair has just had it read into the list
+		// above, and leaving both would give a vault two answers to the same question.
+		fileClassNotesFolder: null,
+		fileClassNoteTemplate: null,
 		mapWithTag: !!o.mapWithTag,
 		tagNames: list(o.tagNames),
 		filesPaths: list(o.filesPaths),

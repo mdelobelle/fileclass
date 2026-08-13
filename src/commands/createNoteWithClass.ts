@@ -21,9 +21,18 @@ import { Modal, Notice, Setting, TFile, normalizePath } from "obsidian";
 import type FileclassPlugin from "../../main";
 import { applyTemplate } from "../engine/templateAdapter";
 import { logEvent } from "../log/schemaLog";
+import { ChoiceSuggestModal } from "../fields/input/valueModals";
 import { missingRootFields } from "../fields/missingFields";
 import { defaultValueFor } from "../fields/support";
-import { Seed, noteFolder, safeFileName, uniquePath } from "../schema/newNote";
+import {
+	NoteDestination,
+	Seed,
+	destinationLabel,
+	noteDestinations,
+	noteFolder,
+	safeFileName,
+	uniquePath,
+} from "../schema/newNote";
 import { modalTitle } from "../ui/modalTitle";
 import { NoteFieldsModal } from "../ui/noteFieldsModal";
 
@@ -43,6 +52,39 @@ function obsidianDefaultFolder(plugin: FileclassPlugin): string {
 	// "folder" is the only mode with a path of its own; "current" and "root" resolve elsewhere and
 	// the vault root is the honest answer for both here.
 	return mode === "folder" && typeof folder === "string" ? folder : "";
+}
+
+/** Asks which of the class's destinations to use; undefined when the reader closed the picker. */
+function pickDestination(
+	plugin: FileclassPlugin,
+	fileClass: string,
+	destinations: readonly NoteDestination[]
+): Promise<NoteDestination | undefined> {
+	return new Promise((resolve) => {
+		let chosen = false;
+		const modal = new ChoiceSuggestModal<NoteDestination>(
+			plugin.app,
+			[...destinations],
+			(d) => destinationLabel(d),
+			(d) => {
+				chosen = true;
+				resolve(d);
+			},
+			`Which kind of ${fileClass}?`
+		);
+		const close = modal.onClose?.bind(modal);
+		modal.onClose = () => {
+			close?.();
+			// Deferred by a tick: a SuggestModal **closes before** it calls its choose handler, so
+			// concluding "cancelled" here would beat the choice by a fraction of a turn — measured, the
+			// picker took the answer and the flow stopped dead. The input suggesters guard the same
+			// ordering with their own one-turn flag (`justChose` in baseSuggest.ts).
+			window.setTimeout(() => {
+				if (!chosen) resolve(undefined);
+			}, 0);
+		};
+		modal.open();
+	});
 }
 
 /**
@@ -111,10 +153,22 @@ export async function createNoteWithClass(
 		return null;
 	}
 
+	// Which context, when the class offers several: asked **before** the name, because it decides
+	// where the note lands and what it starts from — answering "what is it called" first would be
+	// answering the smaller question first.
+	const destinations = noteDestinations(parsed.options);
+	let destination: NoteDestination | undefined;
+	if (destinations.length > 1) {
+		destination = await pickDestination(plugin, req.fileClass, destinations);
+		if (!destination) return null;
+	} else {
+		destination = destinations[0];
+	}
+
 	const typed = await askName(plugin, req.fileClass);
 	if (typed === null) return null;
 
-	const folder = noteFolder(parsed.options, obsidianDefaultFolder(plugin));
+	const folder = noteFolder(parsed.options, obsidianDefaultFolder(plugin), destination);
 	const path = uniquePath(folder, safeFileName(typed, req.fileClass), (p) => !!app.vault.getAbstractFileByPath(p));
 
 	if (folder && !app.vault.getAbstractFileByPath(folder)) {
@@ -130,7 +184,7 @@ export async function createNoteWithClass(
 	}
 
 	// 2. the template, before any frontmatter of ours exists to collide with.
-	const template = parsed.options.fileClassNoteTemplate?.trim();
+	const template = destination?.template?.trim();
 	if (template) await applyTemplate(app, normalizePath(template), file);
 
 	// Templater may have renamed the file out from under us (`tp.file.rename()`); the template wins,
@@ -150,7 +204,11 @@ export async function createNoteWithClass(
 	// visible here rather than spread across three calls.
 	const seed = req.seed;
 	const seedValue = seed ? resolveSeedValue(plugin, seed, target) : "";
-	const fields = plugin.index.getFields(target);
+	// The **class's** resolved fields, not the note's. `getFields(note)` asks which classes the note
+	// carries, which it answers from the metadata cache — empty for a note created a moment ago, so
+	// nothing was inserted at all (measured: a note arrived with its template's frontmatter and none
+	// of its schema). We know the class: it is what was asked for.
+	const fields = plugin.index.getResolvedFields(req.fileClass);
 	await app.fileManager.processFrontMatter(target, (fm: Record<string, unknown>) => {
 		const has = (name: string): boolean => Object.prototype.hasOwnProperty.call(fm, name);
 		const alias = plugin.settings.fileClassAlias;

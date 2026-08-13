@@ -5,12 +5,81 @@
  * creating, templating and frontmatter writing is `createNoteWithClass.ts`.
  */
 
+/**
+ * One way to create a note of this class: where it goes, and what it starts from.
+ *
+ * A class often has **several**. A `Person` met professionally starts from one template and lands in
+ * one folder; the same class for an artist starts from another and lands elsewhere — same schema,
+ * same fields, two contexts. One folder and one template per class could not say that.
+ */
+export interface NoteDestination {
+	/**
+	 * What the reader calls this context — `Professional`, `Artist`.
+	 *
+	 * A name rather than a description of the paths: the two folders may be siblings and the two
+	 * templates near-homonyms, and only the author knows which one *means* what. Optional, because an
+	 * entry written by hand or read from 0.2.13's single pair has none, and a list still has to read.
+	 */
+	name?: string;
+	folder?: string;
+	template?: string;
+}
+
 /** What a class says about where its notes live. */
 export interface NoteTargetOptions {
-	/** The explicit target folder, when the class declares one. */
+	/** The destinations the class offers, in the order they were declared. */
+	newNotes?: readonly NoteDestination[];
+	/** 0.2.13's single folder — read when `newNotes` is absent (see `noteDestinations`). */
 	fileClassNotesFolder?: string;
+	/** 0.2.13's single template, same story. */
+	fileClassNoteTemplate?: string;
 	/** The folders the class binds notes from — used when it declares exactly one. */
 	filesPaths?: readonly string[];
+}
+
+/**
+ * The destinations a class offers, from either spelling.
+ *
+ * 0.2.13 wrote a single `fileClassNotesFolder` + `fileClassNoteTemplate`; a vault configured then
+ * keeps working, read as a list of one. The options editor writes the list, so the first save through
+ * it leaves the old pair behind — the compatibility is a read, not a second way to configure.
+ */
+export function noteDestinations(options: NoteTargetOptions): NoteDestination[] {
+	const declared = (options.newNotes ?? [])
+		.map((d) => ({
+			name: d.name?.trim() || undefined,
+			folder: d.folder?.trim() || undefined,
+			template: d.template?.trim() || undefined,
+		}))
+		.filter((d) => d.folder || d.template);
+	if (declared.length) return declared;
+	const legacy = {
+		folder: options.fileClassNotesFolder?.trim() || undefined,
+		template: options.fileClassNoteTemplate?.trim() || undefined,
+	};
+	return legacy.folder || legacy.template ? [legacy] : [];
+}
+
+/**
+ * How a destination names itself in a list or a picker.
+ *
+ * **Its name when it has one** — that is what the field is for, and two sibling folders holding
+ * near-homonymous templates are told apart by intent, not by path. Failing that, the **basenames**:
+ * a row reading `1_People/Contacts › 3_Templater/Templates/Person pro.md` spends its width on the
+ * prefix that distinguishes nothing, where the last segment is what the reader chose. The full paths
+ * stay one line below, in the row's description.
+ */
+export function destinationLabel(destination: NoteDestination, fallback = "New note"): string {
+	const named = destination.name?.trim();
+	if (named) return named;
+	const last = (path?: string): string | undefined => {
+		const clean = path?.replace(/\/+$/, "").trim();
+		if (!clean) return undefined;
+		return clean.slice(clean.lastIndexOf("/") + 1).replace(/\.md$/, "");
+	};
+	const folder = last(destination.folder) ?? "the default folder";
+	const template = last(destination.template);
+	return template ? `${folder} › ${template}` : destination.folder ? folder : fallback;
 }
 
 /**
@@ -25,8 +94,12 @@ export interface NoteTargetOptions {
  * falls back to the vault's default rather than picking the first, which would be a coin toss
  * dressed up as a decision.
  */
-export function noteFolder(options: NoteTargetOptions, obsidianDefault: string): string {
-	const explicit = options.fileClassNotesFolder?.trim().replace(/\/+$/, "");
+export function noteFolder(
+	options: NoteTargetOptions,
+	obsidianDefault: string,
+	chosen?: NoteDestination
+): string {
+	const explicit = (chosen?.folder ?? options.fileClassNotesFolder)?.trim().replace(/\/+$/, "");
 	if (explicit) return explicit;
 	const bound = (options.filesPaths ?? []).map((p) => p.trim().replace(/\/+$/, "")).filter(Boolean);
 	if (bound.length === 1) return bound[0];

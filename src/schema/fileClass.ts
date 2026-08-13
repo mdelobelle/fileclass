@@ -6,6 +6,7 @@
  * never acted upon (§13 — no migration/audit tooling ships).
  */
 import { Field, parseRawField, RawField } from "./field";
+import { NoteDestination } from "./newNote";
 
 export interface FileClassOptions {
 	icon?: string;
@@ -19,6 +20,12 @@ export interface FileClassOptions {
 	fileClassNotesFolder?: string;
 	/** A template applied to a new note of this class, before its fields are written. */
 	fileClassNoteTemplate?: string;
+	/**
+	 * Where a new note of this class can go, and what it starts from — one entry per context
+	 * (a `Person` met professionally, the same class for an artist). Supersedes the two keys above,
+	 * which are still read when this is absent.
+	 */
+	newNotes: NoteDestination[];
 	/**
 	 * The views that list this class's notes for one of *their* notes — the other end of a link
 	 * field (#154, #84). Declared rather than inferred: the view is named by its author, and a
@@ -34,6 +41,25 @@ export interface FileClassOptions {
 	version?: string;
 	/** Preset display order of field ids. */
 	fieldsOrder: string[];
+}
+
+/** `newNotes` as written, keeping the entries that name a folder, a template, or both. */
+export function toNoteDestinations(value: unknown): NoteDestination[] {
+	if (!Array.isArray(value)) return [];
+	const out: NoteDestination[] = [];
+	for (const entry of value) {
+		if (!entry || typeof entry !== "object") continue;
+		const name = (entry as { name?: unknown }).name;
+		const folder = (entry as { folder?: unknown }).folder;
+		const template = (entry as { template?: unknown }).template;
+		const d: NoteDestination = {
+			name: typeof name === "string" && name.trim() ? name.trim() : undefined,
+			folder: typeof folder === "string" && folder.trim() ? folder.trim() : undefined,
+			template: typeof template === "string" && template.trim() ? template.trim() : undefined,
+		};
+		if (d.folder || d.template) out.push(d);
+	}
+	return out;
 }
 
 /** One declared reverse view: which field it reads backwards, and where it lives. */
@@ -125,6 +151,7 @@ export function parseFileClass(name: string, frontmatter: Frontmatter): ParsedFi
 		fileClassNoteTemplate:
 			typeof fm.fileClassNoteTemplate === "string" ? fm.fileClassNoteTemplate : undefined,
 		relatedViews: toRelatedViews(fm.relatedViews),
+		newNotes: toNoteDestinations(fm.newNotes),
 		filesPaths: toStringArray(fm.filesPaths),
 		bookmarksGroups: toStringArray(fm.bookmarksGroups),
 		version: typeof fm.version === "string" ? fm.version : fm.version != null ? String(fm.version) : undefined,

@@ -78,12 +78,25 @@ All notable changes to Fileclass are documented here. The format follows
   preview plugin is set). Obsidian does not watch the DOM for links a plugin drew — it listens for a
   `hover-link` event — so a link in a cell was the only link in the app that showed nothing.
 
+<<<<<<< HEAD
 - **A class's `relatedViews` row reads as relations, not as JSON.** The panel printed the raw list
   of objects in the warning colour Obsidian keeps for values nobody can interpret — the same
   treatment the `fields` row used to get, on the other row where that value is the subject. It now
   shows one line per relation, `author → Books › Book by author`, each opening that base on that
   view. A relation whose base is missing is struck through and says so on hover; nothing is
   repaired, as with any other broken declaration.
+=======
+- **A File or Media picker reaches every candidate, not the first hundred.** Obsidian's suggester
+  draws `limit` rows and says nothing about the rest — measured on a vault with 412 authors, the
+  picker offered 100 of them, and the missing 312 looked exactly like notes that do not exist. It
+  now draws a page at a time and adds the next when you reach the bottom, with `100 of 412 — scroll
+  for more` under the list while anything is held back. Typing still narrows first, and starts from
+  one page again.
+
+  `MultiFile` and `MultiMedia` never had this cap — they draw every candidate, and measured at
+  2000 options the modal opens in 179 ms and a keystroke in its filter costs 29 ms, so nothing
+  there needed changing.
+>>>>>>> main
 
 ### Changed
 

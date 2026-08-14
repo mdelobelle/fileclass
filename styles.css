@@ -1086,6 +1086,13 @@ input.fileclass-color-circle.is-custom::-webkit-color-swatch-wrapper {
 }
 /* Sticky "current group" bar overlaid on the top of the suggester results (#47).
    pointer-events:none so the row beneath it stays clickable. */
+.fileclass-suggest-count {
+	padding: var(--size-2-2) var(--size-4-3);
+	border-top: 1px solid var(--background-modifier-border);
+	color: var(--text-muted);
+	font-size: var(--font-ui-smaller);
+	text-align: center;
+}
 .fileclass-suggest-groupbar {
 	position: absolute;
 	left: 0;

@@ -18,6 +18,7 @@ import { makeStickyFooter } from "../../ui/modalFooter";
 import { modalTitle } from "../../ui/modalTitle";
 import { returnFocusTo } from "../../ui/listKeyboard";
 import { attachUnsavedGuard } from "../../ui/unsavedGuard";
+import { SUGGEST_PAGE, grownTo, shouldGrow, truncationLabel } from "../../ui/suggestPaging";
 
 import { DisplayGroup, groupLabel } from "../baseOrder";
 import { matchTemplate, parseTemplate, renderTemplate } from "../inputTemplate";
@@ -481,7 +482,15 @@ export class BooleanInputModal extends Modal {
 export class ChoiceSuggestModal<T> extends SuggestModal<T> {
 	private results: T[] = [];
 	private groupBar?: HTMLElement;
-	private readonly onScroll = () => this.updateGroupBar();
+	/** How many of the matches are on screen; grows as the reader reaches the bottom. */
+	private shown = SUGGEST_PAGE;
+	/** The query the current page count belongs to — a new query starts from one page. */
+	private lastQuery: string | null = null;
+	private countEl?: HTMLElement;
+	private readonly onScroll = () => {
+		this.updateGroupBar();
+		this.growIfAtBottom();
+	};
 
 	constructor(
 		app: App,
@@ -502,6 +511,8 @@ export class ChoiceSuggestModal<T> extends SuggestModal<T> {
 
 	onOpen(): void {
 		void super.onOpen();
+		// Listened to whatever the modal shows: the group bar needs it, and so does paging.
+		this.resultContainerEl.addEventListener("scroll", this.onScroll);
 		if (!this.groupOf) return;
 		// A sticky "current group" bar overlaid on the top of the scrolling
 		// results. Lives in the prompt (a sibling of the results), so it never
@@ -511,7 +522,6 @@ export class ChoiceSuggestModal<T> extends SuggestModal<T> {
 		prompt.addClass("fileclass-suggest-prompt"); // position: relative for the bar
 		this.groupBar = prompt.createDiv({ cls: "fileclass-suggest-groupbar" });
 		this.groupBar.hide();
-		this.resultContainerEl.addEventListener("scroll", this.onScroll);
 	}
 
 	onClose(): void {
@@ -522,9 +532,60 @@ export class ChoiceSuggestModal<T> extends SuggestModal<T> {
 	getSuggestions(query: string): T[] {
 		const q = query.toLowerCase();
 		this.results = this.choices.filter((c) => this.toText(c).toLowerCase().includes(q));
-		// renderSuggestion runs after this returns; refresh the bar once it has.
-		if (this.groupOf) window.setTimeout(() => this.updateGroupBar(), 0);
+		// A different query is a different list: back to the first page.
+		if (query !== this.lastQuery) {
+			this.lastQuery = query;
+			this.shown = SUGGEST_PAGE;
+		}
+		// `limit` is how many of these the modal draws — its default of 100 is what made a vault
+		// with 400 authors offer 100 of them, with nothing saying so. The full list is returned and
+		// paged instead, so scrolling reaches every candidate.
+		this.limit = this.shown;
+		// renderSuggestion runs after this returns; refresh the bar and the count once it has.
+		window.setTimeout(() => {
+			if (this.groupOf) this.updateGroupBar();
+			this.updateCount();
+		}, 0);
 		return this.results;
+	}
+
+	/**
+	 * Draws the next page when the reader reaches the end of this one.
+	 *
+	 * The alternative — drawing every candidate up front — costs a full re-render of thousands of
+	 * rows on **every keystroke**, since a suggester re-runs its search as you type. Paging keeps
+	 * the common case (type two letters, pick) as fast as it was, and makes the rare one (scroll
+	 * through everything) possible at all.
+	 */
+	private growIfAtBottom(): void {
+		const el = this.resultContainerEl;
+		if (!shouldGrow(el, this.shown, this.results.length)) return;
+		this.shown = grownTo(this.shown, this.results.length);
+		const at = el.scrollTop;
+		// The only public way to make a SuggestModal re-run its search is to say the input changed.
+		this.inputEl.dispatchEvent(new Event("input"));
+		// …which redraws from the top, so the reader is put back where they were reading.
+		el.scrollTop = at;
+	}
+
+	/**
+	 * "100 of 412" under the list, and nothing at all when everything is on screen.
+	 *
+	 * A silent truncation is the actual defect here: 100 rows out of 412 look exactly like a vault
+	 * that holds 100 notes, and the missing ones are indistinguishable from ones that don't exist.
+	 */
+	private updateCount(): void {
+		const label = truncationLabel(this.shown, this.results.length);
+		if (!label) {
+			this.countEl?.remove();
+			this.countEl = undefined;
+			return;
+		}
+		const prompt = this.resultContainerEl.parentElement;
+		if (!prompt) return;
+		if (!this.countEl || !this.countEl.isConnected)
+			this.countEl = prompt.createDiv({ cls: "fileclass-suggest-count" });
+		this.countEl.setText(label);
 	}
 
 	renderSuggestion(choice: T, el: HTMLElement): void {

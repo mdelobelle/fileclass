@@ -41,6 +41,10 @@ All notable changes to Fileclass are documented here. The format follows
   one of them can be the view a class declares. The class is now read from whichever answers first:
   the class that declared the view, then the class the **filter** names, then the classes of the rows.
 
+  A table about **several** classes keeps both buttons too: `fileClass.containsAny("Book", "Comic")`
+  cannot say which class a new note should be, so the buttons read *Manage fileClass* and *New note*
+  and ask once, offering only that table's classes.
+
   That fixes two reported cases the rows could not answer: an **empty** view showed no wrench at all
   (and kept the New button of the view before it, a leftover now cleared), and a view whose rows
   carried two classes — one note being both a Book and an Article — lost its New button and got a

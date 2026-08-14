@@ -154,17 +154,22 @@ function escapeForRegExp(source: string): string {
  */
 export function classesNamedInFilter(filters: unknown, alias: string): string[] {
 	const escaped = escapeForRegExp(alias);
-	const patterns = [
-		new RegExp(`${escaped}\\.containsAny\\(\\s*"([^"]+)"`, "g"),
-		new RegExp(`${escaped}\\s*==\\s*"([^"]+)"`, "g"),
-	];
+	// `containsAny` takes **several** names — `containsAny("Book", "Comic")` is one clause about two
+	// classes. Reading only the first said "this is a Book table", which would have put a wrong
+	// `New Book` on a table about both; the call's whole argument list is read.
+	const containsAny = new RegExp(`${escaped}\\.containsAny\\(([^)]*)\\)`, "g");
+	const equality = new RegExp(`${escaped}\\s*==\\s*"([^"]+)"`, "g");
+	const quoted = /"([^"]+)"/g;
 	const found = new Set<string>();
 	const walk = (node: unknown): void => {
 		if (typeof node === "string") {
-			for (const re of patterns) {
-				re.lastIndex = 0;
-				for (let m = re.exec(node); m; m = re.exec(node)) found.add(m[1]);
+			containsAny.lastIndex = 0;
+			for (let m = containsAny.exec(node); m; m = containsAny.exec(node)) {
+				quoted.lastIndex = 0;
+				for (let q = quoted.exec(m[1]); q; q = quoted.exec(m[1])) found.add(q[1]);
 			}
+			equality.lastIndex = 0;
+			for (let m = equality.exec(node); m; m = equality.exec(node)) found.add(m[1]);
 			return;
 		}
 		if (Array.isArray(node)) node.forEach(walk);

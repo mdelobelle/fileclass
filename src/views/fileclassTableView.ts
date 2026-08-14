@@ -10,11 +10,12 @@
  * as safe stubs. Everything else in the base (query, filters, other views) stays
  * native.
  */
-import { Component, TFile, parseYaml, setIcon } from "obsidian";
+import { Component, Notice, TFile, parseYaml, setIcon } from "obsidian";
 
 import type FileclassPlugin from "../../main";
 import { registerFileclassView } from "../engine/basesAdapter";
 import { createNoteWithClass } from "../commands/createNoteWithClass";
+import { ChoiceSuggestModal } from "../fields/input/valueModals";
 import { Seed } from "../schema/newNote";
 import { fileClassClaimingView } from "./baseSync";
 import { classesNamedInFilter } from "./baseYaml";
@@ -78,12 +79,12 @@ class FileclassTableView extends Component {
 	private readonly deps = new Map<string, DisplayDeps>();
 	/** Our item in the base's toolbar, and the class it acts on (undefined = ask). */
 	private toolbarItem?: HTMLElement;
-	private toolbarClass?: string;
-	/** The "New <Class>" item beside it, and the class it creates (#84). */
+	/** Every class this table is about — one, usually; several when its filter names several. */
+	private toolbarClasses: string[] = [];
+	/** The "New <Class>" item beside it (#84); which class it creates is `toolbarClasses`. */
 	private newItem?: HTMLElement;
-	private newClass?: string;
-	/** `base#view` → the class its filter names, or null when it names none. */
-	private readonly filterClassCache = new Map<string, string | null>();
+	/** `base#view` → the classes its filter names (empty when it names none). */
+	private readonly filterClassCache = new Map<string, string[]>();
 	/**
 	 * Which rows the `valid` column is showing (#142).
 	 *
@@ -234,14 +235,14 @@ class FileclassTableView extends Component {
 	 * and seeds the field the view filters on (#154 + #84): the row you are about to write already
 	 * has one value decided, and it is the one the table is about.
 	 */
-	private syncNewButton(toolbar: HTMLElement, only: string | undefined): void {
-		if (!only) {
+	private syncNewButton(toolbar: HTMLElement, only: string | undefined, count: number): void {
+		if (!only && count < 2) {
 			this.newItem?.remove();
 			this.newItem = undefined;
 			return;
 		}
-		const seed = this.seedFor(only);
-		const label = seed ? seed.label : `New ${only}`;
+		const seed = only ? this.seedFor(only) : undefined;
+		const label = seed ? seed.label : only ? `New ${only}` : "New note";
 
 		if (!this.newItem?.isConnected) {
 			this.newItem?.remove();
@@ -252,8 +253,11 @@ class FileclassTableView extends Component {
 			button.createSpan({ cls: "text-button-label" });
 			const create = (e: Event): void => {
 				e.preventDefault();
-				const fileClass = this.newClass;
-				if (fileClass) void createNoteWithClass(this.plugin, { fileClass, seed: this.seedFor(fileClass) });
+				// Same question, and only when there is one: a table about Books and Comics can still
+				// make a note — it just cannot know which kind without being told.
+				this.withClass((name) =>
+					void createNoteWithClass(this.plugin, { fileClass: name, seed: this.seedFor(name) })
+				);
 			};
 			button.addEventListener("click", create);
 			button.addEventListener("keydown", (e) => {
@@ -261,15 +265,41 @@ class FileclassTableView extends Component {
 			});
 			this.newItem = item;
 		}
-		this.newClass = only;
 		const labelEl = this.newItem.querySelector(".text-button-label");
 		if (labelEl?.textContent !== label) labelEl?.setText(label);
 		this.newItem.setAttribute(
 			"aria-label",
 			seed
 				? `Fileclass: create a ${only} already linked to ${seed.label.replace(/^.*?with /, "")}`
-				: `Fileclass: create a note with the ${only} class`
+				: only
+					? `Fileclass: create a note with the ${only} class`
+					: `Fileclass: create a note with one of this table's classes (${this.toolbarClasses.join(", ")})`
 		);
+	}
+
+	/**
+	 * Runs `use` with the class this table is about, asking when there is more than one.
+	 *
+	 * A table filtered on `containsAny("Book", "Comic")` is about both, and neither button should
+	 * vanish for it: the question "which one" is one click, where a missing button is a dead end.
+	 */
+	private withClass(use: (fileClass: string) => void): void {
+		const candidates = this.toolbarClasses;
+		if (candidates.length === 1) {
+			use(candidates[0]);
+			return;
+		}
+		if (!candidates.length) {
+			new Notice("Fileclass: this table is not about a class Fileclass knows.");
+			return;
+		}
+		new ChoiceSuggestModal(
+			this.plugin.app,
+			[...candidates].sort((a, b) => a.localeCompare(b)),
+			(n) => n,
+			(n) => use(n),
+			"Which fileClass?"
+		).open();
 	}
 
 	/**
@@ -310,16 +340,16 @@ class FileclassTableView extends Component {
 	 * and schedules the read; when it lands, the toolbar is drawn again with the answer. Cached per
 	 * view, since a filter changes far less often than a table redraws.
 	 */
-	private filterClass(view: { file: string; viewName: string }): string | undefined {
+	private filterClasses(view: { file: string; viewName: string }): string[] {
 		const key = `${view.file}#${view.viewName}`;
 		const cached = this.filterClassCache.get(key);
-		if (cached !== undefined) return cached ?? undefined;
+		if (cached !== undefined) return cached;
 		void this.readFilterClass(view, key);
-		return undefined;
+		return [];
 	}
 
 	private async readFilterClass(view: { file: string; viewName: string }, key: string): Promise<void> {
-		let answer: string | null = null;
+		let answer: string[] = [];
 		try {
 			const file = this.plugin.app.vault.getAbstractFileByPath(view.file);
 			if (file instanceof TFile) {
@@ -328,15 +358,14 @@ class FileclassTableView extends Component {
 				};
 				const views = Array.isArray(base.views) ? (base.views as { name?: string; filters?: unknown }[]) : [];
 				const target = views.find((v) => v?.name === view.viewName);
-				const named = classesNamedInFilter(target?.filters, this.plugin.settings.fileClassAlias)
+				// Every class the filter names — `containsAny("Book", "Comic")` is one clause about two,
+				// and a table about both keeps its buttons: they ask which class instead of vanishing.
+				answer = classesNamedInFilter(target?.filters, this.plugin.settings.fileClassAlias)
 					// A filter naming a class this vault does not have says nothing useful.
 					.filter((name) => this.plugin.index.fileClassNames.includes(name));
-				// Only when it names exactly one: two classes in one filter is a table about both, and
-				// "New Book" would be a guess.
-				answer = named.length === 1 ? named[0] : null;
 			}
 		} catch {
-			answer = null;
+			answer = [];
 		}
 		this.filterClassCache.set(key, answer);
 		// Draw the toolbar again now that there is an answer — the table itself has not changed.
@@ -383,12 +412,10 @@ class FileclassTableView extends Component {
 		// Reported: a view whose rows carried two classes (a note that is both a Book and an Article)
 		// fell straight to (3), lost its New button and got a generic wrench — while its filter said
 		// `fileClass.containsAny("Book")` in plain sight.
-		const owner =
-			(claimed && fileClassClaimingView(this.plugin, claimed.file, claimed.viewName)) ||
-			(claimed && this.filterClass(claimed)) ||
-			undefined;
-		const classes = new Set<string>(owner ? [owner] : []);
-		if (!owner) {
+		const declared = claimed && fileClassClaimingView(this.plugin, claimed.file, claimed.viewName);
+		const named = claimed ? this.filterClasses(claimed) : [];
+		const classes = new Set<string>(declared ? [declared] : named);
+		if (!classes.size) {
 			for (const entry of ds.data) {
 				for (const name of this.plugin.index.getFileClasses(entry.file)) classes.add(name);
 			}
@@ -414,7 +441,9 @@ class FileclassTableView extends Component {
 			button.createSpan({ cls: "text-button-label" });
 			const open = (e: Event): void => {
 				e.preventDefault();
-				openFileClassSchema(this.plugin, this.toolbarClass);
+				// One class goes straight there; several ask **among this table's own** classes, which
+				// is a shorter question than the vault-wide picker behind an unnamed wrench.
+				this.withClass((name) => openFileClassSchema(this.plugin, name));
 			};
 			button.addEventListener("click", open);
 			button.addEventListener("keydown", (e) => {
@@ -422,8 +451,8 @@ class FileclassTableView extends Component {
 			});
 			this.toolbarItem = item;
 		}
-		this.syncNewButton(toolbar, only);
-		this.toolbarClass = only;
+		this.toolbarClasses = [...classes];
+		this.syncNewButton(toolbar, only, classes.size);
 		const labelEl = this.toolbarItem.querySelector(".text-button-label");
 		if (labelEl?.textContent !== label) labelEl?.setText(label);
 		this.toolbarItem.setAttribute(

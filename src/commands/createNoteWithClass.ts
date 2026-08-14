@@ -38,8 +38,14 @@ import { NoteFieldsModal } from "../ui/noteFieldsModal";
 
 export interface CreateNoteRequest {
 	fileClass: string;
-	/** A value to pre-fill, from the table that asked (#154). */
-	seed?: Seed;
+	/**
+	 * Values to pre-fill, from the table that asked.
+	 *
+	 * A list, because a table can decide more than one: a reverse-relation view fixes the field it
+	 * reads backwards (#154), and a filtered view fixes whatever its own filter pins down — a `Todo`
+	 * table makes a note that is a Todo, or it would vanish from the table that created it.
+	 */
+	seeds?: Seed[];
 }
 
 /** Obsidian's own "default location for new notes", as a folder path. */
@@ -165,6 +171,7 @@ export async function createNoteWithClass(
 		destination = destinations[0];
 	}
 
+	const seeds = req.seeds ?? [];
 	const typed = await askName(plugin, req.fileClass);
 	if (typed === null) return null;
 
@@ -202,8 +209,7 @@ export async function createNoteWithClass(
 	// reason), but this path keeps its single pass: creation then costs one write instead of three,
 	// and the order the seed sits in — after the defaults, over whatever the template left — is
 	// visible here rather than spread across three calls.
-	const seed = req.seed;
-	const seedValue = seed ? resolveSeedValue(plugin, seed, target) : "";
+	const seedValues = seeds.map((seed) => ({ seed, value: resolveSeedValue(plugin, seed, target) }));
 	// The **class's** resolved fields, not the note's. `getFields(note)` asks which classes the note
 	// carries, which it answers from the metadata cache — empty for a note created a moment ago, so
 	// nothing was inserted at all (measured: a note arrived with its template's frontmatter and none
@@ -228,14 +234,17 @@ export async function createNoteWithClass(
 			fm[field.name] = defaultValueFor(field);
 		}
 
-		// The seed overwrites whatever the template left on that one field — see the header.
-		if (seed && seedValue) fm[seed.field] = seedValue;
+		// A seed overwrites whatever the template left on its own field — see the header. Later seeds
+		// win over earlier ones, so the caller puts the most specific last.
+		for (const { seed, value } of seedValues) {
+			if (value) fm[seed.field] = seed.list ? [value] : value;
+		}
 	});
 
 	void logEvent(plugin, "INFO", "schema.note-created", `${req.fileClass}: created ${target.path}`, {
 		fileClass: req.fileClass,
 		note: target.path,
-		...(seed ? { seededField: seed.field } : {}),
+		...(seeds.length ? { seededFields: seeds.map((s) => s.field) } : {}),
 		...(template ? { template } : {}),
 	});
 

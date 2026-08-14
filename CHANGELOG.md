@@ -34,12 +34,16 @@ All notable changes to Fileclass are documented here. The format follows
   one, so a vault configured then keeps working; saving the class through its options rewrites it as a
   list and clears the old keys, so a vault never carries two answers to the same question.
 
-### Added
-
 - **The wrench and the New button on every `fileclass-table`, not just the declared one.** A vault
   keeps several tables of one class — `Todo`, `Ongoing`, `Done`, each with its own filter — and only
   one of them can be the view a class declares. The class is now read from whichever answers first:
   the class that declared the view, then the class the **filter** names, then the classes of the rows.
+
+  The filter is read at **both levels**. Bases combines a base-wide filter with each view's own, and a
+  base written before its views usually carries the class clause at the top —
+  `or: [fileClass.containsAny("Task"), file.hasTag("Task")]` above a dozen status views, each
+  filtering only on `status`. Reading the view alone found no class there, so a `Tasks` base got the
+  generic buttons on every one of its views.
 
   A table about **several** classes keeps both buttons too: `fileClass.containsAny("Book", "Comic")`
   cannot say which class a new note should be, so the buttons read *Manage fileClass* and *New note*
@@ -49,6 +53,18 @@ All notable changes to Fileclass are documented here. The format follows
   (and kept the New button of the view before it, a leftover now cleared), and a view whose rows
   carried two classes — one note being both a Book and an Article — lost its New button and got a
   generic wrench, while its filter said `fileClass.containsAny("Book")` in plain sight.
+
+- **A note created from a filtered table starts inside that table.** From a `Todo` view — filtered
+  `status == "Todo"` — the new note carries that status, instead of being made and immediately
+  disappearing from the view that made it. Only what a filter *fixes* is used: an equality, or a
+  single-value `contains` on a list field. `!=`, `>`, `isEmpty()` and a `containsAny` offering two
+  values narrow without deciding, and nothing is invented there. A view that both filters and reads a
+  relation applies both, the relation last.
+
+  A value is only taken from a clause the filter **always** applies: anything under an `or` or a `not`
+  is skipped, as is a formula clause (`status == x || status == y`). A view listing four statuses that
+  all count as ongoing does not decide between them, and a note created from it would otherwise have
+  been born with whichever one happened to be written first.
 
 - **A link in a table cell shows its page preview on hover** (with Ctrl/Cmd, if that is how the Page
   preview plugin is set). Obsidian does not watch the DOM for links a plugin drew — it listens for a

@@ -178,6 +178,16 @@ would have said. The note opens in a popover whose Properties panel carries this
 plugin's [controls](../ui/#property-editor-buttons) like any other, so the row can
 be filled in without leaving the table.
 
+### Grouping the rows
+
+The **Sort** menu's *Group by* applies here as it does to a native table: the rows
+arrive already grouped and ordered — Bases computes that from the view, not the
+plugin — and each run gets a heading naming the property and the value.
+
+Notes where the property is empty group under **None**, at the end, which is the
+quickest way to see what a class is missing. The cells stay editable inside a
+group, so filling one in moves its row to the group it now belongs to.
+
 ### The class's schema, from the table
 
 A table is where a schema shows its consequences — a column too many, a type that

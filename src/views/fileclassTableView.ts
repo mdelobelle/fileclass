@@ -19,6 +19,7 @@ import { ChoiceSuggestModal } from "../fields/input/valueModals";
 import { Seed } from "../schema/newNote";
 import { fileClassClaimingView } from "./baseSync";
 import { classesNamedInFilter, fieldValuesInFilter } from "./baseYaml";
+import { BasesGroupLike, renderedGroups, groupProperty } from "./tableGroups";
 import { fieldForView } from "./reverseView";
 import { EditContext, runControlAction } from "../fields/fieldActions";
 import { isInputSupported } from "../fields/support";
@@ -48,6 +49,8 @@ interface BasesEntryLike {
 interface BasesDatasetLike {
 	properties: string[];
 	data: BasesEntryLike[];
+	/** The same rows, grouped by the view's `groupBy` — Bases' own getter (see tableGroups.ts). */
+	groupedData?: BasesGroupLike<BasesEntryLike>[];
 }
 
 class FileclassTableView extends Component {
@@ -178,16 +181,39 @@ class FileclassTableView extends Component {
 		const body = table.createEl("tbody");
 		// Allowed values are per-field, not per-note — resolve once per render.
 		const allowedCache = new Map<string, Promise<string[]>>();
-		for (const entry of ds.data) {
-			const row = body.createEl("tr");
-			const validCell = showValidation ? row.createEl("td", { cls: "fc-valid-col" }) : undefined;
-			for (const col of ds.properties) this.renderCell(row, entry, col);
-			if (showValidation && validCell) {
-				const errCell = row.createEl("td", { cls: "fc-errors-col" });
-				void this.fillValidation(entry.file, validCell, errCell, allowedCache);
+		// The dataset groups itself from the view's own `groupBy` — the same groups the native table
+		// gets, measured — so grouping is read here rather than computed. An ungrouped view arrives as
+		// one unlabelled run, which is why there is still only one loop.
+		const span = ds.properties.length + (showValidation ? 2 : 0);
+		for (const group of renderedGroups(ds.groupedData, ds.data)) {
+			if (group.label !== null) this.renderGroupHeading(body, group.label, span);
+			for (const entry of group.entries) {
+				const row = body.createEl("tr");
+				const validCell = showValidation ? row.createEl("td", { cls: "fc-valid-col" }) : undefined;
+				for (const col of ds.properties) this.renderCell(row, entry, col);
+				if (showValidation && validCell) {
+					const errCell = row.createEl("td", { cls: "fc-errors-col" });
+					void this.fillValidation(entry.file, validCell, errCell, allowedCache);
+				}
 			}
 		}
 		this.syncToolbarButton(ds);
+	}
+
+	/**
+	 * The heading above a run of rows, in the native table's own shape.
+	 *
+	 * `bases-group-heading`, `-property` and `-value` are the classes the native views use, and every
+	 * theme sizes and colours them through `--bases-group-heading-*` variables. Borrowing them means a
+	 * grouped `fileclass-table` looks like the grouped table beside it in the same base, in whatever
+	 * theme the reader uses, without this plugin having an opinion about any of it.
+	 */
+	private renderGroupHeading(body: HTMLElement, value: string, span: number): void {
+		const cell = body.createEl("tr", { cls: "fileclass-table-group" }).createEl("td", { attr: { colspan: span } });
+		const heading = cell.createDiv({ cls: "bases-group-heading" });
+		const property = columnLabel(groupProperty(this.config));
+		if (property) heading.createSpan({ cls: "bases-group-property", text: property });
+		heading.createSpan({ cls: "bases-group-value", text: value });
 	}
 
 	/**

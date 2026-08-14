@@ -500,7 +500,15 @@ export class ChoiceSuggestModal<T> extends SuggestModal<T> {
 		placeholder = "Select a value",
 		private readonly groupOf?: (choice: T) => string | null | undefined,
 		/** Optional visual leading the row — a media thumbnail, today. */
-		private readonly preview?: (choice: T) => HTMLElement | null
+		private readonly preview?: (choice: T) => HTMLElement | null,
+		/**
+		 * Lay the choices out as a gallery: four per row, the preview large, the name under it.
+		 *
+		 * For pictures, the row layout had it backwards — a 20px thumbnail beside a full-width file
+		 * name, when the name is the one thing a cover is not chosen by. A grid gives the picture the
+		 * width instead, and keeps the name for telling two similar ones apart.
+		 */
+		private readonly gallery = false
 	) {
 		super(app);
 		this.setPlaceholder(placeholder);
@@ -511,6 +519,7 @@ export class ChoiceSuggestModal<T> extends SuggestModal<T> {
 
 	onOpen(): void {
 		void super.onOpen();
+		if (this.gallery) this.resultContainerEl.addClass("fileclass-suggest-gallery");
 		// Listened to whatever the modal shows: the group bar needs it, and so does paging.
 		this.resultContainerEl.addEventListener("scroll", this.onScroll);
 		if (!this.groupOf) return;
@@ -602,16 +611,18 @@ export class ChoiceSuggestModal<T> extends SuggestModal<T> {
 		this.renderRow(el, choice);
 	}
 
-	/** The row itself: the preview, then the text. */
+	/** One choice: the preview, then the text — beside it, or under it in a gallery. */
 	private renderRow(host: HTMLElement, choice: T): void {
 		const thumb = this.preview?.(choice);
 		if (!thumb) {
 			host.setText(this.toText(choice));
 			return;
 		}
-		host.addClass("fileclass-suggestion-row");
+		// A candidate with no thumbnail — an audio file, a PDF — keeps a card of its own in the
+		// gallery, or the grid would run out of step with the list it is showing.
+		host.addClass(this.gallery ? "fileclass-suggestion-card" : "fileclass-suggestion-row");
 		host.append(thumb);
-		host.createSpan({ text: this.toText(choice) });
+		host.createSpan({ cls: this.gallery ? "fileclass-card-name" : "", text: this.toText(choice) });
 	}
 
 	/** Names the group whose section currently sits at the top of the results. */
@@ -651,6 +662,14 @@ export class ChoiceSuggestModal<T> extends SuggestModal<T> {
 export interface MultiSelectOptions {
 	/** Optional visual leading each row — a media thumbnail, today. */
 	preview?: (value: string) => HTMLElement | null;
+	/**
+	 * Lay the values out as a gallery — four per row, the preview large, the name under it.
+	 *
+	 * For pictures, the row layout wastes the width on file names (see ChoiceSuggestModal). The
+	 * switch goes with it: a card that is on says so by looking picked, which is how every other
+	 * picture picker works, and the whole card was already the target.
+	 */
+	gallery?: boolean;
 	title: string;
 	allowed: string[];
 	selected: string[];
@@ -674,8 +693,8 @@ export interface MultiSelectOptions {
 /** Toggle list for Multi fields over a constrained set of values. */
 export class MultiSelectModal extends Modal {
 	private readonly selected: Set<string>;
-	/** Rows, in render order, so the filter can show and hide them. */
-	private readonly rows: { value: string; el: HTMLElement }[] = [];
+	/** Rows, in render order, so the filter can show and hide them. `sync` redraws a card's tick. */
+	private readonly rows: { value: string; el: HTMLElement; sync?: () => void }[] = [];
 	/** Group headers with their members: a header hides when none match. */
 	private readonly headers: { el: HTMLElement; values: string[] }[] = [];
 	private emptyEl?: HTMLElement;
@@ -780,10 +799,11 @@ export class MultiSelectModal extends Modal {
 	/** Unticks everything — all of it, not just what the filter shows. */
 	private unselectAll(): void {
 		this.selected.clear();
-		for (const { el } of this.rows) {
+		for (const { el, sync } of this.rows) {
 			el.querySelector(".checkbox-container")?.removeClass("is-enabled");
 			const input = el.querySelector<HTMLInputElement>("input[type=checkbox]");
 			if (input) input.checked = false;
+			sync?.();
 		}
 		this.applyFilter(this.query);
 		this.refreshCounts();
@@ -799,6 +819,8 @@ export class MultiSelectModal extends Modal {
 
 		const filter = this.renderFilter(contentEl);
 		const listEl = contentEl.createDiv();
+		// Headers and the empty-state stay direct children, so they can span the grid's width.
+		if (this.opts.gallery) listEl.addClass("fileclass-multiselect-gallery");
 
 		const groups = this.opts.groups;
 		if (groups && groups.length) {
@@ -856,6 +878,7 @@ export class MultiSelectModal extends Modal {
 	 * is the thing the eye is already on.
 	 */
 	private renderToggle(container: HTMLElement, value: string): void {
+		if (this.opts.gallery) return this.renderCard(container, value);
 		const apply = (on: boolean): void => {
 			if (on) this.selected.add(value);
 			else this.selected.delete(value);
@@ -891,6 +914,39 @@ export class MultiSelectModal extends Modal {
 			apply(next);
 			// Harmless if setValue also fires onChange: apply() is idempotent.
 			toggle?.setValue(next);
+		});
+	}
+
+	/**
+	 * One card per value: the picture, its name under it, and a tick when it is chosen.
+	 *
+	 * No switch — on a grid of pictures the switches are a column of small targets beside the
+	 * thing you are actually looking at, and the card itself has been the click target all along.
+	 * Everything else is shared with the row layout: the same `rows` list drives the filter, the
+	 * same `selected` set is what gets saved, and Unselect all clears both by re-syncing the cards.
+	 */
+	private renderCard(container: HTMLElement, value: string): void {
+		// A value that cannot be added is shown and explained, not dropped from the list.
+		const reason = this.selected.has(value) ? null : (this.opts.disabledReason?.(value) ?? null);
+		const card = container.createDiv({ cls: "fileclass-multiselect-card" });
+		const thumb = this.opts.preview?.(value);
+		if (thumb) card.append(thumb);
+		card.createSpan({ cls: "fileclass-card-name", text: value });
+		const tick = card.createSpan({ cls: "fileclass-card-check" });
+		setIcon(tick, "check");
+		const sync = () => card.toggleClass("is-selected", this.selected.has(value));
+		sync();
+		this.rows.push({ value, el: card, sync });
+		if (reason) {
+			card.addClass("fileclass-row-disabled");
+			card.setAttribute("aria-label", reason);
+			return; // no click handler: the card is inert
+		}
+		card.addEventListener("click", () => {
+			if (this.selected.has(value)) this.selected.delete(value);
+			else this.selected.add(value);
+			sync();
+			this.refreshCounts();
 		});
 	}
 

@@ -125,6 +125,11 @@ All notable changes to Fileclass are documented here. The format follows
   it**, behind the field it follows by default, not at the end below your own; and renaming a field
   carries its entry along, in every class that had placed it.
 
+  On the class note, `fieldsOrder` is **shown rather than edited**: a list of strings is drawn as
+  pills with a remove button each, and a stray click there would drop a field back to its default
+  position without saying so. The row reads `20 fields, in this class's order`, names them on hover,
+  and opens the schema editor — where the arrows write it.
+
   One place applies it — where a resolved field set is built — so every surface follows: the
   note-fields modal, a synced view's columns, *Reorder properties*, the fields inserted into a new
   note. Measured on `Book extends Media` with `Comic` beside it: all four agree, `Media` and `Comic`

@@ -106,6 +106,11 @@ Which means the order belongs to the class that declares it. `Media` is untouche
 and `Comic` — extending the same parent — keeps its own. Children are ordered among
 their siblings, named behind their group (`editions.format`).
 
+On the class note, that key is **read-only**: the Properties panel shows
+`5 fields, in this class's order` and opens the editor, rather than the pill editor
+Obsidian gives a list of strings — where one stray click removes an entry and sends
+a field back to its default place without a word.
+
 An inherited row moves but does not edit: changing its type or its options there
 would change it for every class extending `Media`, so the row sends you to `Media`
 instead.

@@ -83,12 +83,34 @@ export function formatViewRef(path: string, viewName: string): string {
 }
 
 /** The declared view for a field, if the class declares one. */
-export function relatedViewFor(
+export function relatedViewsFor(
 	entries: readonly { field: string; view: string }[],
 	field: string
-): { path: string; viewName: string } | null {
-	const entry = entries.find((e) => e.field === field);
-	return entry ? parseViewRef(entry.view) : null;
+): { path: string; viewName: string }[] {
+	// **Several**, deliberately. One relation is often shown more than one way — a `Task.delegate`
+	// read backwards as "Delegate's ongoing tasks" and "Delegate's done tasks" — and both are that
+	// field read backwards, so both deserve what a declared view gets: the seed, and the New button
+	// that fills it in.
+	return entries
+		.filter((e) => e.field === field)
+		.map((e) => parseViewRef(e.view))
+		.filter((ref): ref is { path: string; viewName: string } => !!ref);
+}
+
+/**
+ * The declarations with `view` added for `field`, unchanged if it is already there.
+ *
+ * Adding rather than replacing is what makes a field able to carry several views. The pair is the
+ * identity: declaring the same view twice for one field is a no-op, and two fields may name the same
+ * view (a base showing both ends of a relation is one view, read backwards from either side).
+ */
+export function withRelatedView(
+	entries: readonly { field: string; view: string }[],
+	field: string,
+	view: string
+): { field: string; view: string }[] {
+	const has = entries.some((e) => e.field === field && e.view === view);
+	return has ? [...entries] : [...entries, { field, view }];
 }
 
 /**

@@ -8,7 +8,8 @@ import {
 	findEmbedLine,
 	formatViewRef,
 	parseViewRef,
-	relatedViewFor,
+	relatedViewsFor,
+	withRelatedView,
 	linkCardinality,
 	reverseClause,
 	reverseEmbed,
@@ -243,9 +244,26 @@ describe("a view a class declares for one of its fields", () => {
 		expect(parseViewRef("Books.base#")).toBeNull();
 	});
 
-	it("finds the view for a field", () => {
-		expect(relatedViewFor(entries, "author")).toEqual({ path: "Books.base", viewName: "A's Bs" });
-		expect(relatedViewFor(entries, "cover")).toBeNull();
+	it("finds the views for a field", () => {
+		expect(relatedViewsFor(entries, "author")).toEqual([{ path: "Books.base", viewName: "A's Bs" }]);
+		expect(relatedViewsFor(entries, "cover")).toEqual([]);
+	});
+
+	it("finds every view of a field, not just the first", () => {
+		// One relation, shown two ways: `Task.delegate` read backwards as what is ongoing and as
+		// what is done. Both are that field read backwards, and both must be found.
+		const two = [
+			{ field: "delegate", view: "Tasks.base#Delegate's ongoing tasks" },
+			{ field: "delegate", view: "Tasks.base#Delegate's done tasks" },
+		];
+		expect(relatedViewsFor(two, "delegate").map((v) => v.viewName)).toEqual([
+			"Delegate's ongoing tasks",
+			"Delegate's done tasks",
+		]);
+	});
+
+	it("skips a declaration that names no view", () => {
+		expect(relatedViewsFor([{ field: "author", view: "Books.base" }], "author")).toEqual([]);
 	});
 
 	it("finds the field a view reads backwards, whatever it is called", () => {
@@ -262,8 +280,8 @@ describe("a view a class declares for one of its fields", () => {
 	it("lets two fields point at the same class through different views", () => {
 		// The reason the declaration is keyed on the field: `author` and `editor` both reach Author,
 		// and a key on the parent class would have collapsed them into one.
-		expect(relatedViewFor(entries, "author")?.viewName).toBe("A's Bs");
-		expect(relatedViewFor(entries, "editor")?.viewName).toBe("Foo");
+		expect(relatedViewsFor(entries, "author")[0]?.viewName).toBe("A's Bs");
+		expect(relatedViewsFor(entries, "editor")[0]?.viewName).toBe("Foo");
 	});
 });
 
@@ -321,5 +339,36 @@ describe("adding the clause to a filter somebody else wrote", () => {
 
 	it("starts one when there is no filter at all", () => {
 		expect(withReverseClause(undefined, "c")).toEqual({ and: ["c"] });
+	});
+});
+
+describe("withRelatedView", () => {
+	const entry = (field: string, view: string) => ({ field, view });
+
+	it("adds a second view for a field instead of replacing the first", () => {
+		const before = [entry("delegate", "Tasks.base#Ongoing")];
+		expect(withRelatedView(before, "delegate", "Tasks.base#Done")).toEqual([
+			entry("delegate", "Tasks.base#Ongoing"),
+			entry("delegate", "Tasks.base#Done"),
+		]);
+	});
+
+	it("declares a pair once", () => {
+		const before = [entry("delegate", "Tasks.base#Ongoing")];
+		expect(withRelatedView(before, "delegate", "Tasks.base#Ongoing")).toEqual(before);
+	});
+
+	it("leaves other fields alone", () => {
+		const before = [entry("author", "Books.base#A's Bs")];
+		expect(withRelatedView(before, "editor", "Books.base#Edited")).toEqual([
+			entry("author", "Books.base#A's Bs"),
+			entry("editor", "Books.base#Edited"),
+		]);
+	});
+
+	it("does not mutate what it was given", () => {
+		const before = [entry("author", "Books.base#A's Bs")];
+		withRelatedView(before, "editor", "Books.base#Edited");
+		expect(before).toHaveLength(1);
 	});
 });

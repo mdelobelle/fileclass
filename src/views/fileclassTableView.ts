@@ -270,7 +270,17 @@ class FileclassTableView extends Component {
 			return;
 		}
 		const seed = only ? this.seedFor(only) : undefined;
-		const label = seed ? seed.label : only ? `New ${only}` : "New note";
+		// A table about several classes cannot say *what* it will create, but if this view is a
+		// declared relation it can say what the note will be **linked to** — which is the part the
+		// reader came for. The class is asked for on click, and the seed follows it.
+		const relatedTo = only ? undefined : this.relationHost();
+		const label = seed
+			? seed.label
+			: only
+				? `New ${only}`
+				: relatedTo
+					? `New with ${relatedTo}`
+					: "New note";
 
 		if (!this.newItem?.isConnected) {
 			this.newItem?.remove();
@@ -299,7 +309,11 @@ class FileclassTableView extends Component {
 				? `Fileclass: create a ${only} already linked to ${seed.label.replace(/^.*?with /, "")}`
 				: only
 					? `Fileclass: create a note with the ${only} class`
-					: `Fileclass: create a note with one of this table's classes (${this.toolbarClasses.join(", ")})`
+					: relatedTo
+						? // Said exactly: the link comes with the class that reads this view backwards, and
+							// the classes of this table are not obliged to be the same about that.
+							`Fileclass: create a note with one of this table's classes (${this.toolbarClasses.join(", ")}), linked to ${relatedTo} when that class reads this view backwards`
+						: `Fileclass: create a note with one of this table's classes (${this.toolbarClasses.join(", ")})`
 		);
 	}
 
@@ -375,6 +389,28 @@ class FileclassTableView extends Component {
 		const host = this.hostNote();
 		if (!host) return undefined;
 		return { field, linkTo: host.path, label: `New ${fileClass} with ${host.basename}` };
+	}
+
+	/**
+	 * The note this view is a relation of, when it is one — whatever class declared it.
+	 *
+	 * `seedFor` needs a class, because a declaration lives on a class note; this asks the weaker
+	 * question the multi-class case can still answer: does **any** of this table's classes read this
+	 * view backwards, and is there a host note to link to? That is enough to name the link on the
+	 * button. Which class it will be is asked on click, and the seed is computed then — so a class
+	 * of the table that does not declare this view simply creates a note without the link, which is
+	 * why the tooltip says "when that class reads this view backwards" rather than promising it.
+	 */
+	private relationHost(): string | undefined {
+		const claimed = this.viewIdentity();
+		if (!claimed) return undefined;
+		const host = this.hostNote();
+		if (!host) return undefined;
+		const declared = this.toolbarClasses.some((name) => {
+			const entries = this.plugin.index.getFileClass(name)?.options.relatedViews ?? [];
+			return !!fieldForView(entries, claimed.file, claimed.viewName);
+		});
+		return declared ? host.basename : undefined;
 	}
 
 	/** The note holding this embed, if this table is embedded in one. */

@@ -17,6 +17,8 @@ import { logEvent } from "../log/schemaLog";
 import type FileclassPlugin from "../../main";
 import { Field } from "../schema/field";
 import { ancestorNames, renameProperty } from "../schema/renameProperty";
+import { renamedFieldOrder } from "../schema/fieldOrder";
+import { writeOptions } from "../schema/fileClassIo";
 import { makeStickyFooter } from "../ui/modalFooter";
 import { modalTitle } from "../ui/modalTitle";
 
@@ -82,6 +84,7 @@ export async function migrateRenamedField(
 			written += result.renamed;
 		});
 	}
+	await followRenameInFieldOrders(plugin, field, from);
 	new Notice(
 		`Fileclass: renamed "${from}" to "${field.name}" in ${candidates.length} note(s)` +
 			(written > candidates.length ? ` (${written} occurrences).` : ".")
@@ -100,6 +103,38 @@ export async function migrateRenamedField(
 			occurrences: written,
 		}
 	);
+}
+
+/**
+ * Follows the rename into every stored field order that names the field.
+ *
+ * A class's `fieldsOrder` names fields by name, and the classes holding one are the field's owner
+ * **and its descendants** — each of which may have placed this very field somewhere of its own.
+ * Without this, renaming a field would quietly send it back to its default position in every one
+ * of them: the entry stops matching, and an unnamed field falls in behind its default neighbour.
+ *
+ * Unlike a `.base`, this is ours to rewrite: it is a declaration this plugin wrote, about a field
+ * whose new name we know for certain.
+ */
+async function followRenameInFieldOrders(
+	plugin: FileclassPlugin,
+	field: Field,
+	from: string
+): Promise<void> {
+	const owner = field.fileClassName;
+	const holders = plugin.index.fileClassNames.filter(
+		(name) => name === owner || plugin.index.getAncestors(name).includes(owner)
+	);
+	for (const name of holders) {
+		const order = plugin.index.getFileClass(name)?.options.fieldsOrder ?? [];
+		if (!order.length) continue;
+		const fields = plugin.index.getResolvedFields(name);
+		const trail = ancestorNames(fields, field);
+		const next = renamedFieldOrder(order, [...trail, from].join("."), [...trail, field.name].join("."));
+		if (!next) continue;
+		const file = plugin.index.getFileClassFile(name);
+		if (file) await writeOptions(plugin.app, file, { fieldsOrder: next });
+	}
 }
 
 /**

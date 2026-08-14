@@ -19,6 +19,7 @@ import {
 	toStringArray,
 } from "./fileClass";
 import { computeAncestors, resolveInheritedFields } from "./inheritance";
+import { applyFieldOrder } from "./fieldOrder";
 import {
 	BindingOrigin,
 	FileBinding,
@@ -129,7 +130,11 @@ export class FileclassIndex extends Events {
 				(cls) => this.byName.get(cls)?.fields ?? [],
 				(cls) => this.byName.get(cls)?.options.excludes ?? []
 			);
-			this.fieldsByName.set(name, fields);
+			// The chain gives a default; the class may hold its own order over the whole set,
+			// inherited fields included (fieldOrder.ts). Applied here because this is the one place
+			// a resolved set is built — every surface reads it from here.
+			const order = this.byName.get(name)?.options.fieldsOrder ?? [];
+			this.fieldsByName.set(name, applyFieldOrder(fields, order));
 		}
 	}
 

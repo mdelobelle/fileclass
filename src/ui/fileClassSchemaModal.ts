@@ -13,13 +13,13 @@ import { attachRowGrid } from "./rowGridKeyboard";
 import type FileclassPlugin from "../../main";
 import { childPathOf, Field, pathFieldNames } from "../schema/field";
 import { parseFileClass } from "../schema/fileClass";
+import { fieldOrderKey, isInherited, movedFieldOrder } from "../schema/fieldOrder";
 import { dateFormatDefaults } from "../settings/settings";
-import { mutateFields } from "../schema/fileClassIo";
+import { mutateFields, writeOptions } from "../schema/fileClassIo";
 import {
 	RawFieldEntry,
 	addFieldDef,
 	collectFieldIds,
-	moveFieldDef,
 	removeFieldDef,
 	updateFieldDef,
 } from "../schema/fileClassWrite";
@@ -122,10 +122,22 @@ export class FileClassSchemaModal extends Modal {
 		return this.app.metadataCache.getFileCache(this.file)?.frontmatter;
 	}
 
-	private ownFields(): Field[] {
-		return parseFileClass(this.name, this.frontmatter()).fields.filter(
-			(f) => f.path === this.parentPath
-		);
+	/**
+	 * The fields of this level — **resolved**, so what the class inherits is listed too.
+	 *
+	 * A class's order runs over its whole set, inherited fields included, so the editor has to show
+	 * that set: ordering `Media`'s `title` against `Book`'s `author` is impossible on a screen that
+	 * only lists one of them. Which class each field comes from is said on its row.
+	 */
+	private levelFields(): Field[] {
+		return this.plugin.index
+			.getResolvedFields(this.name)
+			.filter((f) => f.path === this.parentPath);
+	}
+
+	/** The whole resolved set, for the keys a move has to write. */
+	private resolvedFields(): Field[] {
+		return this.plugin.index.getResolvedFields(this.name);
 	}
 
 	private render(): void {
@@ -142,14 +154,17 @@ export class FileClassSchemaModal extends Modal {
 
 		if (!this.parentPath) this.renderClassActions(contentEl);
 
-		const fields = this.ownFields();
+		const fields = this.levelFields();
 		if (!fields.length) contentEl.createEl("p", { text: "No fields yet." });
 
 		// The field rows live in their own container: the arrow-key grid must not
 		// reach the class-level actions above them.
 		const listEl = contentEl.createDiv({ cls: "fileclass-field-list" });
 
+		const resolved = this.resolvedFields();
 		fields.forEach((field, i) => {
+			const inherited = isInherited(field, this.name);
+			const key = fieldOrderKey(resolved, field);
 			const setting = new Setting(listEl)
 				.setName(field.name)
 				// A field's type, and whether it may be left empty. Until now `required`
@@ -161,15 +176,31 @@ export class FileClassSchemaModal extends Modal {
 						.setIcon("chevron-up")
 						.setTooltip("Move up")
 						.setDisabled(i === 0)
-						.onClick(() => this.move(field.id, -1))
+						.onClick(() => this.move(key, -1))
 				)
 				.addExtraButton((b) =>
 					b
 						.setIcon("chevron-down")
 						.setTooltip("Move down")
 						.setDisabled(i === fields.length - 1)
-						.onClick(() => this.move(field.id, 1))
+						.onClick(() => this.move(key, 1))
 				);
+
+			// Where an inherited field comes from, and the way to it: editing it here would edit
+			// the ancestor for every class that extends it, so this row moves it and nothing else.
+			if (inherited) {
+				setting.nameEl.createSpan({ cls: "fileclass-field-from", text: `from ${field.fileClassName}` });
+				setting.addButton((b) =>
+					b
+						.setButtonText(`Open ${field.fileClassName}`)
+						.setTooltip(`Edit this field where it is declared`)
+						.onClick(() => {
+							this.close();
+							openFileClassSchema(this.plugin, field.fileClassName);
+						})
+				);
+				return;
+			}
 
 			if (field.type === "Object" || field.type === "ObjectList") {
 				setting.addButton((b) =>
@@ -276,8 +307,18 @@ export class FileClassSchemaModal extends Modal {
 		void mutateFields(this.app, this.file, (fields) => removeFieldDef(fields, id));
 	}
 
-	private move(id: string, dir: -1 | 1): void {
-		void mutateFields(this.app, this.file, (fields) => moveFieldDef(fields, id, dir));
+	/**
+	 * Moves a field within its level by writing the class's own `fieldsOrder`.
+	 *
+	 * Not by swapping entries in `fields[]`, which is what this used to do: that array holds only
+	 * the class's own fields, so it cannot express "Media's title, then my author, then Media's
+	 * year" — and once an order exists, two writers of it would drift apart. `fieldsOrder` is the
+	 * single one, and it names every field of the resolved set on every move.
+	 */
+	private move(key: string, dir: -1 | 1): void {
+		const order = movedFieldOrder(this.resolvedFields(), key, dir);
+		if (!order) return;
+		void writeOptions(this.app, this.file, { fieldsOrder: order });
 	}
 }
 

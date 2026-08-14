@@ -54,6 +54,7 @@ describe("what a colliding id would still do", () => {
 		const book = [field("storage", "dup123", "", "Book"), field("room", "b2", "dup123", "Book")];
 		const resolved = resolveInheritedFields("Book", ["Media"], (n) => (n === "Book" ? book : media), () => []);
 		const storage = resolved.find((f) => f.name === "storage")!;
-		expect(childFieldsOf(resolved, storage).map((f) => f.name)).toEqual(["room", "producer"]);
+		// Media's child comes first because resolution now runs from the root of the chain down.
+		expect(childFieldsOf(resolved, storage).map((f) => f.name)).toEqual(["producer", "room"]);
 	});
 });

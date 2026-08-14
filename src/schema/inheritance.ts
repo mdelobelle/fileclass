@@ -26,11 +26,19 @@ export function computeAncestors(
 }
 
 /**
- * Resolves the full field set of a fileClass: its own fields plus inherited
- * ones, in declaration order (self first, then each ancestor), de-duplicated by
- * field **name** (the nearest declaration wins). `excludes` accumulate down the
- * chain: a class's excluded names are removed from that class and every deeper
- * ancestor (mirroring Metadata Menu, where a class may also exclude its own).
+ * Resolves the full field set of a fileClass: inherited fields first, then its own.
+ *
+ * The order runs **from the root of the chain down to the class itself** — `Media`'s fields, then
+ * `Book`'s. That is the order the thing was built in, and it is what a reader expects on a note: the
+ * general first, then what this class adds. Reversed, a `Book` note opened with its own fields and
+ * buried `title` and `year` — declared once on `Media` and shared by everything — below them.
+ *
+ * De-duplicated by field name **and level**, and the **nearest declaration still wins**: a class
+ * overriding an inherited field keeps that field where the ancestor put it, with its own definition.
+ * Moving it to the end would mean overriding a field silently reordered the note.
+ *
+ * `excludes` accumulate down the chain: a class's excluded names are removed from that class and
+ * every deeper ancestor (mirroring Metadata Menu, where a class may also exclude its own).
  */
 export function resolveInheritedFields(
 	name: string,
@@ -38,11 +46,23 @@ export function resolveInheritedFields(
 	ownFieldsOf: (fileClassName: string) => Field[],
 	excludesOf: (fileClassName: string) => string[]
 ): Field[] {
+	// Excludes are gathered walking *towards* the ancestors, because that is the direction they
+	// travel in: what a class excludes, its ancestors lose. The emitted order is the other way
+	// round, so each class's effective set is recorded here rather than recomputed there.
+	const chain = [name, ...ancestors];
+	const excludedAt = new Map<string, Set<string>>();
 	const excluded = new Set<string>(excludesOf(name));
-	const result: Field[] = [];
-	const seen = new Set<string>();
+	for (const cls of chain) {
+		excludedAt.set(cls, new Set(excluded));
+		// Deeper ancestors also lose the names this class excludes.
+		for (const ex of excludesOf(cls)) excluded.add(ex);
+	}
 
-	for (const cls of [name, ...ancestors]) {
+	const result: Field[] = [];
+	const at = new Map<string, number>();
+
+	for (const cls of [...chain].reverse()) {
+		const gone = excludedAt.get(cls) ?? new Set<string>();
 		for (const field of ownFieldsOf(cls)) {
 			// Identity is name **and** level. A class's `fields[]` holds its nested
 			// children flat, told apart only by `path`, so de-duplicating on the name
@@ -54,12 +74,16 @@ export function resolveInheritedFields(
 			// Excludes name a field of a class, which is a root field: a group's children
 			// go with their parent. Applying them at every level would drop
 			// `editions.publisher` the day a class excludes an inherited `publisher`.
-			if ((!field.path && excluded.has(field.name)) || seen.has(key)) continue;
-			result.push(field);
-			seen.add(key);
+			if (!field.path && gone.has(field.name)) continue;
+			const seen = at.get(key);
+			// Nearer classes come later in this walk, so an override replaces the ancestor's
+			// definition **in place** — nearest wins, and the position is the ancestor's.
+			if (seen !== undefined) result[seen] = field;
+			else {
+				at.set(key, result.length);
+				result.push(field);
+			}
 		}
-		// Deeper ancestors also lose the names this class excludes.
-		for (const ex of excludesOf(cls)) excluded.add(ex);
 	}
 	return result;
 }

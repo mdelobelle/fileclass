@@ -421,6 +421,19 @@ canvas file tracking (comes with the planned Canvas engine, §9.1).
   knows what any surface will do. Stated by the author (13 August 2026) when confirming
   `mergeOrder`: *"ça me va bien que la vue corresponde à l'ordre des colonnes de la
   classe, tout comme le note fields modal. c'est un contrat universel."*
+  **What the class declares** is now a datum, not a derivation (14 August 2026): the chain gives a
+  default — the root of the `extends` chain first, then each class down to this one — and a class may
+  override it freely over its **whole resolved set**, inherited fields included, through
+  `fieldsOrder` on its note (keys qualified by level: `title`, `editions.year`). That order is the
+  class's alone: `Book` reordering `Media`'s fields touches neither `Media` nor `Comic`, which
+  extends the same parent. Names rather than ids, because a name at its level is already the
+  identity inheritance de-duplicates on, and because ids are unique only *within* a class. Two
+  rules keep a stale declaration harmless: a key naming nothing is ignored, and a field the order
+  does not name sits behind the field it follows **by default** rather than falling to the end — so
+  an ancestor gaining a field shows it where the ancestor put it. Applied at the single point where
+  a resolved set is built (`fileclassIndex.computeInheritance`), so every surface follows for free.
+  An override keeps the **ancestor's position**: redefining an inherited field must not silently
+  reorder every note of the class.
   What is **not** ours: `formula.*` and `file.*` columns, which a reader adds for reading
   rather than for editing. Those keep their positions through a sync; only the field slots
   are refilled. Do not "improve" this into preserving a hand-picked field order — it was

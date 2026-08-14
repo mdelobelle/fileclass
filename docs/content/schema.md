@@ -66,10 +66,11 @@ Each entry in `fields` is `{ name, id, type, options, path }`:
 A fileClass may `extends` one parent, forming a chain (`Child → Parent → …`).
 The chain is **cycle-guarded**: a self-reference or loop simply stops.
 
-Resolved fields = the class's own fields, then each ancestor's, **de-duplicated
-by field name** (the nearest declaration wins). `excludes` removes inherited
-fields and **accumulates down the chain**: a class's excluded names are dropped
-from that class and every deeper ancestor.
+Resolved fields run **from the root of the chain down to the class itself** —
+`Media`'s fields, then `Book`'s — **de-duplicated by field name** (the nearest
+declaration wins, and keeps the position the ancestor gave it). `excludes` removes
+inherited fields and **accumulates down the chain**: a class's excluded names are
+dropped from that class and every deeper ancestor.
 
 `Extends` is a **dropdown** over the fileClasses you have — never the class itself, and
 never one that already inherits from it (that would be a cycle). A parent that doesn't exist
@@ -81,9 +82,40 @@ so the declaration is visible rather than lost.
 never typed: a misspelled name excluded nothing and said nothing. With no parent, there is
 nothing to choose and the row says so.
 
-Beside it, a link opens the parent's schema — a class's editor lists its **own** fields only,
-since showing an ancestor's there would leave you wondering which copy you were editing. The
-link appears only when the name resolves.
+Beside it, a link opens the parent's schema. The link appears only when the name resolves.
+
+### The order is yours, across the whole chain
+
+That root-to-leaf order is only a **default**. A class's editor lists its resolved
+fields — what it inherits marked `from Media`, with a button opening that class —
+and the arrows move **any** of them: `Media`'s `title`, then your own `author`, then
+`Media`'s `year`, if that is how the note reads best.
+
+Moving a row writes `fieldsOrder` on **this** class:
+
+```yaml
+fieldsOrder:
+  - title
+  - author
+  - year
+  - editions
+  - editions.format
+```
+
+Which means the order belongs to the class that declares it. `Media` is untouched,
+and `Comic` — extending the same parent — keeps its own. Children are ordered among
+their siblings, named behind their group (`editions.format`).
+
+An inherited row moves but does not edit: changing its type or its options there
+would change it for every class extending `Media`, so the row sends you to `Media`
+instead.
+
+Two things keep a declaration from rotting. A key naming a field that no longer
+resolves — removed upstream, or excluded here — is ignored. And a field the order
+does not name, because `Media` gained it after you set the order, appears **where
+`Media` put it**, behind the field it follows by default, rather than at the end
+under your own fields. Renaming a field carries its entry along, so it keeps its
+place.
 
 ## Binding a note to fileClass(es)
 

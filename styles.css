@@ -282,6 +282,20 @@
 	color: var(--text-faint);
 }
 
+/*
+ * "from Media" on an inherited row of the schema editor. Quiet: it qualifies the field's name
+ * rather than competing with it, and it is the only thing that tells the two kinds of row apart.
+ */
+.fileclass-field-from {
+	margin-left: var(--size-4-2);
+	padding: 1px 5px;
+	border-radius: var(--radius-s);
+	background: var(--background-modifier-hover);
+	color: var(--text-muted);
+	font-size: var(--font-ui-smaller);
+	font-weight: var(--font-normal);
+}
+
 /* A value a picker shows but will not add: greyed, with the reason on its second line. */
 .fileclass-toggle-row.fileclass-row-disabled .setting-item-name {
 	color: var(--text-faint);

@@ -518,6 +518,18 @@ tr.fc-row-filtered {
 	vertical-align: top;
 	white-space: nowrap; /* no line breaks in cells */
 }
+/* A group heading, when the view's `groupBy` is set. The inner spans carry the native
+   `bases-group-*` classes, so a theme sizes and colours them as it does the native table's. */
+.fileclass-table tr.fileclass-table-group > td {
+	background: var(--bases-table-group-background, var(--background-primary-alt));
+	padding: var(--size-4-2) 8px var(--size-2-2);
+	white-space: normal;
+}
+.fileclass-table tr.fileclass-table-group .bases-group-heading {
+	display: flex;
+	align-items: baseline;
+	gap: var(--size-4-1);
+}
 .fileclass-table th {
 	background: var(--background-secondary);
 	font-weight: var(--font-semibold);

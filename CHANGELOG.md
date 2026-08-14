@@ -110,6 +110,45 @@ All notable changes to Fileclass are documented here. The format follows
   with no thumbnail (audio, a PDF) keeps its name everywhere, since there the name is all there is,
   and a picker over notes rather than pictures stays a list.
 
+- **A class orders its inherited fields as freely as its own.** When `Book extends Media`, the
+  resolved order now runs **from the root of the chain down** — `Media`'s fields, then `Book`'s,
+  which is the order the thing was built in, rather than the reverse. And that is only the default:
+  a class's editor lists its whole resolved set, marks what it inherits `from Media`, and the arrows
+  move any row, so `Media`'s `title`, `Book`'s `author` and `Media`'s `year` can sit in that order
+  if that is how the note reads best.
+
+  A move writes `fieldsOrder` on **that class**:
+
+  ```yaml
+  fieldsOrder:
+    - title
+    - author
+    - year
+    - editions
+    - editions.format
+  ```
+
+  so the order belongs to the class declaring it: `Media` is untouched, and `Comic` — extending the
+  same parent — keeps its own. Children are ordered among their siblings.
+
+  An inherited row moves but does not edit: changing its type there would change it for every class
+  extending `Media`, so the row offers to open `Media` instead.
+
+  The declaration is built to age. A key naming a field that no longer resolves is ignored; a field
+  the order does not name — because an ancestor gained one since — appears **where the ancestor put
+  it**, behind the field it follows by default, not at the end below your own; and renaming a field
+  carries its entry along, in every class that had placed it.
+
+  On the class note, `fieldsOrder` is **shown rather than edited**: a list of strings is drawn as
+  pills with a remove button each, and a stray click there would drop a field back to its default
+  position without saying so. The row reads `20 fields, in this class's order`, names them on hover,
+  and opens the schema editor — where the arrows write it.
+
+  One place applies it — where a resolved field set is built — so every surface follows: the
+  note-fields modal, a synced view's columns, *Reorder properties*, the fields inserted into a new
+  note. Measured on `Book extends Media` with `Comic` beside it: all four agree, `Media` and `Comic`
+  unchanged.
+
 ### Changed
 
 - **A sync keeps the columns you added to a managed view, and leaves them where they are.** It set the

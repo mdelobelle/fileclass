@@ -65,6 +65,8 @@ const CLASS_CLASS = "fileclass-prop-class";
 const GROUP_OK_CLASS = "fileclass-group-ok";
 const FIELDS_ROW_CLASS = "fileclass-fields-summary";
 const FIELDS_ROW_MARK = "fileclass-fields-row";
+const ORDER_ROW_CLASS = "fileclass-order-summary";
+const ORDER_ROW_MARK = "fileclass-order-row";
 const RELATED_ROW_CLASS = "fileclass-related-views";
 const RELATED_ROW_MARK = "fileclass-related-row";
 /** The reading of a stored duration, inside its pill. */
@@ -150,6 +152,7 @@ export class PropertyEditButtons extends Component {
 						this.injectClassRow(row);
 						this.injectFieldsRow(row);
 						this.injectRelatedViewsRow(row);
+						this.injectFieldOrderRow(row);
 					});
 			}
 			if (this.plugin.settings.enablePropertyActionButtons) {
@@ -498,6 +501,52 @@ export class PropertyEditButtons extends Component {
 		item.addClass(RELATED_ROW_MARK);
 		const list = item.createDiv({ cls: RELATED_ROW_CLASS });
 		for (const line of lines) this.renderRelatedView(list, line);
+	}
+
+	/**
+	 * The `fieldsOrder` row of a class note: shown, not edited.
+	 *
+	 * It is a list of strings, so Obsidian draws it as pills — each with a remove button — and a
+	 * stray click there deletes an entry from a declaration nobody edits by hand. Losing one is not
+	 * loud either: the field it named simply falls back to its default position, which reads like
+	 * the order drifting on its own.
+	 *
+	 * So the row states what it holds and offers the place where the order *is* edited — the schema
+	 * editor, whose arrows write this key. The value itself stays in the frontmatter, readable in
+	 * source mode and on hover; only the pill editor goes.
+	 */
+	private injectFieldOrderRow(row: HTMLElement): void {
+		// Obsidian lowercases data-property-key, hence the case-insensitive match.
+		if (row.getAttribute("data-property-key")?.toLowerCase() !== "fieldsorder") return;
+		const file = this.fileForEl(row);
+		const fcName = file && this.plugin.index.fileClassNameOfNote(file.path);
+		if (!file || !fcName) return;
+		const valueEl = row.querySelector<HTMLElement>(":scope > .metadata-property-value");
+		if (!valueEl) return;
+
+		const declared: unknown = this.plugin.app.metadataCache.getFileCache(file)?.frontmatter?.fieldsOrder;
+		const order = Array.isArray(declared) ? declared.filter((v): v is string => typeof v === "string") : [];
+		if (!order.length) return;
+		const state = `${fcName}:${order.join("\u0000")}`;
+		if (valueEl.dataset.fcOrder === state) return; // settled: no new mutation
+		valueEl.dataset.fcOrder = state;
+
+		row.addClass(ORDER_ROW_MARK); // hides the pills and Obsidian's warning icon
+		valueEl.querySelector(`.${ORDER_ROW_CLASS}`)?.remove();
+		const summary = valueEl.createSpan({ cls: ORDER_ROW_CLASS });
+		setIcon(summary.createSpan({ cls: "fileclass-order-icon" }), "list-ordered");
+		summary.createSpan({ text: `${order.length} field${order.length === 1 ? "" : "s"}, in this class's order` });
+		summary.setAttribute("aria-label", `Fileclass: ${order.join(" · ")}`);
+		summary.tabIndex = 0;
+		const open = (e: Event): void => {
+			e.preventDefault();
+			e.stopPropagation();
+			openFileClassSchema(this.plugin, fcName);
+		};
+		summary.addEventListener("click", open);
+		summary.addEventListener("keydown", (e) => {
+			if (e.key === "Enter" || e.key === " ") open(e);
+		});
 	}
 
 	/** One relation: the field it reads backwards, and the view showing the other end. */
@@ -868,7 +917,15 @@ export class PropertyEditButtons extends Component {
 	}
 
 	private removeAll(): void {
-		for (const cls of [BTN_CLASS, PREVIEW_CLASS, ACTIONS_CLASS, CLASS_CLASS, FIELDS_ROW_CLASS, RELATED_ROW_CLASS]) {
+		for (const cls of [
+			BTN_CLASS,
+			PREVIEW_CLASS,
+			ACTIONS_CLASS,
+			CLASS_CLASS,
+			FIELDS_ROW_CLASS,
+			RELATED_ROW_CLASS,
+			ORDER_ROW_CLASS,
+		]) {
 			document.querySelectorAll(`.${cls}`).forEach((el) => el.remove());
 		}
 		// That row is Obsidian's own element, rewritten rather than added to: put its text back.
@@ -876,6 +933,12 @@ export class PropertyEditButtons extends Component {
 			item.removeClass(FIELDS_ROW_MARK);
 			delete item.dataset.fcFields;
 			item.setText(item.dataset.fcRaw ?? "");
+		});
+		// That row keeps Obsidian's own editor, hidden behind a class: putting it back is the class.
+		document.querySelectorAll<HTMLElement>(`.${ORDER_ROW_MARK}`).forEach((item) => {
+			item.removeClass(ORDER_ROW_MARK);
+			const valueEl = item.querySelector<HTMLElement>(":scope > .metadata-property-value");
+			if (valueEl) delete valueEl.dataset.fcOrder;
 		});
 		document.querySelectorAll<HTMLElement>(`.${RELATED_ROW_MARK}`).forEach((item) => {
 			item.removeClass(RELATED_ROW_MARK);

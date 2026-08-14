@@ -232,6 +232,36 @@
 }
 
 /*
+ * A class note's `fieldsOrder` row: shown, not edited. Obsidian draws a string list as pills with a
+ * remove button each, and this declaration is not one you edit by hand — a stray click there drops a
+ * field back to its default position without saying so. The pills and the type warning give way to
+ * one line that opens the schema editor, where the order is actually made.
+ */
+.metadata-property.fileclass-order-row > .metadata-property-value > .multi-select-container,
+.metadata-property.fileclass-order-row > .metadata-property-warning-icon {
+	display: none;
+}
+.fileclass-order-summary {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--size-2-2);
+	padding: var(--size-2-1) 0;
+	cursor: pointer;
+	color: var(--text-muted);
+}
+.fileclass-order-summary:hover {
+	color: var(--text-normal);
+}
+.fileclass-order-icon {
+	display: inline-flex;
+	align-items: center;
+}
+.fileclass-order-icon svg {
+	width: 15px;
+	height: 15px;
+}
+
+/*
  * A class note's `relatedViews` row: the relations, not their JSON. Same treatment as `fields`
  * above — the marker drops Obsidian's warning colour, and each line is a control.
  */
@@ -280,6 +310,20 @@
 }
 .fileclass-related-view.is-fc-missing .fileclass-related-field {
 	color: var(--text-faint);
+}
+
+/*
+ * "from Media" on an inherited row of the schema editor. Quiet: it qualifies the field's name
+ * rather than competing with it, and it is the only thing that tells the two kinds of row apart.
+ */
+.fileclass-field-from {
+	margin-left: var(--size-4-2);
+	padding: 1px 5px;
+	border-radius: var(--radius-s);
+	background: var(--background-modifier-hover);
+	color: var(--text-muted);
+	font-size: var(--font-ui-smaller);
+	font-weight: var(--font-normal);
 }
 
 /* A value a picker shows but will not add: greyed, with the reason on its second line. */

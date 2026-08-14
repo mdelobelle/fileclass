@@ -500,7 +500,15 @@ export class ChoiceSuggestModal<T> extends SuggestModal<T> {
 		placeholder = "Select a value",
 		private readonly groupOf?: (choice: T) => string | null | undefined,
 		/** Optional visual leading the row — a media thumbnail, today. */
-		private readonly preview?: (choice: T) => HTMLElement | null
+		private readonly preview?: (choice: T) => HTMLElement | null,
+		/**
+		 * Lay the choices out as a gallery: three per row, the preview large, the name under it.
+		 *
+		 * For pictures, the row layout had it backwards — a 20px thumbnail beside a full-width file
+		 * name, when the name is the one thing a cover is not chosen by. A grid gives the picture the
+		 * width instead, and keeps the name for telling two similar ones apart.
+		 */
+		private readonly gallery = false
 	) {
 		super(app);
 		this.setPlaceholder(placeholder);
@@ -511,6 +519,7 @@ export class ChoiceSuggestModal<T> extends SuggestModal<T> {
 
 	onOpen(): void {
 		void super.onOpen();
+		if (this.gallery) this.resultContainerEl.addClass("fileclass-suggest-gallery");
 		// Listened to whatever the modal shows: the group bar needs it, and so does paging.
 		this.resultContainerEl.addEventListener("scroll", this.onScroll);
 		if (!this.groupOf) return;
@@ -602,16 +611,18 @@ export class ChoiceSuggestModal<T> extends SuggestModal<T> {
 		this.renderRow(el, choice);
 	}
 
-	/** The row itself: the preview, then the text. */
+	/** One choice: the preview, then the text — beside it, or under it in a gallery. */
 	private renderRow(host: HTMLElement, choice: T): void {
 		const thumb = this.preview?.(choice);
 		if (!thumb) {
 			host.setText(this.toText(choice));
 			return;
 		}
-		host.addClass("fileclass-suggestion-row");
+		// A candidate with no thumbnail — an audio file, a PDF — keeps a card of its own in the
+		// gallery, or the grid would run out of step with the list it is showing.
+		host.addClass(this.gallery ? "fileclass-suggestion-card" : "fileclass-suggestion-row");
 		host.append(thumb);
-		host.createSpan({ text: this.toText(choice) });
+		host.createSpan({ cls: this.gallery ? "fileclass-card-name" : "", text: this.toText(choice) });
 	}
 
 	/** Names the group whose section currently sits at the top of the results. */

@@ -96,6 +96,20 @@ All notable changes to Fileclass are documented here. The format follows
   2000 options the modal opens in 179 ms and a keystroke in its filter costs 29 ms, so nothing
   there needed changing.
 
+- **An image gets the room it deserves, and the file name gets out of the way.** Two surfaces
+  changed, on use:
+  - the **media picker** is a gallery — three per row, the picture large, the name under it — where
+    it was a list of 20px thumbnails beside full-width file names, which is the one thing a cover is
+    not chosen by;
+  - a **table cell** holding an image shows the picture **alone**. `Dune.png` next to the picture of
+    Dune's cover says nothing the picture does not, and in a table it is the name that takes the
+    width. The value is still there on hover.
+
+  Unchanged where it was already right: the Properties row and the note-fields modal keep the
+  thumbnail beside the link — that is where you check which file a value points at. A media value
+  with no thumbnail (audio, a PDF) keeps its name everywhere, since there the name is all there is,
+  and a picker over notes rather than pictures stays a list.
+
 ### Changed
 
 - **A sync keeps the columns you added to a managed view, and leaves them where they are.** It set the

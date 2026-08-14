@@ -1086,6 +1086,51 @@ input.fileclass-color-circle.is-custom::-webkit-color-swatch-wrapper {
 }
 /* Sticky "current group" bar overlaid on the top of the suggester results (#47).
    pointer-events:none so the row beneath it stays clickable. */
+/*
+ * The media picker as a gallery: three per row, the picture given the width, the name under it.
+ *
+ * A row layout gave a 20px thumbnail to the picture and the rest of the line to `Kind of Blue.png`,
+ * which is the one thing a cover is not chosen by. Obsidian's own keyboard navigation is unaffected:
+ * it moves by item, and the items are the cards.
+ */
+.prompt-results.fileclass-suggest-gallery {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: var(--size-4-2);
+	padding: var(--size-4-2);
+}
+.fileclass-suggest-gallery .suggestion-item {
+	padding: var(--size-2-2);
+	border-radius: var(--radius-s);
+}
+.fileclass-suggestion-card {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: var(--size-2-2);
+}
+.fileclass-suggestion-card > img.fileclass-thumb {
+	width: 100%;
+	height: 108px;
+	max-width: none;
+	max-height: none;
+	object-fit: contain;
+	border-radius: var(--radius-s);
+}
+.fileclass-card-name {
+	width: 100%;
+	text-align: center;
+	font-size: var(--font-ui-smaller);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+/* A group header keeps its card: it names the group the first card of the run belongs to. */
+.fileclass-suggest-gallery .fileclass-group-header {
+	width: 100%;
+	text-align: center;
+}
+
 .fileclass-suggest-count {
 	padding: var(--size-2-2) var(--size-4-3);
 	border-top: 1px solid var(--background-modifier-border);

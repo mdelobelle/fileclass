@@ -70,6 +70,13 @@ All notable changes to Fileclass are documented here. The format follows
   preview plugin is set). Obsidian does not watch the DOM for links a plugin drew — it listens for a
   `hover-link` event — so a link in a cell was the only link in the app that showed nothing.
 
+- **A class's `relatedViews` row reads as relations, not as JSON.** The panel printed the raw list
+  of objects in the warning colour Obsidian keeps for values nobody can interpret — the same
+  treatment the `fields` row used to get, on the other row where that value is the subject. It now
+  shows one line per relation, `author → Books › Book by author`, each opening that base on that
+  view. A relation whose base is missing is struck through and says so on hover; nothing is
+  repaired, as with any other broken declaration.
+
 ### Changed
 
 - **A sync keeps the columns you added to a managed view, and leaves them where they are.** It set the

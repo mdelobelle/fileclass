@@ -33,6 +33,8 @@ import { EditContext, nextDateActionFor, runControlAction } from "../fields/fiel
 import { isInputSupported } from "../fields/support";
 import { fieldTypeIcon } from "../fields/typeIcons";
 import { openFieldSettings } from "./fieldSettings";
+import { RelatedViewLine, relatedViewLines } from "../schema/relatedViewsRow";
+import { FILECLASS_TABLE_ICON } from "../views/columns";
 import { Field, FieldType, isRootField } from "../schema/field";
 import { hasFieldKey, readFieldValue } from "../io/read";
 import { AddFileClassModal } from "./addFileClassModal";
@@ -63,6 +65,8 @@ const CLASS_CLASS = "fileclass-prop-class";
 const GROUP_OK_CLASS = "fileclass-group-ok";
 const FIELDS_ROW_CLASS = "fileclass-fields-summary";
 const FIELDS_ROW_MARK = "fileclass-fields-row";
+const RELATED_ROW_CLASS = "fileclass-related-views";
+const RELATED_ROW_MARK = "fileclass-related-row";
 /** The reading of a stored duration, inside its pill. */
 const PILL_HUMAN_CLASS = "fileclass-pill-human";
 /** Set on a field's button when the field is required and has no value. */
@@ -145,6 +149,7 @@ export class PropertyEditButtons extends Component {
 						this.injectRow(row);
 						this.injectClassRow(row);
 						this.injectFieldsRow(row);
+						this.injectRelatedViewsRow(row);
 					});
 			}
 			if (this.plugin.settings.enablePropertyActionButtons) {
@@ -455,6 +460,81 @@ export class PropertyEditButtons extends Component {
 		summary.addEventListener("keydown", (e) => {
 			if (e.key === "Enter" || e.key === " ") open(e);
 		});
+	}
+
+	/**
+	 * The `relatedViews` row of a class note: the relations, not their JSON.
+	 *
+	 * Same shape of problem as `fields` above — a list of objects Obsidian has no editor for, so it
+	 * printed the raw value in its warning colour. What that row actually says is which field
+	 * reaches which view, so that is what it now reads: one line per relation, `author → Books › A's
+	 * Bs`, each opening its base on that view.
+	 *
+	 * A base that is named but absent is greyed and says so, and nothing is repaired: that is the
+	 * rule already settled for renames — detect and tell, never rewrite a schema behind the reader's
+	 * back.
+	 */
+	private injectRelatedViewsRow(row: HTMLElement): void {
+		// Obsidian lowercases data-property-key, hence the case-insensitive match.
+		if (row.getAttribute("data-property-key")?.toLowerCase() !== "relatedviews") return;
+		const file = this.fileForEl(row);
+		if (!file || !this.plugin.index.fileClassNameOfNote(file.path)) return;
+		const item = row.querySelector<HTMLElement>(
+			":scope > .metadata-property-value > .metadata-property-value-item.mod-unknown"
+		);
+		if (!item) return;
+
+		const declared: unknown = this.plugin.app.metadataCache.getFileCache(file)?.frontmatter?.relatedViews;
+		const app = this.plugin.app;
+		const lines = relatedViewLines(declared, (path) => app.vault.getAbstractFileByPath(path) instanceof TFile);
+		if (!lines.length) return;
+		const state = lines.map((l) => `${l.field}:${l.label}:${l.missing}`).join("|");
+		if (item.dataset.fcRelated === state) return; // settled: no new mutation
+		item.dataset.fcRelated = state;
+
+		// The JSON is kept, so switching the buttons off puts the row back as Obsidian wrote it.
+		item.dataset.fcRaw ??= item.textContent ?? "";
+		item.empty();
+		item.addClass(RELATED_ROW_MARK);
+		const list = item.createDiv({ cls: RELATED_ROW_CLASS });
+		for (const line of lines) this.renderRelatedView(list, line);
+	}
+
+	/** One relation: the field it reads backwards, and the view showing the other end. */
+	private renderRelatedView(list: HTMLElement, line: RelatedViewLine): void {
+		const el = list.createDiv({ cls: "fileclass-related-view" });
+		setIcon(el.createSpan({ cls: "fileclass-related-icon" }), FILECLASS_TABLE_ICON);
+		el.createSpan({ cls: "fileclass-related-field", text: line.field });
+		el.createSpan({ cls: "fileclass-related-arrow", text: "→" });
+		el.createSpan({ cls: "fileclass-related-target", text: line.label });
+		if (line.missing || !line.target) {
+			el.addClass("is-fc-missing");
+			el.setAttribute(
+				"aria-label",
+				`Fileclass: this view is not in the vault — "${line.field}" points at nothing`
+			);
+			return;
+		}
+		const target = line.target;
+		el.setAttribute("aria-label", `Fileclass: open "${target.viewName}"`);
+		el.tabIndex = 0;
+		const open = (e: Event): void => {
+			e.preventDefault();
+			e.stopPropagation();
+			void this.openRelatedView(target);
+		};
+		el.addEventListener("click", open);
+		el.addEventListener("keydown", (e) => {
+			if (e.key === "Enter" || e.key === " ") open(e);
+		});
+	}
+
+	private async openRelatedView(target: { path: string; viewName: string }): Promise<void> {
+		const base = this.plugin.app.vault.getAbstractFileByPath(target.path);
+		if (!(base instanceof TFile)) return;
+		const leaf = this.plugin.app.workspace.getLeaf("tab");
+		await leaf.openFile(base);
+		await leaf.setViewState({ type: "bases", state: { file: target.path, viewName: target.viewName } });
 	}
 
 	private injectClassRow(row: HTMLElement): void {
@@ -788,13 +868,18 @@ export class PropertyEditButtons extends Component {
 	}
 
 	private removeAll(): void {
-		for (const cls of [BTN_CLASS, PREVIEW_CLASS, ACTIONS_CLASS, CLASS_CLASS, FIELDS_ROW_CLASS]) {
+		for (const cls of [BTN_CLASS, PREVIEW_CLASS, ACTIONS_CLASS, CLASS_CLASS, FIELDS_ROW_CLASS, RELATED_ROW_CLASS]) {
 			document.querySelectorAll(`.${cls}`).forEach((el) => el.remove());
 		}
 		// That row is Obsidian's own element, rewritten rather than added to: put its text back.
 		document.querySelectorAll<HTMLElement>(`.${FIELDS_ROW_MARK}`).forEach((item) => {
 			item.removeClass(FIELDS_ROW_MARK);
 			delete item.dataset.fcFields;
+			item.setText(item.dataset.fcRaw ?? "");
+		});
+		document.querySelectorAll<HTMLElement>(`.${RELATED_ROW_MARK}`).forEach((item) => {
+			item.removeClass(RELATED_ROW_MARK);
+			delete item.dataset.fcRelated;
 			item.setText(item.dataset.fcRaw ?? "");
 		});
 	}

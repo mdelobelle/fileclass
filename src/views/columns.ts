@@ -7,6 +7,9 @@
 /** The custom Bases view type registered by Fileclass (editable cells). */
 export const FILECLASS_TABLE_VIEW = "fileclass-table";
 
+/** The icon it registers with, reused wherever one of these views is named elsewhere. */
+export const FILECLASS_TABLE_ICON = "table-config";
+
 /** Field name for a `note.<field>` column, else null (file/formula columns). */
 export function fieldNameOfColumn(columnId: string): string | null {
 	return columnId.startsWith("note.") ? columnId.slice("note.".length) : null;

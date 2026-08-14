@@ -5,6 +5,7 @@
  * write layer (fileClassIo.ts) applies these inside a single processFrontMatter.
  */
 import { NoteDestination } from "./newNote";
+import { RelatedView } from "./fileClass";
 
 
 /** A raw `fields[]` entry; extra keys (options, command, display…) are kept. */
@@ -91,6 +92,8 @@ export interface EditableOptions {
 	baseView?: string;
 	/** The destinations for new notes (#84 follow-up); supersedes the two keys 0.2.13 wrote. */
 	newNotes?: NoteDestination[];
+	/** Which view reads which field backwards — several per field allowed. */
+	relatedViews?: RelatedView[];
 	mapWithTag?: boolean;
 	tagNames?: string[];
 	filesPaths?: string[];
@@ -111,6 +114,7 @@ export function buildOptionUpdates(o: EditableOptions): Record<string, unknown> 
 		baseFile: o.baseFile?.trim() ? o.baseFile.trim() : null,
 		baseView: o.baseView?.trim() ? o.baseView.trim() : null,
 		newNotes: o.newNotes?.length ? o.newNotes : null,
+		relatedViews: o.relatedViews?.length ? o.relatedViews : null,
 		// Cleared on save: a class that used 0.2.13's single pair has just had it read into the list
 		// above, and leaving both would give a vault two answers to the same question.
 		fileClassNotesFolder: null,

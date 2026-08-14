@@ -80,6 +80,8 @@ describe("buildOptionUpdates", () => {
 			// The destinations list, and the single pair 0.2.13 wrote cleared on save — a class read
 			// from the old spelling is rewritten in the new one, rather than keeping both.
 			newNotes: null,
+			// Declared relations, same treatment: an empty list clears the key rather than writing [].
+			relatedViews: null,
 			fileClassNotesFolder: null,
 			fileClassNoteTemplate: null,
 			mapWithTag: true,
@@ -88,5 +90,21 @@ describe("buildOptionUpdates", () => {
 			bookmarksGroups: null,
 			excludes: null,
 		});
+	});
+});
+
+describe("buildOptionUpdates — declared relations", () => {
+	it("writes the declarations it was given", () => {
+		const relatedViews = [
+			{ field: "delegate", view: "Tasks.base#Ongoing" },
+			{ field: "delegate", view: "Tasks.base#Done" },
+		];
+		expect(buildOptionUpdates({ relatedViews }).relatedViews).toEqual(relatedViews);
+	});
+
+	it("clears the key when the last one is removed", () => {
+		// Removing from the options list must actually remove: `relatedViews: []` would leave a class
+		// declaring an empty set, which reads like a setting nobody finished.
+		expect(buildOptionUpdates({ relatedViews: [] }).relatedViews).toBeNull();
 	});
 });

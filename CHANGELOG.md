@@ -180,6 +180,20 @@ All notable changes to Fileclass are documented here. The format follows
   their basenames — `Reading list · Reading list › Book` — with a click opening the class's options
   on the screen that manages them.
 
+- **Related views are managed from the class's options — added, edited, and at last removed.** A
+  declaration could only be made *from* a view, by running *Use this view for a relation* while
+  looking at it, and could not be removed at all short of editing the frontmatter by hand. That is a
+  strange shape for something a class owns. **Options → Related views** now lists them
+  (`author → Books › Book by author`), with *Edit*, *Remove* (which asks first) and *Add new*: pick
+  the field, pick the view among every view of every base in the vault.
+
+  Nothing there touches a base. A view that does **not** filter on the note it is read from is named
+  as such, live, under the picker — embedded in a note it would show every row to every note — and
+  left alone: adding that clause belongs to the command that adopts a view, where you are looking at
+  the view itself.
+
+  Removing the last one clears the key rather than leaving `relatedViews: []`.
+
 ### Changed
 
 - **A sync keeps the columns you added to a managed view, and leaves them where they are.** It set the

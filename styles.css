@@ -261,6 +261,16 @@
 	height: 15px;
 }
 
+/* The warning under the view picker: shown only when the view does not read the field backwards. */
+.fileclass-related-warning {
+	display: none;
+	margin: var(--size-2-2) 0;
+	color: var(--text-warning);
+}
+.fileclass-related-warning.is-visible {
+	display: block;
+}
+
 /* A class note's `newNotes` row: the destinations, one line each, not their JSON. */
 .metadata-property-value-item.fileclass-destinations-row {
 	color: var(--text-normal);

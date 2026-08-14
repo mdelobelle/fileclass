@@ -374,6 +374,19 @@ note. Fileclass creates the entry when it creates the view, and **never consults
 view's name** afterwards: rename the view to anything you like and everything keeps
 working, because the class points at it rather than describing it.
 
+### From the class's options
+
+**Options → Related views** lists what the class declares — `author → Books › Book by
+author` — with *Edit*, *Remove* and *Add new*. Adding asks for two things: which link
+field, and which view, among every view of every base in the vault.
+
+This is the door that closes: until 0.2.14 a declaration could only be made from the
+view, and removed only by editing the frontmatter by hand.
+
+Nothing there touches a base. A view that does not filter on the note it is read from
+is named as such under the picker, and left as it is — adding that clause belongs to
+*Use this view for a relation*, where you are looking at the view itself.
+
 ### One field, several views
 
 A relation is often shown more than one way. `Task.delegate` read backwards can be

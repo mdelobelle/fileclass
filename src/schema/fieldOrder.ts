@@ -21,6 +21,32 @@ export function fieldOrderKey(fields: readonly Field[], field: Field): string {
 	return [...pathFieldNames(fields, field.path), field.name].join(".");
 }
 
+/**
+ * The stored order, as keys this module understands — dropping what names no field.
+ *
+ * An entry is read as a **name at its level** first, and as a field **id** second. The id form is
+ * what Metadata Menu wrote in this very key (`fieldsOrder: [jlBZN1, JKrPnA, …]`), and a vault
+ * migrated from it arrives with one: read as names, those match nothing, so the whole order was
+ * silently inert — the class declared an order and got the default. Ids are only unique within a
+ * class, which is why they are the fallback rather than the format, and the next move through the
+ * editor rewrites the key in names.
+ */
+export function canonicalFieldOrder(fields: readonly Field[], order: readonly string[]): string[] {
+	const byKey = new Map<string, string>();
+	const byId = new Map<string, string>();
+	for (const field of fields) {
+		const key = fieldOrderKey(fields, field);
+		if (!byKey.has(key)) byKey.set(key, key);
+		if (!byId.has(field.id)) byId.set(field.id, key);
+	}
+	const out: string[] = [];
+	for (const entry of order) {
+		const key = byKey.get(entry) ?? byId.get(entry);
+		if (key && !out.includes(key)) out.push(key);
+	}
+	return out;
+}
+
 /** Every field's key, in the order they currently come in: what a class writes to freeze it. */
 export function fieldOrderKeys(fields: readonly Field[]): string[] {
 	return fields.map((f) => fieldOrderKey(fields, f));
@@ -41,9 +67,7 @@ export function fieldOrderKeys(fields: readonly Field[]): string[] {
 export function applyFieldOrder(fields: readonly Field[], order: readonly string[]): Field[] {
 	if (!order.length) return [...fields];
 	const rank = new Map<string, number>();
-	order.forEach((key, i) => {
-		if (!rank.has(key)) rank.set(key, i);
-	});
+	canonicalFieldOrder(fields, order).forEach((key, i) => rank.set(key, i));
 
 	// Fields by level, in the default order. `path` is the chain of parent ids, so it is the level.
 	const levels = new Map<string, Field[]>();

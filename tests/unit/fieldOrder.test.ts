@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { Field } from "../../src/schema/field";
 import {
 	applyFieldOrder,
+	canonicalFieldOrder,
 	fieldOrderKey,
 	fieldOrderKeys,
 	isInherited,
@@ -184,5 +185,42 @@ describe("renamedFieldOrder", () => {
 
 	it("answers nothing when the order does not name the field", () => {
 		expect(renamedFieldOrder(["title", "author"], "shelf", "rack")).toBeNull();
+	});
+});
+
+describe("canonicalFieldOrder", () => {
+	it("passes names through", () => {
+		expect(canonicalFieldOrder(inherited, ["author", "title"])).toEqual(["author", "title"]);
+	});
+
+	it("reads the field ids Metadata Menu wrote in this key", () => {
+		// A vault migrated from it arrives with `fieldsOrder: [b1, m1]`. Read as names those match
+		// nothing, so the class declared an order and silently got the default.
+		expect(canonicalFieldOrder(inherited, ["b1", "m1"])).toEqual(["author", "title"]);
+	});
+
+	it("mixes the two, and drops what names no field", () => {
+		expect(canonicalFieldOrder(inherited, ["b1", "gone", "title"])).toEqual(["author", "title"]);
+	});
+
+	it("keeps a name over an id when both could match", () => {
+		const odd = [field("m1", "zzz", "Media"), field("other", "m1", "Media")];
+		// "m1" is a field's name and another's id: the name wins, since that is the format.
+		expect(canonicalFieldOrder(odd, ["m1"])).toEqual(["m1"]);
+	});
+
+	it("names a child at its level", () => {
+		const fields = [field("editions", "eD", "Book"), field("year", "e1", "Book", "eD")];
+		expect(canonicalFieldOrder(fields, ["e1", "eD"])).toEqual(["editions.year", "editions"]);
+	});
+});
+
+describe("applyFieldOrder, on an order written as ids", () => {
+	it("orders the fields exactly as the names would", () => {
+		expect(applyFieldOrder(inherited, ["b1", "m1"]).map((f) => f.name)).toEqual([
+			"author",
+			"title",
+			"year",
+		]);
 	});
 });

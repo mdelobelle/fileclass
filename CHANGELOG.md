@@ -135,6 +135,16 @@ All notable changes to Fileclass are documented here. The format follows
   note. Measured on `Book extends Media` with `Comic` beside it: all four agree, `Media` and `Comic`
   unchanged.
 
+### Fixed
+
+- **A `fieldsOrder` written as field ids is read, instead of doing nothing.** Metadata Menu wrote
+  that very key as a list of ids (`fieldsOrder: [jlBZN1, JKrPnA, …]`), and 0.2.14 reads it as names
+  — so a vault migrated from it declared an order and silently got the default. An entry is now read
+  as a name at its level first and as a field id second, and the class note's row names the fields
+  instead of repeating the ids: `author · acquired · rating` rather than `jlBZN1 · JKrPnA · Fnb8cC`.
+  The next move through the schema editor rewrites the key in names, since ids are unique only
+  within one class.
+
 ### Changed
 
 - **A sync keeps the columns you added to a managed view, and leaves them where they are.** It set the

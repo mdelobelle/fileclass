@@ -39,21 +39,31 @@ describe("resolveInheritedFields", () => {
 	};
 	const ownFieldsOf = (n: string) => own[n] ?? [];
 
-	it("merges self + ancestors, nearest declaration of a name wins", () => {
+	it("runs from the root of the chain down to the class itself", () => {
+		// What a class inherits comes first, oldest ancestor first, then what it adds: on a note,
+		// the general before the particular. A class free to reorder all of it does so through
+		// `fieldsOrder` (see fieldOrder.ts); this is the default that order starts from.
 		const fields = resolveInheritedFields("Child", ["Parent", "Grand"], ownFieldsOf, () => []);
 		expect(fields.map((f) => `${f.name}:${f.id}`)).toEqual([
-			"title:c1", // Child's title shadows Parent's
-			"rating:c2",
-			"author:p2",
-			"isbn:g1",
+			"isbn:g1", // Grand
+			"title:c1", // Parent's slot, Child's declaration — nearest wins, in place
+			"author:p2", // Parent
+			"rating:c2", // Child's own
 		]);
+	});
+
+	it("keeps an overridden field where the ancestor put it", () => {
+		// Otherwise redefining an inherited field would silently move it to the end, and every
+		// note of the class would be reordered by a change meant to be about a type.
+		const fields = resolveInheritedFields("Child", ["Parent"], ownFieldsOf, () => []);
+		expect(fields.map((f) => `${f.name}:${f.id}`)).toEqual(["title:c1", "author:p2", "rating:c2"]);
 	});
 
 	it("applies excludes, accumulating down the chain", () => {
 		// Parent excludes "isbn" → removed from the deeper Grand ancestor.
 		const excludesOf = (n: string) => (n === "Parent" ? ["isbn"] : []);
 		const fields = resolveInheritedFields("Child", ["Parent", "Grand"], ownFieldsOf, excludesOf);
-		expect(fields.map((f) => f.name)).toEqual(["title", "rating", "author"]);
+		expect(fields.map((f) => f.name)).toEqual(["title", "author", "rating"]);
 	});
 
 	it("lets a class exclude a name from itself too", () => {
@@ -106,10 +116,11 @@ describe("resolveInheritedFields — a name at two levels", () => {
 			() => []
 		);
 		const publishers = fields.filter((f) => f.name === "publisher");
-		// One per level, and the nested one is the subclass's own declaration.
+		// One per level, and the nested one is the subclass's own declaration — sitting where the
+		// ancestor declared it, since an override keeps its position.
 		expect(publishers.map((f) => `${f.path || "root"}:${f.id}`)).toEqual([
-			"eDitns:own",
 			"root:b1",
+			"eDitns:own",
 		]);
 	});
 

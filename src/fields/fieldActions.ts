@@ -400,7 +400,9 @@ export async function promptFieldValue(
 				`Set ${field.name}`,
 				grouped ? (c) => c.group ?? null : undefined,
 				// A cover is chosen by looking at it, not by reading its file name.
-				media ? (c) => thumbFor(app, c.file) : undefined
+				media ? (c) => thumbFor(app, c.file) : undefined,
+				// …which is also why pictures are laid out as a gallery rather than a list.
+				media
 			).open();
 			return;
 		}
@@ -428,6 +430,8 @@ export async function promptFieldValue(
 							return c ? thumbFor(app, c.file) : null;
 						}
 					: undefined,
+				// …and laid out as a gallery, for the same reason as the single picker.
+				gallery: media,
 				onSubmit: (displays) =>
 					onValue(
 						displays

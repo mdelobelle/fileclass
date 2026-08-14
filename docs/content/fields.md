@@ -240,12 +240,22 @@ the alias shown in the picker and written into the link.
   leaves it dangling** (a plain link is rewritten for you), it is absent from the
   graph, and a Bases `image` column ignores it. Values already stored as embeds keep
   resolving everywhere Fileclass reads them.
-- An **image value shows as a thumbnail** wherever Fileclass displays it — in the
-  picker, so a cover is chosen by looking at it rather than by reading
-  `cover-final-2.png`, and beside the value in the note-fields modal, the
-  Properties row and a table cell. A list shows its first three. Images only: the
-  media types also accept audio, video and PDF, and there is no honest thumbnail
-  for those.
+- An **image value shows as a thumbnail** wherever Fileclass displays it, and how
+  much room it gets depends on what the surface is for:
+  - the **pickers** are galleries — four per row, the picture large, the name under
+    it — because a cover is chosen by looking at it, not by reading
+    `cover-final-2.png`. Picking several works the same way: no switches, a ticked
+    card is outlined, and the filter box above still narrows the grid;
+  - a **table cell** shows the picture **alone**: the file name beside it says
+    nothing the picture does not, and in a table the name is what takes the width.
+    It stays available on hover;
+  - the **Properties row** and the **note-fields modal** show the thumbnail beside
+    the link, which there is worth keeping — that is where you check *which* file a
+    value points at.
+
+  A list shows its first three. Images only: the media types also accept audio,
+  video and PDF, and there is no honest thumbnail for those — those keep their
+  names everywhere, since the name is all there is.
 
 {{< video "014" >}}
 - Links honor your vault's link settings (`generateMarkdownLink`).

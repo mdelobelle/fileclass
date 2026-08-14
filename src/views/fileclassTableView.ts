@@ -14,6 +14,7 @@ import { Component, Notice, TFile, parseYaml, setIcon } from "obsidian";
 
 import type FileclassPlugin from "../../main";
 import { registerFileclassView } from "../engine/basesAdapter";
+import { isMediaType } from "../fields/candidates";
 import { createNoteWithClass } from "../commands/createNoteWithClass";
 import { ChoiceSuggestModal } from "../fields/input/valueModals";
 import { Seed } from "../schema/newNote";
@@ -640,22 +641,32 @@ class FileclassTableView extends Component {
 		} else {
 			const raw = this.displayText(entry, col, field);
 			// A type preview (Color swatch / Icon glyph / image) leads the value.
+			let shown = false;
 			if (field) {
 				const preview = makeValuePreview(field, raw, {
 					app: this.plugin.app,
 					sourcePath: entry.file.path,
 					raw: readFieldValue(this.plugin.app, entry.file, field),
 				});
-				if (preview) content.prepend(preview);
+				if (preview) {
+					content.prepend(preview);
+					// An image cell is the image. `Dune.png` beside the picture of Dune's cover says
+					// nothing the picture does not, and in a table it is the file name that gets the
+					// width. The name stays on hover, below, and a media value with no thumbnail —
+					// audio, a PDF — still shows its name, since there the name is all there is.
+					shown = isMediaType(field.type);
+				}
 			}
-			for (const seg of parseCellSegments(raw)) {
-				if ("link" in seg) this.renderInternalLink(content, seg.link, seg.display, source);
-				else content.createSpan({ cls: "fc-seg", text: seg.text });
-			}
+			if (!shown)
+				for (const seg of parseCellSegments(raw)) {
+					if ("link" in seg) this.renderInternalLink(content, seg.link, seg.display, source);
+					else content.createSpan({ cls: "fc-seg", text: seg.text });
+				}
 		}
 
-		// Full value on hover, since cells are truncated with an ellipsis.
-		const full = content.textContent ?? "";
+		// Full value on hover, since cells are truncated with an ellipsis — and since an image cell
+		// no longer carries its name, `raw` rather than what was drawn.
+		const full = (col === "file.name" ? content.textContent : this.displayText(entry, col, field)) ?? "";
 		if (full) cell.setAttribute("title", full);
 
 		if (!field) return;

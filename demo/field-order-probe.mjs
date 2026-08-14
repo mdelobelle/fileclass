@@ -67,41 +67,56 @@ export default async function ({ page, sleep }) {
 		})
 	);
 
-	// And the schema editor: inherited rows named, and moves that write fieldsOrder.
+	// And the schema editor. Opened from the class note's own `fields` row rather than through the
+	// class picker: two earlier runs of this probe typed a name into that picker, landed on **Book**,
+	// and measured the wrong class for three checks in a row.
 	note(
 		"schema editor rows",
 		await page.evaluate(async () => {
 			const app = window.app;
-			app.commands.executeCommandById("fileclass:edit-class-schema");
-			await new Promise((r) => setTimeout(r, 1200));
-			const items = Array.from(document.querySelectorAll(".prompt-results .suggestion-item"));
-			const book = items.find((e) => e.textContent.trim() === "Book");
-			book?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+			const leaf = app.workspace.getLeaf(false);
+			await leaf.openFile(app.vault.getAbstractFileByPath("Classes/Book.md"));
+			await new Promise((r) => setTimeout(r, 2500));
+			document.querySelector(".fileclass-fields-summary")?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
 			await new Promise((r) => setTimeout(r, 2000));
-			return Array.from(document.querySelectorAll(".fileclass-field-list > .setting-item")).map((row) => ({
-				name: row.querySelector(".setting-item-name")?.textContent?.trim(),
-				from: row.querySelector(".fileclass-field-from")?.textContent ?? null,
-				buttons: Array.from(row.querySelectorAll("button")).map((b) => b.textContent.trim()),
-			})).slice(0, 5);
+			return Array.from(document.querySelectorAll(".fileclass-field-list > .setting-item"))
+				.slice(0, 5)
+				.map((row) => ({
+					name: row.querySelector(".setting-item-name")?.textContent?.trim(),
+					from: row.querySelector(".fileclass-field-from")?.textContent ?? null,
+					buttons: Array.from(row.querySelectorAll("button")).map((b) => b.textContent.trim()),
+				}));
 		})
 	);
 
-	note(
-		"move an inherited field down, from the editor",
-		await page.evaluate(async () => {
+	/**
+	 * Moving the second row up, twice — the case that was reported broken.
+	 *
+	 * The write was always right; the **list** was not. This screen reads the resolved set, which
+	 * the index builds on a 400 ms debounce, so rendering on the metadata event alone drew the order
+	 * as it was before the write that triggered it: the rows never moved, and the next click acted on
+	 * a row that was no longer where it appeared. What this asserts is that the list and the resolved
+	 * order agree after **every** click.
+	 */
+	const moveUp = (nth) =>
+		page.evaluate(async (n) => {
 			const rows = Array.from(document.querySelectorAll(".fileclass-field-list > .setting-item"));
-			const inherited = rows.find((r) => r.querySelector(".fileclass-field-from"));
-			const label = inherited?.querySelector(".setting-item-name")?.textContent?.trim();
-			const down = inherited?.querySelector('[aria-label="Move down"], .clickable-icon:nth-of-type(2)');
-			down?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+			const clicked = rows[n]?.querySelector(".setting-item-name")?.textContent?.trim();
+			rows[n]?.querySelector('[aria-label="Move up"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
 			await new Promise((r) => setTimeout(r, 2500));
 			const api = window.app.plugins.plugins.fileclass;
+			const rowsNow = Array.from(
+				document.querySelectorAll(".fileclass-field-list > .setting-item .setting-item-name")
+			).map((e) => e.textContent.trim().replace(/from \w+$/, "").trim());
+			const resolved = api.index.getResolvedFields("Book").filter((f) => !f.path).map((f) => f.name);
 			return {
-				moved: label,
-				stored: window.app.metadataCache.getFileCache(window.app.vault.getAbstractFileByPath("Classes/Book.md"))
-					?.frontmatter?.fieldsOrder,
-				resolved: api.index.getResolvedFields("Book").filter((f) => !f.path).map((f) => f.name),
+				clicked,
+				rows: rowsNow.slice(0, 4),
+				agrees: rowsNow.slice(0, 6).join() === resolved.slice(0, 6).join(),
 			};
-		})
-	);
+		}, nth);
+
+	note("move row #2 up", await moveUp(1));
+	note("move row #2 up again", await moveUp(1));
+	note("move row #3 up", await moveUp(2));
 }

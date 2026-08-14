@@ -58,7 +58,7 @@ export class FileClassSchemaModal extends Modal {
 	onOpen(): void {
 		this.render();
 		this.changeRef = this.app.metadataCache.on("changed", (f) => {
-			if (f.path === this.file.path) this.render();
+			if (f.path === this.file.path) this.refresh();
 		});
 	}
 
@@ -318,7 +318,22 @@ export class FileClassSchemaModal extends Modal {
 	private move(key: string, dir: -1 | 1): void {
 		const order = movedFieldOrder(this.resolvedFields(), key, dir);
 		if (!order) return;
-		void writeOptions(this.app, this.file, { fieldsOrder: order });
+		void writeOptions(this.app, this.file, { fieldsOrder: order }).then(() => this.refresh());
+	}
+
+	/**
+	 * Rebuilds the index, then the list.
+	 *
+	 * This screen reads the **resolved** field set — the class's fields and its ancestors', in the
+	 * order the class declares — and that set is built by the index, whose rebuild is debounced by
+	 * 400 ms. Rendering on the metadata event alone therefore drew the list as it was *before* the
+	 * write that triggered it: measured, moving the second row up wrote the right order and left the
+	 * list unchanged, so the next click acted on a row that was no longer where it appeared. One
+	 * class note's rebuild is idempotent and cheap, which is why it can be asked for here.
+	 */
+	private refresh(): void {
+		this.plugin.index.rebuild();
+		this.render();
 	}
 }
 

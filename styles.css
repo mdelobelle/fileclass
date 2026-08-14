@@ -231,6 +231,57 @@
 	height: 15px;
 }
 
+/*
+ * A class note's `relatedViews` row: the relations, not their JSON. Same treatment as `fields`
+ * above — the marker drops Obsidian's warning colour, and each line is a control.
+ */
+.metadata-property-value-item.fileclass-related-row {
+	color: var(--text-normal);
+	white-space: normal;
+}
+.fileclass-related-views {
+	display: flex;
+	flex-direction: column;
+	gap: var(--size-2-1);
+}
+.fileclass-related-view {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--size-2-2);
+	cursor: pointer;
+	color: var(--text-muted);
+	width: fit-content;
+}
+.fileclass-related-view:hover {
+	color: var(--text-normal);
+}
+.fileclass-related-icon {
+	display: inline-flex;
+	align-items: center;
+}
+.fileclass-related-icon svg {
+	width: 15px;
+	height: 15px;
+}
+.fileclass-related-field {
+	color: var(--text-normal);
+}
+.fileclass-related-arrow {
+	opacity: 0.6;
+}
+/* Declared, but the base is not in the vault: nothing to open, and it should look like it. */
+.fileclass-related-view.is-fc-missing {
+	cursor: default;
+	color: var(--text-faint);
+	text-decoration: line-through;
+}
+.fileclass-related-view.is-fc-missing:hover {
+	color: var(--text-faint);
+}
+.fileclass-related-view.is-fc-missing .fileclass-related-field {
+	color: var(--text-faint);
+}
+
 /* A value a picker shows but will not add: greyed, with the reason on its second line. */
 .fileclass-toggle-row.fileclass-row-disabled .setting-item-name {
 	color: var(--text-faint);

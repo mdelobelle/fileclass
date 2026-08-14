@@ -344,6 +344,12 @@ interpret — on the one note where that value is the subject. The count is what
 the class declares at its top level; the tooltip adds how many live inside
 objects.
 
+Its **`relatedViews` row** gets the same treatment, for the same reason: one line
+per declared relation, `author → Books › Book by author`, each opening that base
+on that view. A relation whose base is not in the vault — renamed, deleted, or
+mistyped — is struck through and says so on hover; nothing is repaired for you,
+the row just stops pretending.
+
 A class note gets the actions that act on the **class**, not on the note — and
 not *Add a class*, which there would bind a class to a class:
 

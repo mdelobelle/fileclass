@@ -34,6 +34,7 @@ import { Field, isRootField } from "../schema/field";
 import {
 	columnLabel,
 	fieldNameOfColumn,
+	FILECLASS_TABLE_ICON,
 	FILECLASS_TABLE_VIEW,
 	parseCellSegments,
 } from "./columns";
@@ -772,7 +773,7 @@ export function registerFileclassTableView(plugin: FileclassPlugin): () => void 
 		// under the same glyph, and the only way to tell which one a base was using was to open it.
 		// This keeps the table silhouette — it is still a table — and marks it as the one a schema
 		// drives.
-		icon: "table-config",
+		icon: FILECLASS_TABLE_ICON,
 		factory: (_controller: unknown, containerEl: HTMLElement) =>
 			new FileclassTableView(plugin, containerEl),
 	});

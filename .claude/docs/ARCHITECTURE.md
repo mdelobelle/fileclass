@@ -415,6 +415,16 @@ canvas file tracking (comes with the planned Canvas engine, §9.1).
   view: editable cells, validation columns, and the *Manage `<FileClass>`* wrench,
   each scoped to its own embed. See §3.1 for the two rules an embed enforces that a
   leaf does not (fill the container, expose `type`).
+- **Field order is the class's, on every surface.** The note-fields modal, the
+  Properties row order after a reorder, and a managed view's columns all show the fields
+  in the order the class declares them — one contract, so a reader who learns it once
+  knows what any surface will do. Stated by the author (13 August 2026) when confirming
+  `mergeOrder`: *"ça me va bien que la vue corresponde à l'ordre des colonnes de la
+  classe, tout comme le note fields modal. c'est un contrat universel."*
+  What is **not** ours: `formula.*` and `file.*` columns, which a reader adds for reading
+  rather than for editing. Those keep their positions through a sync; only the field slots
+  are refilled. Do not "improve" this into preserving a hand-picked field order — it was
+  weighed and declined.
 - **The class ↔ view link** (`baseFile`/`baseView` on the class note) is what names
   the table: `Books.base › Book` is Book's view even when a row carries several
   classes. It is also a uniqueness constraint — two classes mirroring into one view

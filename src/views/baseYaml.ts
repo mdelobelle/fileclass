@@ -183,7 +183,9 @@ export function keptColumns(order: readonly unknown[]): string[] {
  *
  * **Positions are the reader's, the field sequence is the class's.** Every `file.*` and `formula.*`
  * column stays in the slot it occupies; the remaining slots are filled with the class's fields, in
- * the class's order. So a `formula.Room` sitting third stays third, and a `file.mtime` between two
+ * the class's order — the same contract the note-fields modal keeps, so one rule covers every surface
+ * (§11). Those two families are additions made for *reading*, not for editing, which is why they are
+ * left alone and the fields are not. So a `formula.Room` sitting third stays third, and a `file.mtime` between two
  * fields stays between two fields — which the previous version got wrong by rebuilding the order as
  * "name, fields, then the rest", moving columns nobody asked to move.
  *

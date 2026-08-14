@@ -242,9 +242,10 @@ the alias shown in the picker and written into the link.
   resolving everywhere Fileclass reads them.
 - An **image value shows as a thumbnail** wherever Fileclass displays it, and how
   much room it gets depends on what the surface is for:
-  - the **picker** is a gallery — three per row, the picture large, the name under
+  - the **pickers** are galleries — four per row, the picture large, the name under
     it — because a cover is chosen by looking at it, not by reading
-    `cover-final-2.png`;
+    `cover-final-2.png`. Picking several works the same way: no switches, a ticked
+    card is outlined, and the filter box above still narrows the grid;
   - a **table cell** shows the picture **alone**: the file name beside it says
     nothing the picture does not, and in a table the name is what takes the width.
     It stays available on hover;

@@ -98,9 +98,10 @@ All notable changes to Fileclass are documented here. The format follows
 
 - **An image gets the room it deserves, and the file name gets out of the way.** Two surfaces
   changed, on use:
-  - the **media picker** is a gallery — three per row, the picture large, the name under it — where
-    it was a list of 20px thumbnails beside full-width file names, which is the one thing a cover is
-    not chosen by;
+  - both **media pickers** are galleries — four per row, the picture large, the name under it —
+    where they were lists of 20px thumbnails beside full-width file names, which is the one thing a
+    cover is not chosen by. Picking several drops the switches with the rows: a card that is on says
+    so by looking picked, and the whole card was already the target;
   - a **table cell** holding an image shows the picture **alone**. `Dune.png` next to the picture of
     Dune's cover says nothing the picture does not, and in a table it is the name that takes the
     width. The value is still there on hover.

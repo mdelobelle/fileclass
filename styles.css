@@ -1131,7 +1131,7 @@ input.fileclass-color-circle.is-custom::-webkit-color-swatch-wrapper {
 /* Sticky "current group" bar overlaid on the top of the suggester results (#47).
    pointer-events:none so the row beneath it stays clickable. */
 /*
- * The media picker as a gallery: three per row, the picture given the width, the name under it.
+ * The media picker as a gallery: four per row, the picture given the width, the name under it.
  *
  * A row layout gave a 20px thumbnail to the picture and the rest of the line to `Kind of Blue.png`,
  * which is the one thing a cover is not chosen by. Obsidian's own keyboard navigation is unaffected:
@@ -1139,7 +1139,7 @@ input.fileclass-color-circle.is-custom::-webkit-color-swatch-wrapper {
  */
 .prompt-results.fileclass-suggest-gallery {
 	display: grid;
-	grid-template-columns: repeat(3, minmax(0, 1fr));
+	grid-template-columns: repeat(4, minmax(0, 1fr));
 	gap: var(--size-4-2);
 	padding: var(--size-4-2);
 }
@@ -1155,7 +1155,7 @@ input.fileclass-color-circle.is-custom::-webkit-color-swatch-wrapper {
 }
 .fileclass-suggestion-card > img.fileclass-thumb {
 	width: 100%;
-	height: 108px;
+	height: 140px;
 	max-width: none;
 	max-height: none;
 	object-fit: contain;
@@ -1173,6 +1173,82 @@ input.fileclass-color-circle.is-custom::-webkit-color-swatch-wrapper {
 .fileclass-suggest-gallery .fileclass-group-header {
 	width: 100%;
 	text-align: center;
+}
+
+/*
+ * The MultiMedia picker as a gallery, matching the single one. No switches: on a grid of pictures
+ * they are a column of small targets beside the thing you are looking at, and the card has been the
+ * click target since the row layout. A chosen card says so by looking chosen.
+ */
+.fileclass-multiselect-gallery {
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	gap: var(--size-4-2);
+	padding: var(--size-2-2) 0;
+}
+.fileclass-multiselect-gallery > .fileclass-group-header,
+.fileclass-multiselect-gallery > .fileclass-filter-empty {
+	grid-column: 1 / -1;
+}
+.fileclass-multiselect-card {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: var(--size-2-2);
+	padding: var(--size-2-2);
+	border: 2px solid transparent;
+	border-radius: var(--radius-s);
+	cursor: pointer;
+}
+/* Declared after the generic `display: none` of the filter, and at the same specificity, so it
+   would win it: a filtered-out card stayed on screen while the code thought it was hidden. */
+.fileclass-multiselect-card.fileclass-filter-hidden,
+.fileclass-suggestion-card.fileclass-filter-hidden {
+	display: none;
+}
+.fileclass-multiselect-card:hover {
+	background: var(--background-modifier-hover);
+}
+.fileclass-multiselect-card > img.fileclass-thumb {
+	width: 100%;
+	height: 140px;
+	max-width: none;
+	max-height: none;
+	object-fit: contain;
+	border-radius: var(--radius-s);
+}
+.fileclass-multiselect-card.is-selected {
+	border-color: var(--interactive-accent);
+	background: var(--background-modifier-hover);
+}
+/* The tick is the only thing saying a card is on, so it is drawn on the picture, not beside it. */
+.fileclass-card-check {
+	position: absolute;
+	top: var(--size-2-2);
+	right: var(--size-2-2);
+	display: none;
+	align-items: center;
+	justify-content: center;
+	width: 20px;
+	height: 20px;
+	border-radius: 50%;
+	background: var(--interactive-accent);
+	color: var(--text-on-accent);
+}
+.fileclass-multiselect-card.is-selected .fileclass-card-check {
+	display: flex;
+}
+.fileclass-card-check svg {
+	width: 13px;
+	height: 13px;
+}
+.fileclass-multiselect-card.fileclass-row-disabled {
+	cursor: default;
+	opacity: 0.45;
+}
+.fileclass-multiselect-card.fileclass-row-disabled:hover {
+	background: transparent;
 }
 
 .fileclass-suggest-count {

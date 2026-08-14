@@ -430,6 +430,8 @@ export async function promptFieldValue(
 							return c ? thumbFor(app, c.file) : null;
 						}
 					: undefined,
+				// …and laid out as a gallery, for the same reason as the single picker.
+				gallery: media,
 				onSubmit: (displays) =>
 					onValue(
 						displays

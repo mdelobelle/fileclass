@@ -261,6 +261,44 @@
 	height: 15px;
 }
 
+/* A class note's `newNotes` row: the destinations, one line each, not their JSON. */
+.metadata-property-value-item.fileclass-destinations-row {
+	color: var(--text-normal);
+	white-space: normal;
+}
+.fileclass-destinations {
+	display: flex;
+	flex-direction: column;
+	gap: var(--size-2-1);
+}
+.fileclass-destination {
+	display: inline-flex;
+	align-items: baseline;
+	gap: var(--size-2-2);
+	width: fit-content;
+	cursor: pointer;
+	color: var(--text-muted);
+}
+.fileclass-destination:hover {
+	color: var(--text-normal);
+}
+.fileclass-destination-icon {
+	display: inline-flex;
+	align-items: center;
+	align-self: center;
+}
+.fileclass-destination-icon svg {
+	width: 15px;
+	height: 15px;
+}
+.fileclass-destination-name {
+	color: var(--text-normal);
+}
+.fileclass-destination-paths {
+	font-size: var(--font-ui-smaller);
+	opacity: 0.85;
+}
+
 /*
  * A class note's `relatedViews` row: the relations, not their JSON. Same treatment as `fields`
  * above — the marker drops Obsidian's warning colour, and each line is a control.

@@ -350,6 +350,10 @@ on that view. A relation whose base is not in the vault — renamed, deleted, or
 mistyped — is struck through and says so on hover; nothing is repaired for you,
 the row just stops pretending.
 
+Its **`newNotes` row** lists the destinations rather than their JSON: one line each,
+the name in front, the folder and template behind by their basenames, and a click
+opening the class's options where they are managed.
+
 Its **`fieldsOrder` row** is shown, not edited: `20 fields, in this class's order`,
 the order itself on hover, and a click opening the schema editor — whose arrows are
 what writes it. Obsidian draws a list of strings as pills with a remove button each,

@@ -368,6 +368,27 @@ note. Fileclass creates the entry when it creates the view, and **never consults
 view's name** afterwards: rename the view to anything you like and everything keeps
 working, because the class points at it rather than describing it.
 
+### One field, several views
+
+A relation is often shown more than one way. `Task.delegate` read backwards can be
+*Delegate's ongoing tasks* and *Delegate's done tasks*, and both are that field read
+backwards — so a class declares both:
+
+```yaml
+relatedViews:
+  - field: delegate
+    view: Tasks.base#Delegate's ongoing tasks
+  - field: delegate
+    view: Tasks.base#Delegate's done tasks
+```
+
+Each gets what a declared view gets: the *New `<Class>` with `<note>`* button, and a
+note created there already pointing back. Declaring the same view twice for one field
+does nothing — the pair is what identifies a declaration.
+
+When something has to pick **one** — inserting a reverse relation into a note — you
+are asked which of them this note should show.
+
 ### A view you already have
 
 If your vault predates Fileclass, those views probably exist already — hand-written

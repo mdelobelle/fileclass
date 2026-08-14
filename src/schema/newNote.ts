@@ -72,14 +72,27 @@ export function noteDestinations(options: NoteTargetOptions): NoteDestination[] 
 export function destinationLabel(destination: NoteDestination, fallback = "New note"): string {
 	const named = destination.name?.trim();
 	if (named) return named;
+	return destinationPaths(destination) || fallback;
+}
+
+/**
+ * `Contacts › Person pro` — the folder and the template by their **basenames**.
+ *
+ * Full paths are what made the raw value unreadable; the last segment is what tells two
+ * destinations apart. Empty when the destination names neither, which cannot be saved from the
+ * modal but can be hand-written.
+ */
+export function destinationPaths(destination: NoteDestination): string {
 	const last = (path?: string): string | undefined => {
 		const clean = path?.replace(/\/+$/, "").trim();
 		if (!clean) return undefined;
 		return clean.slice(clean.lastIndexOf("/") + 1).replace(/\.md$/, "");
 	};
-	const folder = last(destination.folder) ?? "the default folder";
+	const folder = last(destination.folder);
 	const template = last(destination.template);
-	return template ? `${folder} › ${template}` : destination.folder ? folder : fallback;
+	if (folder && template) return `${folder} › ${template}`;
+	if (folder) return folder;
+	return template ? `the default folder › ${template}` : "";
 }
 
 /**

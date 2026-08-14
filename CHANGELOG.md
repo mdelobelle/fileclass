@@ -135,6 +135,30 @@ All notable changes to Fileclass are documented here. The format follows
   note. Measured on `Book extends Media` with `Comic` beside it: all four agree, `Media` and `Comic`
   unchanged.
 
+- **A field can be read backwards by several views.** A relation is often shown more than one way —
+  `Task.delegate` as *Delegate's ongoing tasks* and as *Delegate's done tasks* — and only the first
+  was a declared view: adopting the second silently replaced it, so one of the two lost its *New
+  task with …* button and its seed. A class now keeps both:
+
+  ```yaml
+  relatedViews:
+    - field: delegate
+      view: Tasks.base#Delegate's ongoing tasks
+    - field: delegate
+      view: Tasks.base#Delegate's done tasks
+  ```
+
+  Both get the button, and a note created from either arrives already pointing at the note the
+  table is embedded in. The pair is the identity, so declaring the same view twice for one field
+  changes nothing. Where a single view used to be assumed — inserting a reverse relation into a
+  note — you are asked which one this note should show, since guessing would be silent.
+
+- **A class note's `newNotes` row reads as destinations, not as JSON.** Third list of objects on
+  that note, third time Obsidian printed the raw value in the colour it keeps for things nobody can
+  interpret. One line per destination now, its name in front and the folder and template behind by
+  their basenames — `Reading list · Reading list › Book` — with a click opening the class's options
+  on the screen that manages them.
+
 ### Changed
 
 - **A sync keeps the columns you added to a managed view, and leaves them where they are.** It set the

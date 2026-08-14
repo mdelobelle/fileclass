@@ -18,6 +18,8 @@ import { BaseFileSuggest } from "./baseSuggest";
 import { confirmRemoveDestination, editNoteDestination } from "./noteDestinationModal";
 import { destinationLabel, noteDestinations } from "../schema/newNote";
 import { openFileClassSchema } from "./fileClassSchemaModal";
+import { confirmRemoveRelatedView, editRelatedView, relatedViewLabel } from "./relatedViewModal";
+import { withRelatedView } from "../views/reverseView";
 import { IconSuggest, paintIcon } from "./iconSuggest";
 import { MultiSelectModal } from "../fields/input/valueModals";
 import { makeStickyFooter } from "./modalFooter";
@@ -51,6 +53,7 @@ export class FileClassOptionsModal extends Modal {
 			// Read from either spelling, written as the list: opening and saving a class configured
 			// with 0.2.13's single pair migrates it, without a second way to configure being kept.
 			newNotes: noteDestinations(o),
+			relatedViews: o.relatedViews,
 			mapWithTag: o.mapWithTag,
 			tagNames: o.tagNames,
 			filesPaths: o.filesPaths,
@@ -162,6 +165,9 @@ export class FileClassOptionsModal extends Modal {
 
 		new Setting(contentEl).setName("New notes").setHeading();
 		this.destinationList(contentEl);
+
+		new Setting(contentEl).setName("Related views").setHeading();
+		this.relatedViewList(contentEl);
 
 		new Setting(contentEl).setName("Sync to base").setHeading();
 		new Setting(contentEl)
@@ -436,6 +442,73 @@ export class FileClassOptionsModal extends Modal {
 					void editNoteDestination(this.plugin).then((added) => {
 						if (!added) return;
 						this.opts.newNotes = [...(this.opts.newNotes ?? []), added];
+						paint();
+						this.guard?.refresh();
+					});
+				})
+			);
+		};
+		paint();
+	}
+
+	/**
+	 * The class's declared relations, one row each, then an "Add new".
+	 *
+	 * The other door to something that could only be entered from a base view — and the only one
+	 * that lets you leave: until now a declaration could be made by running *Use this view for a
+	 * relation* over the view, and removed only by editing the frontmatter by hand.
+	 */
+	private relatedViewList(container: HTMLElement): void {
+		const host = container.createDiv({ cls: "fileclass-related-list" });
+		const paint = (): void => {
+			host.empty();
+			const list = this.opts.relatedViews ?? [];
+			if (!list.length) {
+				new Setting(host).setDesc(
+					"None yet. A related view is the view that lists the notes pointing at this class through " +
+						"one of its link fields — it is what an embedded relation table shows, and what makes its " +
+						"New button fill the link in."
+				);
+			}
+			list.forEach((entry, index) => {
+				const row = new Setting(host).setName(relatedViewLabel(entry));
+				row.setDesc(entry.view);
+				row.addExtraButton((b) =>
+					b
+						.setIcon("pencil")
+						.setTooltip("Edit")
+						.onClick(() => {
+							void editRelatedView(this.plugin, this.name, entry).then((edited) => {
+								if (!edited) return;
+								const next = [...(this.opts.relatedViews ?? [])];
+								next[index] = edited;
+								this.opts.relatedViews = next;
+								paint();
+								this.guard?.refresh();
+							});
+						})
+				);
+				row.addExtraButton((b) =>
+					b
+						.setIcon("trash-2")
+						.setTooltip("Remove")
+						.onClick(() => {
+							void confirmRemoveRelatedView(this.plugin, relatedViewLabel(entry)).then((yes) => {
+								if (!yes) return;
+								this.opts.relatedViews = (this.opts.relatedViews ?? []).filter((_, i) => i !== index);
+								paint();
+								this.guard?.refresh();
+							});
+						})
+				);
+			});
+			new Setting(host).addButton((b) =>
+				b.setButtonText("Add new").onClick(() => {
+					void editRelatedView(this.plugin, this.name).then((added) => {
+						if (!added) return;
+						// The pair is the identity, here as in the writers: a field may be read backwards by
+						// several views, and declaring the same one twice is a no-op.
+						this.opts.relatedViews = withRelatedView(this.opts.relatedViews ?? [], added.field, added.view);
 						paint();
 						this.guard?.refresh();
 					});

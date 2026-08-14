@@ -140,6 +140,40 @@ function escapeForRegExp(source: string): string {
 	return source.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+/**
+ * The fileClasses a view's filter names outright, through the alias.
+ *
+ * A view's **filter** says what it is about far more reliably than its rows do: rows resolve to
+ * nothing when the view is empty, and to several classes as soon as one note carries two. The clause
+ * is there in both cases, which is what lets the toolbar answer for a `Todo`, an `Ongoing` and a
+ * `Done` view of one class without any of them being declared anywhere.
+ *
+ * Both spellings, since a hand-written base may use either: `fileClass.containsAny("Book")` and
+ * `fileClass == "Book"`. Nested groups are walked, because a status clause usually sits in an `and`
+ * beside the class one.
+ */
+export function classesNamedInFilter(filters: unknown, alias: string): string[] {
+	const escaped = escapeForRegExp(alias);
+	const patterns = [
+		new RegExp(`${escaped}\\.containsAny\\(\\s*"([^"]+)"`, "g"),
+		new RegExp(`${escaped}\\s*==\\s*"([^"]+)"`, "g"),
+	];
+	const found = new Set<string>();
+	const walk = (node: unknown): void => {
+		if (typeof node === "string") {
+			for (const re of patterns) {
+				re.lastIndex = 0;
+				for (let m = re.exec(node); m; m = re.exec(node)) found.add(m[1]);
+			}
+			return;
+		}
+		if (Array.isArray(node)) node.forEach(walk);
+		else if (node && typeof node === "object") Object.values(node).forEach(walk);
+	};
+	walk(filters);
+	return [...found];
+}
+
 /** A managed (Fileclass) table view — native `table` or editable `fileclass-table`. */
 function isManagedTable(view: BaseView, viewName: string): boolean {
 	return (

@@ -126,6 +126,14 @@ table but lets you **edit cells in place**: clicking a `note.<field>` cell perfo
 everywhere). **Alt-click** always opens the input. `file.*` and `formula.*` cells
 stay read-only.
 
+**Every** `fileclass-table` gets the wrench and the **New _Class_** button, not only the
+one a class declares as its own. A vault usually keeps several tables of one class — a
+`Todo`, an `Ongoing`, a `Done`, each with its own filter — and the class is read from
+whichever of these says it first: the class that declared the view (`baseFile` +
+`baseView`), then the class the **filter** names (`fileClass.containsAny("Book")`), then
+the classes of the rows. The filter is what makes an **empty** view work, and a view
+whose rows carry two classes: it is there in both cases, where the rows are not.
+
 In the view switcher it carries an icon of its own — a table with a small gear,
 where the native table is a bare grid — so a base holding both says which is which
 without being opened.

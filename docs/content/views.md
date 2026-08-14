@@ -140,6 +140,12 @@ class you mean, so the buttons read **Manage fileClass** and **New note** and ea
 once: *Which fileClass?*, offering only this table's own classes. A missing button is a
 dead end; a question is a click.
 
+If that view is a **declared relation**, the New button names it anyway: *New with
+`<note>`*. What it will create is unknown, what the note will point at is not — and
+the class is asked for on click, so the link follows it. A class of the table that
+does not read this view backwards simply makes an ordinary note, which is what the
+tooltip says rather than promising the link.
+
 In the view switcher it carries an icon of its own — a table with a small gear,
 where the native table is a bare grid — so a base holding both says which is which
 without being opened.
@@ -367,6 +373,27 @@ Written the way an embed is (`Base#View`), so it reads the same in a schema as i
 note. Fileclass creates the entry when it creates the view, and **never consults a
 view's name** afterwards: rename the view to anything you like and everything keeps
 working, because the class points at it rather than describing it.
+
+### One field, several views
+
+A relation is often shown more than one way. `Task.delegate` read backwards can be
+*Delegate's ongoing tasks* and *Delegate's done tasks*, and both are that field read
+backwards — so a class declares both:
+
+```yaml
+relatedViews:
+  - field: delegate
+    view: Tasks.base#Delegate's ongoing tasks
+  - field: delegate
+    view: Tasks.base#Delegate's done tasks
+```
+
+Each gets what a declared view gets: the *New `<Class>` with `<note>`* button, and a
+note created there already pointing back. Declaring the same view twice for one field
+does nothing — the pair is what identifies a declaration.
+
+When something has to pick **one** — inserting a reverse relation into a note — you
+are asked which of them this note should show.
 
 ### A view you already have
 

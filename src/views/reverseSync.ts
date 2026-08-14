@@ -34,7 +34,8 @@ import {
 	appendEmbed,
 	findEmbedLine,
 	formatViewRef,
-	relatedViewFor,
+	relatedViewsFor,
+	withRelatedView,
 	linkCardinality,
 	reverseEmbed,
 	reverseOrder,
@@ -142,14 +143,51 @@ export function defaultBasePath(plugin: FileclassPlugin, targetClass: string): s
  * reads which field backwards, and nothing here consults a name. A rename then changes nothing at
  * all, which is the whole point of writing it down.
  */
-export function declaredReverseView(
+export function declaredReverseViews(
 	plugin: FileclassPlugin,
 	targetClass: string,
 	field: string
-): ReverseViewRef | null {
+): ReverseViewRef[] {
 	const declared = plugin.index.getFileClass(targetClass)?.options.relatedViews ?? [];
-	const ref = relatedViewFor(declared, field);
-	return ref ? { path: normalizePath(ref.path), viewName: ref.viewName } : null;
+	return relatedViewsFor(declared, field).map((ref) => ({
+		path: normalizePath(ref.path),
+		viewName: ref.viewName,
+	}));
+}
+
+/**
+ * Asks which of a field's declared views this note should embed.
+ *
+ * `null` when the reader closes the question — the same as declining, and nothing is written.
+ */
+function pickDeclaredView(
+	plugin: FileclassPlugin,
+	views: ReverseViewRef[],
+	candidate: ReverseCandidate
+): Promise<ReverseViewRef | null> {
+	return new Promise((resolve) => {
+		let answered = false;
+		const modal = new ChoiceSuggestModal<ReverseViewRef>(
+			plugin.app,
+			views,
+			(v) => `${v.viewName} — ${v.path}`,
+			(v) => {
+				answered = true;
+				resolve(v);
+			},
+			`Which view of ${candidate.targetClass} › ${candidate.fieldName}?`
+		);
+		// A SuggestModal closes before it calls the choose handler, so the close hook fires first
+		// on a pick; the answer is settled a tick later.
+		const close = modal.onClose.bind(modal);
+		modal.onClose = () => {
+			close();
+			window.setTimeout(() => {
+				if (!answered) resolve(null);
+			}, 0);
+		};
+		modal.open();
+	});
 }
 
 /** Writes the declaration onto the class note, so the next note finds the same view. */
@@ -162,12 +200,12 @@ async function declareReverseView(
 	const note = plugin.index.getFileClassFile(targetClass);
 	if (!(note instanceof TFile)) return;
 	await plugin.app.fileManager.processFrontMatter(note, (fm: Record<string, unknown>) => {
-		const entries = toRelatedViews(fm.relatedViews);
-		const view = formatViewRef(ref.path, ref.viewName);
-		const existing = entries.findIndex((e) => e.field === field);
-		if (existing >= 0) entries[existing] = { field, view };
-		else entries.push({ field, view });
-		fm.relatedViews = entries;
+		// Added, not replaced: a field may be read backwards by several views.
+		fm.relatedViews = withRelatedView(
+			toRelatedViews(fm.relatedViews),
+			field,
+			formatViewRef(ref.path, ref.viewName)
+		);
 	});
 }
 
@@ -211,8 +249,11 @@ export async function ensureReverseView(
 	const app = plugin.app;
 	const viewName = reverseViewName(candidate.targetClass, candidate.fieldName);
 
-	const declared = declaredReverseView(plugin, candidate.targetClass, candidate.fieldName);
-	if (declared) return declared;
+	const declared = declaredReverseViews(plugin, candidate.targetClass, candidate.fieldName);
+	if (declared.length === 1) return declared[0];
+	// Several views read this field backwards, and only the reader knows which one this note wants
+	// embedded — "Delegate's ongoing tasks" or "Delegate's done tasks". Guessing would be silent.
+	if (declared.length > 1) return await pickDeclaredView(plugin, declared, candidate);
 
 	const path = await pickReverseBase(
 		plugin,

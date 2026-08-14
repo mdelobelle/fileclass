@@ -24,6 +24,7 @@ import {
 	formatViewRef,
 	linkCardinality,
 	reverseClause,
+	withRelatedView,
 	withReverseClause,
 } from "../views/reverseView";
 import { modalTitle } from "../ui/modalTitle";
@@ -148,12 +149,13 @@ async function apply(
 		return;
 	}
 	await app.fileManager.processFrontMatter(note, (fm: Record<string, unknown>) => {
-		const entries = toRelatedViews(fm.relatedViews);
-		const ref = formatViewRef(view.path, view.viewName);
-		const at = entries.findIndex((e) => e.field === field);
-		if (at >= 0) entries[at] = { field, view: ref };
-		else entries.push({ field, view: ref });
-		fm.relatedViews = entries;
+		// Added, not replaced: one relation is often shown more than one way — an ongoing view and
+		// a done one — and adopting the second must not un-declare the first.
+		fm.relatedViews = withRelatedView(
+			toRelatedViews(fm.relatedViews),
+			field,
+			formatViewRef(view.path, view.viewName)
+		);
 	});
 
 	if (reopen) {

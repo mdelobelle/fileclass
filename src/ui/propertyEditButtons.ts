@@ -35,6 +35,8 @@ import { fieldTypeIcon } from "../fields/typeIcons";
 import { openFieldSettings } from "./fieldSettings";
 import { RelatedViewLine, relatedViewLines } from "../schema/relatedViewsRow";
 import { FILECLASS_TABLE_ICON } from "../views/columns";
+import { destinationLabel, destinationPaths } from "../schema/newNote";
+import { toNoteDestinations } from "../schema/fileClass";
 import { Field, FieldType, isRootField } from "../schema/field";
 import { hasFieldKey, readFieldValue } from "../io/read";
 import { AddFileClassModal } from "./addFileClassModal";
@@ -67,6 +69,8 @@ const FIELDS_ROW_CLASS = "fileclass-fields-summary";
 const FIELDS_ROW_MARK = "fileclass-fields-row";
 const ORDER_ROW_CLASS = "fileclass-order-summary";
 const ORDER_ROW_MARK = "fileclass-order-row";
+const DESTINATIONS_CLASS = "fileclass-destinations";
+const DESTINATIONS_MARK = "fileclass-destinations-row";
 const RELATED_ROW_CLASS = "fileclass-related-views";
 const RELATED_ROW_MARK = "fileclass-related-row";
 /** The reading of a stored duration, inside its pill. */
@@ -153,6 +157,7 @@ export class PropertyEditButtons extends Component {
 						this.injectFieldsRow(row);
 						this.injectRelatedViewsRow(row);
 						this.injectFieldOrderRow(row);
+						this.injectNewNotesRow(row);
 					});
 			}
 			if (this.plugin.settings.enablePropertyActionButtons) {
@@ -463,6 +468,64 @@ export class PropertyEditButtons extends Component {
 		summary.addEventListener("keydown", (e) => {
 			if (e.key === "Enter" || e.key === " ") open(e);
 		});
+	}
+
+	/**
+	 * The `newNotes` row of a class note: the destinations, not their JSON.
+	 *
+	 * Third list of objects on this note, third time Obsidian prints raw JSON in the colour it
+	 * keeps for values nobody can interpret. What the row says is where a new note of this class
+	 * goes and what it starts from, so that is what it reads: one line per destination, its name in
+	 * front, the folder and the template behind — by their basenames, since the full paths are what
+	 * made the JSON unreadable in the first place.
+	 *
+	 * A click opens the class's options, on the screen that manages them.
+	 */
+	private injectNewNotesRow(row: HTMLElement): void {
+		// Obsidian lowercases data-property-key, hence the case-insensitive match.
+		if (row.getAttribute("data-property-key")?.toLowerCase() !== "newnotes") return;
+		const file = this.fileForEl(row);
+		const fcName = file && this.plugin.index.fileClassNameOfNote(file.path);
+		if (!file || !fcName) return;
+		const item = row.querySelector<HTMLElement>(
+			":scope > .metadata-property-value > .metadata-property-value-item.mod-unknown"
+		);
+		if (!item) return;
+
+		const declared: unknown = this.plugin.app.metadataCache.getFileCache(file)?.frontmatter?.newNotes;
+		const destinations = toNoteDestinations(declared);
+		if (!destinations.length) return;
+		const state = destinations.map((d) => `${d.name ?? ""}|${d.folder ?? ""}|${d.template ?? ""}`).join("\u0000");
+		if (item.dataset.fcDestinations === state) return; // settled: no new mutation
+		item.dataset.fcDestinations = state;
+
+		// The JSON is kept, so switching the buttons off puts the row back as Obsidian wrote it.
+		item.dataset.fcRaw ??= item.textContent ?? "";
+		item.empty();
+		item.addClass(DESTINATIONS_MARK);
+		const list = item.createDiv({ cls: DESTINATIONS_CLASS });
+		for (const destination of destinations) {
+			const el = list.createDiv({ cls: "fileclass-destination" });
+			setIcon(el.createSpan({ cls: "fileclass-destination-icon" }), "folder-plus");
+			const label = destinationLabel(destination);
+			el.createSpan({ cls: "fileclass-destination-name", text: label });
+			const detail = destinationPaths(destination);
+			if (detail && detail !== label) el.createSpan({ cls: "fileclass-destination-paths", text: detail });
+			el.setAttribute(
+				"aria-label",
+				`Fileclass: ${destination.folder ?? "(no folder)"} — ${destination.template ?? "(no template)"}`
+			);
+			el.tabIndex = 0;
+			const open = (e: Event): void => {
+				e.preventDefault();
+				e.stopPropagation();
+				new FileClassOptionsModal(this.plugin, fcName, file).open();
+			};
+			el.addEventListener("click", open);
+			el.addEventListener("keydown", (e) => {
+				if (e.key === "Enter" || e.key === " ") open(e);
+			});
+		}
 	}
 
 	/**
@@ -925,6 +988,7 @@ export class PropertyEditButtons extends Component {
 			FIELDS_ROW_CLASS,
 			RELATED_ROW_CLASS,
 			ORDER_ROW_CLASS,
+			DESTINATIONS_CLASS,
 		]) {
 			document.querySelectorAll(`.${cls}`).forEach((el) => el.remove());
 		}
@@ -939,6 +1003,11 @@ export class PropertyEditButtons extends Component {
 			item.removeClass(ORDER_ROW_MARK);
 			const valueEl = item.querySelector<HTMLElement>(":scope > .metadata-property-value");
 			if (valueEl) delete valueEl.dataset.fcOrder;
+		});
+		document.querySelectorAll<HTMLElement>(`.${DESTINATIONS_MARK}`).forEach((item) => {
+			item.removeClass(DESTINATIONS_MARK);
+			delete item.dataset.fcDestinations;
+			item.setText(item.dataset.fcRaw ?? "");
 		});
 		document.querySelectorAll<HTMLElement>(`.${RELATED_ROW_MARK}`).forEach((item) => {
 			item.removeClass(RELATED_ROW_MARK);

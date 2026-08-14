@@ -66,6 +66,14 @@ All notable changes to Fileclass are documented here. The format follows
   all count as ongoing does not decide between them, and a note created from it would otherwise have
   been born with whichever one happened to be written first.
 
+- **A `fileclass-table` groups its rows, from the view's own *Group by*.** The setting sat in the
+  Sort menu of every base and did nothing on an editable table: the rows came out flat while the
+  native table beside them showed headings. Bases already hands a plugin view the grouped rows —
+  the same groups, in the same order, measured — so this reads them rather than computing anything.
+  Each run carries a heading naming the property and the value, in the native table's own classes so
+  a theme styles it the same way; notes with nothing there group under **None**, last. Cells stay
+  editable inside a group.
+
 - **A link in a table cell shows its page preview on hover** (with Ctrl/Cmd, if that is how the Page
   preview plugin is set). Obsidian does not watch the DOM for links a plugin drew — it listens for a
   `hover-link` event — so a link in a cell was the only link in the app that showed nothing.

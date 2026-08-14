@@ -226,6 +226,16 @@ The binding is always written, even when the target folder already binds the not
 the `fileClass` key is the highest-priority binding and the only one that survives the
 note being moved.
 
+### From a filtered view, already in it
+
+A table filtered on a value creates notes that carry it. From a `Todo` view — filtered
+`status == "Todo"` — the new note *is* a Todo; otherwise it would vanish from the table
+that made it, which is a strange thing for a button to do.
+
+Only what the filter **fixes**: an equality, or a single-value `contains` on a list field.
+`status != "Done"`, `pages > 100`, or a `containsAny` offering two values narrow without
+deciding, and nothing is invented there.
+
 ### From a reverse relation, already filled in
 
 On a [reverse-relation table](../views/#the-other-end-of-a-relation) read from an
@@ -233,6 +243,9 @@ author's note, the button says **New Book with Frank Herbert** and the new note
 arrives with `author` already pointing at him. That one value is the exception to the
 rule above: a template's default for `author` is a preference, clicking that button is
 an instruction, so the seed wins.
+
+When a view both filters and reads a relation, both apply — and the relation is written
+last, since it names its field more precisely than any clause.
 
 ### Which class, from a table
 

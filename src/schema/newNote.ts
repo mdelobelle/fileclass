@@ -140,6 +140,8 @@ export interface Seed {
 	label: string;
 	/** A literal value to write. */
 	value?: string;
+	/** Write it as a one-item list — a filter on a `Multi` field fixes a member, not the whole. */
+	list?: boolean;
 	/**
 	 * A note to link to, when the seeded field holds links.
 	 *

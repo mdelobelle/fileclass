@@ -148,6 +148,9 @@ fields:
       canvasPath: Reading map.canvas
       direction: outgoing
     path: ""
+relatedViews:
+  - field: author
+    view: Books.base#Book by author
 baseFile: Books.base
 baseView: Book
 ---

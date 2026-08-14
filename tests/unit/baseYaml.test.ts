@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
 	buildBaseYaml,
 	classesNamedInFilter,
+	fieldValuesInFilter,
 	fileClassPredicates,
 	fileClassViewFilter,
 	isBaseViewSynced,
@@ -421,5 +422,117 @@ describe("which class a view's filter names", () => {
 	it("says nothing about a filter that names no class", () => {
 		expect(classesNamedInFilter({ and: ["file.inFolder(\"Reading list\")"] }, "fileClass")).toEqual([]);
 		expect(classesNamedInFilter(undefined, "fileClass")).toEqual([]);
+	});
+});
+
+describe("the values a view's filter fixes", () => {
+	const fields = ["ownership", "read", "themes", "author"];
+
+	it("takes an equality as a starting value", () => {
+		// A note made from a `Todo` table that did not carry that status would vanish from the table
+		// that created it.
+		expect(
+			fieldValuesInFilter({ and: ['fileClass.containsAny("Book")', 'ownership == "Wanted"'] }, fields)
+		).toEqual([{ field: "ownership", value: "Wanted", list: false }]);
+	});
+
+	it("takes each field a filter pins down", () => {
+		expect(fieldValuesInFilter({ and: ['ownership == "Owned"', 'read == "true"'] }, fields)).toEqual([
+			{ field: "ownership", value: "Owned", list: false },
+			{ field: "read", value: "true", list: false },
+		]);
+	});
+
+	it("takes a single-value containment as a list value", () => {
+		expect(fieldValuesInFilter({ and: ['themes.containsAny("Ecology")'] }, fields)).toEqual([
+			{ field: "themes", value: "Ecology", list: true },
+		]);
+	});
+
+	it("refuses a containment offering a choice", () => {
+		// `containsAny("a", "b")` accepts either; picking one would be a coin toss written into a note.
+		expect(fieldValuesInFilter({ and: ['themes.containsAny("Ecology", "Politics")'] }, fields)).toEqual([]);
+	});
+
+	it("refuses everything that narrows without deciding", () => {
+		expect(fieldValuesInFilter({ and: ['ownership != "Wanted"', "pages > 100", "read.isEmpty()"] }, fields)).toEqual([]);
+	});
+
+	it("leaves the class clause and this.file out of it", () => {
+		// The binding is written separately, and a link to the host note is the reverse-relation seed's
+		// business — not a literal value pulled out of an expression.
+		expect(fieldValuesInFilter({ and: ['fileClass.containsAny("Book")'] }, fields)).toEqual([]);
+		expect(fieldValuesInFilter({ and: ["author == this.file.asLink()"] }, fields)).toEqual([]);
+	});
+
+	it("ignores a field the class does not declare", () => {
+		expect(fieldValuesInFilter({ and: ['nonesuch == "x"'] }, fields)).toEqual([]);
+	});
+
+	it("reads the note. notation as the same field", () => {
+		expect(fieldValuesInFilter({ and: ['note.ownership == "Owned"'] }, fields)).toEqual([
+			{ field: "ownership", value: "Owned", list: false },
+		]);
+	});
+
+	it("fixes nothing when a filter offers two values for one field", () => {
+		// This test used to assert the opposite — "keep the first" — which is how a real vault's
+		// `Ongoing` view (four statuses in an `or`) would have made every note a "WaitingFor".
+		expect(fieldValuesInFilter({ or: ['ownership == "Owned"', 'ownership == "Wanted"'] }, fields)).toEqual([]);
+	});
+
+	it("keeps the first when the same field is required twice", () => {
+		// Inside an `and` both must hold, so the first is as good an answer as the filter allows.
+		expect(fieldValuesInFilter({ and: ['ownership == "Owned"', 'ownership == "Owned"'] }, fields)).toEqual([
+			{ field: "ownership", value: "Owned", list: false },
+		]);
+	});
+});
+
+describe("a real vault's Tasks base", () => {
+	/*
+	 * Reported: the "Ongoing" view of a production base showed neither button. Its own filter names
+	 * no class — the class clause sits at the **base** level, shared by a dozen status views — and
+	 * its status clause is an `or` of four equalities, which fixes nothing.
+	 */
+	const shared = {
+		and: [
+			'!file.path.startsWith("Settings")',
+			{ or: ['fileClass.containsAny("Task")', 'file.hasTag("Task")'] },
+		],
+	};
+	const ongoing = {
+		or: ['Status == "WaitingFor"', 'Status == "DiscussWith"', 'Status == "OnGoing"', 'Status == "Open"'],
+	};
+	const delegate = {
+		and: ["formula.isDelegate == true", 'Status.containsAny("Open", "OnGoing", "WaitingFor")'],
+	};
+	const both = (view: unknown) => ({ and: [shared, view] });
+
+	it("finds the class in the base-level filter", () => {
+		expect(classesNamedInFilter(both(ongoing), "fileClass")).toEqual(["Task"]);
+		expect(classesNamedInFilter(both(delegate), "fileClass")).toEqual(["Task"]);
+	});
+
+	it("fixes no status from an or of four", () => {
+		// Taking the first would make every note created there a "WaitingFor" — one of the four, and
+		// not the one anybody asked for.
+		expect(fieldValuesInFilter(both(ongoing), ["Status", "Delegate"])).toEqual([]);
+	});
+
+	it("fixes nothing from a multi-value containsAny either", () => {
+		expect(fieldValuesInFilter(both(delegate), ["Status", "Delegate"])).toEqual([]);
+	});
+
+	it("still fixes a status a view really requires", () => {
+		const done = { and: ["formula.isProject == true", 'Status == "Completed"'] };
+		expect(fieldValuesInFilter(both(done), ["Status"])).toEqual([
+			{ field: "Status", value: "Completed", list: false },
+		]);
+	});
+
+	it("ignores a `||` written inside one clause", () => {
+		const week = { and: ["formula.isDueWeek == true || formula.isDeadlineWeek == true"] };
+		expect(fieldValuesInFilter(both(week), ["Status"])).toEqual([]);
 	});
 });

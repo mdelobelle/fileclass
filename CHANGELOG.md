@@ -70,6 +70,17 @@ All notable changes to Fileclass are documented here. The format follows
   preview plugin is set). Obsidian does not watch the DOM for links a plugin drew — it listens for a
   `hover-link` event — so a link in a cell was the only link in the app that showed nothing.
 
+- **A File or Media picker reaches every candidate, not the first hundred.** Obsidian's suggester
+  draws `limit` rows and says nothing about the rest — measured on a vault with 412 authors, the
+  picker offered 100 of them, and the missing 312 looked exactly like notes that do not exist. It
+  now draws a page at a time and adds the next when you reach the bottom, with `100 of 412 — scroll
+  for more` under the list while anything is held back. Typing still narrows first, and starts from
+  one page again.
+
+  `MultiFile` and `MultiMedia` never had this cap — they draw every candidate, and measured at
+  2000 options the modal opens in 179 ms and a keystroke in its filter costs 29 ms, so nothing
+  there needed changing.
+
 ### Changed
 
 - **A sync keeps the columns you added to a managed view, and leaves them where they are.** It set the

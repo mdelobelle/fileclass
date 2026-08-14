@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
 	buildBaseYaml,
+	classesNamedInFilter,
 	fileClassPredicates,
 	fileClassViewFilter,
 	isBaseViewSynced,
@@ -393,5 +394,32 @@ describe("columns a sync must not move", () => {
 			"file.name",
 			"formula.Y",
 		]);
+	});
+});
+
+describe("which class a view's filter names", () => {
+	it("reads the generated clause", () => {
+		expect(
+			classesNamedInFilter({ and: ['fileClass.containsAny("Book")', 'ownership == "Wanted"'] }, "fileClass")
+		).toEqual(["Book"]);
+	});
+
+	it("reads the equality form a hand-written base may use", () => {
+		expect(classesNamedInFilter({ and: ['fileClass == "Book"'] }, "fileClass")).toEqual(["Book"]);
+	});
+
+	it("looks inside nested groups, where a status clause usually sits beside it", () => {
+		const filters = { and: [{ or: ['fileClass.containsAny("Book")', 'fileClass.containsAny("Comic")'] }] };
+		expect(classesNamedInFilter(filters, "fileClass").sort()).toEqual(["Book", "Comic"]);
+	});
+
+	it("honours the vault's own alias", () => {
+		expect(classesNamedInFilter({ and: ['type.containsAny("Book")'] }, "type")).toEqual(["Book"]);
+		expect(classesNamedInFilter({ and: ['type.containsAny("Book")'] }, "fileClass")).toEqual([]);
+	});
+
+	it("says nothing about a filter that names no class", () => {
+		expect(classesNamedInFilter({ and: ["file.inFolder(\"Reading list\")"] }, "fileClass")).toEqual([]);
+		expect(classesNamedInFilter(undefined, "fileClass")).toEqual([]);
 	});
 });

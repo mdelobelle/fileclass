@@ -140,6 +140,45 @@ function escapeForRegExp(source: string): string {
 	return source.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+/**
+ * The fileClasses a view's filter names outright, through the alias.
+ *
+ * A view's **filter** says what it is about far more reliably than its rows do: rows resolve to
+ * nothing when the view is empty, and to several classes as soon as one note carries two. The clause
+ * is there in both cases, which is what lets the toolbar answer for a `Todo`, an `Ongoing` and a
+ * `Done` view of one class without any of them being declared anywhere.
+ *
+ * Both spellings, since a hand-written base may use either: `fileClass.containsAny("Book")` and
+ * `fileClass == "Book"`. Nested groups are walked, because a status clause usually sits in an `and`
+ * beside the class one.
+ */
+export function classesNamedInFilter(filters: unknown, alias: string): string[] {
+	const escaped = escapeForRegExp(alias);
+	// `containsAny` takes **several** names — `containsAny("Book", "Comic")` is one clause about two
+	// classes. Reading only the first said "this is a Book table", which would have put a wrong
+	// `New Book` on a table about both; the call's whole argument list is read.
+	const containsAny = new RegExp(`${escaped}\\.containsAny\\(([^)]*)\\)`, "g");
+	const equality = new RegExp(`${escaped}\\s*==\\s*"([^"]+)"`, "g");
+	const quoted = /"([^"]+)"/g;
+	const found = new Set<string>();
+	const walk = (node: unknown): void => {
+		if (typeof node === "string") {
+			containsAny.lastIndex = 0;
+			for (let m = containsAny.exec(node); m; m = containsAny.exec(node)) {
+				quoted.lastIndex = 0;
+				for (let q = quoted.exec(m[1]); q; q = quoted.exec(m[1])) found.add(q[1]);
+			}
+			equality.lastIndex = 0;
+			for (let m = equality.exec(node); m; m = equality.exec(node)) found.add(m[1]);
+			return;
+		}
+		if (Array.isArray(node)) node.forEach(walk);
+		else if (node && typeof node === "object") Object.values(node).forEach(walk);
+	};
+	walk(filters);
+	return [...found];
+}
+
 /** A managed (Fileclass) table view — native `table` or editable `fileclass-table`. */
 function isManagedTable(view: BaseView, viewName: string): boolean {
 	return (

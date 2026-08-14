@@ -164,7 +164,13 @@ All notable changes to Fileclass are documented here. The format follows
   ```
 
   Both get the button, and a note created from either arrives already pointing at the note the
-  table is embedded in. The pair is the identity, so declaring the same view twice for one field
+  table is embedded in.
+
+  A relation view about **several** classes now says so too. It cannot know what it will create —
+  `containsAny("Book", "Comic")` decides nothing — but it knows what the note will be linked to, so
+  the button reads *New with `<note>`* instead of *New note*. The class is asked for on click, and
+  the link follows it: one of the table's classes that does not read this view backwards makes an
+  ordinary note, which is what the tooltip says rather than promising the link. The pair is the identity, so declaring the same view twice for one field
   changes nothing. Where a single view used to be assumed — inserting a reverse relation into a
   note — you are asked which one this note should show, since guessing would be silent.
 

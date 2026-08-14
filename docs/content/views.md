@@ -140,6 +140,12 @@ class you mean, so the buttons read **Manage fileClass** and **New note** and ea
 once: *Which fileClass?*, offering only this table's own classes. A missing button is a
 dead end; a question is a click.
 
+If that view is a **declared relation**, the New button names it anyway: *New with
+`<note>`*. What it will create is unknown, what the note will point at is not — and
+the class is asked for on click, so the link follows it. A class of the table that
+does not read this view backwards simply makes an ordinary note, which is what the
+tooltip says rather than promising the link.
+
 In the view switcher it carries an icon of its own — a table with a small gear,
 where the native table is a bare grid — so a base holding both says which is which
 without being opened.

@@ -140,6 +140,63 @@ function escapeForRegExp(source: string): string {
 	return source.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+/** A value a view's filter pins down, and how the field stores it. */
+export interface FilterValue {
+	field: string;
+	value: string;
+	/** True when the clause was a containment test, so the value belongs in a list. */
+	list: boolean;
+}
+
+/**
+ * The field values a view's filter **fixes**, for a note created from that view.
+ *
+ * A `Todo` table filters `status == "Todo"`; a note made from it that did not carry that status
+ * would vanish from the table that created it, which is a strange thing for a button to do. So the
+ * filter's own equalities become the new note's starting values.
+ *
+ * Only clauses that fix **one** value: `field == "x"`, and a single-argument `contains`/`containsAny`
+ * for a list field. Everything else a filter can say — `!=`, `>`, `isEmpty()`, two candidates —
+ * narrows without deciding, and a button that guessed there would be inventing data.
+ *
+ * `fieldNames` scopes it to the class's own fields, which also keeps the class clause
+ * (`fileClass.containsAny(…)`) out: the binding is written separately and is not a field value.
+ */
+export function fieldValuesInFilter(filters: unknown, fieldNames: readonly string[]): FilterValue[] {
+	const wanted = new Set(fieldNames);
+	const out: FilterValue[] = [];
+	const seen = new Set<string>();
+	const add = (field: string, value: string, list: boolean): void => {
+		const name = field.replace(/^note\./, "");
+		if (!wanted.has(name) || seen.has(name)) return;
+		seen.add(name);
+		out.push({ field: name, value, list });
+	};
+	const equality = /(?:^|[\s(])((?:note\.)?[A-Za-z_][\w .-]*?)\s*==\s*"([^"]+)"/g;
+	const contains = /(?:^|[\s(])((?:note\.)?[A-Za-z_][\w .-]*?)\.contains(?:Any)?\(([^)]*)\)/g;
+	const quoted = /"([^"]+)"/g;
+	const walk = (node: unknown): void => {
+		if (typeof node === "string") {
+			equality.lastIndex = 0;
+			for (let m = equality.exec(node); m; m = equality.exec(node)) add(m[1].trim(), m[2], false);
+			contains.lastIndex = 0;
+			for (let m = contains.exec(node); m; m = contains.exec(node)) {
+				const values: string[] = [];
+				quoted.lastIndex = 0;
+				for (let q = quoted.exec(m[2]); q; q = quoted.exec(m[2])) values.push(q[1]);
+				// One value only: `containsAny("a", "b")` accepts either, and picking one would be a
+				// coin toss written into somebody's note.
+				if (values.length === 1) add(m[1].trim(), values[0], true);
+			}
+			return;
+		}
+		if (Array.isArray(node)) node.forEach(walk);
+		else if (node && typeof node === "object") Object.values(node).forEach(walk);
+	};
+	walk(filters);
+	return out;
+}
+
 /**
  * The fileClasses a view's filter names outright, through the alias.
  *

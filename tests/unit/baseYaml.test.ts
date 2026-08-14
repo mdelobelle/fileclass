@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
 	buildBaseYaml,
 	classesNamedInFilter,
+	fieldValuesInFilter,
 	fileClassPredicates,
 	fileClassViewFilter,
 	isBaseViewSynced,
@@ -421,5 +422,62 @@ describe("which class a view's filter names", () => {
 	it("says nothing about a filter that names no class", () => {
 		expect(classesNamedInFilter({ and: ["file.inFolder(\"Reading list\")"] }, "fileClass")).toEqual([]);
 		expect(classesNamedInFilter(undefined, "fileClass")).toEqual([]);
+	});
+});
+
+describe("the values a view's filter fixes", () => {
+	const fields = ["ownership", "read", "themes", "author"];
+
+	it("takes an equality as a starting value", () => {
+		// A note made from a `Todo` table that did not carry that status would vanish from the table
+		// that created it.
+		expect(
+			fieldValuesInFilter({ and: ['fileClass.containsAny("Book")', 'ownership == "Wanted"'] }, fields)
+		).toEqual([{ field: "ownership", value: "Wanted", list: false }]);
+	});
+
+	it("takes each field a filter pins down", () => {
+		expect(fieldValuesInFilter({ and: ['ownership == "Owned"', 'read == "true"'] }, fields)).toEqual([
+			{ field: "ownership", value: "Owned", list: false },
+			{ field: "read", value: "true", list: false },
+		]);
+	});
+
+	it("takes a single-value containment as a list value", () => {
+		expect(fieldValuesInFilter({ and: ['themes.containsAny("Ecology")'] }, fields)).toEqual([
+			{ field: "themes", value: "Ecology", list: true },
+		]);
+	});
+
+	it("refuses a containment offering a choice", () => {
+		// `containsAny("a", "b")` accepts either; picking one would be a coin toss written into a note.
+		expect(fieldValuesInFilter({ and: ['themes.containsAny("Ecology", "Politics")'] }, fields)).toEqual([]);
+	});
+
+	it("refuses everything that narrows without deciding", () => {
+		expect(fieldValuesInFilter({ and: ['ownership != "Wanted"', "pages > 100", "read.isEmpty()"] }, fields)).toEqual([]);
+	});
+
+	it("leaves the class clause and this.file out of it", () => {
+		// The binding is written separately, and a link to the host note is the reverse-relation seed's
+		// business — not a literal value pulled out of an expression.
+		expect(fieldValuesInFilter({ and: ['fileClass.containsAny("Book")'] }, fields)).toEqual([]);
+		expect(fieldValuesInFilter({ and: ["author == this.file.asLink()"] }, fields)).toEqual([]);
+	});
+
+	it("ignores a field the class does not declare", () => {
+		expect(fieldValuesInFilter({ and: ['nonesuch == "x"'] }, fields)).toEqual([]);
+	});
+
+	it("reads the note. notation as the same field", () => {
+		expect(fieldValuesInFilter({ and: ['note.ownership == "Owned"'] }, fields)).toEqual([
+			{ field: "ownership", value: "Owned", list: false },
+		]);
+	});
+
+	it("keeps the first when a filter says the same field twice", () => {
+		expect(fieldValuesInFilter({ or: ['ownership == "Owned"', 'ownership == "Wanted"'] }, fields)).toEqual([
+			{ field: "ownership", value: "Owned", list: false },
+		]);
 	});
 });

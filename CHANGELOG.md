@@ -50,6 +50,13 @@ All notable changes to Fileclass are documented here. The format follows
   carried two classes — one note being both a Book and an Article — lost its New button and got a
   generic wrench, while its filter said `fileClass.containsAny("Book")` in plain sight.
 
+- **A note created from a filtered table starts inside that table.** From a `Todo` view — filtered
+  `status == "Todo"` — the new note carries that status, instead of being made and immediately
+  disappearing from the view that made it. Only what a filter *fixes* is used: an equality, or a
+  single-value `contains` on a list field. `!=`, `>`, `isEmpty()` and a `containsAny` offering two
+  values narrow without deciding, and nothing is invented there. A view that both filters and reads a
+  relation applies both, the relation last.
+
 - **A link in a table cell shows its page preview on hover** (with Ctrl/Cmd, if that is how the Page
   preview plugin is set). Obsidian does not watch the DOM for links a plugin drew — it listens for a
   `hover-link` event — so a link in a cell was the only link in the app that showed nothing.

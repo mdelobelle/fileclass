@@ -18,7 +18,7 @@ import { createNoteWithClass } from "../commands/createNoteWithClass";
 import { ChoiceSuggestModal } from "../fields/input/valueModals";
 import { Seed } from "../schema/newNote";
 import { fileClassClaimingView } from "./baseSync";
-import { classesNamedInFilter } from "./baseYaml";
+import { classesNamedInFilter, fieldValuesInFilter } from "./baseYaml";
 import { fieldForView } from "./reverseView";
 import { EditContext, runControlAction } from "../fields/fieldActions";
 import { isInputSupported } from "../fields/support";
@@ -83,8 +83,8 @@ class FileclassTableView extends Component {
 	private toolbarClasses: string[] = [];
 	/** The "New <Class>" item beside it (#84); which class it creates is `toolbarClasses`. */
 	private newItem?: HTMLElement;
-	/** `base#view` → the classes its filter names (empty when it names none). */
-	private readonly filterClassCache = new Map<string, string[]>();
+	/** `base#view` → that view's `filters`, as read from the base (null when there are none). */
+	private readonly filterCache = new Map<string, unknown>();
 	/**
 	 * Which rows the `valid` column is showing (#142).
 	 *
@@ -255,9 +255,7 @@ class FileclassTableView extends Component {
 				e.preventDefault();
 				// Same question, and only when there is one: a table about Books and Comics can still
 				// make a note — it just cannot know which kind without being told.
-				this.withClass((name) =>
-					void createNoteWithClass(this.plugin, { fileClass: name, seed: this.seedFor(name) })
-				);
+				this.withClass((name) => void createNoteWithClass(this.plugin, { fileClass: name, seeds: this.seedsFor(name) }));
 			};
 			button.addEventListener("click", create);
 			button.addEventListener("keydown", (e) => {
@@ -309,6 +307,35 @@ class FileclassTableView extends Component {
 	 * is the note whose editor holds this embed, found by containment rather than by "the active
 	 * file", which is a different note as soon as there are two panes.
 	 */
+	/**
+	 * Everything this table already decides about a note made from it.
+	 *
+	 * The **filter's** own values first — a `Todo` view creates a Todo, or the note disappears from
+	 * the table that made it — then the **relation**, last so it wins should both name one field: a
+	 * reverse view read from an author's note says who the author is more precisely than any clause.
+	 */
+	private seedsFor(fileClass: string): Seed[] {
+		const out: Seed[] = [];
+		const claimed = this.viewIdentity();
+		if (claimed) {
+			const fields = this.plugin.index
+				.getResolvedFields(fileClass)
+				.filter((f) => isRootField(f))
+				.map((f) => f.name);
+			for (const fixed of fieldValuesInFilter(this.filtersOf(claimed), fields)) {
+				out.push({
+					field: fixed.field,
+					label: `${fixed.field} ${fixed.value}`,
+					value: fixed.value,
+					list: fixed.list,
+				});
+			}
+		}
+		const relation = this.seedFor(fileClass);
+		if (relation) out.push(relation);
+		return out;
+	}
+
 	private seedFor(fileClass: string): Seed | undefined {
 		const claimed = this.viewIdentity();
 		if (!claimed) return undefined;
@@ -341,15 +368,29 @@ class FileclassTableView extends Component {
 	 * view, since a filter changes far less often than a table redraws.
 	 */
 	private filterClasses(view: { file: string; viewName: string }): string[] {
-		const key = `${view.file}#${view.viewName}`;
-		const cached = this.filterClassCache.get(key);
-		if (cached !== undefined) return cached;
-		void this.readFilterClass(view, key);
-		return [];
+		return classesNamedInFilter(this.filtersOf(view), this.plugin.settings.fileClassAlias).filter(
+			(name) => this.plugin.index.fileClassNames.includes(name)
+		);
 	}
 
-	private async readFilterClass(view: { file: string; viewName: string }, key: string): Promise<void> {
-		let answer: string[] = [];
+	/**
+	 * This view's `filters`, once the base has been read.
+	 *
+	 * Reading a `.base` is asynchronous and a render is not, so the first pass answers nothing and
+	 * schedules the read; when it lands the toolbar is drawn again. Cached per view — a filter changes
+	 * far less often than a table redraws — and the raw filters are cached rather than a conclusion,
+	 * since two questions are asked of them: which classes, and which values.
+	 */
+	private filtersOf(view: { file: string; viewName: string }): unknown {
+		const key = `${view.file}#${view.viewName}`;
+		const cached = this.filterCache.get(key);
+		if (cached !== undefined) return cached;
+		void this.readFilters(view, key);
+		return undefined;
+	}
+
+	private async readFilters(view: { file: string; viewName: string }, key: string): Promise<void> {
+		let answer: unknown = null;
 		try {
 			const file = this.plugin.app.vault.getAbstractFileByPath(view.file);
 			if (file instanceof TFile) {
@@ -357,17 +398,12 @@ class FileclassTableView extends Component {
 					views?: unknown;
 				};
 				const views = Array.isArray(base.views) ? (base.views as { name?: string; filters?: unknown }[]) : [];
-				const target = views.find((v) => v?.name === view.viewName);
-				// Every class the filter names — `containsAny("Book", "Comic")` is one clause about two,
-				// and a table about both keeps its buttons: they ask which class instead of vanishing.
-				answer = classesNamedInFilter(target?.filters, this.plugin.settings.fileClassAlias)
-					// A filter naming a class this vault does not have says nothing useful.
-					.filter((name) => this.plugin.index.fileClassNames.includes(name));
+				answer = views.find((v) => v?.name === view.viewName)?.filters ?? null;
 			}
 		} catch {
-			answer = [];
+			answer = null;
 		}
-		this.filterClassCache.set(key, answer);
+		this.filterCache.set(key, answer);
 		// Draw the toolbar again now that there is an answer — the table itself has not changed.
 		if (this.data) this.syncToolbarButton(this.data);
 	}

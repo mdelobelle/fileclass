@@ -115,6 +115,11 @@ An inherited row moves but does not edit: changing its type or its options there
 would change it for every class extending `Media`, so the row sends you to `Media`
 instead.
 
+An entry is read as a **name at its level**, and as a **field id** if that matches
+nothing — which is what Metadata Menu wrote in this key, so a vault migrated from it
+keeps the order it had. The next move through the editor rewrites the whole key in
+names.
+
 Two things keep a declaration from rotting. A key naming a field that no longer
 resolves — removed upstream, or excluded here — is ignored. And a field the order
 does not name, because `Media` gained it after you set the order, appears **where

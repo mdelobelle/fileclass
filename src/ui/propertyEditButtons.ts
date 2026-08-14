@@ -35,6 +35,7 @@ import { fieldTypeIcon } from "../fields/typeIcons";
 import { openFieldSettings } from "./fieldSettings";
 import { RelatedViewLine, relatedViewLines } from "../schema/relatedViewsRow";
 import { FILECLASS_TABLE_ICON } from "../views/columns";
+import { canonicalFieldOrder } from "../schema/fieldOrder";
 import { destinationLabel, destinationPaths } from "../schema/newNote";
 import { toNoteDestinations } from "../schema/fileClass";
 import { Field, FieldType, isRootField } from "../schema/field";
@@ -588,7 +589,13 @@ export class PropertyEditButtons extends Component {
 		if (!valueEl) return;
 
 		const declared: unknown = this.plugin.app.metadataCache.getFileCache(file)?.frontmatter?.fieldsOrder;
-		const order = Array.isArray(declared) ? declared.filter((v): v is string => typeof v === "string") : [];
+		const stored = Array.isArray(declared) ? declared.filter((v): v is string => typeof v === "string") : [];
+		if (!stored.length) return;
+		// Read through the class's fields rather than shown as written: a vault migrated from
+		// Metadata Menu carries **ids** in this key, and `jlBZN1 · JKrPnA · Fnb8cC` names nothing to
+		// anyone. It also counts what actually resolves, so an order left over from fields that are
+		// gone does not claim more than it orders.
+		const order = canonicalFieldOrder(this.plugin.index.getResolvedFields(fcName), stored);
 		if (!order.length) return;
 		const state = `${fcName}:${order.join("\u0000")}`;
 		if (valueEl.dataset.fcOrder === state) return; // settled: no new mutation

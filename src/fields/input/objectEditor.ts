@@ -172,6 +172,14 @@ export class ObjectListEditorModal extends Modal {
 		private readonly opts: ObjectEditorOptions & {
 			initial: Record<string, unknown>[];
 			onSave: (list: Record<string, unknown>[]) => void;
+			/**
+			 * Open straight onto one item's editor (#185).
+			 *
+			 * A caret on `year: 1990` inside the second edition is not about the list, it is about
+			 * that edition — so the command that reads the caret opens the level the caret is on,
+			 * rather than the list around it with the reader left to find the row again.
+			 */
+			openAt?: number;
 		}
 	) {
 		super(app);
@@ -186,6 +194,9 @@ export class ObjectListEditorModal extends Modal {
 			subject: "list",
 		});
 		this.render();
+		const at = this.opts.openAt;
+		// After the render, so the list is behind the item's editor when it closes rather than empty.
+		if (at !== undefined && at >= 0 && at < this.draft.length) this.editItem(at);
 	}
 
 	/** Commits the draft. False when it can't be saved, so the caller stays open. */

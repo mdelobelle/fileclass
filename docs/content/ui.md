@@ -335,6 +335,52 @@ of the time.
 A third, **Reorder properties**, appears only when a note's keys are out of the
 order its class declares.
 
+## In the editor
+
+The Properties panel is not the only place a value is written: in **source mode** the
+frontmatter is plain text, and typing there used to be the one path the schema never
+saw — no candidates, no validation, no allowed set. Two things close that, and they
+divide the work the way the field types do.
+
+### Values, as you type them
+
+A field whose values are a **list to choose from** — `Select`, `Cycle`, `Multi` —
+offers them while you type the value:
+
+```yaml
+genre: Sci▏         →  a list with "Science fiction"
+```
+
+The candidates are the ones the pickers build, from whichever source the field
+declares. A list works item by item: from `  - Religion`, `Enter` continues the list
+and the next value is offered on the new line — and what is already in the list is
+not offered again. A list written inline (`themes: []`, the shape Obsidian writes for
+an empty one) becomes the block form when you choose: the `[]` goes and the value
+arrives on its own line, which is how every other surface writes a list.
+
+If what you have typed matches none of the values — which is what happens when you
+type after a value that is already there — the list is offered anyway rather than
+nothing. Choosing replaces the whole value, so it repairs the line in one gesture.
+
+Nothing is offered on a free-text field, in the body, in the key half of a `key:`, or
+on a note whose class declares no such field. The toggle is *Values while typing in
+the frontmatter*, in the settings.
+
+### Manage the field at the cursor
+
+For everything else — a Date, a Number, a Duration, an Object — there is no list to
+offer, only a controller. The command **Manage the field at the cursor** opens it:
+put the caret in the value, press your hotkey, and the field's own editor appears.
+
+It reads the caret the way the note is written, so a field inside a group is reached
+at **its** level: a caret on `year: 1990` inside the second edition opens that
+edition's editor, not the list around it. On a key the schema does not declare it
+opens nothing and says so — a generic text box there would be a second way to write
+frontmatter unchecked, which is the thing this is meant to close.
+
+The caret comes back to the field's line once the write lands, so a pass through a
+note (jump, fix, jump) survives the rewrite `processFrontMatter` does.
+
 ### On a fileClass note
 
 Its **`fields` row** reads *N fields* behind a wrench that opens the schema. A

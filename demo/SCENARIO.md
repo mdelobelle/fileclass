@@ -267,9 +267,9 @@ digit. Versions and dates are left alone.
   `record.mjs` installs the freshly built plugin at staging time. A stale plugin
   copy in git is a wrong demo waiting to happen.
 - `.obsidian/appearance.json`, `core-plugins.json`, `app.json` are written with
-  video-friendly defaults unless the fixture ships its own: **light mode
-  (`moonstone`) + the Minimal theme**, 18px base font, Bases enabled. Every take
-  records light whatever the operator's system appearance is; the theme is copied
+  video-friendly defaults unless the fixture ships its own: **dark mode
+  (`obsidian`) + the Minimal theme**, 18px base font, Bases enabled. Every take
+  records dark whatever the operator's system appearance is; the theme is copied
   from `~/Obsidian-Dev/.obsidian/themes/Minimal` (or `$FILECLASS_DEMO_THEME`), so
   no third-party CSS is committed here. Only override it in a fixture if the
   feature being shown *is* about appearance.

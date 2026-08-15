@@ -73,12 +73,12 @@ const DEFAULTS = {
 		"file-recovery": true,
 		bases: true,
 	},
-	// Demos always record in LIGHT mode with the Minimal theme, whatever the
-	// operator's system appearance is: `moonstone` = light, `obsidian` = dark.
+	// Demos always record in DARK mode with the Minimal theme, whatever the
+	// operator's system appearance is: `obsidian` = dark, `moonstone` = light.
 	// Bigger base font so the UI reads on video.
 	"appearance.json": {
 		baseFontSize: 18,
-		theme: "moonstone",
+		theme: "obsidian",
 		cssTheme: THEME,
 		nativeMenus: false,
 	},

@@ -14,7 +14,7 @@ export default async function ({ page, sleep }) {
 	await sleep(3000);
 	note("setup", await page.evaluate(async () => {
 		const app = window.app;
-		app.changeTheme?.("moonstone"); app.customCss?.setTheme?.("Minimal");
+		app.changeTheme?.("obsidian"); app.customCss?.setTheme?.("Minimal");
 		// Give Book a MultiMedia field, bound to the same candidates as `cover`.
 		const file = app.vault.getAbstractFileByPath("Classes/Book.md");
 		await app.fileManager.processFrontMatter(file, (fm) => {

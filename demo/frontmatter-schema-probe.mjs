@@ -13,7 +13,7 @@ export default async function ({ page, sleep }) {
 	await sleep(3000);
 	const openSource = () => page.evaluate(async () => {
 		const app = window.app;
-		app.changeTheme?.("moonstone"); app.customCss?.setTheme?.("Minimal");
+		app.changeTheme?.("obsidian"); app.customCss?.setTheme?.("Minimal");
 		const leaf = app.workspace.getLeaf(false);
 		await leaf.openFile(app.vault.getAbstractFileByPath("Dune.md"));
 		await leaf.setViewState({ type: "markdown", state: { file: "Dune.md", mode: "source", source: true } });

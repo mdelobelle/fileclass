@@ -216,6 +216,9 @@ All notable changes to Fileclass are documented here. The format follows
     wherever the field declares them. A list works item by item (`Enter` on `  - Religion` continues
     it, and what is already in the list is not offered again), and an inline `themes: []` becomes the
     block form on choosing: the `[]` goes, the value arrives on its own line.
+    When what you have typed matches **none** of them — which is what happens when you type after a
+    value that is already there — the field's values are offered anyway rather than nothing, and
+    since a choice replaces the whole value, picking one repairs the line.
   - **Manage the field at the cursor**, a command to bind to a hotkey, for everything else: a Date, a
     Number, a Duration, an Object have a controller rather than a list. It reads the caret the way
     the note is written, so a caret on `year: 1990` inside the second edition opens **that edition's**

@@ -358,6 +358,10 @@ not offered again. A list written inline (`themes: []`, the shape Obsidian write
 an empty one) becomes the block form when you choose: the `[]` goes and the value
 arrives on its own line, which is how every other surface writes a list.
 
+If what you have typed matches none of the values — which is what happens when you
+type after a value that is already there — the list is offered anyway rather than
+nothing. Choosing replaces the whole value, so it repairs the line in one gesture.
+
 Nothing is offered on a free-text field, in the body, in the key half of a `key:`, or
 on a note whose class declares no such field. The toggle is *Values while typing in
 the frontmatter*, in the settings.

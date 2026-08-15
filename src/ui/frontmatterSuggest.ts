@@ -82,10 +82,15 @@ export class FrontmatterValueSuggest extends EditorSuggest<ValueSuggestion> {
 		// duplicate, which is what Metadata Menu's own suggester filtered out too. The item being
 		// typed is not counted against itself.
 		const taken = parsed.caret.list ? this.itemsAlreadyIn(field, file, unquote(parsed.caret.query)) : new Set<string>();
-		return values
-			.filter((v) => !taken.has(v))
-			.filter((v) => !query || v.toLowerCase().includes(query))
-			.map((value) => ({ value, field, caret: parsed.caret, file }));
+		const free = values.filter((v) => !taken.has(v));
+		const matching = free.filter((v) => !query || v.toLowerCase().includes(query));
+		// Nothing matched: offer the field's values rather than nothing. Reported from a real vault
+		// — typing after an existing value (`Status: OnGoing` + "Wa") makes the query the whole
+		// text, which matches no candidate, and the popover simply never appeared, which reads as
+		// the feature being broken. Since a choice replaces the **whole** value, the list is also
+		// what repairs the line.
+		const offered = matching.length ? matching : free;
+		return offered.map((value) => ({ value, field, caret: parsed.caret, file }));
 	}
 
 	renderSuggestion(suggestion: ValueSuggestion, el: HTMLElement): void {

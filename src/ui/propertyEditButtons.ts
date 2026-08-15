@@ -20,7 +20,7 @@
  * here, behind a setting, dedup-guarded, best-effort, removed on unload. Core
  * features never depend on it.
  */
-import { Component, Notice, TFile, debounce, editorInfoField, setIcon } from "obsidian";
+import { Component, EventRef, Notice, TFile, debounce, editorInfoField, setIcon } from "obsidian";
 import { EditorView } from "@codemirror/view";
 
 import type FileclassPlugin from "../../main";
@@ -86,6 +86,15 @@ const LEAF_TYPES = ["markdown", "file-properties"];
 export class PropertyEditButtons extends Component {
 	private watched: MutationObserver[] = [];
 	private scheduleInject: () => void = () => undefined;
+	/**
+	 * The link a hover popover is about to be opened for.
+	 *
+	 * A popover previewing a note renders it in **reading** mode: no editor, so nothing in it says
+	 * which file it shows — measured, and the reason a hovered note used to show only the fileClass
+	 * wrench (the one control that needs no file). Obsidian announces the hover before it draws the
+	 * popover, so what the event carries is stamped onto the element the moment it appears.
+	 */
+	private lastHover?: { linktext: string; sourcePath: string; at: number };
 
 	constructor(private readonly plugin: FileclassPlugin) {
 		super();
@@ -100,6 +109,20 @@ export class PropertyEditButtons extends Component {
 		// Editing a value re-renders the row (dropping our button) — re-inject.
 		this.registerEvent(this.plugin.app.metadataCache.on("changed", this.scheduleInject));
 		this.registerEvent(this.plugin.index.on("fileclass:indexed", () => this.fullRefresh()));
+		// Every hover source announces itself this way — a link in a note, and this plugin's own
+		// table cells, which trigger it by hand for the links they draw.
+		// `hover-link` is not in the public event typings — every hover source emits it and the Page
+		// preview plugin consumes it, but the signature is undeclared. Named structurally here, like
+		// the Bases adapter does for its host.
+		const hoverEvents = ws as unknown as {
+			on(name: "hover-link", cb: (info: { linktext?: string; sourcePath?: string }) => void): EventRef;
+		};
+		this.registerEvent(
+			hoverEvents.on("hover-link", (info) => {
+				if (typeof info?.linktext !== "string") return;
+				this.lastHover = { linktext: info.linktext, sourcePath: info.sourcePath ?? "", at: Date.now() };
+			})
+		);
 		ws.onLayoutReady(() => this.reattachAndInject());
 	}
 
@@ -132,9 +155,34 @@ export class PropertyEditButtons extends Component {
 		// and it appeared with none of these controls. Popovers are appended to the body, so
 		// one shallow observer there is enough to notice one arriving — `childList` without
 		// `subtree`, since the body's own children change about once a session.
-		const popovers = new MutationObserver(() => this.scheduleInject());
+		const popovers = new MutationObserver((records) => {
+			this.stampPopovers(records);
+			this.scheduleInject();
+		});
 		popovers.observe(document.body, { childList: true });
 		this.watched.push(popovers);
+	}
+
+	/**
+	 * Writes the previewed file's path onto a hover popover as it arrives.
+	 *
+	 * The stamp lives on the element, so it dies with it: the next hover builds another popover and
+	 * gets another stamp, and nothing has to be invalidated. Only a hover announced in the last
+	 * couple of seconds is used — an older one belongs to a popover that has already been and gone,
+	 * and decorating a preview with another note's fields is worse than decorating nothing.
+	 */
+	private stampPopovers(records: MutationRecord[]): void {
+		const hover = this.lastHover;
+		if (!hover || Date.now() - hover.at > 2000) return;
+		const file = this.plugin.app.metadataCache.getFirstLinkpathDest(hover.linktext, hover.sourcePath);
+		if (!(file instanceof TFile)) return;
+		for (const record of records) {
+			for (const node of Array.from(record.addedNodes)) {
+				if (!(node instanceof HTMLElement)) continue;
+				const popover = node.matches(".hover-popover") ? node : node.querySelector<HTMLElement>(".hover-popover");
+				if (popover && !popover.dataset.fcPath) popover.dataset.fcPath = file.path;
+			}
+		}
 	}
 
 	private detach(): void {
@@ -983,7 +1031,12 @@ export class PropertyEditButtons extends Component {
 		// note's fields.
 		const cm = el.closest<HTMLElement>(".cm-editor");
 		const file = cm ? EditorView.findFromDOM(cm)?.state.field(editorInfoField, false)?.file : null;
-		return file instanceof TFile ? file : null;
+		if (file instanceof TFile) return file;
+		// A hover preview renders in reading mode, where there is no editor to ask. What it shows
+		// was stamped on the popover when it appeared (`stampPopovers`).
+		const stamped = el.closest<HTMLElement>(".hover-popover")?.dataset.fcPath;
+		const previewed = stamped ? this.plugin.app.vault.getFileByPath(stamped) : null;
+		return previewed instanceof TFile ? previewed : null;
 	}
 
 	private removeAll(): void {

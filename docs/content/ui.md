@@ -315,6 +315,11 @@ Like the indicators, this is a best-effort DOM decoration (Obsidian exposes no
 API for it): if the properties DOM changes, the buttons simply stop appearing and
 everything else keeps working.
 
+These controls follow the Properties panel wherever it is drawn — including a **hover
+preview**. A preview renders in reading mode, so nothing in it says which note it
+shows; Fileclass takes that from the hover itself, which is why a preview shows *its*
+fields and not the ones of the note you hovered from.
+
 ## Property section actions
 
 Next to Obsidian's **+ Add property**, on the same line, Fileclass adds:

@@ -194,6 +194,18 @@ All notable changes to Fileclass are documented here. The format follows
 
   Removing the last one clears the key rather than leaving `relatedViews: []`.
 
+- **A `multiline` option on `Input` and `MultiInput`** ([#177](https://github.com/mdelobelle/fileclass/issues/177)).
+  Some Input fields hold a paragraph — a summary, an abstract, a rationale — and a one-line prompt
+  is the wrong box for one: the text scrolls sideways past the edge, `Enter` submits instead of
+  wrapping, and a line break has to be pasted in from somewhere else. With the option on, entry
+  opens the text area the plugin already ships, in the vault's **text** font rather than the
+  monospace of the JSON editor — prose is not code.
+
+  Nothing else moves: one scalar string, the same validation, the same column, written as a YAML
+  block scalar when it holds line breaks. On `MultiInput` it applies to each **item**, and the list
+  editor around them is untouched. A `template` wins over it when both are set, since a template is
+  a shape made of single-line parts.
+
 ### Changed
 
 - **A sync keeps the columns you added to a managed view, and leaves them where they are.** It set the

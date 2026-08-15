@@ -82,6 +82,16 @@ export function renderFieldOptionsSettings(
 					t.inputEl.rows = 4;
 					t.inputEl.addClass("fileclass-template-input");
 				});
+			new Setting(container)
+				.setName("Multi-line")
+				.setDesc(
+					"Enter the value in a text area rather than a one-line prompt — for a summary, an " +
+						"abstract, a rationale. The value is unchanged: one string, line breaks included, " +
+						"validated as " +
+						(type === "MultiInput" ? "each list item is." : "any other Input.") +
+						" A template wins over this, since a template is a shape made of single-line parts."
+				)
+				.addToggle((t) => t.setValue(draft.multiline === true).onChange((v) => (draft.multiline = v)));
 			return;
 		case "Duration":
 		case "CycleDuration":

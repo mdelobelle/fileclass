@@ -128,6 +128,12 @@ export interface TextAreaOptions {
 	title: string;
 	initial?: string;
 	placeholder?: string;
+	/**
+	 * Monospace, the default: this modal was written for JSON and YAML, where alignment is
+	 * meaning. Prose is not code — a `multiline` Input (#177) reads in the vault's own text font,
+	 * and its hint is about saving rather than about syntax.
+	 */
+	monospace?: boolean;
 	validate?: (value: string) => ValidationResult;
 	onSubmit: (value: string) => void;
 	/**
@@ -158,7 +164,10 @@ export class TextAreaInputModal extends Modal {
 		const initial = this.opts.initial ?? "";
 		input.setValue(initial).setPlaceholder(this.opts.placeholder ?? "");
 		input.inputEl.rows = 10;
-		input.inputEl.setCssStyles({ width: "100%", fontFamily: "var(--font-monospace)" });
+		input.inputEl.setCssStyles({
+			width: "100%",
+			fontFamily: this.opts.monospace === false ? "var(--font-text)" : "var(--font-monospace)",
+		});
 		window.setTimeout(() => input.inputEl.focus(), 0);
 
 		// What the draft is compared against: what it opened on, then what was last
@@ -331,6 +340,8 @@ export interface MultiInputOptions {
 	title: string;
 	/** The field's `template` option; when set, each item uses the guided form. */
 	template?: string;
+	/** The field's `multiline` option; when set, each item is entered in a textarea. */
+	multiline?: boolean;
 	initial: string[];
 	onSubmit: (values: string[]) => void;
 }
@@ -370,6 +381,10 @@ export class MultiInputEditorModal extends Modal {
 				initial: current,
 				onSubmit: onValue,
 			}).open();
+		} else if (this.opts.multiline) {
+			// One item, one paragraph. The list editor around it is unchanged: what a textarea
+			// replaces is the one-line prompt, not the list.
+			new TextAreaInputModal(this.app, { title, initial: current, monospace: false, onSubmit: onValue }).open();
 		} else {
 			new PromptModal(this.app, { title, initial: current, onSubmit: onValue }).open();
 		}

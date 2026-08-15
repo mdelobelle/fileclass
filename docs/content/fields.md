@@ -207,6 +207,26 @@ a plain prompt when no template is set. Blank items are dropped on save. Use it
 when several values share one shape — e.g. a list of repository URLs from a
 `https://github.com/{{user}}/{{repo}}/` template.
 
+## Multi-line Input
+
+Some `Input` fields hold a paragraph rather than a phrase — a summary, an abstract,
+a rationale. The **Multi-line** option (in *Options* on the field) opens a text area
+instead of the one-line prompt: you see what you have written, `Enter` wraps, and
+the vault's text font is used rather than the monospace of the JSON editor.
+
+Nothing else changes. The value is still one string, validated as any other `Input`,
+written as a YAML block scalar when it holds line breaks:
+
+```yaml
+overview: |-
+  First line.
+  Second line, after a real break.
+```
+
+`MultiInput` takes the same option, and applies it to each **item**: the list editor
+around them is untouched. A **template** wins over Multi-line when both are set,
+since a template is a shape made of single-line parts.
+
 ## Link fields (File / Media)
 
 {{< video "012" >}}

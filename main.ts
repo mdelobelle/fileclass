@@ -16,6 +16,7 @@ import { createFileClass } from "./src/commands/createFileClass";
 import { adoptRelatedView } from "./src/commands/adoptRelatedView";
 import { createNoteWithClass } from "./src/commands/createNoteWithClass";
 import { insertMissingFields } from "./src/commands/insertMissingFields";
+import { manageFieldAtCursor } from "./src/commands/manageFieldAtCursor";
 import { syncSchemaCanvas } from "./src/views/schemaCanvasSync";
 import { bulkInsertMissingFields } from "./src/commands/bulkInsertMissing";
 import { ChoiceSuggestModal } from "./src/fields/input/valueModals";
@@ -35,6 +36,7 @@ import { pickAndCreateBase } from "./src/views/baseFileGenerator";
 import { fileClassBaseFile, openFileClassBase, syncFileClassToBase } from "./src/views/baseSync";
 import { registerFileclassTableView } from "./src/views/fileclassTableView";
 import { EMBEDDED_BASE_SELECTOR, surfacesToRedraw } from "./src/views/redrawOnRegister";
+import { FrontmatterValueSuggest } from "./src/ui/frontmatterSuggest";
 import { openSchemaLogModal } from "./src/ui/schemaLogModal";
 import { runSchemaAudit } from "./src/schema/schemaAuditRun";
 import { warnOnStalePaths } from "./src/schema/renameNotice";
@@ -120,6 +122,11 @@ export default class FileclassPlugin extends Plugin {
 			// forty times while somebody edits a schema.
 			void runSchemaAudit(this, false);
 		});
+
+		// The schema, offered where a value is typed by hand (#185). Registered unconditionally and
+		// gated inside: a suggester added and removed with a setting is a lifecycle to get wrong,
+		// and the check it does is a map lookup.
+		this.registerEditorSuggest(new FrontmatterValueSuggest(this));
 
 		// Bases can be switched on after we loaded; without this the session stays in
 		// degraded mode until Obsidian restarts.
@@ -210,6 +217,12 @@ export default class FileclassPlugin extends Plugin {
 				if (!checking) new AddFileClassModal(this, file).open();
 				return true;
 			},
+		});
+
+		this.addCommand({
+			id: "manage-field-at-cursor",
+			name: "Manage the field at the cursor",
+			editorCallback: () => manageFieldAtCursor(this),
 		});
 
 		this.addCommand({

@@ -87,6 +87,13 @@ export interface FileclassSettings {
 	enableDraggableModals: boolean;
 	/** Show an edit button on matching rows of the native Properties editor. */
 	enablePropertyEditButtons: boolean;
+	/**
+	 * Offer a field's allowed values while typing one in the frontmatter, in source mode (#185).
+	 *
+	 * The editor is the one surface where a value can be entered without the schema seeing it, so
+	 * this is on by default — the point of it is that the fast path stops being the unchecked one.
+	 */
+	enableFrontmatterSuggest: boolean;
 	/** Show "Add a class" / "Insert missing fields" next to "Add property". */
 	enablePropertyActionButtons: boolean;
 	/** Show the field indicator icon in the tab header. */
@@ -128,6 +135,7 @@ export const DEFAULT_SETTINGS: FileclassSettings = {
 	shorterModal: false,
 	enableDraggableModals: false,
 	enablePropertyEditButtons: true,
+	enableFrontmatterSuggest: true,
 	enablePropertyActionButtons: true,
 	enableTabHeaderIndicator: true,
 	enableFileExplorerIndicator: true,

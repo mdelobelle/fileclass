@@ -206,6 +206,23 @@ All notable changes to Fileclass are documented here. The format follows
   editor around them is untouched. A `template` wins over it when both are set, since a template is
   a shape made of single-line parts.
 
+- **The schema, in the editor** ([#185](https://github.com/mdelobelle/fileclass/issues/185)). In
+  source mode the frontmatter is plain text, and typing there was the one path the schema never saw:
+  no candidates, no validation, no allowed set — so the fastest way through a note was also the only
+  unchecked one. Two things close it, split the way the field types are:
+
+  - **Values as you type them**, for `Select`, `Cycle` and `Multi` — the types with a list to choose
+    from, which is the same set Metadata Menu's own suggester covered. The candidates come from
+    wherever the field declares them. A list works item by item (`Enter` on `  - Religion` continues
+    it, and what is already in the list is not offered again), and an inline `themes: []` becomes the
+    block form on choosing: the `[]` goes, the value arrives on its own line.
+  - **Manage the field at the cursor**, a command to bind to a hotkey, for everything else: a Date, a
+    Number, a Duration, an Object have a controller rather than a list. It reads the caret the way
+    the note is written, so a caret on `year: 1990` inside the second edition opens **that edition's**
+    editor. On a key no class declares it opens nothing and says so — a generic text box there would
+    be a second way to write frontmatter unchecked. The caret returns to the field's line once the
+    write lands, so a pass through a note survives the rewrite.
+
 ### Changed
 
 - **A sync keeps the columns you added to a managed view, and leaves them where they are.** It set the

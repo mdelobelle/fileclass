@@ -334,6 +334,21 @@ export class FileclassSettingTab extends PluginSettingTab {
 			);
 
 		new Setting(containerEl)
+			.setName("Values while typing in the frontmatter")
+			.setDesc(
+				"In source mode, offer a field's allowed values as you type one — Select, Cycle and Multi, " +
+					"the types that have a list to choose from. The candidates are the ones the pickers build, " +
+					"and the value is written the usual way. Without it, the editor is the one place a value " +
+					"goes in unchecked."
+			)
+			.addToggle((toggle) =>
+				toggle.setValue(this.plugin.settings.enableFrontmatterSuggest).onChange(async (value) => {
+					this.plugin.settings.enableFrontmatterSuggest = value;
+					await this.plugin.saveSettings();
+				})
+			);
+
+		new Setting(containerEl)
 			.setName("Property section actions")
 			.setDesc(
 				'Show "Add a class" next to "Add property", and "Insert missing fields" when the note is missing some.'

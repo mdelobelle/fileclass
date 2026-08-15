@@ -38,7 +38,7 @@ node record.mjs 001        # from demo/ — or `node demo/record.mjs 001` from t
 1. It asks to quit your Obsidian, then stages
    `~/fileclass-demos/<scenario>/<vault>` from the scenario's `demo-vault/`
    fixture — installing the freshly built plugin when the scenario starts with it,
-   and always in **light mode with the Minimal theme** whatever your system uses.
+   and always in **dark mode with the Minimal theme** whatever your system uses.
 2. It relaunches Obsidian on that vault with `--remote-debugging-port=9222`, then
    waits for the cue: start QuickTime (File → New Screen Recording), size the
    window, and press **⌘⌃⌥⇧C** when you're rolling. Nothing is on a timer, so the

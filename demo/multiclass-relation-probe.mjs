@@ -13,7 +13,7 @@ export default async function ({ page, sleep }) {
 	await sleep(3000);
 	note("setup", await page.evaluate(async () => {
 		const app = window.app;
-		app.changeTheme?.("moonstone"); app.customCss?.setTheme?.("Minimal");
+		app.changeTheme?.("obsidian"); app.customCss?.setTheme?.("Minimal");
 		// A view about two classes, declared as Book.author read backwards.
 		const base = app.vault.getAbstractFileByPath("Books.base");
 		const yaml = await app.vault.read(base);

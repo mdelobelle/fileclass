@@ -13,7 +13,7 @@ export default async function ({ page, sleep }) {
 	await sleep(3000);
 	note("open options", await page.evaluate(async () => {
 		const app = window.app;
-		app.changeTheme?.("moonstone"); app.customCss?.setTheme?.("Minimal");
+		app.changeTheme?.("obsidian"); app.customCss?.setTheme?.("Minimal");
 		const leaf = app.workspace.getLeaf(false);
 		await leaf.openFile(app.vault.getAbstractFileByPath("Classes/Book.md"));
 		await new Promise((r) => setTimeout(r, 2500));

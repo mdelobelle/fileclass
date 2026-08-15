@@ -6,6 +6,8 @@ All notable changes to Fileclass are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.2.14] - 2026-08-15
+
 ### Added
 
 - **A class can offer several destinations for its new notes.** One folder and one template per class

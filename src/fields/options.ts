@@ -180,6 +180,17 @@ export function inputTemplate(field: Field): string | undefined {
 }
 
 /**
+ * The `multiline` option of an Input/MultiInput field (#177).
+ *
+ * A paragraph is still one scalar string — a summary, a rationale, an abstract — so this changes
+ * the **widget** and nothing else: same type, same validation, same value in the frontmatter.
+ * `template` wins when both are set, since a template is a shape made of single-line parts.
+ */
+export function isMultiline(field: Field): boolean {
+	return asRecord(field.options).multiline === true;
+}
+
+/**
  * Preset durations offered as quick picks when entering a Duration/CycleDuration
  * value (#30). Stored as an array of ISO 8601 duration strings in `options.presets`.
  */

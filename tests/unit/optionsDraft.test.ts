@@ -333,3 +333,25 @@ describe("a list field's values source", () => {
 		expect(optionsToDraft("Multi", { sourceType: "ValuesFromBase", baseFile: "b.base" }).legacyDvSource).toBeUndefined();
 	});
 });
+
+describe("Input multiline (#177)", () => {
+	it("reads the option into the draft", () => {
+		expect(optionsToDraft("Input", { multiline: true }).multiline).toBe(true);
+		expect(optionsToDraft("Input", { template: "x" }).multiline).toBe(false);
+	});
+
+	it("writes the key only when it is on", () => {
+		// A `multiline: false` on every Input in a vault is noise about a default.
+		expect(buildFieldOptions("Input", { multiline: true })).toEqual({ multiline: true });
+		expect(buildFieldOptions("Input", { multiline: false })).toEqual({});
+	});
+
+	it("keeps a template beside it, and the options nobody manages here", () => {
+		const draft = optionsToDraft("Input", { multiline: true, template: "{{a}}", required: true });
+		expect(buildFieldOptions("Input", draft)).toEqual({ multiline: true, template: "{{a}}", required: true });
+	});
+
+	it("carries over to MultiInput, whose items are entered the same way", () => {
+		expect(buildFieldOptions("MultiInput", { multiline: true })).toEqual({ multiline: true });
+	});
+});

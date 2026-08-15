@@ -53,6 +53,7 @@ import {
 	durationPresets,
 	iconSource,
 	inputTemplate,
+	isMultiline,
 	numberOptions,
 } from "./options";
 import { editableRootFields, TEXT_INPUT_TYPES } from "./support";
@@ -537,6 +538,7 @@ export async function promptFieldValue(
 			new MultiInputEditorModal(app, {
 				title: `Edit ${field.name}`,
 				template: inputTemplate(field),
+				multiline: isMultiline(field),
 				initial: toSelectedList(current),
 				onSubmit: (vals) => onValue(vals),
 			}).open();
@@ -550,6 +552,18 @@ export async function promptFieldValue(
 					template,
 					initial: current == null ? "" : String(current),
 					onSubmit: (v) => onValue(v),
+				}).open();
+				return;
+			}
+			if (isMultiline(field)) {
+				// A paragraph in a one-line box scrolls sideways past the edge, and Enter submits it
+				// instead of wrapping — so a line break had to be pasted in from somewhere else.
+				new TextAreaInputModal(app, {
+					title: `Set ${field.name}`,
+					initial: current == null ? "" : String(current),
+					monospace: false,
+					validate: (v) => validateField(field, coerceInput(field, v)),
+					onSubmit: (v) => onValue(coerceInput(field, v)),
 				}).open();
 				return;
 			}

@@ -24,6 +24,15 @@ export interface CaretValue {
 	list: boolean;
 	/** …or inside an inline list, `themes: [Ecology, Rel]`, which is written back in that form. */
 	inline?: boolean;
+	/**
+	 * Whether anything separates the marker from the value.
+	 *
+	 * `Status:OnGoing` is not a key and a value — it is the scalar string `Status:OnGoing`, and the
+	 * same goes for `-Ecology` in a list. A reader who starts typing right after the colon is one
+	 * keystroke away from a note whose frontmatter no longer parses, so what is written back has to
+	 * put that space in.
+	 */
+	spaced: boolean;
 }
 
 /** A key line: indentation, key, then whatever follows the colon. */
@@ -69,7 +78,14 @@ export function frontmatterValueAt(
 		// they get back. What is being typed is the item between the caret and the separator before
 		// it; everything else on the line stays exactly as it is.
 		if (value.startsWith("[")) return inlineItemAt(name.trim(), text, from, ch);
-		return { key: name.trim(), query: text.slice(from, ch), from, to: text.length, list: false };
+		return {
+			key: name.trim(),
+			query: text.slice(from, ch),
+			from,
+			to: text.length,
+			list: false,
+			spaced: gap.length > 0,
+		};
 	}
 
 	const item = ITEM_LINE.exec(text);
@@ -79,7 +95,7 @@ export function frontmatterValueAt(
 	if (ch < from) return null;
 	const owner = ownerKey(lines, line, indent.length, end);
 	if (!owner) return null;
-	return { key: owner, query: text.slice(from, ch), from, to: text.length, list: true };
+	return { key: owner, query: text.slice(from, ch), from, to: text.length, list: true, spaced: gap.length > 0 };
 }
 
 /**
@@ -110,6 +126,8 @@ function inlineItemAt(key: string, text: string, valueFrom: number, ch: number):
 		to: itemEnd,
 		list: true,
 		inline: true,
+		// Inside brackets a value needs no separator of its own; the comma or the bracket is one.
+		spaced: true,
 	};
 }
 

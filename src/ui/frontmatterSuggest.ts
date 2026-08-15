@@ -122,7 +122,9 @@ export class FrontmatterValueSuggest extends EditorSuggest<ValueSuggestion> {
 			this.close();
 			return;
 		}
-		const text = yamlScalar(value);
+		// The space YAML needs between the marker and the value, when the reader started typing
+		// right after it: `Status:WaitingFor` is one scalar string, not a key and a value.
+		const text = `${caret.spaced ? "" : " "}${yamlScalar(value)}`;
 		ctx.editor.replaceRange(text, { line, ch: caret.from }, { line, ch: caret.to });
 		ctx.editor.setCursor({ line, ch: caret.from + text.length });
 		this.close();

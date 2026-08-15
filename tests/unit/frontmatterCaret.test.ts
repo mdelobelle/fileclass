@@ -40,7 +40,7 @@ describe("frontmatterEnd", () => {
 
 describe("frontmatterValueAt", () => {
 	it("names the key whose value the caret is in, and what has been typed", () => {
-		expect(atEnd(2)).toEqual({ key: "genre", query: "Science fic", from: 7, to: 18, list: false });
+		expect(atEnd(2)).toEqual({ key: "genre", query: "Science fic", from: 7, to: 18, list: false, spaced: true });
 	});
 
 	it("answers nothing while the caret is in the key", () => {
@@ -55,12 +55,12 @@ describe("frontmatterValueAt", () => {
 	});
 
 	it("attributes a list item to the key above it", () => {
-		expect(atEnd(4)).toEqual({ key: "themes", query: "Ecology", from: 4, to: 11, list: true });
-		expect(atEnd(5)).toEqual({ key: "themes", query: "", from: 4, to: 4, list: true });
+		expect(atEnd(4)).toEqual({ key: "themes", query: "Ecology", from: 4, to: 11, list: true, spaced: true });
+		expect(atEnd(5)).toEqual({ key: "themes", query: "", from: 4, to: 4, list: true, spaced: true });
 	});
 
 	it("attributes a nested key to itself, not to the block holding it", () => {
-		expect(atEnd(7)).toEqual({ key: "room", query: "Study", from: 8, to: 13, list: false });
+		expect(atEnd(7)).toEqual({ key: "room", query: "Study", from: 8, to: 13, list: false, spaced: true });
 	});
 
 	it("reads one item of an inline list, not the whole value", () => {
@@ -197,7 +197,15 @@ describe("frontmatterValueAt — inline lists", () => {
 
 	it("offers inside an empty inline list, where the value goes", () => {
 		// `themes: [|]` — nothing typed yet, and the item starts and ends at the caret.
-		expect(inline("themes: []", 9)).toEqual({ key: "themes", query: "", from: 9, to: 9, list: true, inline: true });
+		expect(inline("themes: []", 9)).toEqual({
+			key: "themes",
+			query: "",
+			from: 9,
+			to: 9,
+			list: true,
+			inline: true,
+			spaced: true,
+		});
 	});
 
 	it("reads the item being typed, not the whole line", () => {
@@ -255,5 +263,21 @@ describe("inlineListToBlock", () => {
 	it("answers nothing for a line that holds no inline list", () => {
 		expect(inlineListToBlock("themes:", "Religion", "")).toBeNull();
 		expect(inlineListToBlock("genre: Science fiction", "Religion", "")).toBeNull();
+	});
+});
+
+describe("frontmatterValueAt — the separator YAML needs", () => {
+	const at = (text: string, ch: number) => frontmatterValueAt(["---", text, "---"], 1, ch);
+
+	it("knows when the value starts right after the colon", () => {
+		// `Status:OnGoing` is one scalar string, not a key and a value: whoever writes there has to
+		// put the space back.
+		expect(at("Status:Wa", 9)).toMatchObject({ key: "Status", query: "Wa", spaced: false });
+		expect(at("Status: Wa", 10)).toMatchObject({ spaced: true });
+	});
+
+	it("knows the same of a list item", () => {
+		const lines = ["---", "themes:", "  -Eco", "---"];
+		expect(frontmatterValueAt(lines, 2, 6)).toMatchObject({ key: "themes", query: "Eco", spaced: false });
 	});
 });

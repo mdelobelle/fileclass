@@ -8,6 +8,19 @@ All notable changes to Fileclass are documented here. The format follows
 
 ### Fixed
 
+- **A column Bases spells differently from the class is editable again.** Reported on a production
+  vault: the `status` column of a `fileclass-table` would not take an edit, while the column beside
+  it did, and the class declared the field exactly as expected. Measured live: the view is handed
+  `note.Status`, capitalised, because Bases names a column from Obsidian's **property registry** —
+  which keys entries in lowercase but keeps the display name of the first spelling the vault used.
+  That vault has 482 notes writing `Status:` and 927 writing `status:`, so the class's `status`
+  field and the column no longer had the same name, the field lookup found nothing, and the cell was
+  silently read-only.
+
+  A column now matches its field by name, and failing that by name ignoring case. Exact first, so a
+  class that really does declare two fields differing only in case keeps its own.
+
+
 - **A hovered note shows its field buttons, not just the class wrench.** Hovering a link — in a
   `fileclass-table` cell, or anywhere else — opened a preview whose Properties rows carried nothing
   but the `fileClass` wrench, which is the one control that needs no file. A preview renders in

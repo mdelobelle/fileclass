@@ -34,7 +34,7 @@ import { makeValuePreview } from "../ui/valuePreview";
 import { Field, isRootField } from "../schema/field";
 import {
 	columnLabel,
-	fieldNameOfColumn,
+	fieldForColumn,
 	FILECLASS_TABLE_ICON,
 	FILECLASS_TABLE_VIEW,
 	parseCellSegments,
@@ -788,11 +788,11 @@ class FileclassTableView extends Component {
 
 	/** The editable fileClass field behind a `note.<field>` column, if any. */
 	private editableField(file: TFile, col: string): Field | undefined {
-		const name = fieldNameOfColumn(col);
-		if (!name) return undefined;
-		return this.plugin.index
-			.getFields(file)
-			.find((f) => f.name === name && isRootField(f) && isInputSupported(f.type));
+		return fieldForColumn(
+			col,
+			this.plugin.index.getFields(file),
+			(f) => isRootField(f) && isInputSupported(f.type)
+		);
 	}
 
 	private editCell(file: TFile, field: Field, alt = false): void {

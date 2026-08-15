@@ -121,6 +121,8 @@ thread, and a tight smoke test of that type's input path.
 | 034 | Editing right in the table | `fileclass-table`: a cell per field, each keeping its type's gesture, the Bases toolbar with its typed *New*, and the wrench that opens the class | — (opens on `Habit.base`, as 033 leaves it) | ✅ [published](https://www.youtube.com/watch?v=EQTOTgjfuKs) |
 | 035 | What's missing, in a column | validation columns: three kinds of failure, the count in the header, and the filter it carries ([#142](https://github.com/mdelobelle/fileclass/issues/142)) | — (opens on `Books.base` › *Book*, as 034 leaves it) | ✅ [published](https://www.youtube.com/watch?v=4qNflzfclNI) |
 | 036 | A base inside a note | embedding: `![[x.base]]` and a `base` block, both editable, each with its own toolbar | a dashboard note, written on camera | ✅ [published](https://www.youtube.com/watch?v=6I9YZNaoqnc) |
+| 036b | The other end of a relation | reading a relation backwards ([#154](https://github.com/mdelobelle/fileclass/issues/154)): the view a class declares for a field, embedded in the note it points at | `Books.base` › *Book by author*, embedded in an author's note | ✅ [published](https://www.youtube.com/watch?v=EyptbmltFuI) |
+| 036c | A note that arrives already related | *New `<Class>` with `<note>`*: creating from a reverse table, with the link already filled in | — (works on the vault as 036b leaves it) | ✅ [published](https://www.youtube.com/watch?v=MVW2X4KqAEE) |
 
 ## Arc 8 — canvas and settings
 
@@ -130,9 +132,48 @@ thread, and a tight smoke test of that type's input path.
 | 038 | Groups on a canvas as data | `CanvasGroup`, `CanvasGroupLink`: the box a note sits in, what the box is wired to, and geometry as the rule | two groups on `Reading map.canvas`, and the activity one of them feeds | ✅ [published](https://www.youtube.com/watch?v=smt6cu8PLnE) |
 | 039 | The model your classes make | the schema canvas ([#149](https://github.com/mdelobelle/fileclass/issues/149)): every class with its fields, inheritance, the bases and canvases they depend on, what each claims — and an arrangement that survives a resync | `Classes/Schema.canvas` | ✅ [published](https://www.youtube.com/watch?v=zp6jflaZwj0) |
 
-**44 takes published**, 109 minutes of finished video — the whole series, arcs 1
-to 8. Numbered 000 to 039, with `010b`, `016b`, `025b`, `030b` and `030c` as facets
-that earned their own take.
+## Arc 9 — what changed since the series was filmed
+
+The series was shot against 0.2.11/0.2.12. Everything in **0.2.14** landed after the
+last take, plus the schema log from 0.2.12 — so this arc exists, and it opens with
+the two takes that no longer match the plugin rather than with the new features.
+
+**Two published takes now show behaviour the plugin no longer has.** That is worse
+than a gap: a viewer who follows them is misled, and no amount of new video fixes a
+wrong one.
+
+| # | Take | What it says today, and why it is wrong | Fix |
+| - | ---- | --------------------------------------- | --- |
+| 024 | One parent class, three children | *"On a note, its own fields come first and the inherited ones after"* — since [#181](https://github.com/mdelobelle/fileclass/issues/181) the chain reads root→leaf, so **inherited fields come first**. And *"Book's own schema still shows only its own fields"* — the editor now lists the resolved set, each inherited row badged `from Media`. | 024b below carries the correction; re-record 024 only if the two beats cannot be retired by it |
+| 014 | Covers and attachments | not contradicted — the picker still shows pictures — but it shows them as a **list of small thumbnails**, where the picker is now a gallery (four per row, 140px) and an image cell shows the picture alone | 014b below; 014 itself can stand |
+
+**The new takes.** Numbered as facets of the take whose ground they extend, so the
+series keeps reading in order and a viewer lands on the update next to the feature.
+
+| # | Take | Feature | Priority |
+| - | ---- | ------- | -------- |
+| 024b | The order is yours, across the whole chain | the root→leaf default, the `from Media` badge, moving an inherited field, `fieldsOrder` on the class that declares it — and `Comic` keeping its own ([#181](https://github.com/mdelobelle/fileclass/issues/181), [#184](https://github.com/mdelobelle/fileclass/issues/184)) | 1 — repairs 024 |
+| 014b | Choosing a picture by looking at it | the media pickers as galleries, an image cell showing the picture alone, and a picker that pages through a folder of hundreds | 1 — repairs 014 |
+| 028b | The schema, where you type it | in source mode, a field's values offered as you type them: `Select`, `Cycle`, `Multi`, item by item, the whole list when nothing matches ([#185](https://github.com/mdelobelle/fileclass/issues/185)) | 2 |
+| 028c | The field under the cursor | *Manage the field at the cursor*: a hotkey, the controller of a `Date`, one item of an `ObjectList` opened at its own level, and silence on a key no class declares ([#185](https://github.com/mdelobelle/fileclass/issues/185)) | 2 |
+| 034b | The buttons on every one of your views | *Manage* and *New* on each `fileclass-table` — `Todo`, `Ongoing`, `Done` — the class read from the base's filter as well as the view's, and what a two-class table can still offer | 3 |
+| 034c | A note that starts inside its filter | a note created from a filtered view arriving with the value that filter fixes, and what an `or` refuses to decide | 3 |
+| 034d | Grouping the rows | the view's own *Group by*, applied to an editable table, with the notes that have no value last | 3 |
+| 036d | One relation, several views | two views over one field — a delegate's ongoing tasks and their done ones — each with its *New … with …* button | 4 |
+| 036e | A view you already have | adopting a hand-written view for a relation ([#154](https://github.com/mdelobelle/fileclass/issues/154)), and managing declarations from the class's options — added, edited, removed | 4 |
+| 031b | Several destinations for one class | named folder/template pairs, the choice offered only when there is one to make | 4 |
+| 030d | When something a class points at moves | the warning, the sweep, the log window and its retention ([#159](https://github.com/mdelobelle/fileclass/issues/159)) — shipped in 0.2.12, after the last take | 5 |
+| 016c | A field that holds a paragraph | `multiline` on `Input` and `MultiInput` ([#177](https://github.com/mdelobelle/fileclass/issues/177)) | 5 |
+
+Small things deliberately left without a take of their own, to be shown as a beat
+inside one of the above: the `relatedViews` / `fieldsOrder` / `newNotes` rows now
+readable in the Properties panel (a beat of 028b), the page preview on hover in a
+cell (a beat of 034d), and a single value written without a list no longer being
+flagged (a beat of 034c).
+
+**46 takes published**, 109 minutes of finished video — the whole series, arcs 1
+to 8. Numbered 000 to 039, with `010b`, `016b`, `025b`, `030b`, `030c`, `036b` and
+`036c` as facets that earned their own take.
 
 What is deliberately not filmed, gathered in one place: `Formula` and `Lookup`
 (outside the plugin's scope), the CLI (a terminal under burned-in subtitles is not

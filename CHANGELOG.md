@@ -6,6 +6,8 @@ All notable changes to Fileclass are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.2.15] - 2026-08-17
+
 ### Fixed
 
 - **A column Bases spells differently from the class is editable again.** Reported on a production
@@ -20,7 +22,6 @@ All notable changes to Fileclass are documented here. The format follows
   A column now matches its field by name, and failing that by name ignoring case. Exact first, so a
   class that really does declare two fields differing only in case keeps its own.
 
-
 - **A hovered note shows its field buttons, not just the class wrench.** Hovering a link — in a
   `fileclass-table` cell, or anywhere else — opened a preview whose Properties rows carried nothing
   but the `fileClass` wrench, which is the one control that needs no file. A preview renders in
@@ -31,7 +32,6 @@ All notable changes to Fileclass are documented here. The format follows
   Measured: hovering two links one after the other decorates each preview with **its own** note's
   fields, and a popover appearing without a recent hover stays undecorated rather than borrowing the
   last one's.
-
 
 ## [0.2.14] - 2026-08-15
 

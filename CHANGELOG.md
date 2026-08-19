@@ -6,6 +6,20 @@ All notable changes to Fileclass are documented here. The format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- **A cell holding a dozen links stays inside its column.** Reported on a production vault: a
+  `with` column of twelve people spilled over the columns to its right, drawn as a row of icons
+  with no names left to read, while a two-link cell in the row above truncated politely. Measured
+  in a staged vault: eighteen links drew 480px inside a 260px column, spilling 212px into its
+  neighbour — the names had shrunk to nothing, and the indicator injected beside each link cannot
+  shrink at all.
+
+  A cell now draws one *item* per value and keeps only those that hold a readable share of the
+  column, counting the rest in a `+N` at the right edge — two names and `+16` where there were
+  eighteen icons. The whole value stays on the cell's tooltip, and the count follows the column
+  when the pane is resized.
+
 ## [0.2.15] - 2026-08-17
 
 ### Fixed

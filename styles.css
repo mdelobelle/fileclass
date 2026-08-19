@@ -690,15 +690,53 @@ tr.fc-row-filtered {
 	gap: 3px;
 	max-width: 20em;
 }
-.fileclass-table .fc-cell > .fc-seg,
-.fileclass-table .fc-cell > a.internal-link {
+/*
+ * One item per value: a link with the indicator injected beside it, or a run of text. The item
+ * is the unit the fit pass keeps whole or hides — see cellOverflow.ts.
+ */
+.fileclass-table .fc-cell > .fc-item {
+	display: flex;
+	align-items: center;
+	gap: 3px;
+	min-width: 0;
+}
+.fileclass-table .fc-cell > .fc-item > .fc-seg,
+.fileclass-table .fc-cell > .fc-item > a.internal-link {
 	min-width: 0;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
 }
-.fileclass-table .fc-cell > .fileclass-indicator {
+.fileclass-table .fc-cell > .fc-item > .fileclass-indicator {
 	flex-shrink: 0;
+}
+/* What the cell held back, at the right edge — the full value stays on the cell's tooltip. */
+.fileclass-table .fc-cell > .fc-more {
+	flex-shrink: 0;
+	color: var(--text-muted);
+	font-size: var(--font-ui-smaller);
+	white-space: nowrap;
+}
+/*
+ * Hidden by the fit pass. Same specificity as the rules above and declared after them, since a
+ * `display: flex` further down the file once won this exact argument and left "hidden" cards on
+ * screen while the code believed them gone.
+ */
+.fileclass-table .fc-cell > .fc-item.fc-hidden,
+.fileclass-table .fc-cell > .fc-more.fc-hidden {
+	display: none;
+}
+/*
+ * While the pass measures: every item at the width it would like, so what is read is the
+ * natural width and not the squeezed one flexbox settled on.
+ */
+.fileclass-table.fc-measuring .fc-cell > .fc-item {
+	flex: 0 0 auto;
+}
+.fileclass-table.fc-measuring .fc-cell > .fc-item > .fc-seg,
+.fileclass-table.fc-measuring .fc-cell > .fc-item > a.internal-link {
+	overflow: visible;
+	text-overflow: clip;
 }
 /* Computed valid/errors columns (data quality). */
 .fileclass-table th.fc-valid-col,

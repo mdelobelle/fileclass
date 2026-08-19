@@ -21,6 +21,7 @@ import { Seed } from "../schema/newNote";
 import { fileClassClaimingView } from "./baseSync";
 import { classesNamedInFilter, fieldValuesInFilter } from "./baseYaml";
 import { BasesGroupLike, renderedGroups, groupProperty } from "./tableGroups";
+import { MIN_ITEM_EM, fittingItems, moreLabel } from "./cellOverflow";
 import { fieldForView } from "./reverseView";
 import { EditContext, runControlAction } from "../fields/fieldActions";
 import { isInputSupported } from "../fields/support";
@@ -39,6 +40,19 @@ import {
 	FILECLASS_TABLE_VIEW,
 	parseCellSegments,
 } from "./columns";
+
+/** What Bases leaves between two link values — punctuation, never content of its own. */
+const SEPARATOR_RE = /^[\s,;·|/]+$/;
+
+/** The items of a fitted cell, in the order they are drawn. */
+function cellItems(cell: HTMLElement): HTMLElement[] {
+	return Array.from(cell.querySelectorAll<HTMLElement>(":scope > .fc-item"));
+}
+
+/** The cell's `+N`, drawn with it and shown only while it is holding something back. */
+function cellMore(cell: HTMLElement): HTMLElement | null {
+	return cell.querySelector<HTMLElement>(":scope > .fc-more");
+}
 
 /** Minimal shape of the Bases dataset we consume (structural, like the adapter). */
 interface BasesValueLike {
@@ -70,6 +84,14 @@ class FileclassTableView extends Component {
 
 	/** Set by the controller before `onDataUpdated()`. */
 	data?: BasesDatasetLike;
+
+	/** Handles of the two fit passes a render schedules, cancelled on the next one and on unload. */
+	private fitFrame?: number;
+	private fitTimer?: number;
+
+	/** The widest each cell has been since the last render — see `fitCells`. Keyed by the cell,
+	 * so a re-render, which builds new ones, starts the measurement over. */
+	private cellWidths = new WeakMap<HTMLElement, number>();
 
 	/**
 	 * Where Obsidian parks the hover preview it opens for one of our links.
@@ -145,6 +167,8 @@ class FileclassTableView extends Component {
 	}
 
 	onunload(): void {
+		if (this.fitFrame !== undefined) window.cancelAnimationFrame(this.fitFrame);
+		window.clearTimeout(this.fitTimer);
 		this.containerEl.empty();
 		this.toolbarItem?.remove();
 		this.toolbarItem = undefined;
@@ -154,7 +178,12 @@ class FileclassTableView extends Component {
 
 	// Lifecycle stubs the controller may call.
 	focus(): void {}
-	onResize(): void {}
+	/** A narrower column holds fewer items — the same fit, over the widths it has now. */
+	onResize(): void {
+		// A real resize is a new measurement, not the column giving back what the last fit freed.
+		this.cellWidths = new WeakMap();
+		this.scheduleFit();
+	}
 	setEphemeralState(): void {}
 	getEphemeralState(): Record<string, unknown> {
 		return {};
@@ -200,6 +229,98 @@ class FileclassTableView extends Component {
 			}
 		}
 		this.syncToolbarButton(ds);
+		this.scheduleFit();
+	}
+
+	/**
+	 * Runs the fit twice: as soon as the rows are on screen, and again past the link
+	 * indicators' own debounce.
+	 *
+	 * The indicator is injected **after** every internal link by a MutationObserver of its own
+	 * (`LinkIndicator`), a tenth of a second after the table renders — and it cannot shrink. A
+	 * measurement taken before it arrives is short by an icon per link, which is precisely the
+	 * width that overflowed in the first place.
+	 */
+	private scheduleFit(): void {
+		if (this.fitFrame !== undefined) window.cancelAnimationFrame(this.fitFrame);
+		this.fitFrame = window.requestAnimationFrame(() => {
+			this.fitFrame = undefined;
+			this.fitCells();
+		});
+		window.clearTimeout(this.fitTimer);
+		this.fitTimer = window.setTimeout(() => this.fitCells(), 400);
+	}
+
+	/**
+	 * Trims every multi-value cell to the items its column can actually hold, and counts the rest
+	 * in a `+N` (see cellOverflow.ts for the arithmetic and for what was measured).
+	 *
+	 * Reads and writes are kept apart — reveal everything, measure everything, then hide — so the
+	 * whole table costs one layout rather than one per cell.
+	 */
+	private fitCells(): void {
+		const table = this.containerEl.querySelector<HTMLElement>(".fileclass-table");
+		if (!table) return;
+		// A cell in a row the `valid` filter hides has no width to fit against, and reading zero
+		// there would leave it at one item with no pass due to put it back. Left alone until it
+		// is on screen again — the filter schedules a pass when it lets those rows through.
+		const cells = Array.from(table.querySelectorAll<HTMLElement>(".fc-cell.fc-fit")).filter(
+			(cell) => cell.clientWidth > 0
+		);
+		if (!cells.length) return;
+
+		// Read: the width each cell has **now**, before anything moves. Taken here rather than
+		// under `fc-measuring`, where items stop shrinking and the column grows to its own
+		// max-width — measured, a 260px column read 320 there and the cell kept one item too many.
+		//
+		// `widths` remembers the widest each cell has been since the last render, because hiding
+		// items lowers what the column asks for, and a narrower column read back on the next pass
+		// would hide one more, and so on down.
+		const available = cells.map((cell) => {
+			const width = Math.max(cell.clientWidth, this.cellWidths.get(cell) ?? 0);
+			this.cellWidths.set(cell, width);
+			return width;
+		});
+
+		// Write: back to what is being measured — every item on screen, at its natural width.
+		table.addClass("fc-measuring");
+		for (const cell of cells) {
+			const items = cellItems(cell);
+			for (const item of items) item.removeClass("fc-hidden");
+			const more = cellMore(cell);
+			// The widest label it could end up with, so the room held back is never too little.
+			more?.removeClass("fc-hidden");
+			more?.setText(`+${items.length}`);
+		}
+
+		// Read: one batch.
+		const plans = cells.map((cell, i) => {
+			const items = cellItems(cell);
+			const style = window.getComputedStyle(cell);
+			const gap = Number.parseFloat(style.columnGap) || 0;
+			const em = Number.parseFloat(style.fontSize) || 13;
+			return {
+				cell,
+				items,
+				shown: fittingItems({
+					widths: items.map((item) => item.offsetWidth),
+					available: available[i],
+					gap,
+					badge: cellMore(cell)?.offsetWidth ?? 0,
+					min: MIN_ITEM_EM * em,
+				}),
+			};
+		});
+
+		// Write.
+		table.removeClass("fc-measuring");
+		for (const { cell, items, shown } of plans) {
+			items.forEach((item, i) => item.toggleClass("fc-hidden", i >= shown));
+			const label = moreLabel(items.length, shown);
+			const more = cellMore(cell);
+			more?.setText(label ?? "");
+			more?.toggleClass("fc-hidden", label === null);
+		}
 	}
 
 	/**
@@ -625,6 +746,8 @@ class FileclassTableView extends Component {
 			this.validFilter =
 				this.validFilter === "all" ? "invalid" : this.validFilter === "invalid" ? "valid" : "all";
 			this.applyValidFilter();
+			// Rows just came back on screen, and a hidden row's cells were never fitted.
+			this.scheduleFit();
 		};
 		th.addEventListener("click", cycle);
 		th.addEventListener("keydown", (e) => {
@@ -673,7 +796,7 @@ class FileclassTableView extends Component {
 
 		if (col === "file.name") {
 			// Like the standard first column: a link to the note.
-			this.renderInternalLink(content, entry.file.path, entry.file.basename, source);
+			this.renderInternalLink(this.cellItem(content), entry.file.path, entry.file.basename, source);
 		} else {
 			const raw = this.displayText(entry, col, field);
 			// A type preview (Color swatch / Icon glyph / image) leads the value.
@@ -693,11 +816,15 @@ class FileclassTableView extends Component {
 					shown = isMediaType(field.type);
 				}
 			}
-			if (!shown)
-				for (const seg of parseCellSegments(raw)) {
-					if ("link" in seg) this.renderInternalLink(content, seg.link, seg.display, source);
-					else content.createSpan({ cls: "fc-seg", text: seg.text });
-				}
+			if (!shown) this.renderSegments(content, raw, source);
+		}
+
+		// A run of values is trimmed to what the column can hold, once it is on screen and its
+		// widths are real (`fitCells`). Marked here, so the pass has only its own cells to walk.
+		const items = content.querySelectorAll(".fc-item").length;
+		if (items > 1) {
+			content.addClass("fc-fit");
+			content.createSpan({ cls: "fc-more fc-hidden" });
 		}
 
 		// Full value on hover, since cells are truncated with an ellipsis — and since an image cell
@@ -711,6 +838,33 @@ class FileclassTableView extends Component {
 			e.stopPropagation();
 			this.editCell(entry.file, field, e.altKey);
 		});
+	}
+
+	/**
+	 * Draws a cell's value as a row of **items** — one per link, or one for a plain run of text.
+	 *
+	 * An item is what the fit pass hides or keeps whole, so the separator between two links
+	 * travels with the link before it: on its own it would be an item of its own, and a cell
+	 * could end on a stranded comma.
+	 */
+	private renderSegments(content: HTMLElement, raw: string, source: string): void {
+		let last: HTMLElement | undefined;
+		for (const seg of parseCellSegments(raw)) {
+			if ("link" in seg) {
+				last = this.cellItem(content);
+				this.renderInternalLink(last, seg.link, seg.display, source);
+			} else if (last && SEPARATOR_RE.test(seg.text)) {
+				last.createSpan({ cls: "fc-seg fc-sep", text: seg.text });
+			} else {
+				last = this.cellItem(content);
+				last.createSpan({ cls: "fc-seg", text: seg.text });
+			}
+		}
+	}
+
+	/** One item of a cell — a link with its indicator, or a run of text. */
+	private cellItem(content: HTMLElement): HTMLElement {
+		return content.createSpan({ cls: "fc-item" });
 	}
 
 	/**

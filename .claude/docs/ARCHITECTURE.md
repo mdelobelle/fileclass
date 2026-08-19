@@ -461,6 +461,18 @@ canvas file tracking (comes with the planned Canvas engine, §9.1).
   **holds**, not what it is called, so a canvas card rendering a note that embeds a base
   is covered without another fix. The selector is the impure caller's and is verified in
   the app, not in those tests — they run without a DOM.
+- **A cell shows what it can show, and counts the rest** (`cellOverflow.ts`). Values are drawn
+  as *items* — one per link, the separator travelling with the link before it — and a run of
+  them is trimmed to those that keep a readable share of the column (8em), with the rest in a
+  `+N` at the right edge; the whole value stays on the cell's tooltip. Measured on a real
+  vault: eighteen links drew 480px of icons inside a 260px column, names squeezed to nothing,
+  spilling over the columns to the right — because the injected link indicator cannot shrink.
+  The fit is DOM measurement, so it is kept honest by three rules: reads and writes are
+  batched (reveal all → measure all → hide), the available width is read **before** the
+  measuring class goes on (under it, items stop shrinking and the column grows), and each cell
+  remembers the widest it has been since the last render — hiding items lowers what a column
+  asks for, and reading that back would hide one more, and so on down. It runs twice per
+  render, the second pass past the link indicator's own debounce, and again on `onResize`.
 - **The `valid` column filters on itself** (#142): its header cycles all → failures
   → clean and carries the failure count. Session-only state, never written to the
   base — and the only route available, since the registry takes no computed

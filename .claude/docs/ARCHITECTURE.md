@@ -471,8 +471,9 @@ canvas file tracking (comes with the planned Canvas engine, §9.1).
   batched (reveal all → measure all → hide), the available width is read **before** the
   measuring class goes on (under it, items stop shrinking and the column grows), and each cell
   remembers the widest it has been since the last render — hiding items lowers what a column
-  asks for, and reading that back would hide one more, and so on down. It runs twice per
-  render, the second pass past the link indicator's own debounce, and again on `onResize`.
+  asks for, and reading that back would hide one more, and so on down. It runs on each render
+  and on `onResize`, plus a second pass past the link indicator's own debounce — that one only
+  when icons actually arrived, since a pass costs ~65ms per 300 rows of multi-link cells.
 - **The `valid` column filters on itself** (#142): its header cycles all → failures
   → clean and carries the failure count. Session-only state, never written to the
   base — and the only route available, since the registry takes no computed

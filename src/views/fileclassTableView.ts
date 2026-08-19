@@ -89,6 +89,9 @@ class FileclassTableView extends Component {
 	private fitFrame?: number;
 	private fitTimer?: number;
 
+	/** Indicators counted at the last fit — the second pass is only worth running if more arrived. */
+	private indicatorCount = -1;
+
 	/** The widest each cell has been since the last render — see `fitCells`. Keyed by the cell,
 	 * so a re-render, which builds new ones, starts the measurement over. */
 	private cellWidths = new WeakMap<HTMLElement, number>();
@@ -248,7 +251,13 @@ class FileclassTableView extends Component {
 			this.fitCells();
 		});
 		window.clearTimeout(this.fitTimer);
-		this.fitTimer = window.setTimeout(() => this.fitCells(), 400);
+		this.fitTimer = window.setTimeout(() => {
+			// Only if an icon actually arrived. The pass costs ~100ms on a 300-row table, and a
+			// table whose links point at notes no class claims gets no icons at all.
+			const table = this.containerEl.querySelector<HTMLElement>(".fileclass-table");
+			if (table && table.querySelectorAll(".fileclass-indicator").length === this.indicatorCount) return;
+			this.fitCells();
+		}, 400);
 	}
 
 	/**
@@ -293,12 +302,15 @@ class FileclassTableView extends Component {
 			more?.setText(`+${items.length}`);
 		}
 
-		// Read: one batch.
+		// Read: one batch. Gap and font size come from one cell and are used for all of them: it
+		// is the same CSS rule for every cell. (Measured, this changed nothing — the pass is
+		// spent reading widths, not resolving styles — but one resolution for three hundred
+		// identical answers is the honest way round.)
+		const style = window.getComputedStyle(cells[0]);
+		const gap = Number.parseFloat(style.columnGap) || 0;
+		const em = Number.parseFloat(style.fontSize) || 13;
 		const plans = cells.map((cell, i) => {
 			const items = cellItems(cell);
-			const style = window.getComputedStyle(cell);
-			const gap = Number.parseFloat(style.columnGap) || 0;
-			const em = Number.parseFloat(style.fontSize) || 13;
 			return {
 				cell,
 				items,
@@ -314,6 +326,7 @@ class FileclassTableView extends Component {
 
 		// Write.
 		table.removeClass("fc-measuring");
+		this.indicatorCount = table.querySelectorAll(".fileclass-indicator").length;
 		for (const { cell, items, shown } of plans) {
 			items.forEach((item, i) => item.toggleClass("fc-hidden", i >= shown));
 			const label = moreLabel(items.length, shown);

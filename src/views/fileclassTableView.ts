@@ -13,7 +13,7 @@
 import { Component, Notice, TFile, parseYaml, setIcon } from "obsidian";
 
 import type FileclassPlugin from "../../main";
-import { registerFileclassView } from "../engine/basesAdapter";
+import { registerBasesView } from "obsidian-bases-adapter";
 import { isMediaType } from "../fields/candidates";
 import { createNoteWithClass } from "../commands/createNoteWithClass";
 import { ChoiceSuggestModal } from "../fields/input/valueModals";
@@ -968,7 +968,7 @@ class FileclassTableView extends Component {
  * is missing — callers feature-detect first.
  */
 export function registerFileclassTableView(plugin: FileclassPlugin): () => void {
-	return registerFileclassView(plugin.app, FILECLASS_TABLE_VIEW, {
+	return registerBasesView(plugin.app, FILECLASS_TABLE_VIEW, {
 		name: "Fileclass table",
 		// Not `table`, which is the native view's: in the view switcher the two sat side by side
 		// under the same glyph, and the only way to tell which one a base was using was to open it.

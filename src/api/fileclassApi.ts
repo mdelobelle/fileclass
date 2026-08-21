@@ -15,7 +15,7 @@ import { TFile } from "obsidian";
 import type FileclassPlugin from "../../main";
 import { Filter, matchesFilter } from "./filter";
 import { insertMissingFields } from "../commands/insertMissingFields";
-import { getBaseFiles, getBaseRows } from "../engine/basesAdapter";
+import { getBaseFiles, getBaseRows } from "obsidian-bases-adapter";
 import { resolveCandidates } from "../fields/candidates";
 import { formatLink } from "../fields/links";
 import { openFileClassSchema } from "../ui/fileClassSchemaModal";

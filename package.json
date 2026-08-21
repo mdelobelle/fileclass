@@ -40,5 +40,8 @@
 		"typescript": "^5.4.0",
 		"typescript-eslint": "^8.64.0",
 		"vitest": "^2.0.0"
+	},
+	"dependencies": {
+		"obsidian-bases-adapter": "^0.1.0"
 	}
 }

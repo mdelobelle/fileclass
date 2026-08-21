@@ -6,6 +6,20 @@ All notable changes to Fileclass are documented here. The format follows
 
 ## [Unreleased]
 
+### Changed
+
+- **The Bases adapter now comes from npm.** The one module allowed to touch the core Bases
+  plugin's private internals had been copied into two other plugins, which meant three copies of
+  a sequence that has to be re-verified at every Obsidian upgrade. It is now the
+  [`obsidian-bases-adapter`](https://github.com/mdelobelle/obsidian-bases-adapter) package, and
+  this plugin depends on it like anyone else.
+
+  Nothing changes for a reader of a vault: the same code, bundled into `main.js` as before
+  (+49 bytes), verified in the app — the view type registers, an editable table draws its rows,
+  and the API's headless read and File candidates answer as they did. What moved is where the
+  proof lives: the package runs the deep canary against its own published artifact, where this
+  repo's canary could only replicate the private call sequence and agree with itself.
+
 ### Fixed
 
 - **A cell holding a dozen links stays inside its column.** Reported on a production vault: a

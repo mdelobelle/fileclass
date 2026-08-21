@@ -2,7 +2,7 @@
  * Fileclass — plugin entry point.
  *
  * Intentionally thin (ARCHITECTURE.md §4): it wires the global singleton (D7),
- * feature-detects the core Bases plugin through basesAdapter (D4), owns the
+ * feature-detects the core Bases plugin through `obsidian-bases-adapter` (D4), owns the
  * long-lived queryCache and the schema index, and registers commands/settings.
  * Feature logic lives under src/. No Bases/private-internal access happens
  * here — only via the adapter.
@@ -10,7 +10,7 @@
 import { Notice, Plugin, TAbstractFile, TFile, WorkspaceLeaf, debounce } from "obsidian";
 
 import { setPlugin, clearPlugin } from "./src/globals";
-import { isBasesAvailable, onCorePluginChange } from "./src/engine/basesAdapter";
+import { isBasesAvailable, onCorePluginChange } from "obsidian-bases-adapter";
 import { QueryCache } from "./src/engine/queryCache";
 import { createFileClass } from "./src/commands/createFileClass";
 import { adoptRelatedView } from "./src/commands/adoptRelatedView";

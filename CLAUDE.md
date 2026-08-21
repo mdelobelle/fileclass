@@ -9,7 +9,8 @@ contradict it; if a task seems to require deviating, stop and ask.
 form fields to code areas and defines the analyze → propose-resolution flow.
 
 Hard rules (details in the architecture doc):
-- `src/engine/basesAdapter.ts` is **runtime-proven code — do not refactor it**;
+- the Bases adapter is the **`obsidian-bases-adapter` package** — runtime-proven code that
+  lives in its own repo; fix it there and bump the dependency, never patch it in `node_modules`;
   it is the only module allowed to touch Bases/private Obsidian internals.
 - Frontmatter-only: reads via `metadataCache`, writes via
   `app.fileManager.processFrontMatter`. Never parse or edit note text lines.
@@ -17,7 +18,7 @@ Hard rules (details in the architecture doc):
 - Never use the bare global `app`: use `getPlugin().app` (singleton in
   `src/globals.ts`) or an explicit `App` parameter.
 - TypeScript strict; **no `any` anywhere** (the Obsidian review linter forbids it
-  and disabling the rule). Private internals in `src/engine/basesAdapter.ts` use
+  and disabling the rule). Private internals in the `obsidian-bases-adapter` package use
   `unknown` casts to minimal interfaces instead.
 - Every phase deliverable includes unit tests (vitest) and a doc page (mkdocs).
 - **Every feature also gets a demo scenario proposed** — tests, docs, *and* a

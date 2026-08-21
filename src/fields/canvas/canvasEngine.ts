@@ -13,7 +13,7 @@ import { Component, TFile, debounce } from "obsidian";
 
 import { isSchemaCanvas } from "../../views/schemaCanvasSync";
 import type FileclassPlugin from "../../../main";
-import { getBaseFiles } from "../../engine/basesAdapter";
+import { getBaseFiles } from "obsidian-bases-adapter";
 import { logEvent } from "../../log/schemaLog";
 import { readFieldValue } from "../../io/read";
 import { ValueWrite, writeValues } from "../../io/write";

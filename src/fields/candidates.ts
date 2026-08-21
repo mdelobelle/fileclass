@@ -12,7 +12,7 @@
  */
 import { App, Notice, TFile } from "obsidian";
 
-import { getBaseRows } from "../engine/basesAdapter";
+import { getBaseRows } from "obsidian-bases-adapter";
 import { Field, FieldType } from "../schema/field";
 import { rowDisplay } from "./baseOrder";
 import { baseBindingOptions } from "./options";

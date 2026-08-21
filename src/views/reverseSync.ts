@@ -13,7 +13,7 @@
 import { MarkdownView, Notice, TFile, normalizePath, parseYaml, stringifyYaml } from "obsidian";
 
 import type FileclassPlugin from "../../main";
-import { getBaseFiles } from "../engine/basesAdapter";
+import { getBaseFiles } from "obsidian-bases-adapter";
 import { ChoiceSuggestModal } from "../fields/input/valueModals";
 import { baseBindingOptionsFromOptions } from "../fields/options";
 import { logEvent } from "../log/schemaLog";

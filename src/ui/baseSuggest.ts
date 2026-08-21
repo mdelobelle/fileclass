@@ -5,7 +5,7 @@
  */
 import { AbstractInputSuggest, App } from "obsidian";
 
-import { getBaseRows, listBaseViews } from "../engine/basesAdapter";
+import { getBaseRows, listBaseViews } from "obsidian-bases-adapter";
 
 /**
  * Shared behaviour for the plugin's input suggesters: render a plain string, and

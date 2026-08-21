@@ -7,7 +7,7 @@
  */
 import { TFile } from "obsidian";
 
-import { getBaseRows } from "../engine/basesAdapter";
+import { getBaseRows } from "obsidian-bases-adapter";
 import { distinctColumnValues } from "./baseOrder";
 import { AdapterHost } from "./candidates";
 import { Field } from "../schema/field";

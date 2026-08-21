@@ -2,7 +2,8 @@
 
 > **Read this file entirely before writing any code.** It encodes decisions and
 > runtime-verified facts established during the design phase (July 2026). Do not
-> re-litigate the decisions in §2; do not "improve" `src/engine/basesAdapter.ts`
+> re-litigate the decisions in §2; do not "improve" the Bases adapter (now the
+> `obsidian-bases-adapter` package)
 > without re-running its verification protocol (§14).
 
 ## 1. What this plugin is
@@ -35,10 +36,10 @@ Positioning vs core Obsidian:
 
 | # | Decision | Consequence |
 |---|----------|-------------|
-| D1 | **No dataview dependency, ever.** | Query engine = Bases via `src/engine/basesAdapter.ts`. `dvQueryString`/`customRendering`/`customSorting` options from legacy fileClasses are ignored silently (§13). |
+| D1 | **No dataview dependency, ever.** | Query engine = Bases via the `obsidian-bases-adapter` package. `dvQueryString`/`customRendering`/`customSorting` options from legacy fileClasses are ignored silently (§13). |
 | D2 | **Frontmatter-only.** No inline (`key:: value`) fields. | All reads via `metadataCache.getFileCache(f).frontmatter`; all writes via `app.fileManager.processFrontMatter`. No line-level note parsing (Metadata Menu's `note/lineNode` machinery is NOT ported). |
 | D3 | **fileClass file format is Metadata Menu's, unchanged.** | Normative reference: `/Users/mdelobel/Obsidian-Dev/.obsidian/plugins/metadatamenu/src/fileClass/fileClass.ts` (+ `fileClassAttribute.ts`). Existing fileClass notes must load as-is (minus D1 options). |
-| D4 | **All Bases private-API access lives in `src/engine/basesAdapter.ts`.** | No other module may touch `embedRegistry`, `internalPlugins.getPluginById('bases')`, controllers, datasets. The adapter feature-detects and throws `BasesUnavailableError` with a graceful UI fallback upstream. |
+| D4 | **All Bases private-API access lives in the `obsidian-bases-adapter` package.** | No module of this plugin may touch `embedRegistry`, `internalPlugins.getPluginById('bases')`, controllers or datasets — it imports the package instead. The adapter feature-detects and throws `BasesUnavailableError` with a graceful UI fallback upstream. Extracted (21 August 2026) after a third plugin ended up copying the same file: https://github.com/mdelobelle/obsidian-bases-adapter. What that package owns, this repo no longer decides — including the canary that proves the private sequence still holds. |
 | D5 | **Editing of Object/ObjectList = draft editor.** | Clone value → edit draft in memory → validate against schema → single atomic `processFrontMatter` write. Never write per-subfield. Never regenerate an object from the schema: always mutate the user's object (preserves unknown keys). |
 | D6 | **Views = registered custom Bases view** (editable cells), plus auto-generated `.base` files per fileClass. No bespoke table engine (Metadata Menu's `fileClassTableView`/`fileClassDataviewTable` are NOT ported). |
 | D7 | Global singleton pattern: `getPlugin()` from `src/globals.ts`. **Never use the bare global `app`** — always `getPlugin().app` or an explicit `App` parameter (adapter functions take `app` explicitly for testability). |
@@ -50,7 +51,7 @@ These were verified experimentally against a live Obsidian. They are the
 contract the code relies on. If any breaks on a newer Obsidian, the canary
 tests (§14) must catch it.
 
-### 3.1 Bases internals (used only inside basesAdapter)
+### 3.1 Bases internals (reached only through the `obsidian-bases-adapter` package)
 - `app.embedRegistry.embedByExtension['base']` is a factory
   `(context, file, subpath) => embed`; the embed's **constructor creates a
   QueryController** without any workspace leaf. `embed.loadQuery()` =
@@ -178,7 +179,6 @@ fileclass/
 ├── src/
 │   ├── globals.ts                  # getPlugin()/setPlugin() singleton (D7)
 │   ├── engine/
-│   │   ├── basesAdapter.ts         # DELIVERED, runtime-proven. Do not refactor. (§6)
 │   │   ├── queryCache.ts           # parsed-Query cache keyed by .base path, invalidated on vault modify
 │   │   └── objectPath.ts           # parse/get/set/insert/remove on ["a",0,"b"] paths (§8)
 │   ├── schema/
@@ -388,7 +388,7 @@ canvas file tracking (comes with the planned Canvas engine, §9.1).
   replaces Metadata Menu's FileClassView **and keeps in-cell editing**.
   Registration/deregistration on plugin load/unload; feature-detect like D4
   (this is adapter territory: expose `registerFileclassView(app, spec)` from
-  basesAdapter).
+  the `obsidian-bases-adapter` package).
 - **Validation columns (landed):** the `fileclass-table` view can prepend a
   `valid` (✓/✗) column and append an `errors` column, validating **all** of each
   note's root fields (not just shown columns) via `validateField`; allowed values
@@ -661,10 +661,11 @@ fields/user docs (first-write warning), not in a migration guide.
   on vault file contents. Scenarios: each field type write, draft editor
   atomicity, base generation.
 - **Canary tests** (run at every Obsidian upgrade, part of e2e): (1) the
-  basesAdapter verification protocol — a known fixture `.base` returns the
+  the bundled adapter still loads and detects its host (the fixture `.base` returns the
   expected file set and sorted/grouped rows; (2) processFrontMatter
   order-preservation (§3.2). If a canary fails on a new Obsidian version,
-  `basesAdapter` is the only file expected to change.
+  the fix is a release of `obsidian-bases-adapter` and a bump here; that package runs the
+  deep verification against its own published artifact.
 
 ### 14.1 Planned: the demo harness as the e2e runner
 
@@ -772,7 +773,7 @@ existed, with no dedicated test written.
 
 - TypeScript strict; **no `any` anywhere** — the Obsidian review linter forbids
   it (and disabling the rule). Private Bases/Obsidian internals are reached only
-  in `src/engine/basesAdapter.ts`, structurally typed via `unknown` casts to
+  in the `obsidian-bases-adapter` package, structurally typed via `unknown` casts to
   minimal interfaces (`AppInternals`, `BasesInstance`, …).
 - `getPlugin()` singleton (D7); adapter and objectPath take explicit params
   (pure, testable).
@@ -785,7 +786,7 @@ existed, with no dedicated test written.
 
 | Risk | Mitigation |
 |------|------------|
-| Bases internals drift on Obsidian update | D4 isolation + canary tests; only basesAdapter changes; graceful degradation path |
+| Bases internals drift on Obsidian update | D4 isolation + canary tests; the change lands in `obsidian-bases-adapter`, never here; graceful degradation path |
 | O(vault) per query run on huge vaults | queryCache, debounced reads; benchmark fixture in e2e |
 | Defects in the glue with Obsidian, invisible to unit tests | the pre-filming surfaces pass finds them today, by hand; automating it is designed in §14.1 — until then the pass is a person's habit, not a gate |
 | Users with YAML comments / custom formatting | documented normalization (§3.2), first-write warning in user docs |

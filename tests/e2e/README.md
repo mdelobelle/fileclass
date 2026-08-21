@@ -32,7 +32,7 @@ unit suite instead (`tests/unit/`, run with `npm test`).
    ```
 
 Exit code `0` = all canaries passed; `1` = a check failed (adapter drift —
-`src/engine/basesAdapter.ts` is the only file expected to need changes); `2` =
+the fix is a release of `obsidian-bases-adapter`, then a bump here); `2` =
 the harness could not reach Obsidian (see the printed instructions).
 
 ## Adding scenarios (later phases)

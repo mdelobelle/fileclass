@@ -6,6 +6,18 @@ All notable changes to Fileclass are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- **A template whose properties are not properties now says so.** Reported on a production vault:
+  every note created with a class arrived with its properties twice. The class template began with
+  a lone backtick, so its `---` block was not on the first line — and Obsidian reads frontmatter
+  only there. The block was body text, the note got a fresh block of its own, and the template's
+  values were lost in the bargain.
+
+  Creating a note now reads the file back after the template ran, and when it finds properties
+  Obsidian will not read it says which line they start on and what to delete. It never repairs the
+  template: that file is yours. A `---` used as a horizontal rule stays silent.
+
 ### Changed
 
 - **The Bases adapter now comes from npm.** The one module allowed to touch the core Bases

@@ -33,6 +33,7 @@ import {
 	safeFileName,
 	uniquePath,
 } from "../schema/newNote";
+import { strayFrontmatter } from "../schema/strayFrontmatter";
 import { modalTitle } from "../ui/modalTitle";
 import { NoteFieldsModal } from "../ui/noteFieldsModal";
 
@@ -202,6 +203,15 @@ export async function createNoteWithClass(
 		return null;
 	}
 
+	// Between the two: did the template's properties actually land as properties? Obsidian reads a
+	// `---` block as frontmatter only at position 0, so one stray character above it — a backtick
+	// left in a template — makes the block body text. The write below then finds no frontmatter to
+	// merge into and adds its own, and the note ends up carrying its properties twice, the
+	// template's values lost. Measured on a production vault; it failed silently until here.
+	//
+	// Said, never repaired: a template is a file its author wrote.
+	if (template) await warnStrayFrontmatter(plugin, target, template);
+
 	// 3. the class, its fields and the seed — in **one** write, deciding what is missing from the
 	// frontmatter this callback holds.
 	//
@@ -251,6 +261,42 @@ export async function createNoteWithClass(
 	await app.workspace.getLeaf(false).openFile(target);
 	if (plugin.settings.openFieldsOnCreate) new NoteFieldsModal(plugin, target).open();
 	return target;
+}
+
+/**
+ * Warns when the template left a block of properties somewhere Obsidian will not read.
+ *
+ * Reading the file back rather than the template: what matters is the note that now exists, and a
+ * Templater template can produce anything. Failure is silence — this is a diagnostic, and a note
+ * that exists is worth more than a warning about it.
+ */
+async function warnStrayFrontmatter(
+	plugin: FileclassPlugin,
+	note: TFile,
+	template: string
+): Promise<void> {
+	try {
+		const stray = strayFrontmatter(await plugin.app.vault.read(note));
+		if (!stray) return;
+		// The character itself is not quoted: it is usually invisible (a stray backtick, a blank
+		// line), and echoing it into a plain-text Notice produced `` ` `` inside backticks, which
+		// read as noise. The line number says where to look, which is what a reader can act on.
+		new Notice(
+			`Fileclass: in the template "${template}", the properties start on line ${stray.line} instead ` +
+				`of line 1. Obsidian only reads them at the very top of a file, so they were left in this ` +
+				`note as text and it now carries them twice. Delete what sits above the first "---".`,
+			10000
+		);
+		void logEvent(
+			plugin,
+			"WARNING",
+			"schema.template-frontmatter-displaced",
+			`${template}: properties at line ${stray.line} are body text, not frontmatter`,
+			{ template, note: note.path, line: stray.line, keys: stray.keys }
+		);
+	} catch {
+		/* a diagnostic must never cost the reader their note */
+	}
 }
 
 /**

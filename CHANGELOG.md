@@ -6,6 +6,21 @@ All notable changes to Fileclass are documented here. The format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- **A Boolean field is a checkbox again** (#207). Every boolean created since 0.2.x arrived in a
+  note as a text property and stayed one, in any vault, and setting the type by hand held only
+  until the note was reopened.
+
+  Obsidian decides what a property *is* from the values it sees, and Fileclass inserted a missing
+  field as `""` — a string. That taught the vault that the property is text, for good. Two
+  measurements settled the fix: an empty value alone still infers text, and an assigned type is
+  defeated by an `""` value (which is exactly why fixing it by hand appeared not to hold).
+
+  So a missing scalar is now written empty rather than as an empty string, and Fileclass tells
+  Obsidian what the property is when it writes it — checkbox, number, date, datetime, or a list —
+  and only where the mapping is beyond argument. A type you assigned yourself is never overwritten.
+
 ### Added
 
 - **A template whose properties are not properties now says so.** Reported on a production vault:

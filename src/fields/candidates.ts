@@ -74,12 +74,25 @@ export async function resolveCandidates(
 				display: rowDisplay(row, opts.displayColumn, row.file.basename),
 				group,
 			});
+			const out: Candidate[] = [];
 			if (result.groups) {
-				const out: Candidate[] = [];
 				for (const g of result.groups) for (const row of g.rows) out.push(toCandidate(row, g.key));
-				return out;
+			} else {
+				for (const row of result.rows) out.push(toCandidate(row));
 			}
-			return result.rows.map((row) => toCandidate(row));
+			// An empty answer is the one failure this path used to give silently: the picker opened
+			// on nothing, with no way to tell "the base matched no files" from "the picker is
+			// broken" (#199, reported from iOS, where the modal showed neither files nor an error).
+			// A base that matches nothing is a legitimate answer, so this says so rather than
+			// falling back to the whole vault — which would quietly ignore the field's binding.
+			if (!out.length) {
+				new Notice(
+					`Fileclass: the base "${opts.baseFile}"${opts.viewName ? ` (view "${opts.viewName}")` : ""} ` +
+						`matched no files, so there is nothing to pick here. Open that base to check its filters.`,
+					8000
+				);
+			}
+			return out;
 		} catch (err) {
 			new Notice(
 				`Fileclass: could not read base "${opts.baseFile}" (${(err as Error).message}). Showing all files.`

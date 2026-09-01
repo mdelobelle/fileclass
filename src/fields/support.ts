@@ -61,6 +61,11 @@ export function defaultValueFor(field: Field): unknown {
 		case "ObjectList":
 			return [];
 		default:
-			return "";
+			// Empty, not an empty string (#207). Obsidian decides a property's type from the values it
+			// sees, and `""` is a string: a Boolean field inserted that way taught the vault that the
+			// property is text, and the panel drew a text box from then on. It also defeats an
+			// assigned type — measured, `checkbox` plus `""` draws a text box, which is why setting
+			// the type by hand appeared not to hold.
+			return null;
 	}
 }

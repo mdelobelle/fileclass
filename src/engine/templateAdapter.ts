@@ -83,13 +83,20 @@ export function templateEngine(app: App): TemplateEngine {
  * Templater is preferred when both are present: it is the one that can rename the file and run
  * logic, so a vault that has it configured expects it to be the one applying templates.
  *
- * A failure is a Notice and `false`, never a throw: the note exists by now, and losing it to a
- * template error would be a worse outcome than a note without its template.
+ * A failure is reported and `false`, never a throw: the note exists by now, and losing it to a
+ * template error would be a worse outcome than a note without its template. Reported as a Notice by
+ * default; a caller that must not show anything (the API, which returns its warnings) passes its own
+ * `report`.
  */
-export async function applyTemplate(app: App, templatePath: string, file: TFile): Promise<boolean> {
+export async function applyTemplate(
+	app: App,
+	templatePath: string,
+	file: TFile,
+	report: (message: string) => void = (message) => new Notice(`Fileclass: ${message}`)
+): Promise<boolean> {
 	const template = app.vault.getFileByPath(templatePath);
 	if (!(template instanceof TFile)) {
-		new Notice(`Fileclass: template "${templatePath}" not found — the note was created without it.`);
+		report(`template "${templatePath}" not found — the note was created without it.`);
 		return false;
 	}
 
@@ -109,10 +116,10 @@ export async function applyTemplate(app: App, templatePath: string, file: TFile)
 			return true;
 		}
 	} catch (err) {
-		new Notice(`Fileclass: the template could not be applied (${(err as Error).message}).`);
+		report(`the template could not be applied (${(err as Error).message}).`);
 		return false;
 	}
 
-	new Notice("Fileclass: no template plugin is enabled — the note was created without a template.");
+	report("no template plugin is enabled — the note was created without a template.");
 	return false;
 }

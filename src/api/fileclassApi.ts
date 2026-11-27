@@ -14,6 +14,7 @@ import { TFile } from "obsidian";
 
 import type FileclassPlugin from "../../main";
 import { Filter, matchesFilter } from "./filter";
+import { createClassNote } from "../commands/createNoteWithClass";
 import { insertMissingFields } from "../commands/insertMissingFields";
 import { getBaseFiles, getBaseRows } from "obsidian-bases-adapter";
 import { resolveCandidates } from "../fields/candidates";
@@ -27,9 +28,10 @@ import { resolveFieldValues } from "../fields/valuesIo";
 import { readFieldValue } from "../io/read";
 import { writeFieldValue } from "../io/write";
 import { Field, isRootField } from "../schema/field";
+import { NoteDestination, chooseDestination, noteDestinations, safeFileName } from "../schema/newNote";
 import { fileClassBaseFile } from "../views/baseSync";
 
-export const API_VERSION = "1.1";
+export const API_VERSION = "1.2";
 
 const LINK_TYPES = new Set<string>(["File", "MultiFile", "Media", "MultiMedia"]);
 
@@ -131,6 +133,32 @@ export interface BulkPreview {
 	willSkip: number;
 	errors: WriteResult[];
 }
+/** A value to pre-fill on a note created by `createNote` (API 1.2). */
+export interface CreateNoteSeed {
+	field: string;
+	/** Literal value, written as is. A list for a multiple field. */
+	value?: string | string[];
+	/** Path or name of a note to link to (a list for a multiple field); Fileclass builds the link. */
+	linkTo?: string | string[];
+}
+export interface CreateNoteParams {
+	fileClass: string;
+	name: string;
+	/** Name of the destination (`Professional`), case-insensitive. Else: the only one, or the first declared. */
+	destination?: string;
+	seeds?: CreateNoteSeed[];
+	/** Default true: open the note, then the fields modal when `openFieldsOnCreate` is set. */
+	open?: boolean;
+}
+export interface CreateNoteResult {
+	ok: boolean;
+	/** The created note's final path; when refused because it exists, the existing note's path. */
+	path?: string;
+	/** Why it was refused, when ok is false. */
+	message?: string;
+	/** What could not be applied without preventing the creation (seed ignored, template failed…). */
+	warnings?: string[];
+}
 export interface ListOptions {
 	columns?: string[];
 	where?: Filter;
@@ -177,6 +205,12 @@ export interface FileclassApi {
 	applyValueWhere(scope: BulkScope, field: string, value: unknown): Promise<BulkResult>;
 	/** Applies to an explicit set of note paths (the previewed rows the user kept). */
 	applyValueToPaths(paths: string[], field: string, value: unknown): Promise<BulkResult>;
+
+	// Create (1.2) — the "Create a note with a class" command, without its pickers
+	/** The class's creation destinations, in declared order; null for an unknown class. */
+	noteDestinations(fileClass: string): Promise<NoteDestination[] | null>;
+	/** Creates a note of a class; never opens a picker, refuses an existing name. */
+	createNote(req: CreateNoteParams): Promise<CreateNoteResult>;
 }
 
 export function createFileclassApi(plugin: FileclassPlugin): FileclassApi {
@@ -562,5 +596,36 @@ export function createFileclassApi(plugin: FileclassPlugin): FileclassApi {
 		previewValueWhere: (scope, field, value) => runPreview(scope, field, value),
 		applyValueWhere: (scope, field, value) => runApply(scope, field, value),
 		applyValueToPaths: (paths, field, value) => runApplyPaths(paths, field, value),
+
+		async noteDestinations(fileClass) {
+			const fc = index.getFileClass(fileClass);
+			return fc ? noteDestinations(fc.options) : null;
+		},
+
+		async createNote(req) {
+			const fileClass = typeof req?.fileClass === "string" ? req.fileClass : "";
+			const fc = index.getFileClass(fileClass);
+			if (!fc) return { ok: false, message: `Unknown fileClass "${fileClass}"` };
+			const chosen = chooseDestination(fileClass, noteDestinations(fc.options), req.destination);
+			if (!chosen.ok) return { ok: false, message: chosen.message };
+			const name = safeFileName(typeof req.name === "string" ? req.name : "", "");
+			if (!name) {
+				return { ok: false, message: "The name is empty once the characters a file name cannot hold are removed." };
+			}
+			// The command's own creation path, with the two answers its pickers would have asked for.
+			const result = await createClassNote(plugin, {
+				fileClass,
+				name,
+				destination: chosen.destination,
+				seeds: req.seeds ?? [],
+				ifExists: "refuse",
+				open: req.open !== false,
+				via: "api",
+			});
+			const warnings = result.warnings.length ? { warnings: result.warnings } : {};
+			return result.ok
+				? { ok: true, path: result.file.path, ...warnings }
+				: { ok: false, message: result.message, ...(result.path ? { path: result.path } : {}), ...warnings };
+		},
 	};
 }

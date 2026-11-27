@@ -177,3 +177,108 @@ export interface Seed {
 export function seedWins(templateValue: unknown, seed: Seed | undefined, field: string): boolean {
 	return !!seed && seed.field === field && templateValue !== undefined;
 }
+
+/**
+ * The destination a caller named, or the class's default.
+ *
+ * Matched on the destination's **name**, case-insensitively: a name is what the reader (or an agent
+ * relaying them) says — "Professional", "professional" — while a path is an implementation detail.
+ * Absent or blank, the first declared destination is taken, the one the picker lists first; a class
+ * with none answers `undefined`, which `noteFolder` turns into the vault's default folder.
+ *
+ * An unknown name is refused rather than defaulted: guessing would put the note in a context the
+ * caller explicitly did not ask for. The refusal lists what the class does offer, so the caller can
+ * correct itself without another round trip.
+ */
+export function chooseDestination(
+	fileClass: string,
+	destinations: readonly NoteDestination[],
+	requested?: string
+): { ok: true; destination?: NoteDestination } | { ok: false; message: string } {
+	const wanted = requested?.trim().toLowerCase();
+	if (!wanted) return { ok: true, destination: destinations[0] };
+	const found = destinations.find((d) => d.name?.trim().toLowerCase() === wanted);
+	if (found) return { ok: true, destination: found };
+	const offered = destinations.map((d) => d.name?.trim() || `(unnamed: ${destinationLabel(d)})`);
+	return {
+		ok: false,
+		message: offered.length
+			? `Unknown destination "${requested ?? ""}" for "${fileClass}". It offers: ${offered.join(", ")}.`
+			: `Unknown destination "${requested ?? ""}": "${fileClass}" declares no destination.`,
+	};
+}
+
+/**
+ * What a link seed names, with the wrapping a caller may have added taken off.
+ *
+ * `[[AC-DC]]`, `[[Bands/AC-DC|AC/DC]]` and `AC-DC` all name the same note; only the link target is
+ * resolved, and Fileclass builds the link itself (the vault's own format, from the new note).
+ */
+export function linkTarget(raw: string): string {
+	const inner = raw.trim().replace(/^\[\[/, "").replace(/\]\]$/, "");
+	const pipe = inner.indexOf("|");
+	return (pipe >= 0 ? inner.slice(0, pipe) : inner).trim();
+}
+
+/** A value to pre-fill — the command's `Seed`, or what an API caller sends (lists allowed). */
+export interface SeedSpec {
+	field: string;
+	/** A literal value, written as is; a list stays a list. */
+	value?: string | string[];
+	/** A note (path or name) to link to; a list gives a list of links. */
+	linkTo?: string | string[];
+	/** Wrap a single value into a one-item list. */
+	list?: boolean;
+}
+
+/** What the seeds will write, in order, and what could not be applied. */
+export interface SeedPlan {
+	writes: { field: string; value: string | string[] }[];
+	warnings: string[];
+}
+
+/**
+ * Decides what the seeds write — **best effort**, never a reason to refuse the note.
+ *
+ * - a seed on a field the class does not have is skipped and said;
+ * - `linkTo` targets are resolved by `resolveLink` (Obsidian's own link resolution, from the new
+ *   note) into links; one that resolves to no note is skipped and said. A list stays a list of the
+ *   links that did resolve;
+ * - a link seed that resolved nothing falls back to its literal `value`, as the command always did;
+ * - an empty value writes nothing (a filter fixing a blank is no instruction).
+ *
+ * Values are not validated: the class's validation reports them afterwards, like any other value.
+ */
+export function planSeeds(
+	seeds: readonly SeedSpec[],
+	fileClass: string,
+	knownFields: ReadonlySet<string>,
+	resolveLink: (target: string) => string | null
+): SeedPlan {
+	const plan: SeedPlan = { writes: [], warnings: [] };
+	for (const seed of seeds) {
+		if (!knownFields.has(seed.field)) {
+			plan.warnings.push(`Seed "${seed.field}" ignored: "${fileClass}" has no such field.`);
+			continue;
+		}
+		let value: string | string[] | undefined;
+		if (seed.linkTo !== undefined) {
+			const targets = (Array.isArray(seed.linkTo) ? seed.linkTo : [seed.linkTo]).map(linkTarget);
+			const links: string[] = [];
+			for (const target of targets) {
+				if (!target) continue;
+				const link = resolveLink(target);
+				if (link) links.push(link);
+				else plan.warnings.push(`Seed "${seed.field}": no note matches "${target}", so it was not linked.`);
+			}
+			if (links.length) value = Array.isArray(seed.linkTo) ? links : links[0];
+		}
+		if (value === undefined) {
+			if (Array.isArray(seed.value)) value = seed.value.length ? [...seed.value] : undefined;
+			else value = seed.value || undefined;
+		}
+		if (value === undefined) continue;
+		plan.writes.push({ field: seed.field, value: seed.list && !Array.isArray(value) ? [value] : value });
+	}
+	return plan;
+}

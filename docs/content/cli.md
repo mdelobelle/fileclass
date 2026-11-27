@@ -44,17 +44,73 @@ values — never `TFile` or field objects with methods); mutations return
 | `clearValue(path, field)` | remove a field's key |
 | `insertMissing(path)` | add missing fields to a note |
 | `setValueWhere(fileClass, field, value, where?)` | validated bulk write |
+| `previewValueWhere(scope, field, value)` / `applyValueWhere(scope, field, value)` | dry-run, then apply, a bulk edit over a fileClass narrowed by a condition and/or a base view |
+| `applyValueToPaths(paths, field, value)` | the same edit on an explicit list of notes |
+| `noteDestinations(fileClass)` | *1.2* — the class's creation destinations (`{ name?, folder?, template? }`), in declared order; `null` for an unknown class |
+| `createNote({ fileClass, name, destination?, seeds?, open? })` | *1.2* — create a note of a class, without any picker |
 
 `setValue` and `setValueWhere` validate before writing and refuse an invalid
 value; `setValueWhere` also **skips** notes already at the target value (no
 churn) and reports `{ changed, skipped, errors }`. Bases-dependent methods
 degrade gracefully (return `null` / `[]`) when Bases is unavailable.
 
-The API is **versioned** (`api.version`, currently `1.0`); breaking changes bump
+The API is **versioned** (`api.version`, currently `1.2`); breaking changes bump
 it. The plugin driving the CLI must be recent enough to expose `plugin.api`.
 
+### Creating a note (1.2)
+
+`createNote` is the **Create a note with a class** command without its pickers:
+the same creation, template, fields and log, with the choices passed in.
+
+```js
+const api = app.plugins.plugins.fileclass.api;
+await api.noteDestinations("Person");
+// → [{ name: "Professional", folder: "People/Work", template: "Templates/Pro.md" }, { name: "Artist", … }]
+
+await api.createNote({ fileClass: "Person", name: "John Doe", destination: "artist" });
+// → { ok: true, path: "People/Artists/John Doe.md" }
+
+await api.createNote({
+  fileClass: "GuitarSong",
+  name: "Highway to Hell",
+  seeds: [
+    { field: "artists", linkTo: ["AC-DC"] },   // a link, built by Fileclass from the new note
+    { field: "genre", value: "Hard rock" },    // a literal; a list stays a list
+  ],
+  open: false,
+});
+// → { ok: true, path: "Songs/Highway to Hell.md" }   — artists: ["[[AC-DC]]"]
+```
+
+- **destination** — matched on the destination's name, case-insensitively.
+  Omitted: the only destination, or the first declared. An unknown name is
+  refused, and the message lists the class's destinations. A class without
+  destinations creates the note in Obsidian's default folder, like the command.
+- **name** — cleaned like the command does (characters a file name cannot hold
+  are removed); empty once cleaned, it is refused.
+- **An existing note is refused**, where the command numbers the new one
+  (`John Doe 1`): if a note of that name (in any letter case) is already in the
+  destination folder, the result is `ok: false` with the existing note's
+  `path`. Nothing is created or modified.
+- **template** — applied as by the command, Templater's renaming included:
+  `path` is the final path. A template that fails does not fail the creation.
+- **seeds** — applied in order, after the template, overwriting what it set on
+  that field. `linkTo` takes a path or a note name (`[[…]]` and an alias are
+  accepted) and is resolved like an Obsidian link. Values are not validated —
+  the class's validation reports them afterwards. A seed on a field the class
+  does not have, or a link that resolves to no note, is skipped.
+- What could not be applied (a skipped seed, a failed template, a template whose
+  properties are not on line 1) comes back in **`warnings`**; the note is
+  created anyway.
+- **open** — `true` by default: the note opens, then the fields modal if
+  *Open the fields after creating a note* is on. With `false`, nothing opens.
+  No other window ever appears: the call never waits for the user.
+- The schema log gets the command's `schema.note-created` line, with
+  `via: "api"`.
+
 > **⚠️ Mutating methods write to disk.** `setValue`, `clearValue`,
-> `insertMissing` and `setValueWhere` change note frontmatter in the live vault.
+> `insertMissing` and `setValueWhere` change note frontmatter in the live vault;
+> `createNote` creates a file.
 > `setValueWhere` can touch **many notes in one call** — scope its `where` filter
 > carefully. There is no built-in undo; back up your vault before scripting
 > writes.

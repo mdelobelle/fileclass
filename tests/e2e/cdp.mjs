@@ -20,9 +20,24 @@ async function listTargets() {
 
 /**
  * Opens a CDP session against the Obsidian renderer page.
+ *
+ * With `{ vault }`, only the window whose vault has that name is accepted, checked by asking the
+ * window itself (`app.vault.getName()`) — several vaults can be open on one debug port, and a test
+ * that writes notes must never land in the wrong one.
  * @throws a helpful error when nothing is listening on the debug port.
  */
-export async function connect() {
+export async function connect({ vault } = {}) {
+	if (vault) {
+		const pages = (await listTargets()).filter(
+			(t) => t.type === "page" && String(t.url).startsWith("app://obsidian.md")
+		);
+		for (const page of pages) {
+			const session = await open(page);
+			if ((await session.evaluate(() => app.vault.getName())) === vault) return session;
+			session.close();
+		}
+		throw new Error(`No Obsidian window on the debug port has the vault "${vault}" open.`);
+	}
 	let targets;
 	try {
 		targets = await listTargets();
@@ -40,7 +55,11 @@ export async function connect() {
 		(t) => t.type === "page" && String(t.url).startsWith("app://obsidian.md")
 	);
 	if (!page) throw new Error("No Obsidian renderer page found on the debug port.");
+	return open(page);
+}
 
+/** A session on one renderer page: `{ evaluate, close }`. */
+async function open(page) {
 	const ws = new WebSocket(page.webSocketDebuggerUrl);
 	await new Promise((resolve, reject) => {
 		ws.addEventListener("open", resolve, { once: true });

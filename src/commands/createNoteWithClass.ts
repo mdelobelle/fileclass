@@ -33,6 +33,7 @@ import {
 	safeFileName,
 	uniquePath,
 } from "../schema/newNote";
+import { assignPropertyTypes } from "../io/propertyTypes";
 import { strayFrontmatter } from "../schema/strayFrontmatter";
 import { modalTitle } from "../ui/modalTitle";
 import { NoteFieldsModal } from "../ui/noteFieldsModal";
@@ -250,6 +251,10 @@ export async function createNoteWithClass(
 			if (value) fm[seed.field] = seed.list ? [value] : value;
 		}
 	});
+
+	// Same as inserting into an existing note: the class's fields are properties now, so their
+	// types are Obsidian's to know rather than to infer (#207).
+	assignPropertyTypes(app, fields);
 
 	void logEvent(plugin, "INFO", "schema.note-created", `${req.fileClass}: created ${target.path}`, {
 		fileClass: req.fileClass,

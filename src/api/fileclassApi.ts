@@ -613,15 +613,23 @@ export function createFileclassApi(plugin: FileclassPlugin): FileclassApi {
 				return { ok: false, message: "The name is empty once the characters a file name cannot hold are removed." };
 			}
 			// The command's own creation path, with the two answers its pickers would have asked for.
-			const result = await createClassNote(plugin, {
-				fileClass,
-				name,
-				destination: chosen.destination,
-				seeds: req.seeds ?? [],
-				ifExists: "refuse",
-				open: req.open !== false,
-				via: "api",
-			});
+			// `seeds` is passed as sent: `planSeeds` reads its shape and says what it skipped.
+			let result: Awaited<ReturnType<typeof createClassNote>>;
+			try {
+				result = await createClassNote(plugin, {
+					fileClass,
+					name,
+					destination: chosen.destination,
+					seeds: req.seeds,
+					ifExists: "refuse",
+					open: req.open !== false,
+					via: "api",
+				});
+			} catch (e) {
+				// No domain error throws; this is a bug, and a caller still gets a result to act on. The
+				// note may exist by now, so say where to look rather than claim nothing happened.
+				return { ok: false, message: `Unexpected error while creating the note (it may exist already): ${(e as Error).message}` };
+			}
 			const warnings = result.warnings.length ? { warnings: result.warnings } : {};
 			return result.ok
 				? { ok: true, path: result.file.path, ...warnings }

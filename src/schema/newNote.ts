@@ -245,40 +245,75 @@ export interface SeedPlan {
  *   note) into links; one that resolves to no note is skipped and said. A list stays a list of the
  *   links that did resolve;
  * - a link seed that resolved nothing falls back to its literal `value`, as the command always did;
- * - an empty value writes nothing (a filter fixing a blank is no instruction).
+ * - an empty value writes nothing (a filter fixing a blank is no instruction);
+ * - a seed of the wrong **shape** (not an object, no string `field`, a `linkTo` that is not a string
+ *   or a list of strings) is skipped and said too. It comes from JSON a caller built — `obsidian
+ *   eval`, an agent — and the API promises not to throw for what a caller sent.
  *
  * Values are not validated: the class's validation reports them afterwards, like any other value.
  */
 export function planSeeds(
-	seeds: readonly SeedSpec[],
+	seeds: unknown,
 	fileClass: string,
 	knownFields: ReadonlySet<string>,
 	resolveLink: (target: string) => string | null
 ): SeedPlan {
 	const plan: SeedPlan = { writes: [], warnings: [] };
-	for (const seed of seeds) {
-		if (!knownFields.has(seed.field)) {
-			plan.warnings.push(`Seed "${seed.field}" ignored: "${fileClass}" has no such field.`);
-			continue;
-		}
-		let value: string | string[] | undefined;
-		if (seed.linkTo !== undefined) {
-			const targets = (Array.isArray(seed.linkTo) ? seed.linkTo : [seed.linkTo]).map(linkTarget);
-			const links: string[] = [];
-			for (const target of targets) {
-				if (!target) continue;
-				const link = resolveLink(target);
-				if (link) links.push(link);
-				else plan.warnings.push(`Seed "${seed.field}": no note matches "${target}", so it was not linked.`);
-			}
-			if (links.length) value = Array.isArray(seed.linkTo) ? links : links[0];
-		}
-		if (value === undefined) {
-			if (Array.isArray(seed.value)) value = seed.value.length ? [...seed.value] : undefined;
-			else value = seed.value || undefined;
-		}
-		if (value === undefined) continue;
-		plan.writes.push({ field: seed.field, value: seed.list && !Array.isArray(value) ? [value] : value });
+	if (!Array.isArray(seeds)) {
+		if (seeds !== undefined && seeds !== null) plan.warnings.push("Seeds ignored: `seeds` is not a list.");
+		return plan;
 	}
+	seeds.forEach((raw: unknown, i: number) => {
+		const shapeError = seedShapeError(raw);
+		if (shapeError) {
+			plan.warnings.push(`Seed #${i + 1} ignored: ${shapeError}`);
+			return;
+		}
+		planOne(raw as SeedSpec, fileClass, knownFields, resolveLink, plan);
+	});
 	return plan;
+}
+
+const isStringList = (v: unknown): v is string[] => Array.isArray(v) && v.every((x) => typeof x === "string");
+
+/** Why a seed cannot be read at all, or null when its shape is right. Values stay unvalidated. */
+function seedShapeError(raw: unknown): string | null {
+	if (typeof raw !== "object" || raw === null || Array.isArray(raw)) return "it is not an object.";
+	const seed = raw as Record<string, unknown>;
+	if (typeof seed.field !== "string" || !seed.field) return "`field` is not a non-empty string.";
+	if (seed.linkTo !== undefined && typeof seed.linkTo !== "string" && !isStringList(seed.linkTo)) {
+		return `\`linkTo\` on "${seed.field}" is not a string or a list of strings.`;
+	}
+	return null;
+}
+
+function planOne(
+	seed: SeedSpec,
+	fileClass: string,
+	knownFields: ReadonlySet<string>,
+	resolveLink: (target: string) => string | null,
+	plan: SeedPlan
+): void {
+	if (!knownFields.has(seed.field)) {
+		plan.warnings.push(`Seed "${seed.field}" ignored: "${fileClass}" has no such field.`);
+		return;
+	}
+	let value: string | string[] | undefined;
+	if (seed.linkTo !== undefined) {
+		const targets = (Array.isArray(seed.linkTo) ? seed.linkTo : [seed.linkTo]).map(linkTarget);
+		const links: string[] = [];
+		for (const target of targets) {
+			if (!target) continue;
+			const link = resolveLink(target);
+			if (link) links.push(link);
+			else plan.warnings.push(`Seed "${seed.field}": no note matches "${target}", so it was not linked.`);
+		}
+		if (links.length) value = Array.isArray(seed.linkTo) ? links : links[0];
+	}
+	if (value === undefined) {
+		if (Array.isArray(seed.value)) value = seed.value.length ? [...seed.value] : undefined;
+		else value = seed.value || undefined;
+	}
+	if (value === undefined) return;
+	plan.writes.push({ field: seed.field, value: seed.list && !Array.isArray(value) ? [value] : value });
 }

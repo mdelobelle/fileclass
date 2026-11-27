@@ -295,11 +295,10 @@ export async function createClassNote(plugin: FileclassPlugin, req: NoteCreation
 	// nothing was inserted at all (measured: a note arrived with its template's frontmatter and none
 	// of its schema). We know the class: it is what was asked for.
 	const fields = plugin.index.getResolvedFields(req.fileClass);
-	const seeds = req.seeds ?? [];
 	// Resolved before the write, because `generateMarkdownLink` needs the new note's path and the
 	// write callback is no place to be doing lookups.
 	const plan = planSeeds(
-		seeds,
+		req.seeds,
 		req.fileClass,
 		new Set(fields.filter(isRootField).map((f) => f.name)),
 		(linkpath) => {
@@ -340,7 +339,8 @@ export async function createClassNote(plugin: FileclassPlugin, req: NoteCreation
 		fileClass: req.fileClass,
 		note: target.path,
 		via: req.via,
-		...(seeds.length ? { seededFields: seeds.map((s) => s.field) } : {}),
+		// What was written, not what was sent: a skipped seed is in the warnings, not on the note.
+		...(plan.writes.length ? { seededFields: [...new Set(plan.writes.map((w) => w.field))] } : {}),
 		...(template ? { template } : {}),
 	});
 

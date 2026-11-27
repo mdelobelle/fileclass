@@ -297,6 +297,17 @@ async function main() {
 		check("a list value stays a list", same(songFm?.album, ["Highway to Hell", "Live"]), songFm?.album);
 		check("an unknown field is not written", songFm && !("mood" in songFm), songFm);
 
+		const malformed = await api("createNote", {
+			fileClass: "E2eSong",
+			name: "Malformed Seeds",
+			open: false,
+			seeds: [{ field: "artists", linkTo: [42] }, null, { field: "genre", value: "Rock" }],
+		});
+		check("a seed of the wrong shape: no throw, ok, said in warnings (reported by vault-agents)",
+			malformed.ok && malformed.warnings?.length === 2, malformed);
+		const notAList = await api("createNote", { fileClass: "E2eSong", name: "Seeds Not A List", open: false, seeds: "genre=Rock" });
+		check("seeds that are not a list: ok, said in warnings", notAList.ok && notAList.warnings?.length === 1, notAList);
+
 		console.log("\nTemplates:");
 		const renamed = await api("createNote", { fileClass: "E2ePerson", name: "John Doe", destination: "Artist", open: false });
 		const renamedPath = `${ROOT}/People/Artists/John Doe (artist).md`;

@@ -98,13 +98,18 @@ await api.createNote({
   that field. `linkTo` takes a path or a note name (`[[…]]` and an alias are
   accepted) and is resolved like an Obsidian link. Values are not validated —
   the class's validation reports them afterwards. A seed on a field the class
-  does not have, or a link that resolves to no note, is skipped.
+  does not have, or a link that resolves to no note, is skipped. So is a seed of the
+  wrong shape (not an object, no `field`, a `linkTo` that is not a string or a
+  list of strings): the call never throws for what it was sent.
 - What could not be applied (a skipped seed, a failed template, a template whose
   properties are not on line 1) comes back in **`warnings`**; the note is
   created anyway.
 - **open** — `true` by default: the note opens, then the fields modal if
   *Open the fields after creating a note* is on. With `false`, nothing opens.
   No other window ever appears: the call never waits for the user.
+  The fields modal opens, like every Obsidian modal, in the window that has
+  focus — usually the note's, but a popped-out window such as Settings holds the
+  focus while it is the last one used, and the modal then appears there.
 - The schema log gets the command's `schema.note-created` line, with
   `via: "api"`.
 

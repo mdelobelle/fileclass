@@ -293,6 +293,34 @@ describe("planning the seeds", () => {
 		]);
 	});
 
+	it("skips and says a seed of the wrong shape, without throwing (it comes from a caller's JSON)", () => {
+		const seeds: unknown = [
+			{ field: "artists", linkTo: [42] },
+			{ field: "producer", linkTo: { path: "AC-DC" } },
+			null,
+			"genre=Rock",
+			{ value: "no field" },
+			{ field: "genre", value: "Hard rock" },
+		];
+		const plan = planSeeds(seeds, "GuitarSong", fields, resolve);
+		expect(plan.writes).toEqual([{ field: "genre", value: "Hard rock" }]);
+		expect(plan.warnings).toEqual([
+			'Seed #1 ignored: `linkTo` on "artists" is not a string or a list of strings.',
+			'Seed #2 ignored: `linkTo` on "producer" is not a string or a list of strings.',
+			"Seed #3 ignored: it is not an object.",
+			"Seed #4 ignored: it is not an object.",
+			"Seed #5 ignored: `field` is not a non-empty string.",
+		]);
+	});
+
+	it("reads seeds that are not a list as none, and says so", () => {
+		expect(planSeeds("artists=AC-DC", "GuitarSong", fields, resolve)).toEqual({
+			writes: [],
+			warnings: ["Seeds ignored: `seeds` is not a list."],
+		});
+		expect(planSeeds(undefined, "GuitarSong", fields, resolve)).toEqual({ writes: [], warnings: [] });
+	});
+
 	it("keeps the order, so a later seed on the same field wins at write time", () => {
 		const plan = planSeeds(
 			[{ field: "genre", value: "Rock" }, { field: "genre", value: "Hard rock" }],

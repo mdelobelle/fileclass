@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 
 import {
+	chooseDestination,
 	destinationLabel,
+	linkTarget,
+	planSeeds,
 	noteDestinations,
 	noteFolder,
 	safeFileName,
@@ -169,5 +172,134 @@ describe("the folder a chosen destination lands in", () => {
 	it("falls back through the cascade when the destination names no folder", () => {
 		// A destination may be a template alone — "same folder as always, different starting point".
 		expect(noteFolder({ filesPaths: ["Bound"] }, "Inbox", { template: "T.md" })).toBe("Bound");
+	});
+});
+
+describe("choosing a destination by name (API 1.2)", () => {
+	const person = [
+		{ name: "Professional", folder: "People/Work", template: "T/Pro.md" },
+		{ name: "Artist", folder: "People/Artists" },
+	];
+
+	it("matches the name without regard to case", () => {
+		expect(chooseDestination("Person", person, "artist")).toEqual({ ok: true, destination: person[1] });
+		expect(chooseDestination("Person", person, "  PROFESSIONAL ")).toEqual({ ok: true, destination: person[0] });
+	});
+
+	it("takes the first declared destination when none is named", () => {
+		expect(chooseDestination("Person", person)).toEqual({ ok: true, destination: person[0] });
+		expect(chooseDestination("Person", person, "  ")).toEqual({ ok: true, destination: person[0] });
+	});
+
+	it("takes the only destination of a class that has one", () => {
+		expect(chooseDestination("Book", [{ folder: "Books" }])).toEqual({ ok: true, destination: { folder: "Books" } });
+	});
+
+	it("has no destination for a class that declares none", () => {
+		expect(chooseDestination("Note", [])).toEqual({ ok: true, destination: undefined });
+	});
+
+	it("refuses an unknown name and lists what the class offers", () => {
+		const r = chooseDestination("Person", [...person, { folder: "People/Misc" }], "Friend");
+		expect(r.ok).toBe(false);
+		if (r.ok) return;
+		expect(r.message).toContain('"Friend"');
+		expect(r.message).toContain("Professional, Artist, (unnamed: Misc)");
+	});
+
+	it("refuses a name on a class without destinations", () => {
+		const r = chooseDestination("Note", [], "Work");
+		expect(r.ok).toBe(false);
+		if (!r.ok) expect(r.message).toContain("declares no destination");
+	});
+});
+
+describe("what a link seed names", () => {
+	it("takes off the wiki-link wrapping and the alias", () => {
+		expect(linkTarget("AC-DC")).toBe("AC-DC");
+		expect(linkTarget("[[AC-DC]]")).toBe("AC-DC");
+		expect(linkTarget(" [[Bands/AC-DC|AC/DC]] ")).toBe("Bands/AC-DC");
+		expect(linkTarget("Bands/AC-DC.md")).toBe("Bands/AC-DC.md");
+	});
+});
+
+describe("planning the seeds", () => {
+	const fields = new Set(["artists", "genre", "author", "tags"]);
+	const notes: Record<string, string> = { "AC-DC": "[[AC-DC]]", "Bands/Queen.md": "[[Queen]]", "Frank Herbert": "[[Frank Herbert]]" };
+	const resolve = (t: string): string | null => notes[t] ?? null;
+
+	it("writes a literal value as is, and a list as a list", () => {
+		const plan = planSeeds(
+			[{ field: "genre", value: "Hard rock" }, { field: "tags", value: ["rock", "70s"] }],
+			"GuitarSong",
+			fields,
+			resolve
+		);
+		expect(plan).toEqual({
+			writes: [
+				{ field: "genre", value: "Hard rock" },
+				{ field: "tags", value: ["rock", "70s"] },
+			],
+			warnings: [],
+		});
+	});
+
+	it("builds links from a name, a path, or a list of them", () => {
+		const plan = planSeeds(
+			[
+				{ field: "author", linkTo: "Frank Herbert" },
+				{ field: "artists", linkTo: ["AC-DC", "[[Bands/Queen.md]]"] },
+			],
+			"GuitarSong",
+			fields,
+			resolve
+		);
+		expect(plan.writes).toEqual([
+			{ field: "author", value: "[[Frank Herbert]]" },
+			{ field: "artists", value: ["[[AC-DC]]", "[[Queen]]"] },
+		]);
+		expect(plan.warnings).toEqual([]);
+	});
+
+	it("skips and says a seed on a field the class does not have", () => {
+		const plan = planSeeds([{ field: "mood", value: "loud" }], "GuitarSong", fields, resolve);
+		expect(plan.writes).toEqual([]);
+		expect(plan.warnings).toEqual(['Seed "mood" ignored: "GuitarSong" has no such field.']);
+	});
+
+	it("skips and says a link that resolves to no note, keeping the ones that do", () => {
+		const plan = planSeeds([{ field: "artists", linkTo: ["AC-DC", "Nobody"] }], "GuitarSong", fields, resolve);
+		expect(plan.writes).toEqual([{ field: "artists", value: ["[[AC-DC]]"] }]);
+		expect(plan.warnings).toEqual(['Seed "artists": no note matches "Nobody", so it was not linked.']);
+		const none = planSeeds([{ field: "author", linkTo: "Nobody" }], "Book", fields, resolve);
+		expect(none.writes).toEqual([]);
+		expect(none.warnings).toHaveLength(1);
+	});
+
+	it("keeps the command's rules: a list flag wraps, an empty value writes nothing, the literal is the fallback", () => {
+		const plan = planSeeds(
+			[
+				{ field: "tags", value: "todo", list: true },
+				{ field: "genre", value: "" },
+				{ field: "author", linkTo: "Nobody", value: "anonymous" },
+			],
+			"Book",
+			fields,
+			resolve
+		);
+		expect(plan.writes).toEqual([
+			{ field: "tags", value: ["todo"] },
+			{ field: "author", value: "anonymous" },
+		]);
+	});
+
+	it("keeps the order, so a later seed on the same field wins at write time", () => {
+		const plan = planSeeds(
+			[{ field: "genre", value: "Rock" }, { field: "genre", value: "Hard rock" }],
+			"GuitarSong",
+			fields,
+			resolve
+		);
+		expect(plan.writes.map((w) => w.value)).toEqual(["Rock", "Hard rock"]);
 	});
 });

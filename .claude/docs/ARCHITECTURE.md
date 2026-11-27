@@ -620,6 +620,21 @@ input, CTA Preview) then a full change list with per-note toggles (CTA Apply(N)
 → `applyValueToPaths`). Obsidian-coupled → manual/CDP verified (the `where`
 filter stays unit-tested).
 
+**API-1.2 (landed, `version` "1.2"):** `noteDestinations(fileClass)` and
+`createNote({ fileClass, name, destination?, seeds?, open? })`, requested by vault-agents
+(its ADR 0016; spec `vault-agents/docs/specs/fileclass-create-note.md`). **One implementation:**
+`createClassNote` (`src/commands/createNoteWithClass.ts`) is everything after the reader's
+choices — folder, create, template, Templater rename, the single class + fields + seeds write,
+log, open — and both the command and the API call it; the command keeps only its two pickers.
+The differences are parameters, not copies: `ifExists: "number" | "refuse"` (an agent must be
+able to say "John Doe already exists"), `open`, `via` (logged). Failures after the file exists
+come back as `warnings` — the command shows them as Notices, the API returns them — so
+`applyTemplate` takes an optional `report` sink instead of always raising a Notice. The pure
+rules (`chooseDestination`, `linkTarget`, `planSeeds`) live in `schema/newNote.ts`, unit-tested;
+the glue is verified by `tests/e2e/create-note.mjs` (including a byte comparison with the
+command's note). Seeds on a field the class lacks are skipped and said for **both** surfaces:
+the table only ever seeds the class's own root fields, so the command loses nothing.
+
 **CLI/TUI (landed, separate repo):** a standalone `fileclass` binary (Node +
 React/ink) shelling out to `obsidian eval` via a small transport, over the same
 API. It lives in its **own repository** — `mdelobelle/fileclass-cli` — NOT in

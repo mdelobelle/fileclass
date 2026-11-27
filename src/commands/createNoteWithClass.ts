@@ -16,7 +16,7 @@
  * about one field, where a template's default is a general preference — so the seed overwrites, and
  * nothing else does.
  */
-import { Modal, Notice, Setting, TFile, normalizePath } from "obsidian";
+import { Modal, Notice, Setting, TFile, TFolder, normalizePath } from "obsidian";
 
 import type FileclassPlugin from "../../main";
 import { applyTemplate } from "../engine/templateAdapter";
@@ -27,12 +27,15 @@ import { defaultValueFor } from "../fields/support";
 import {
 	NoteDestination,
 	Seed,
+	SeedSpec,
 	destinationLabel,
 	noteDestinations,
 	noteFolder,
+	planSeeds,
 	safeFileName,
 	uniquePath,
 } from "../schema/newNote";
+import { isRootField } from "../schema/field";
 import { assignPropertyTypes } from "../io/propertyTypes";
 import { strayFrontmatter } from "../schema/strayFrontmatter";
 import { modalTitle } from "../ui/modalTitle";
@@ -146,15 +149,13 @@ function askName(plugin: FileclassPlugin, fileClass: string): Promise<string | n
 /**
  * Creates a note of `fileClass`, and returns it (or null when nothing was created).
  *
- * Every step after the file exists is best-effort: a template that fails, a seed that cannot be
- * written, a modal that will not open — none of them are worth destroying a note the reader asked
- * for and can see in their explorer.
+ * The interactive half only: which context, what name. Everything after the reader has answered is
+ * `createClassNote`, shared with the public API — so the command and `api.createNote` cannot drift.
  */
 export async function createNoteWithClass(
 	plugin: FileclassPlugin,
 	req: CreateNoteRequest
 ): Promise<TFile | null> {
-	const app = plugin.app;
 	const parsed = plugin.index.getFileClass(req.fileClass);
 	if (!parsed) {
 		new Notice(`Fileclass: "${req.fileClass}" is not a fileClass in this vault.`);
@@ -173,12 +174,82 @@ export async function createNoteWithClass(
 		destination = destinations[0];
 	}
 
-	const seeds = req.seeds ?? [];
 	const typed = await askName(plugin, req.fileClass);
 	if (typed === null) return null;
 
-	const folder = noteFolder(parsed.options, obsidianDefaultFolder(plugin), destination);
-	const path = uniquePath(folder, safeFileName(typed, req.fileClass), (p) => !!app.vault.getAbstractFileByPath(p));
+	const result = await createClassNote(plugin, {
+		fileClass: req.fileClass,
+		name: safeFileName(typed, req.fileClass),
+		destination,
+		seeds: req.seeds,
+		ifExists: "number",
+		open: true,
+		via: "command",
+	});
+	// Said after the fact, never asked: by now the note exists, or the reason it does not is known.
+	for (const warning of result.warnings) new Notice(`Fileclass: ${warning}`, 10000);
+	if (!result.ok) {
+		new Notice(`Fileclass: ${result.message}`);
+		return null;
+	}
+	return result.file;
+}
+
+/** What has been decided before a note of a class is created — by a reader, or by an API caller. */
+export interface NoteCreation {
+	fileClass: string;
+	/** The file's base name, already made safe (`safeFileName`). */
+	name: string;
+	/** The context chosen; none for a class that declares none. */
+	destination?: NoteDestination;
+	seeds?: readonly SeedSpec[];
+	/**
+	 * A note of that name already in the destination folder: numbered (`Dune 1`), as the command
+	 * does, or refused — an agent must be able to say "John Doe already exists" rather than make a
+	 * second John Doe.
+	 */
+	ifExists: "number" | "refuse";
+	/** Open the note, then the fields modal when `openFieldsOnCreate` is set. */
+	open: boolean;
+	/** Which surface asked, for the log. */
+	via: "command" | "api";
+}
+
+export type NoteCreationResult =
+	| { ok: true; file: TFile; warnings: string[] }
+	| { ok: false; message: string; path?: string; warnings: string[] };
+
+/**
+ * Creates a note of a class once every choice is made — **never asks anything**.
+ *
+ * The order is the design (see the header): create empty → apply the template → write the class,
+ * its missing fields and the seeds in one write → log → open. Every step after the file exists is
+ * best effort: a template that fails, a seed that cannot be applied, a displaced frontmatter block —
+ * none is worth destroying a note that now sits in the explorer, so they come back as `warnings`
+ * for the caller to show (the command, as Notices) or return (the API).
+ */
+export async function createClassNote(plugin: FileclassPlugin, req: NoteCreation): Promise<NoteCreationResult> {
+	const app = plugin.app;
+	const warnings: string[] = [];
+	const parsed = plugin.index.getFileClass(req.fileClass);
+	if (!parsed) return { ok: false, message: `Unknown fileClass "${req.fileClass}"`, warnings };
+
+	const folder = noteFolder(parsed.options, obsidianDefaultFolder(plugin), req.destination);
+	let path: string;
+	if (req.ifExists === "refuse") {
+		const existing = existingNote(plugin, folder, req.name);
+		if (existing) {
+			return {
+				ok: false,
+				path: existing,
+				message: `A note named "${req.name}" already exists in ${folder ? `"${folder}"` : "the vault root"}: ${existing}`,
+				warnings,
+			};
+		}
+		path = uniquePath(folder, req.name, () => false);
+	} else {
+		path = uniquePath(folder, req.name, (p) => !!app.vault.getAbstractFileByPath(p));
+	}
 
 	if (folder && !app.vault.getAbstractFileByPath(folder)) {
 		await app.vault.createFolder(folder).catch(() => undefined);
@@ -188,20 +259,18 @@ export async function createNoteWithClass(
 	try {
 		file = await app.vault.create(path, "");
 	} catch (err) {
-		new Notice(`Fileclass: could not create ${path} (${(err as Error).message}).`);
-		return null;
+		return { ok: false, path, message: `could not create ${path} (${(err as Error).message}).`, warnings };
 	}
 
 	// 2. the template, before any frontmatter of ours exists to collide with.
-	const template = destination?.template?.trim();
-	if (template) await applyTemplate(app, normalizePath(template), file);
+	const template = req.destination?.template?.trim();
+	if (template) await applyTemplate(app, normalizePath(template), file, (m) => warnings.push(m));
 
 	// Templater may have renamed the file out from under us (`tp.file.rename()`); the template wins,
 	// and the fields belong on whatever it is called now.
 	const target = app.vault.getAbstractFileByPath(file.path) instanceof TFile ? file : findRenamed(plugin, file);
 	if (!target) {
-		new Notice("Fileclass: the note was created but could not be found after templating.");
-		return null;
+		return { ok: false, message: "the note was created but could not be found after templating.", warnings };
 	}
 
 	// Between the two: did the template's properties actually land as properties? Obsidian reads a
@@ -211,7 +280,7 @@ export async function createNoteWithClass(
 	// template's values lost. Measured on a production vault; it failed silently until here.
 	//
 	// Said, never repaired: a template is a file its author wrote.
-	if (template) await warnStrayFrontmatter(plugin, target, template);
+	if (template) await warnStrayFrontmatter(plugin, target, template, warnings);
 
 	// 3. the class, its fields and the seed — in **one** write, deciding what is missing from the
 	// frontmatter this callback holds.
@@ -220,12 +289,25 @@ export async function createNoteWithClass(
 	// reason), but this path keeps its single pass: creation then costs one write instead of three,
 	// and the order the seed sits in — after the defaults, over whatever the template left — is
 	// visible here rather than spread across three calls.
-	const seedValues = seeds.map((seed) => ({ seed, value: resolveSeedValue(plugin, seed, target) }));
+	//
 	// The **class's** resolved fields, not the note's. `getFields(note)` asks which classes the note
 	// carries, which it answers from the metadata cache — empty for a note created a moment ago, so
 	// nothing was inserted at all (measured: a note arrived with its template's frontmatter and none
 	// of its schema). We know the class: it is what was asked for.
 	const fields = plugin.index.getResolvedFields(req.fileClass);
+	const seeds = req.seeds ?? [];
+	// Resolved before the write, because `generateMarkdownLink` needs the new note's path and the
+	// write callback is no place to be doing lookups.
+	const plan = planSeeds(
+		seeds,
+		req.fileClass,
+		new Set(fields.filter(isRootField).map((f) => f.name)),
+		(linkpath) => {
+			const linked = resolveLinkTarget(plugin, linkpath, target.path);
+			return linked ? app.fileManager.generateMarkdownLink(linked, target.path) : null;
+		}
+	);
+	warnings.push(...plan.warnings);
 	await app.fileManager.processFrontMatter(target, (fm: Record<string, unknown>) => {
 		const has = (name: string): boolean => Object.prototype.hasOwnProperty.call(fm, name);
 		const alias = plugin.settings.fileClassAlias;
@@ -247,9 +329,7 @@ export async function createNoteWithClass(
 
 		// A seed overwrites whatever the template left on its own field — see the header. Later seeds
 		// win over earlier ones, so the caller puts the most specific last.
-		for (const { seed, value } of seedValues) {
-			if (value) fm[seed.field] = seed.list ? [value] : value;
-		}
+		for (const { field, value } of plan.writes) fm[field] = value;
 	});
 
 	// Same as inserting into an existing note: the class's fields are properties now, so their
@@ -259,13 +339,41 @@ export async function createNoteWithClass(
 	void logEvent(plugin, "INFO", "schema.note-created", `${req.fileClass}: created ${target.path}`, {
 		fileClass: req.fileClass,
 		note: target.path,
+		via: req.via,
 		...(seeds.length ? { seededFields: seeds.map((s) => s.field) } : {}),
 		...(template ? { template } : {}),
 	});
 
-	await app.workspace.getLeaf(false).openFile(target);
-	if (plugin.settings.openFieldsOnCreate) new NoteFieldsModal(plugin, target).open();
-	return target;
+	if (req.open) {
+		await app.workspace.getLeaf(false).openFile(target);
+		if (plugin.settings.openFieldsOnCreate) new NoteFieldsModal(plugin, target).open();
+	}
+	return { ok: true, file: target, warnings };
+}
+
+/**
+ * The note of that name already in `folder`, if any — **case-insensitively**.
+ *
+ * macOS and Windows file systems do not tell `John Doe.md` from `john doe.md`, so `vault.create`
+ * would fail on the second; saying "it exists" with its real path is the useful answer.
+ */
+function existingNote(plugin: FileclassPlugin, folder: string, name: string): string | null {
+	const vault = plugin.app.vault;
+	const dir = folder ? vault.getAbstractFileByPath(folder) : vault.getRoot();
+	if (!(dir instanceof TFolder)) return null;
+	const wanted = `${name}.md`.toLowerCase();
+	const hit = dir.children.find((c) => c instanceof TFile && c.name.toLowerCase() === wanted);
+	return hit ? hit.path : null;
+}
+
+/**
+ * The note a link seed names: an exact path first (what a table hands over), else Obsidian's own
+ * link resolution from the new note (a bare name, a path without `.md`).
+ */
+function resolveLinkTarget(plugin: FileclassPlugin, target: string, sourcePath: string): TFile | null {
+	const exact = plugin.app.vault.getAbstractFileByPath(target);
+	if (exact instanceof TFile) return exact;
+	return plugin.app.metadataCache.getFirstLinkpathDest(target, sourcePath);
 }
 
 /**
@@ -278,7 +386,8 @@ export async function createNoteWithClass(
 async function warnStrayFrontmatter(
 	plugin: FileclassPlugin,
 	note: TFile,
-	template: string
+	template: string,
+	warnings: string[]
 ): Promise<void> {
 	try {
 		const stray = strayFrontmatter(await plugin.app.vault.read(note));
@@ -286,11 +395,10 @@ async function warnStrayFrontmatter(
 		// The character itself is not quoted: it is usually invisible (a stray backtick, a blank
 		// line), and echoing it into a plain-text Notice produced `` ` `` inside backticks, which
 		// read as noise. The line number says where to look, which is what a reader can act on.
-		new Notice(
-			`Fileclass: in the template "${template}", the properties start on line ${stray.line} instead ` +
+		warnings.push(
+			`in the template "${template}", the properties start on line ${stray.line} instead ` +
 				`of line 1. Obsidian only reads them at the very top of a file, so they were left in this ` +
-				`note as text and it now carries them twice. Delete what sits above the first "---".`,
-			10000
+				`note as text and it now carries them twice. Delete what sits above the first "---".`
 		);
 		void logEvent(
 			plugin,
@@ -302,19 +410,6 @@ async function warnStrayFrontmatter(
 	} catch {
 		/* a diagnostic must never cost the reader their note */
 	}
-}
-
-/**
- * The seed's value, in the vault's own link format when it names a note.
- *
- * Resolved before the write, because `generateMarkdownLink` needs the new note's path and the write
- * callback is no place to be doing lookups.
- */
-function resolveSeedValue(plugin: FileclassPlugin, seed: Seed, target: TFile): string {
-	const linked = seed.linkTo ? plugin.app.vault.getAbstractFileByPath(seed.linkTo) : null;
-	return linked instanceof TFile
-		? plugin.app.fileManager.generateMarkdownLink(linked, target.path)
-		: seed.value ?? "";
 }
 
 /**

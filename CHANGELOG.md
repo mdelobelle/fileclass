@@ -29,6 +29,17 @@ All notable changes to Fileclass are documented here. The format follows
 
 ### Added
 
+- **API 1.2: `createNote` and `noteDestinations`.** A script or an agent can now create a note
+  of a class in one call — `api.createNote({ fileClass: "Person", name: "John Doe" })` — instead
+  of driving the *Create a note with a class* command through its pickers. It is the command's
+  own creation path (destination, template and Templater renaming, class, missing fields,
+  seeds, log), with the choices passed in: pick the destination by name, pre-fill fields with
+  values or links (`seeds`), choose whether to open the note. Two differences, both because
+  nobody is there to answer: a note of that name already in the folder is refused with its
+  path, where the command numbers the new one; and what could not be applied comes back as
+  `warnings` instead of a Notice. `noteDestinations(fileClass)` lists the class's destinations,
+  so the caller can ask "professional or artist?" first. Calls written for 1.1 are unchanged.
+
 - **A template whose properties are not properties now says so.** Reported on a production vault:
   every note created with a class arrived with its properties twice. The class template began with
   a lone backtick, so its `---` block was not on the first line — and Obsidian reads frontmatter

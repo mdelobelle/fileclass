@@ -9,6 +9,10 @@
  * through it). The window is picked by vault name, never "the first one": several vaults can share
  * the port, and this test writes notes.
  *
+ * Every DOM query goes through `activeDocument`, not `document`: Obsidian opens a modal in the window
+ * that has focus, and a popped-out Settings window does (measured on 1.15.1) — querying `document`
+ * found no modal at all and reported "nothing opened", the one check that must not pass by accident.
+ *
  * Everything it writes lives under `_e2e-create/`, three `E2e*` class notes in the class folder,
  * and one note in Obsidian's default new-note folder; all of it is deleted at the end, pass or fail.
  * The schema log keeps the lines the creations wrote — they are what case "log" asserts on.
@@ -47,8 +51,8 @@ function setup(ROOT) {
 	};
 	const closeModals = async () => {
 		// Escape, one modal at a time: this Obsidian draws no close button to click.
-		for (let i = 0; i < 10 && document.querySelector(".modal-container"); i++) {
-			(document.activeElement ?? document.body).dispatchEvent(
+		for (let i = 0; i < 10 && activeDocument.querySelector(".modal-container"); i++) {
+			(activeDocument.activeElement ?? activeDocument.body).dispatchEvent(
 				new KeyboardEvent("keydown", { key: "Escape", code: "Escape", bubbles: true })
 			);
 			await wait(150);
@@ -77,8 +81,8 @@ function setup(ROOT) {
 			return fm && fm.fileClass ? JSON.parse(JSON.stringify(fm)) : null;
 		}, 5000),
 		screen: () => ({
-			modals: document.querySelectorAll(".modal-container").length,
-			notices: document.querySelectorAll(".notice").length,
+			modals: activeDocument.querySelectorAll(".modal-container").length,
+			notices: activeDocument.querySelectorAll(".notice").length,
 			active: app.workspace.getActiveFile()?.path ?? null,
 		}),
 		link: (target, from) => app.fileManager.generateMarkdownLink(app.vault.getAbstractFileByPath(target), from),
@@ -220,12 +224,12 @@ async function main() {
 			await app.workspace.getLeaf(false).openFile(app.vault.getAbstractFileByPath(classNote));
 			await h.wait(800);
 			app.commands.executeCommandById("fileclass:create-note");
-			const input = await h.until(() => document.querySelector(".modal-container input"), 4000);
+			const input = await h.until(() => activeDocument.querySelector(".modal-container input"), 4000);
 			if (!input) return "no name prompt";
 			input.value = "Cmd Twin";
 			input.dispatchEvent(new Event("input", { bubbles: true }));
 			input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
-			await h.until(() => document.querySelector(".fileclass-field-row"), 5000);
+			await h.until(() => activeDocument.querySelector(".fileclass-field-row"), 5000);
 			await h.closeModals();
 			return "done";
 		}, `${(await evaluate(() => window.__fce2e.classDir))}/E2eSong.md`);
@@ -316,7 +320,7 @@ async function main() {
 		const opened = await api("createNote", { fileClass: "E2ePerson", name: "Open Me", destination: "Professional" });
 		const shown = await evaluate(async () => {
 			const h = window.__fce2e;
-			const fields = await h.until(() => document.querySelector(".modal-container .fileclass-field-row"), 4000);
+			const fields = await h.until(() => activeDocument.querySelector(".modal-container .fileclass-field-row"), 4000);
 			const out = { ...h.screen(), fieldsModal: !!fields };
 			await h.closeModals();
 			return out;

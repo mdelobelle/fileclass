@@ -47,7 +47,15 @@ describe("defaultValueFor", () => {
 		expect(defaultValueFor(make("ObjectList"))).toEqual([]);
 		expect(defaultValueFor(make("MultiFile"))).toEqual([]);
 		expect(defaultValueFor(make("MultiInput"))).toEqual([]);
-		expect(defaultValueFor(make("Input"))).toBe("");
+	});
+
+	it("leaves a scalar empty rather than writing an empty string (#207)", () => {
+		// `""` is a string, and Obsidian reads the values to decide what a property is: a Boolean
+		// inserted as `""` taught the vault that the property is text, for good.
+		expect(defaultValueFor(make("Input"))).toBeNull();
+		expect(defaultValueFor(make("Boolean"))).toBeNull();
+		expect(defaultValueFor(make("Number"))).toBeNull();
+		expect(defaultValueFor(make("Date"))).toBeNull();
 	});
 });
 

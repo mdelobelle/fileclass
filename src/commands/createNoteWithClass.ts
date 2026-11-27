@@ -36,6 +36,7 @@ import {
 	uniquePath,
 } from "../schema/newNote";
 import { isRootField } from "../schema/field";
+import { assignPropertyTypes } from "../io/propertyTypes";
 import { strayFrontmatter } from "../schema/strayFrontmatter";
 import { modalTitle } from "../ui/modalTitle";
 import { NoteFieldsModal } from "../ui/noteFieldsModal";
@@ -330,6 +331,10 @@ export async function createClassNote(plugin: FileclassPlugin, req: NoteCreation
 		// win over earlier ones, so the caller puts the most specific last.
 		for (const { field, value } of plan.writes) fm[field] = value;
 	});
+
+	// Same as inserting into an existing note: the class's fields are properties now, so their
+	// types are Obsidian's to know rather than to infer (#207).
+	assignPropertyTypes(app, fields);
 
 	void logEvent(plugin, "INFO", "schema.note-created", `${req.fileClass}: created ${target.path}`, {
 		fileClass: req.fileClass,

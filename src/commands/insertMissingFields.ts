@@ -8,6 +8,7 @@ import { App, Notice, TFile } from "obsidian";
 
 import { missingRootFields } from "../fields/missingFields";
 import { defaultValueFor } from "../fields/support";
+import { assignPropertyTypes } from "../io/propertyTypes";
 import { reorderFrontmatter } from "../io/reorderFrontmatter";
 import { Field } from "../schema/field";
 import { UnknownKeysPosition } from "../schema/reorder";
@@ -62,6 +63,9 @@ export async function insertMissingFields(
 		inserted = missingRootFields(fields, (f) => Object.prototype.hasOwnProperty.call(fm, f.name));
 		for (const field of inserted) fm[field.name] = defaultValueFor(field);
 	});
+
+	// The properties now exist for Obsidian; say what they are before it guesses (#207).
+	assignPropertyTypes(app, inserted);
 
 	if (!inserted.length) {
 		if (!silent && !quiet) new Notice("Fileclass: no missing fields to insert.");

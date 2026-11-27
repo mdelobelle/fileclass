@@ -6,6 +6,14 @@ All notable changes to Fileclass are documented here. The format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- **A picker bound to a base that matches nothing says so** (#199). It used to open on an empty
+  list, with no way to tell "your base matched no files" from "this is broken" — reported from iOS,
+  where the MultiMedia picker showed neither files nor an error. The base and the view are now
+  named. An empty base stays an empty picker: it is a legitimate answer, and falling back to every
+  file in the vault would quietly ignore the field's binding.
+
 ### Added
 
 - **A template whose properties are not properties now says so.** Reported on a production vault:
